@@ -31,13 +31,13 @@ describe("DeskCrumbs", () => {
     expect(router.state.location.search).toMatchObject({ scope: "vouchers", view: "list" });
   });
 
-  it("keeps the map view, and adds no view when there is none", async () => {
+  it("always sends a resource breadcrumb to its full-page list", async () => {
     const onMap = await renderInShell(
       <DeskCrumbs pathname="/vouchers/0xabc" search={{ view: "map" }} trail="Tea voucher" />,
       "/vouchers/0xabc?view=map",
     );
     expect(screen.getByRole("link", { name: "Vouchers" }).getAttribute("href")).toBe(
-      "/market?scope=vouchers&view=map",
+      "/market?scope=vouchers&view=list",
     );
     onMap.unmount();
 
@@ -46,17 +46,17 @@ describe("DeskCrumbs", () => {
       "/vouchers/0xabc",
     );
     expect(screen.getByRole("link", { name: "Vouchers" }).getAttribute("href")).toBe(
-      "/market?scope=vouchers",
+      "/market?scope=vouchers&view=list",
     );
   });
 
-  it("sends Market to the list of everything in list view and to the map otherwise", async () => {
+  it("always sends Market to the unified map", async () => {
     const inList = await renderInShell(
       <DeskCrumbs pathname="/market" search={{ scope: "offers", view: "list" }} trail={null} />,
       "/market?scope=offers&view=list",
     );
     expect(screen.getByRole("link", { name: "Market" }).getAttribute("href")).toBe(
-      "/market?scope=all&view=list",
+      "/?tab=market&view=map",
     );
     inList.unmount();
 
@@ -64,6 +64,8 @@ describe("DeskCrumbs", () => {
       <DeskCrumbs pathname="/market" search={{ scope: "offers" }} trail={null} />,
       "/market?scope=offers",
     );
-    expect(screen.getByRole("link", { name: "Market" }).getAttribute("href")).toBe("/?tab=market");
+    expect(screen.getByRole("link", { name: "Market" }).getAttribute("href")).toBe(
+      "/?tab=market&view=map",
+    );
   });
 });

@@ -93,6 +93,7 @@ export function useMarketScreen({
     bufferedTileBounds(area?.boxes ?? [], area?.zoom ?? 2),
   );
   const [fetchZoom, setFetchZoom] = useState(() => canonicalMarketMapZoom(area?.zoom ?? 2));
+  const [hasSettledViewport, setHasSettledViewport] = useState(() => Boolean(area));
   const fetchZoomRef = useRef(fetchZoom);
   const areaOwnerRef = useRef(locationOwner);
   useEffect(() => {
@@ -101,6 +102,7 @@ export function useMarketScreen({
     setFetchBounds(bufferedTileBounds(area?.boxes ?? [], area?.zoom ?? 2));
     setFetchZoom(canonicalMarketMapZoom(area?.zoom ?? 2));
     fetchZoomRef.current = canonicalMarketMapZoom(area?.zoom ?? 2);
+    setHasSettledViewport(Boolean(area));
   }, [area, locationOwner]);
   const voucherSelection = useVoucherSheetSelection();
   const wantSelection = useWantSheetSelection();
@@ -306,6 +308,7 @@ export function useMarketScreen({
 
   const handleViewportSettled = useCallback(
     (settled: MarketViewport) => {
+      setHasSettledViewport(true);
       if (!area && !settled.userInitiated && !camera) return;
 
       const boxes = canonicalMarketBounds(viewportToBoundingBoxes(settled));
@@ -467,6 +470,10 @@ export function useMarketScreen({
     userLocation,
     locationOwner,
     locations,
+    activeKinds,
+    exactBounds: area?.boxes ?? [],
+    viewportCenter: area?.center ?? null,
+    hasSettledViewport,
     clusters: marketMap.clusters,
     isFetching: marketMap.isFetching,
     tagFacets,

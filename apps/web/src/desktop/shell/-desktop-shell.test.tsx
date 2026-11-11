@@ -64,8 +64,9 @@ describe("DesktopShell", () => {
 
     expect(fireEvent.keyDown(document.body, { key: "[" })).toBe(false);
     expect(window.localStorage.getItem("clc.desktop.sidebar")).toBe("collapsed");
-    // Collapsed, the rail still reaches every marketplace list.
-    expect(await screen.findByRole("button", { name: "Marketplace lists" })).toBeTruthy();
+    // Collapsed, every marketplace list remains a named top-level link.
+    expect(await screen.findByRole("link", { name: "Offers" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Vouchers" })).toBeTruthy();
   });
 
   it("gives a page the top bar and a sidebar that [ collapses to a rail with an Expand control", async () => {

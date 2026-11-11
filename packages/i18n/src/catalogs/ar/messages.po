@@ -121,7 +121,7 @@ msgid "{0} failed on-chain. The pool was not created."
 msgstr "فشلت {0} على السلسلة. لم يتم إنشاء الصندوق."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:261
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:260
 msgid "{0} fees collected."
 msgstr "تم تحصيل رسوم {0}."
 
@@ -171,7 +171,7 @@ msgstr "{0} من {CATALOG_MAX_POOLS}"
 #. placeholder {0}: draftTags.length
 #. placeholder {0}: filter.tags.length
 #: apps/web/src/components/catalog-filter-controls.tsx:435
-#: apps/web/src/desktop/market/market-toolbar.tsx:259
+#: apps/web/src/desktop/market/market-toolbar.tsx:227
 #: apps/web/src/desktop/posts/post-facets.tsx:164
 msgid "{0} of {CATALOG_MAX_TAGS}"
 msgstr "{0} من {CATALOG_MAX_TAGS}"
@@ -214,8 +214,8 @@ msgstr "تمت إزالة {0} من {1}."
 
 #. placeholder {0}: screen.results.total
 #: apps/web/src/desktop/market/market-map-desk.tsx:128
-msgid "{0} results"
-msgstr "{0} نتيجة"
+#~ msgid "{0} results"
+#~ msgstr "{0} نتيجة"
 
 #. placeholder {0}: summary.total
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:92
@@ -228,6 +228,8 @@ msgid "{0} updated."
 msgstr "تم تحديث {0}."
 
 #. placeholder {0}: pool.voucherCount
+#. placeholder {0}: row.voucherCount
+#: apps/web/src/desktop/market/market-list-desk.tsx:384
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:654
 #: apps/web/src/features/home/ui/wallet-page.tsx:459
 #: apps/web/src/features/pools/ui/pools-page.tsx:407
@@ -241,7 +243,7 @@ msgid "{0} wallet address"
 msgstr "عنوان محفظة {0}"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:162
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:161
 msgid "{amount} {0} withdrawn."
 msgstr "تم سحب {amount} {0}."
 
@@ -305,11 +307,11 @@ msgstr "{count, plural, zero {لا يحتوي صندوقك على أي نوع م
 msgid "{count} of {signers}"
 msgstr "{count} من {signers}"
 
-#: apps/web/src/desktop/market/market-layers.tsx:68
+#: apps/web/src/desktop/market/market-layers.tsx:67
 msgid "{count} of {total}"
 msgstr "{count} من {total}"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:151
+#: apps/web/src/desktop/market/market-toolbar.tsx:120
 msgid "{count} results"
 msgstr "{count} نتائج"
 
@@ -399,12 +401,6 @@ msgstr "<0>سجّل الدخول</0> لمزيد من المعلومات."
 #: apps/web/src/features/home/ui/market-page.tsx:244
 #~ msgid "1 {0} = {1} {2}"
 #~ msgstr "1 {0} = {1} {2}"
-
-#. placeholder {0}: rate.value
-#. placeholder {1}: rate.unit
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:151
-#~ msgid "1 {infoSymbol} = {0} {1}"
-#~ msgstr ""
 
 #. placeholder {0}: rate.value
 #. placeholder {1}: rate.unit
@@ -616,7 +612,7 @@ msgstr "نشط"
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:877
 #: apps/web/src/desktop/pools/pool-main.tsx:440
 #: apps/web/src/desktop/shell/crumbs.tsx:16
-#: apps/web/src/desktop/shell/sidebar.tsx:134
+#: apps/web/src/desktop/shell/sidebar.tsx:97
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:167
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:200
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
@@ -639,7 +635,7 @@ msgstr "لم يُعثر على النشاط."
 msgid "Activity sections"
 msgstr "أقسام النشاط"
 
-#: apps/web/src/desktop/shell/sidebar.tsx:137
+#: apps/web/src/desktop/shell/sidebar.tsx:100
 msgid "Activity, {unreadActivity, plural, one {# new} other {# new}}"
 msgstr "النشاط، {unreadActivity, plural, zero {لا جديد} one {عنصر جديد واحد} "
 "two {عنصران جديدان} few {# عناصر جديدة} many {# عنصرًا جديدًا} other {# "
@@ -878,7 +874,6 @@ msgstr "الزراعة"
 #: apps/web/src/components/market-bar.tsx:205
 #: apps/web/src/components/market-bar.tsx:264
 #: apps/web/src/desktop/activity/transactions-desk.tsx:358
-#: apps/web/src/desktop/market/market-toolbar.tsx:31
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:964
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:399
 msgid "All"
@@ -903,7 +898,7 @@ msgstr "كل الصناديق"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:416
 #: apps/web/src/components/catalog-filter-controls.tsx:500
-#: apps/web/src/desktop/market/market-toolbar.tsx:322
+#: apps/web/src/desktop/market/market-toolbar.tsx:290
 #: apps/web/src/desktop/posts/post-facets.tsx:307
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:273
 msgid "All selected"
@@ -1018,7 +1013,7 @@ msgstr "تجري قراءة بطاقة أخرى بالفعل. حاول مرة أ
 
 #: apps/web/src/components/catalog-filter-controls.tsx:411
 #: apps/web/src/components/catalog-filter-controls.tsx:495
-#: apps/web/src/desktop/market/market-toolbar.tsx:322
+#: apps/web/src/desktop/market/market-toolbar.tsx:290
 #: apps/web/src/desktop/posts/post-facets.tsx:302
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:270
 msgid "Any selected"
@@ -1053,7 +1048,7 @@ msgstr "تطبيق"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:118
 #: apps/web/src/components/catalog-filter-controls.tsx:513
-#: apps/web/src/desktop/market/market-toolbar.tsx:334
+#: apps/web/src/desktop/market/market-toolbar.tsx:302
 msgid "Apply filters"
 msgstr "تطبيق عوامل التصفية"
 
@@ -1419,9 +1414,8 @@ msgstr "الخدمات النقدية غير متاحة على {0}."
 
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:186
 #: apps/web/src/desktop/market/market-bits.tsx:76
-#: apps/web/src/desktop/market/market-list-desk.tsx:450
 #: apps/web/src/desktop/shell/command-palette.tsx:87
-#: apps/web/src/features/home/ui/marketplace-page.tsx:413
+#: apps/web/src/features/home/ui/marketplace-page.tsx:435
 msgid "Catalog"
 msgstr "كتالوج"
 
@@ -1447,10 +1441,9 @@ msgstr "تم حفظ الكتالوج. تعذرت إضافة العنصر. حاو
 #: apps/web/src/components/market-bar.tsx:190
 #: apps/web/src/components/market-bar.tsx:269
 #: apps/web/src/components/resource-usage.tsx:116
-#: apps/web/src/desktop/market/market-layers.tsx:38
-#: apps/web/src/desktop/market/market-toolbar.tsx:36
+#: apps/web/src/desktop/market/market-layers.tsx:37
 #: apps/web/src/desktop/shell/crumbs.tsx:30
-#: apps/web/src/desktop/shell/sidebar.tsx:35
+#: apps/web/src/desktop/shell/sidebar.tsx:185
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:32
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:33
 msgid "Catalogs"
@@ -1706,9 +1699,9 @@ msgid "intro.send.body"
 msgstr "اختر المستلم وقسيمة تملكها والمبلغ. راجع التفاصيل قبل التأكيد، ثم انتظر "
 "نتيجة التحويل."
 
-#: apps/web/src/desktop/market/market-layers.tsx:92
+#: apps/web/src/desktop/market/market-layers.tsx:95
 #: apps/web/src/desktop/market/market-notices.tsx:256
-#: apps/web/src/features/home/hooks/use-market-screen.tsx:416
+#: apps/web/src/features/home/hooks/use-market-screen.tsx:419
 msgid "Choose a resource type to show it on the map."
 msgstr "اختر نوع مورد لعرضه على الخريطة."
 
@@ -1815,12 +1808,12 @@ msgstr "مسح عامل التصفية"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:115
 #: apps/web/src/desktop/activity/transactions-desk.tsx:540
-#: apps/web/src/desktop/market/market-list-desk.tsx:410
+#: apps/web/src/desktop/market/market-list-desk.tsx:500
 #: apps/web/src/desktop/market/market-notices.tsx:198
 #: apps/web/src/desktop/market/market-notices.tsx:266
 #: apps/web/src/desktop/market/market-notices.tsx:281
 #: apps/web/src/desktop/posts/posts-desk.tsx:210
-#: apps/web/src/features/home/hooks/use-market-screen.tsx:454
+#: apps/web/src/features/home/hooks/use-market-screen.tsx:457
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:37
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:46
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:56
@@ -1853,7 +1846,7 @@ msgstr "مسح الموقع"
 #: apps/web/src/components/market-search.tsx:180
 #: apps/web/src/desktop/activity/transactions-desk.tsx:453
 #: apps/web/src/desktop/market/market-search-field.tsx:131
-#: apps/web/src/desktop/market/market-toolbar.tsx:299
+#: apps/web/src/desktop/market/market-toolbar.tsx:267
 #: apps/web/src/features/home/ui/activity-page.tsx:132
 msgid "Clear search"
 msgstr "مسح البحث"
@@ -1929,8 +1922,8 @@ msgid "Collaboration"
 msgstr "التعاون"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:186
-#: apps/web/src/desktop/shell/sidebar.tsx:190
+#: apps/web/src/desktop/shell/sidebar.tsx:149
+#: apps/web/src/desktop/shell/sidebar.tsx:153
 msgid "Collapse"
 msgstr "طيّ"
 
@@ -2751,6 +2744,10 @@ msgstr "تعذّر استيراد الصورة"
 msgid "Couldn't load activity."
 msgstr "تعذّر تحميل النشاط."
 
+#: apps/web/src/desktop/market/market-map-desk.tsx:203
+msgid "Couldn't load all results in this area."
+msgstr "تعذّر تحميل جميع النتائج في هذه المنطقة."
+
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:186
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:67
@@ -2772,7 +2769,7 @@ msgstr "تعذر تحميل الكتالوجات."
 #~ msgid "Couldn't load Catalogs."
 #~ msgstr "تعذر تحميل الكتالوجات."
 
-#: apps/web/src/features/home/hooks/use-market-screen.tsx:344
+#: apps/web/src/features/home/hooks/use-market-screen.tsx:347
 msgid "Couldn't load complete marketplace results."
 msgstr "تعذر تحميل نتائج السوق كاملة."
 
@@ -3051,7 +3048,7 @@ msgid "Couldn't read that card. Hold it still against the back of your phone "
 "and try again."
 msgstr "تعذّرت قراءة تلك البطاقة. أمسكها ثابتة على ظهر هاتفك وحاول مرة أخرى."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:249
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:248
 msgid "Couldn't read the pool's fee recipient. Try again."
 msgstr "تعذّرت قراءة مستلم رسوم الصندوق. حاول مرة أخرى."
 
@@ -3386,7 +3383,7 @@ msgid "Creation failed"
 msgstr "فشل الإنشاء"
 
 #: apps/web/src/components/creditable-browse-control.tsx:107
-#: apps/web/src/desktop/market/market-toolbar.tsx:363
+#: apps/web/src/desktop/market/market-toolbar.tsx:331
 #: apps/web/src/desktop/pools/pool-main.tsx:438
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:71
 msgid "Credit"
@@ -3578,7 +3575,6 @@ msgstr "صِف صندوقك"
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:145
 #: apps/web/src/components/wants/want-detail.tsx:117
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:69
-#: apps/web/src/desktop/market/market-list-desk.tsx:557
 #: apps/web/src/desktop/onboarding/paper-wallet-desk.tsx:119
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:313
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:138
@@ -3649,8 +3645,8 @@ msgid "Display name must be 120 characters or fewer"
 msgstr "يجب ألا يتجاوز اسم العرض 120 حرفًا"
 
 #: apps/web/src/desktop/market/market-list-desk.tsx:480
-msgid "Distance"
-msgstr "المسافة"
+#~ msgid "Distance"
+#~ msgstr "المسافة"
 
 #: apps/web/src/components/introduction/introduction.tsx:185
 #: apps/web/src/desktop/onboarding/guide-dialog.tsx:39
@@ -3800,7 +3796,7 @@ msgstr "تعديل المنشور"
 #: apps/web/src/desktop/account/profile-desk.tsx:120
 #: apps/web/src/desktop/account/settings-desk.tsx:236
 #: apps/web/src/desktop/shell/crumbs.tsx:56
-#: apps/web/src/desktop/shell/sidebar.tsx:141
+#: apps/web/src/desktop/shell/sidebar.tsx:104
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:32
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:79
 msgid "Edit profile"
@@ -3968,7 +3964,7 @@ msgid "Enter an amount greater than zero."
 msgstr "أدخل مبلغًا أكبر من صفر."
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:379
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:145
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:144
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:214
 msgid "Enter an amount greater than zero."
 msgstr "أدخل مبلغًا أكبر من صفر."
@@ -3978,7 +3974,7 @@ msgstr "أدخل مبلغًا أكبر من صفر."
 msgid "Enter an amount this voucher supports."
 msgstr "أدخل مبلغًا تدعمه هذه القسيمة."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:141
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:140
 msgid "Enter an amount this voucher supports."
 msgstr "أدخل مبلغًا تدعمه هذه القسيمة."
 
@@ -4107,8 +4103,8 @@ msgid "Existing fee recipient"
 msgstr "مستلم الرسوم الحالي"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:295
-#: apps/web/src/desktop/shell/sidebar.tsx:296
+#: apps/web/src/desktop/shell/sidebar.tsx:257
+#: apps/web/src/desktop/shell/sidebar.tsx:258
 msgid "Expand"
 msgstr "توسيع"
 
@@ -4146,10 +4142,6 @@ msgstr "قريب الانتهاء"
 #: apps/web/src/desktop/activity/activity-desk.tsx:303
 #~ msgid "Export CSV"
 #~ msgstr "تصدير CSV"
-
-#: apps/web/src/desktop/activity/activity-desk.tsx:344
-#~ msgid "Export loaded rows ({exportCount})"
-#~ msgstr ""
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:74
@@ -4289,27 +4281,27 @@ msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "الملف كبير جدًا ({0} كيلوبايت). الحد الأقصى هو 512 كيلوبايت."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:449
-#: apps/web/src/desktop/market/market-toolbar.tsx:264
+#: apps/web/src/desktop/market/market-toolbar.tsx:232
 #: apps/web/src/desktop/posts/post-facets.tsx:174
 msgid "Filter by tag"
 msgstr "التصفية حسب الوسم"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:253
+#: apps/web/src/desktop/market/market-toolbar.tsx:221
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:99
 msgid "Filter catalogs"
 msgstr "تصفية الكتالوجات"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:255
+#: apps/web/src/desktop/market/market-toolbar.tsx:223
 #: apps/web/src/features/home/ui/marketplace-page.tsx:132
 msgid "Filter marketplace"
 msgstr "تصفية السوق"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:245
+#: apps/web/src/desktop/market/market-toolbar.tsx:213
 #: apps/web/src/features/home/ui/offers-page.tsx:123
 msgid "Filter offers"
 msgstr "تصفية العروض"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:251
+#: apps/web/src/desktop/market/market-toolbar.tsx:219
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:25
 msgid "Filter pools"
 msgstr "تصفية الصناديق"
@@ -4319,12 +4311,12 @@ msgstr "تصفية الصناديق"
 msgid "Filter posts"
 msgstr "تصفية المنشورات"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:249
+#: apps/web/src/desktop/market/market-toolbar.tsx:217
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:113
 msgid "Filter vouchers"
 msgstr "تصفية القسائم"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:247
+#: apps/web/src/desktop/market/market-toolbar.tsx:215
 #: apps/web/src/features/wants/ui/wants-page.tsx:87
 msgid "Filter Wants"
 msgstr "تصفية الطلبات"
@@ -4335,7 +4327,7 @@ msgstr "تصفية الطلبات"
 #: apps/web/src/components/catalog-filter-controls.tsx:206
 #: apps/web/src/components/catalog-filter-controls.tsx:207
 #: apps/web/src/components/catalog-filter-controls.tsx:214
-#: apps/web/src/desktop/market/market-toolbar.tsx:227
+#: apps/web/src/desktop/market/market-toolbar.tsx:195
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:955
 #: apps/web/src/desktop/posts/posts-desk.tsx:135
 msgid "Filters"
@@ -4349,7 +4341,7 @@ msgstr "عوامل التصفية"
 #~ msgid "Finding a name…"
 #~ msgstr "جارٍ البحث عن اسم…"
 
-#: apps/web/src/features/home/hooks/use-market-screen.tsx:250
+#: apps/web/src/features/home/hooks/use-market-screen.tsx:252
 msgid "Finding location"
 msgstr "جارٍ تحديد الموقع"
 
@@ -4423,16 +4415,16 @@ msgstr "التجمعات"
 msgid "Get"
 msgstr "احصل عليها"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:374
+#: apps/web/src/desktop/market/market-toolbar.tsx:342
 msgid "Get {symbol}"
 msgstr "احصل على {symbol}"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:385
+#: apps/web/src/desktop/market/market-toolbar.tsx:353
 msgid "Get <0>{symbol}</0>"
 msgstr "احصل على <0>{symbol}</0>"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:374
-#: apps/web/src/desktop/market/market-toolbar.tsx:389
+#: apps/web/src/desktop/market/market-toolbar.tsx:342
+#: apps/web/src/desktop/market/market-toolbar.tsx:357
 msgid "Get voucher"
 msgstr "احصل على قسيمة"
 
@@ -4571,10 +4563,6 @@ msgstr "بناء المنازل"
 msgid "Housekeeping"
 msgstr "التدبير المنزلي"
 
-#: apps/web/src/desktop/onboarding/onboarding-desk.tsx:64
-#~ msgid "How CLC works"
-#~ msgstr ""
-
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:451
 #~ msgid "How many vouchers to create once this voucher is published"
 #~ msgstr "عدد القسائم التي ستُصدر عند نشر هذه القسيمة"
@@ -4588,7 +4576,7 @@ msgstr "ما المبلغ بوحدة {unitSymbol} الذي يمكن مبادلت
 "قسائم {0}؟"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:489
-#: apps/web/src/desktop/market/market-toolbar.tsx:308
+#: apps/web/src/desktop/market/market-toolbar.tsx:276
 msgid "How should categories match?"
 msgstr "كيف يجب أن تتطابق الفئات؟"
 
@@ -4888,8 +4876,8 @@ msgid "Latitude must be between -90 and 90"
 msgstr "يجب أن يكون خط العرض بين -90 و90"
 
 #: apps/web/src/desktop/market/market-layers.tsx:50
-msgid "Layers"
-msgstr "الطبقات"
+#~ msgid "Layers"
+#~ msgstr "الطبقات"
 
 #: apps/web/src/desktop/wants/want-form-desk.tsx:231
 #: apps/web/src/features/wants/ui/want-form-page.tsx:171
@@ -5091,7 +5079,7 @@ msgstr "الروابط"
 msgid "Liquidity"
 msgstr "السيولة"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:107
+#: apps/web/src/desktop/market/market-toolbar.tsx:96
 msgid "List"
 msgstr "قائمة"
 
@@ -5113,6 +5101,7 @@ msgstr "تحميل الرسائل السابقة"
 #: apps/web/src/desktop/activity/transactions-desk.tsx:557
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:267
 #: apps/web/src/desktop/market/market-list-states.tsx:100
+#: apps/web/src/desktop/market/market-map-desk.tsx:238
 #: apps/web/src/desktop/market/market-search-field.tsx:450
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:95
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:79
@@ -5210,8 +5199,8 @@ msgid "Loading location map"
 msgstr "جارٍ تحميل خريطة الموقع"
 
 #: apps/web/src/desktop/market/market-list-desk.tsx:291
-#: apps/web/src/desktop/market/market-map-desk.tsx:121
-#: apps/web/src/desktop/market/market-map-desk.tsx:134
+#: apps/web/src/desktop/market/market-map-desk.tsx:159
+#: apps/web/src/desktop/market/market-map-desk.tsx:174
 #: apps/web/src/features/home/ui/market-list-page.tsx:201
 #: apps/web/src/features/home/ui/market-page.tsx:169
 #: apps/web/src/features/home/ui/marketplace-page.tsx:175
@@ -5417,7 +5406,6 @@ msgstr "الأموال المحلية وM-Pesa"
 
 #: apps/web/src/components/ui/location-picker.tsx:68
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:302
-#: apps/web/src/desktop/market/market-list-desk.tsx:474
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:121
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:240
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:594
@@ -5446,7 +5434,7 @@ msgstr "الموقع"
 msgid "Location and tags"
 msgstr "الموقع والوسوم"
 
-#: apps/web/src/features/home/hooks/use-market-screen.tsx:252
+#: apps/web/src/features/home/hooks/use-market-screen.tsx:254
 msgid "Location denied"
 msgstr "رُفض إذن الموقع"
 
@@ -5514,7 +5502,7 @@ msgstr "إدارة القسيمة"
 
 #: apps/web/src/components/market-bar.tsx:355
 #: apps/web/src/components/navigation/bottom-navigation.tsx:62
-#: apps/web/src/desktop/market/market-toolbar.tsx:102
+#: apps/web/src/desktop/market/market-toolbar.tsx:91
 msgid "Map"
 msgstr "الخريطة"
 
@@ -5540,12 +5528,11 @@ msgstr "دبوس الخريطة"
 #~ msgstr "لون العلامة"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:62
-#: apps/web/src/desktop/market/market-list-desk.tsx:160
-#: apps/web/src/desktop/market/market-list-desk.tsx:341
-#: apps/web/src/desktop/market/market-map-desk.tsx:186
+#: apps/web/src/desktop/market/market-list-desk.tsx:158
+#: apps/web/src/desktop/market/market-map-desk.tsx:252
 #: apps/web/src/desktop/onboarding/onboarding-desk.tsx:115
 #: apps/web/src/desktop/shell/crumbs.tsx:12
-#: apps/web/src/desktop/shell/sidebar.tsx:132
+#: apps/web/src/desktop/shell/sidebar.tsx:95
 #: apps/web/src/features/home/ui/market-page.tsx:60
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:68
@@ -5553,21 +5540,18 @@ msgstr "دبوس الخريطة"
 msgid "Market"
 msgstr "السوق"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:114
 #: apps/web/src/desktop/shell/command-palette.tsx:224
-#: apps/web/src/desktop/shell/sidebar.tsx:212
-#: apps/web/src/desktop/shell/sidebar.tsx:228
 #: apps/web/src/features/home/ui/marketplace-page.tsx:102
 msgid "Marketplace"
 msgstr "السوق"
 
-#: apps/web/src/desktop/market/market-list-desk.tsx:155
+#: apps/web/src/desktop/market/market-list-desk.tsx:153
 msgid "Marketplace details"
 msgstr "تفاصيل السوق"
 
 #: apps/web/src/desktop/shell/sidebar.tsx:212
-msgid "Marketplace lists"
-msgstr "قوائم السوق"
+#~ msgid "Marketplace lists"
+#~ msgstr "قوائم السوق"
 
 #: apps/web/src/components/market-bar.tsx:274
 msgid "Marketplace sections"
@@ -5578,7 +5562,7 @@ msgstr "أقسام السوق"
 #~ msgstr "قسائم السوق"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:491
-#: apps/web/src/desktop/market/market-toolbar.tsx:310
+#: apps/web/src/desktop/market/market-toolbar.tsx:278
 #: apps/web/src/desktop/posts/post-facets.tsx:198
 msgid "Match"
 msgstr "تطابق"
@@ -5882,7 +5866,6 @@ msgstr "طلباتي"
 #: apps/web/src/desktop/account/profile-desk.tsx:147
 #: apps/web/src/desktop/account/profile-desk.tsx:158
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:50
-#: apps/web/src/desktop/market/market-list-desk.tsx:454
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:325
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:90
 #: apps/web/src/desktop/vouchers/create/details-step.tsx:62
@@ -6072,7 +6055,7 @@ msgid "No"
 msgstr "لا"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:236
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:235
 msgid "No {0} fees have accrued yet."
 msgstr "لم تتراكم أي رسوم {0} بعد."
 
@@ -6122,12 +6105,12 @@ msgid "No catalogs found."
 msgstr "لم يتم العثور على كتالوجات."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:471
-#: apps/web/src/desktop/market/market-toolbar.tsx:294
+#: apps/web/src/desktop/market/market-toolbar.tsx:262
 msgid "No categories are available for the current results."
 msgstr "لا توجد فئات متاحة للنتائج الحالية."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:443
-#: apps/web/src/desktop/market/market-toolbar.tsx:270
+#: apps/web/src/desktop/market/market-toolbar.tsx:238
 #: apps/web/src/desktop/posts/post-facets.tsx:171
 msgid "No category filters are available."
 msgstr "لا تتوفر عوامل تصفية للفئات."
@@ -6223,19 +6206,18 @@ msgstr "لم يُذكر موقع"
 
 #: apps/web/src/desktop/market/market-list-desk.tsx:304
 #: apps/web/src/desktop/market/market-notices.tsx:286
-#: apps/web/src/features/home/hooks/use-market-screen.tsx:427
+#: apps/web/src/features/home/hooks/use-market-screen.tsx:430
 #: apps/web/src/features/home/ui/marketplace-page.tsx:172
 msgid "No marketplace results are available through your Credit pools."
 msgstr "لا تتوفر نتائج في السوق عبر مجمعات الائتمان الخاصة بك."
 
 #: apps/web/src/desktop/market/market-list-desk.tsx:317
-#: apps/web/src/desktop/market/market-list-desk.tsx:347
 #: apps/web/src/features/home/ui/marketplace-page.tsx:219
 msgid "No marketplace results found."
 msgstr "لم يتم العثور على نتائج في السوق."
 
 #: apps/web/src/desktop/market/market-notices.tsx:271
-#: apps/web/src/features/home/hooks/use-market-screen.tsx:451
+#: apps/web/src/features/home/hooks/use-market-screen.tsx:454
 msgid "No marketplace results match this search."
 msgstr "لا توجد نتائج في السوق تطابق هذا البحث."
 
@@ -6570,13 +6552,8 @@ msgstr "لم يتغير شيء."
 msgid "Nothing has moved through this pool yet."
 msgstr "لم تحدث أي حركة عبر هذا الصندوق بعد."
 
-#. placeholder {0}: draft.searchTerm
-#: apps/web/src/desktop/market/market-toolbar.tsx:290
-#~ msgid "Nothing matching “{0}” carries a category."
-#~ msgstr ""
-
 #: apps/web/src/components/catalog-filter-controls.tsx:469
-#: apps/web/src/desktop/market/market-toolbar.tsx:292
+#: apps/web/src/desktop/market/market-toolbar.tsx:260
 msgid "Nothing matching “{searchTerm}” carries a category."
 msgstr "لا يحمل أي عنصر يطابق «{searchTerm}» فئة."
 
@@ -6651,7 +6628,7 @@ msgstr "متوقفة"
 
 #: apps/web/src/desktop/market/market-bits.tsx:80
 #: apps/web/src/desktop/shell/command-palette.tsx:79
-#: apps/web/src/features/home/ui/marketplace-page.tsx:409
+#: apps/web/src/features/home/ui/marketplace-page.tsx:430
 msgid "Offer"
 msgstr "عرض"
 
@@ -6681,9 +6658,8 @@ msgstr "العروض"
 
 #: apps/web/src/components/market-bar.tsx:265
 #: apps/web/src/components/resource-usage.tsx:117
-#: apps/web/src/desktop/market/market-toolbar.tsx:32
 #: apps/web/src/desktop/shell/crumbs.tsx:22
-#: apps/web/src/desktop/shell/sidebar.tsx:31
+#: apps/web/src/desktop/shell/sidebar.tsx:178
 #: apps/web/src/features/home/ui/offers-page.tsx:93
 msgid "Offers"
 msgstr "العروض"
@@ -7254,7 +7230,6 @@ msgstr "مشتل النباتات"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:204
 #: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/market/market-bits.tsx:72
-#: apps/web/src/desktop/market/market-list-desk.tsx:446
 #: apps/web/src/desktop/market/market-search-field.tsx:428
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:308
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:159
@@ -7264,7 +7239,7 @@ msgstr "مشتل النباتات"
 #: apps/web/src/desktop/shell/command-palette.tsx:85
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
 #: apps/web/src/features/home/ui/activity-page.tsx:282
-#: apps/web/src/features/home/ui/marketplace-page.tsx:412
+#: apps/web/src/features/home/ui/marketplace-page.tsx:433
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:11
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
@@ -7362,7 +7337,7 @@ msgstr "رسوم الصندوق"
 msgid "Pool fee recipient: {0}"
 msgstr "مستلم رسوم الصندوق: {0}"
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:342
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:341
 msgid "Pool fee updated."
 msgstr "تم تحديث رسوم الصندوق."
 
@@ -7479,13 +7454,12 @@ msgstr "تفاصيل تتبّع الصندوق مفقودة."
 #: apps/web/src/components/resource-usage.tsx:118
 #: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:164
-#: apps/web/src/desktop/market/market-layers.tsx:37
+#: apps/web/src/desktop/market/market-layers.tsx:36
 #: apps/web/src/desktop/market/market-search-field.tsx:349
-#: apps/web/src/desktop/market/market-toolbar.tsx:35
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:75
 #: apps/web/src/desktop/posts/post-facets.tsx:206
 #: apps/web/src/desktop/shell/crumbs.tsx:28
-#: apps/web/src/desktop/shell/sidebar.tsx:34
+#: apps/web/src/desktop/shell/sidebar.tsx:184
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:220
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:29
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:166
@@ -7517,6 +7491,7 @@ msgstr "اضبط موضع صورتك"
 #: apps/web/src/desktop/market/market-bits.tsx:78
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:167
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:249
+#: apps/web/src/features/home/ui/marketplace-page.tsx:434
 msgid "Post"
 msgstr "منشور"
 
@@ -7558,12 +7533,12 @@ msgstr "نُشر خلال"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:68
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:151
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:358
-#: apps/web/src/desktop/market/market-layers.tsx:39
+#: apps/web/src/desktop/market/market-layers.tsx:38
 #: apps/web/src/desktop/market/place-panel.tsx:60
 #: apps/web/src/desktop/posts/posts-desk.tsx:105
 #: apps/web/src/desktop/posts/posts-desk.tsx:225
 #: apps/web/src/desktop/shell/crumbs.tsx:18
-#: apps/web/src/desktop/shell/sidebar.tsx:139
+#: apps/web/src/desktop/shell/sidebar.tsx:102
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:184
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/features/home/ui/posts-page.tsx:78
@@ -7725,7 +7700,7 @@ msgstr "يجب أن يكون السعر أكبر من صفر"
 #: apps/web/src/components/offerings/offering-order-picker.tsx:195
 #: apps/web/src/components/offerings/offerings-panel.tsx:340
 #: apps/web/src/components/offerings/offerings-panel.tsx:523
-#: apps/web/src/desktop/market/market-list-desk.tsx:659
+#: apps/web/src/desktop/market/market-list-desk.tsx:615
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:274
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:296
 #: apps/web/src/features/wallet/hooks/use-send-share-form.ts:92
@@ -7739,7 +7714,7 @@ msgstr "سعر الوحدة بعملة {priceCurrency}"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:338
 #: apps/web/src/components/offerings/offerings-panel.tsx:521
-#: apps/web/src/desktop/market/market-list-desk.tsx:659
+#: apps/web/src/desktop/market/market-list-desk.tsx:615
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:294
 msgid "Price unavailable"
 msgstr "السعر غير متاح"
@@ -7767,7 +7742,7 @@ msgid "Pricing"
 msgstr "التسعير"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:40
-#: apps/web/src/desktop/shell/sidebar.tsx:199
+#: apps/web/src/desktop/shell/sidebar.tsx:162
 msgid "Primary navigation"
 msgstr "التنقل الرئيسي"
 
@@ -8268,7 +8243,7 @@ msgstr "إزالة {0}"
 msgid "Remove {tag}"
 msgstr "إزالة {tag}"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:379
+#: apps/web/src/desktop/market/market-toolbar.tsx:347
 msgid "Remove filter: {label}"
 msgstr "إزالة عامل التصفية: {label}"
 
@@ -8435,20 +8410,24 @@ msgid "Required"
 msgstr "مطلوب"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:522
-#: apps/web/src/desktop/market/market-layers.tsx:100
-#: apps/web/src/desktop/market/market-toolbar.tsx:330
+#: apps/web/src/desktop/market/market-layers.tsx:103
+#: apps/web/src/desktop/market/market-toolbar.tsx:298
 #: apps/web/src/desktop/posts/post-facets.tsx:254
 msgid "Reset"
 msgstr "إعادة ضبط"
 
 #: apps/web/src/desktop/market/market-notices.tsx:251
-msgid "Reset layers"
-msgstr "إعادة ضبط الطبقات"
+#~ msgid "Reset layers"
+#~ msgstr "إعادة ضبط الطبقات"
 
 #: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:93
 #: apps/web/src/desktop/onboarding/paper-wallet-desk.tsx:149
 msgid "Reset logo"
 msgstr "إعادة ضبط الشعار"
+
+#: apps/web/src/desktop/market/market-notices.tsx:251
+msgid "Reset resources"
+msgstr "إعادة ضبط الموارد"
 
 #: apps/web/src/desktop/messaging/thread-desk.tsx:63
 msgid "Resolved"
@@ -8458,6 +8437,15 @@ msgstr "تم الحل"
 #~ msgid "Resolving recipient…"
 #~ msgstr "جارٍ تحديد المستلم…"
 
+#: apps/web/src/desktop/market/market-layers.tsx:49
+msgid "Resources"
+msgstr "الموارد"
+
+#: apps/web/src/desktop/market/market-layers.tsx:64
+#: apps/web/src/desktop/market/market-layers.tsx:75
+msgid "Resources on the map"
+msgstr "الموارد على الخريطة"
+
 #: apps/web/src/components/market-bar.tsx:201
 msgid "Resources shown on the map"
 msgstr "الموارد المعروضة على الخريطة"
@@ -8466,7 +8454,7 @@ msgstr "الموارد المعروضة على الخريطة"
 msgid "Results"
 msgstr "النتائج"
 
-#: apps/web/src/desktop/market/market-map-desk.tsx:130
+#: apps/web/src/desktop/market/market-map-desk.tsx:170
 msgid "Results unavailable"
 msgstr "النتائج غير متاحة"
 
@@ -8563,6 +8551,8 @@ msgstr "الخلوة"
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:226
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:274
 #: apps/web/src/desktop/market/market-list-states.tsx:91
+#: apps/web/src/desktop/market/market-map-desk.tsx:205
+#: apps/web/src/desktop/market/market-map-desk.tsx:238
 #: apps/web/src/desktop/market/market-notices.tsx:120
 #: apps/web/src/desktop/market/market-notices.tsx:175
 #: apps/web/src/desktop/market/place-panel.tsx:139
@@ -8900,7 +8890,7 @@ msgstr "البحث بالاسم أو الرمز"
 msgid "Search by voucher name, symbol, address or transaction hash."
 msgstr "ابحث باسم القسيمة أو رمزها أو العنوان أو بصمة المعاملة."
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:189
+#: apps/web/src/desktop/market/market-toolbar.tsx:157
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:75
 msgid "Search catalogs"
 msgstr "البحث في الكتالوجات"
@@ -8929,7 +8919,7 @@ msgstr "فشل البحث"
 msgid "Search for a town or place"
 msgstr "البحث عن بلدة أو مكان"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:181
+#: apps/web/src/desktop/market/market-toolbar.tsx:149
 msgid "Search offers"
 msgstr "البحث في العروض"
 
@@ -8960,7 +8950,7 @@ msgid "Search pool tags"
 msgstr "البحث في وسوم الصناديق"
 
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:163
-#: apps/web/src/desktop/market/market-toolbar.tsx:187
+#: apps/web/src/desktop/market/market-toolbar.tsx:155
 #: apps/web/src/desktop/posts/post-facets.tsx:237
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:185
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:208
@@ -9003,7 +8993,7 @@ msgstr "اقتراحات البحث"
 msgid "Search tags"
 msgstr "البحث في الوسوم"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:190
+#: apps/web/src/desktop/market/market-toolbar.tsx:158
 #: apps/web/src/desktop/shell/command-palette.tsx:280
 #: apps/web/src/desktop/shell/command-palette.tsx:298
 #: apps/web/src/desktop/shell/command-palette.tsx:299
@@ -9040,7 +9030,7 @@ msgstr "البحث في وسوم القسائم"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:309
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:163
-#: apps/web/src/desktop/market/market-toolbar.tsx:185
+#: apps/web/src/desktop/market/market-toolbar.tsx:153
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:557
 #: apps/web/src/desktop/posts/post-facets.tsx:146
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:185
@@ -9054,7 +9044,7 @@ msgstr "البحث في القسائم"
 msgid "Search vouchers, pools, people"
 msgstr "ابحث عن القسائم والصناديق والأشخاص"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:183
+#: apps/web/src/desktop/market/market-toolbar.tsx:151
 #: apps/web/src/features/wants/ui/wants-page.tsx:63
 msgid "Search Wants"
 msgstr "البحث في الطلبات"
@@ -9088,7 +9078,7 @@ msgstr "جارٍ البحث في المجمعات…"
 msgid "Searching recipients…"
 msgstr "جارٍ البحث عن المستلمين…"
 
-#: apps/web/src/desktop/market/market-map-desk.tsx:219
+#: apps/web/src/desktop/market/market-map-desk.tsx:285
 msgid "Searching this area"
 msgstr "جارٍ البحث في هذه المنطقة"
 
@@ -9341,7 +9331,7 @@ msgstr "جارٍ إعداد محفظتك…"
 #: apps/web/src/desktop/account/settings-desk.tsx:68
 #: apps/web/src/desktop/shell/command-palette.tsx:145
 #: apps/web/src/desktop/shell/crumbs.tsx:20
-#: apps/web/src/desktop/shell/sidebar.tsx:140
+#: apps/web/src/desktop/shell/sidebar.tsx:103
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:29
 #: apps/web/src/features/home/ui/settings-page.tsx:54
 #: apps/web/src/features/install/ui/install-page.tsx:64
@@ -9420,7 +9410,7 @@ msgid "Show {stars}-star reviews"
 msgstr "عرض المراجعات بتقييم {stars} نجوم"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:208
-#: apps/web/src/desktop/market/market-layers.tsx:97
+#: apps/web/src/desktop/market/market-layers.tsx:100
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:196
 msgid "Show all"
 msgstr "عرض الكل"
@@ -9438,8 +9428,8 @@ msgid "Show more tabs"
 msgstr "إظهار المزيد من علامات التبويب"
 
 #: apps/web/src/desktop/market/market-layers.tsx:65
-msgid "Show on map"
-msgstr "عرض على الخريطة"
+#~ msgid "Show on map"
+#~ msgstr "عرض على الخريطة"
 
 #: apps/web/src/components/ui/password-input.tsx:23
 msgid "Show password"
@@ -9453,6 +9443,12 @@ msgstr "إظهار المفتاح الخاص"
 #: apps/web/src/desktop/shell/shortcut-help.tsx:140
 msgid "Show these shortcuts"
 msgstr "عرض هذه الاختصارات"
+
+#. placeholder {0}: viewportList.rows.length
+#. placeholder {1}: viewportList.total
+#: apps/web/src/desktop/market/market-map-desk.tsx:166
+msgid "Showing {0} of {1} in this area"
+msgstr "عرض {0} من أصل {1} في هذه المنطقة"
 
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:173
 #~ msgid "Showing catalogs <0>globally</0>."
@@ -9695,6 +9691,11 @@ msgstr "تعذّر التحقق من بعض الصناديق. تُعرض الن�
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:218
 #~ msgid "Some vouchers couldn't load."
 #~ msgstr "تعذّر تحميل بعض القسائم."
+
+#: apps/web/src/desktop/market/market-list-desk.tsx:176
+#: apps/web/src/desktop/market/market-map-desk.tsx:179
+msgid "Sorted nearest to the map view"
+msgstr "مرتبة حسب الأقرب إلى عرض الخريطة"
 
 #. placeholder {0}: ordered.length
 #: apps/web/src/desktop/ui/data-table.tsx:184
@@ -9991,7 +9992,6 @@ msgstr "هل تريد تبديل المحفظة؟"
 msgid "Switching to your passkey…"
 msgstr "جارٍ التبديل إلى مفتاح مرورك…"
 
-#: apps/web/src/desktop/market/market-list-desk.tsx:537
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:309
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:199
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:164
@@ -10015,8 +10015,7 @@ msgstr "الرمز مستخدم بالفعل، سيُستخدم {0} بدلاً �
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:224
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:100
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:101
-#: apps/web/src/desktop/market/market-list-desk.tsx:490
-#: apps/web/src/desktop/market/market-toolbar.tsx:266
+#: apps/web/src/desktop/market/market-toolbar.tsx:234
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:351
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:81
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:315
@@ -10346,7 +10345,7 @@ msgid "The pool could not be published."
 msgstr "تعذّر نشر الصندوق."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:149
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:148
 msgid "The pool doesn't hold that much {0}."
 msgstr "لا يحتوي الصندوق على هذا المقدار من {0}."
 
@@ -10371,9 +10370,9 @@ msgstr "انتهت مهلة الطلب دون استجابة من خدمة ال�
 msgid "The selected unit does not have a configured price feed."
 msgstr "لا توجد خلاصة أسعار مضبوطة للوحدة المحددة."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:165
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:264
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:345
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:164
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:263
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:344
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:388
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:406
 msgid "The transaction failed."
@@ -10971,7 +10970,6 @@ msgid "Try again"
 msgstr "حاول مرة أخرى"
 
 #: apps/web/src/desktop/activity/transactions-desk.tsx:295
-#: apps/web/src/desktop/market/market-list-desk.tsx:507
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:54
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:50
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:98
@@ -11003,8 +11001,8 @@ msgid "Type at least two characters."
 msgstr "اكتب حرفين على الأقل."
 
 #: apps/web/src/desktop/market/market-layers.tsx:73
-msgid "Types on the map"
-msgstr "الأنواع على الخريطة"
+#~ msgid "Types on the map"
+#~ msgstr "الأنواع على الخريطة"
 
 #: apps/web/src/components/language-selector.tsx:59
 #: apps/web/src/components/language-selector.tsx:134
@@ -11157,7 +11155,7 @@ msgstr "تحديث مراجعتك"
 msgid "Updated"
 msgstr "تم التحديث"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:159
+#: apps/web/src/desktop/market/market-toolbar.tsx:128
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:122
 msgid "Updating…"
 msgstr "جارٍ التحديث…"
@@ -11245,7 +11243,7 @@ msgstr "استخدم صورة JPEG أو PNG أو WebP أقل من 8 MB."
 #~ msgid "Use a phone to collect with an NFC card."
 #~ msgstr "استخدم هاتفًا للتحصيل ببطاقة NFC."
 
-#: apps/web/src/features/home/hooks/use-market-screen.tsx:253
+#: apps/web/src/features/home/hooks/use-market-screen.tsx:255
 msgid "Use current location"
 msgstr "استخدام الموقع الحالي"
 
@@ -11377,7 +11375,7 @@ msgid "Vibration"
 msgstr "اهتزاز"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:455
-#: apps/web/src/desktop/market/market-toolbar.tsx:99
+#: apps/web/src/desktop/market/market-toolbar.tsx:88
 #: apps/web/src/desktop/posts/my-posts-desk.tsx:55
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:111
 msgid "View"
@@ -11456,7 +11454,6 @@ msgstr "قسيمة"
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
 #: apps/web/src/desktop/activity/transactions-desk.tsx:382
 #: apps/web/src/desktop/market/market-bits.tsx:82
-#: apps/web/src/desktop/market/market-list-desk.tsx:448
 #: apps/web/src/desktop/market/place-panel.tsx:204
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:130
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:442
@@ -11469,7 +11466,7 @@ msgstr "قسيمة"
 #: apps/web/src/desktop/wallet/send-desk.tsx:291
 #: apps/web/src/desktop/wallet/send-desk.tsx:421
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:201
-#: apps/web/src/features/home/ui/marketplace-page.tsx:411
+#: apps/web/src/features/home/ui/marketplace-page.tsx:432
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:13
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:135
 #: apps/web/src/features/posts/hooks/use-post-editor.ts:149
@@ -11618,17 +11615,15 @@ msgstr "القسيمة: أي"
 #: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/wants/want-detail.tsx:209
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:164
-#: apps/web/src/desktop/market/market-layers.tsx:35
-#: apps/web/src/desktop/market/market-list-desk.tsx:517
+#: apps/web/src/desktop/market/market-layers.tsx:34
 #: apps/web/src/desktop/market/market-search-field.tsx:348
-#: apps/web/src/desktop/market/market-toolbar.tsx:34
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:326
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:502
 #: apps/web/src/desktop/pools/pool-main.tsx:399
 #: apps/web/src/desktop/pools/pool-main.tsx:434
 #: apps/web/src/desktop/posts/post-facets.tsx:113
 #: apps/web/src/desktop/shell/crumbs.tsx:26
-#: apps/web/src/desktop/shell/sidebar.tsx:33
+#: apps/web/src/desktop/shell/sidebar.tsx:182
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:122
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:262
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:400
@@ -11718,7 +11713,7 @@ msgstr "في انتظار قبول طلبك."
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1063
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1064
 #: apps/web/src/desktop/shell/crumbs.tsx:14
-#: apps/web/src/desktop/shell/sidebar.tsx:133
+#: apps/web/src/desktop/shell/sidebar.tsx:96
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:293
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:21
@@ -11745,10 +11740,6 @@ msgstr "إجراءات المحفظة"
 #~ msgid "Wallet actions are available after you sign up or sign in."
 #~ msgstr "تتاح إجراءات المحفظة بعد إنشاء حساب أو تسجيل الدخول."
 
-#: apps/web/src/desktop/shell/sidebar.tsx:275
-#~ msgid "Wallet sections"
-#~ msgstr "أقسام المحفظة"
-
 #: apps/web/src/desktop/account/settings-desk.tsx:594
 #: apps/web/src/features/home/ui/settings-page.tsx:208
 #: apps/web/src/features/home/ui/settings-page.tsx:212
@@ -11756,13 +11747,12 @@ msgid "Wallet session"
 msgstr "جلسة المحفظة"
 
 #: apps/web/src/desktop/market/market-bits.tsx:74
-#: apps/web/src/desktop/market/market-list-desk.tsx:452
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:291
 #: apps/web/src/desktop/shell/command-palette.tsx:81
 #: apps/web/src/desktop/wants/want-form-desk.tsx:412
 #: apps/web/src/desktop/wants/want-outline.tsx:11
 #: apps/web/src/desktop/wants/want-place-desk.tsx:58
-#: apps/web/src/features/home/ui/marketplace-page.tsx:410
+#: apps/web/src/features/home/ui/marketplace-page.tsx:431
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:159
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:63
 msgid "Want"
@@ -11785,12 +11775,11 @@ msgstr "صورة الطلب"
 #: apps/web/src/components/market-bar.tsx:188
 #: apps/web/src/components/market-bar.tsx:266
 #: apps/web/src/components/resource-usage.tsx:119
-#: apps/web/src/desktop/market/market-layers.tsx:36
-#: apps/web/src/desktop/market/market-toolbar.tsx:33
+#: apps/web/src/desktop/market/market-layers.tsx:35
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:342
 #: apps/web/src/desktop/pools/pool-main.tsx:432
 #: apps/web/src/desktop/shell/crumbs.tsx:24
-#: apps/web/src/desktop/shell/sidebar.tsx:32
+#: apps/web/src/desktop/shell/sidebar.tsx:180
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:65
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:28
 #: apps/web/src/features/wants/ui/wants-page.tsx:57
@@ -11887,7 +11876,7 @@ msgstr "ما هي القسيمة؟"
 msgid "intro.offer.title"
 msgstr "ما هو العرض؟"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:266
+#: apps/web/src/desktop/market/market-toolbar.tsx:234
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:114
 msgid "What they offer"
 msgstr "ما يعرضونه"
@@ -12396,5 +12385,5 @@ msgid "Zoom"
 msgstr "تكبير"
 
 #: apps/web/src/desktop/market/market-map-desk.tsx:158
-msgid "Zoom in to see individual results."
-msgstr "كبّر الخريطة لرؤية النتائج الفردية."
+#~ msgid "Zoom in to see individual results."
+#~ msgstr "كبّر الخريطة لرؤية النتائج الفردية."

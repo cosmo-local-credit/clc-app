@@ -33,6 +33,26 @@ const offering = {
   createdAt: "2026-10-12T10:00:00Z",
   updatedAt: "2026-10-12T10:00:00Z",
 };
+const post = {
+  ...offering,
+  kind: "post",
+  id: "90",
+  chainId: null,
+  address: null,
+  symbol: null,
+  markerIcon: "event",
+  markerColor: "pink",
+  voucherKind: null,
+  voucherAddress: null,
+  voucherName: null,
+  voucherSymbol: null,
+  voucherUoa: null,
+  priceInUnitOfAccount: null,
+  unit: null,
+  relatedKind: "pool",
+  relatedName: "Kilifi Pool",
+  relatedSymbol: "KLP",
+};
 
 function respond(result: unknown) {
   const fetcher = vi
@@ -91,5 +111,27 @@ describe("marketplace HTTP contract", () => {
     expect(url.searchParams.get("cursor")).toBe("opaque+/=");
     expect(url.searchParams.get("tags")).toBe("Repair");
     expect(url.searchParams.has("tagMatch")).toBe(false);
+  });
+
+  it("requests explicit Posts and nearest ordering for an exact viewport", async () => {
+    const fetcher = respond({ results: [post], nextCursor: null, total: 1201 });
+    const page = await api.list({
+      kinds: ["voucher", "post"],
+      sort: "nearest",
+      bounds: [{ minLng: 39.5, minLat: -4.2, maxLng: 39.8, maxLat: -3.9 }],
+    });
+
+    const url = new URL(fetcher.mock.calls[0]?.[0]);
+    expect(url.searchParams.get("kinds")).toBe("voucher,post");
+    expect(url.searchParams.get("sort")).toBe("nearest");
+    expect(url.searchParams.getAll("bbox")).toEqual(["39.5,-4.2,39.8,-3.9"]);
+    expect(fetcher.mock.calls[0]?.[1].credentials).toBe("include");
+    expect(page.total).toBe(1201);
+    expect(page.results[0]).toMatchObject({
+      kind: "post",
+      id: "90",
+      relatedKind: "pool",
+      relatedName: "Kilifi Pool",
+    });
   });
 });

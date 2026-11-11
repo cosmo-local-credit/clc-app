@@ -248,7 +248,7 @@ export function MarketMapNotice({
       <NoticeRow
         action={
           <Button variant="outline" onClick={onResetLayers}>
-            <Trans>Reset layers</Trans>
+            <Trans>Reset resources</Trans>
           </Button>
         }
       >
