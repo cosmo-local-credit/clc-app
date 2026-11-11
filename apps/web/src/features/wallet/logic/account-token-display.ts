@@ -1,7 +1,10 @@
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
+import { offrampTokenSymbol } from "@clc/core/features/wallet/pretium";
 
 import type { AccountToken } from "@clc/api/features/accounts/client";
 import type { WalletToken } from "#/components/wallet/wallet-data";
+import { nativeHoldingValue } from "#/features/wallet/logic/holdings-valuation";
+import { CHAIN_ID } from "#/lib/chain";
 
 export function accountTokenToWalletToken(token: AccountToken): WalletToken {
   return {
@@ -18,6 +21,11 @@ export function accountTokenToWalletToken(token: AccountToken): WalletToken {
     tokenDecimals: token.tokenDecimals,
     balance: token.balance,
     lastDateBlock: token.lastDateBlock,
+    unitValue: nativeHoldingValue(
+      formatTokenAmount(token.balance, token.tokenDecimals, token.tokenDecimals),
+      offrampTokenSymbol(CHAIN_ID, token.tokenAddress) !== null,
+      { value: token.voucherValue ?? null, unit: token.voucherUoa ?? null },
+    ),
   };
 }
 
