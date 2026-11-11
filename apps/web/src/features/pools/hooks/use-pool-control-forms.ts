@@ -1,16 +1,16 @@
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import {
   buildSetPoolFeeCalls,
+  buildWithdrawPoolFeesCalls,
   buildWithdrawPoolLiquidityCalls,
   POOL_FEE_PERCENT_DECIMALS,
 } from "@clc/core/features/pool-admin/logic";
-import { buildCollectPoolFeesCalls } from "@clc/core/features/pool-swaps/logic";
 import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { useLingui } from "@lingui/react/macro";
 import { useIsMutating } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { isAddress, zeroAddress } from "viem";
+import { getAddress, isAddress, zeroAddress } from "viem";
 import { useConnection } from "wagmi";
 
 import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
@@ -50,11 +50,37 @@ export function usePoolControls(
 }
 
 /**
- * Sends pool liquidity to the owner's own wallet.
- *
- * Recipient is not a field: `withdrawLiquidity` is the emergency exit, the
- * caller is already the only address allowed to make it, and offering a
- * free-text destination turns a typo into an irrecoverable transfer.
+ * Where a withdrawal is paid: the address the steward chose, starting from the
+ * signed-in wallet. That holds for a Safe-owned pool too, where the signer
+ * proposing the withdrawal is the one taking it unless they name the Safe or
+ * someone else. Null until the text is a payable address: not zero, and not
+ * the pool, which would only pay itself.
+ */
+function usePayoutRecipient(poolAddress: `0x${string}`) {
+  const { address } = useConnection();
+  const [recipient, setRecipient] = useState<string>(address ?? "");
+  const trimmed = recipient.trim();
+  const parsed = isAddress(trimmed) && trimmed !== zeroAddress ? getAddress(trimmed) : null;
+  const isPool = parsed !== null && parsed === getAddress(poolAddress);
+  return {
+    recipient,
+    setRecipient,
+    payable: isPool ? null : parsed,
+    problem: !trimmed
+      ? null
+      : parsed === null
+        ? ("invalid" as const)
+        : isPool
+          ? ("pool" as const)
+          : null,
+  };
+}
+
+export type PayoutRecipient = ReturnType<typeof usePayoutRecipient>;
+
+/**
+ * Sends pool liquidity to the recipient the steward chose; see
+ * `usePayoutRecipient`. `withdrawLiquidity` takes the destination directly.
  */
 export function usePoolWithdrawLiquidityForm({
   pool,
@@ -68,12 +94,11 @@ export function usePoolWithdrawLiquidityForm({
   onDone: () => void;
 }) {
   const { t } = useLingui();
-  const { address } = useConnection();
   const relay = usePoolAdminRelay(pool);
   // Any batch for this pool, including one the other view started before a
   // phone/desktop swap: a second press would relay beside it.
   const inFlight = useIsMutating({ mutationKey: poolAdminRelayMutationKey(pool.address) }) > 0;
-  const owner = useAssetOwnerInfo(pool.address, pool.ownerAddress);
+  const payout = usePayoutRecipient(pool.address);
   const [tokenAddress, setTokenAddress] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
 
@@ -86,7 +111,7 @@ export function usePoolWithdrawLiquidityForm({
       : null;
 
   const submit = async () => {
-    if (inFlight || !selected || decimals === null || !address) return;
+    if (inFlight || !selected || decimals === null || !payout.payable) return;
     let amountRaw: string;
     try {
       amountRaw = parseTokenAmount(amount.trim(), decimals);
@@ -108,8 +133,7 @@ export function usePoolWithdrawLiquidityForm({
         buildWithdrawPoolLiquidityCalls({
           poolAddress: pool.address,
           tokenAddress: selected.tokenAddress,
-          // A Safe-owned pool pays its owner, the Safe; otherwise the connected owner.
-          recipientAddress: owner.info?.kind === "safe" ? owner.info.owner : address,
+          recipientAddress: payout.payable,
           amountRaw,
         }),
       );
@@ -131,7 +155,8 @@ export function usePoolWithdrawLiquidityForm({
     setAmount,
     selected,
     withdrawable,
-    canSubmit: !!selected && !!amount.trim(),
+    payout,
+    canSubmit: !!selected && !!amount.trim() && payout.payable !== null,
     submit,
     amountFor: (voucher: PoolVoucher) => {
       const entry = treasury?.get(voucher.tokenAddress.toLowerCase());
@@ -142,43 +167,54 @@ export function usePoolWithdrawLiquidityForm({
 }
 
 /**
- * Pays out everything accrued in one voucher. `withdraw(token)` sends the whole
- * balance to the pool's own `feeAddress`, never to the caller, so the
- * destination is shown rather than chosen.
+ * Pays out everything accrued in one voucher to the recipient the steward chose;
+ * see `usePayoutRecipient`. `withdraw(token)` only pays the pool's own
+ * `feeAddress`, so another recipient is reached through
+ * `buildWithdrawPoolFeesCalls`, which needs the current fee address to restore.
+ * A sealed fee address cannot be moved, so the recipient is pinned to it.
  */
 export function usePoolCollectFeesForm({
   pool,
   vouchers,
   treasury,
+  settings,
   onDone,
 }: {
   pool: UserPool;
   vouchers: PoolVoucher[];
   treasury: Map<string, { feesRaw: string }> | undefined;
+  /** Read from the pool, not the catalog — see `usePoolFeeSettings`. */
+  settings: PoolFeeSettings | undefined;
   onDone: () => void;
 }) {
   const { t } = useLingui();
   const relay = usePoolAdminRelay(pool);
   const inFlight = useIsMutating({ mutationKey: poolAdminRelayMutationKey(pool.address) }) > 0;
+  const payout = usePayoutRecipient(pool.address);
   const [tokenAddress, setTokenAddress] = useState<string | null>(null);
 
   const selected = vouchers.find((voucher) => voucher.tokenAddress.toLowerCase() === tokenAddress);
   const accruedRaw = tokenAddress ? treasury?.get(tokenAddress)?.feesRaw : undefined;
+  const locked = settings?.feeAddressSealed === true;
+  const recipient = locked ? settings.feeAddress : payout.payable;
+  const canSubmit = !!selected && !!settings && !!recipient;
 
   const submit = async () => {
-    if (inFlight || !selected) return;
+    if (inFlight || !selected || !settings || !recipient) return;
     if (accruedRaw !== undefined && BigInt(accruedRaw) === 0n) {
       toast.error(t`No ${selected.symbol} fees have accrued yet.`);
       return;
     }
     try {
       await relay.mutateAsync(
-        buildCollectPoolFeesCalls({
+        buildWithdrawPoolFeesCalls({
           poolAddress: pool.address,
-          tokenOut: selected.tokenAddress,
+          tokenAddress: selected.tokenAddress,
+          recipientAddress: recipient,
+          currentFeeAddress: settings.feeAddress,
         }),
       );
-      toast.success(t`${selected.symbol} fees sent to the fee recipient.`);
+      toast.success(t`${selected.symbol} fees collected.`);
       onDone();
     } catch (error) {
       if (relay.reportError(error, t`The transaction failed.`)) onDone();
@@ -190,6 +226,10 @@ export function usePoolCollectFeesForm({
     tokenAddress,
     selectToken: setTokenAddress,
     selected,
+    /** The fee address is sealed: fees can only go to the current recipient. */
+    locked,
+    payout,
+    canSubmit,
     submit,
     amountFor: (voucher: PoolVoucher) => {
       const entry = treasury?.get(voucher.tokenAddress.toLowerCase());

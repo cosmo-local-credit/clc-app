@@ -27,6 +27,7 @@ import { copyValue, FullValue } from "#/desktop/ui/full-value";
 import { PoolSidePanel, type PoolSide } from "#/desktop/pools/detail/pool-side-panel";
 import { DeskKV } from "#/desktop/ui/kv";
 import {
+  type PayoutRecipient,
   usePoolCollectFeesForm,
   usePoolControls,
   usePoolFeeSettingsForm,
@@ -273,7 +274,7 @@ export function PoolControlSide({
           pool={pool}
           vouchers={withdrawalVouchers}
           treasury={treasury.data}
-          feeAddress={fee?.feeAddress ?? null}
+          settings={fee}
           inventory={inventory}
           onClose={onClose}
         />
@@ -356,6 +357,37 @@ function TokenChoice({
   );
 }
 
+/** Where a withdrawal is paid, starting from the signed-in wallet; see `usePayoutRecipient`. */
+function PayoutRecipientField({ id, payout }: { id: string; payout: PayoutRecipient }) {
+  const { t } = useLingui();
+  return (
+    <Field
+      label={t`Recipient`}
+      htmlFor={id}
+      error={
+        payout.problem === "invalid"
+          ? t`Enter a valid wallet address`
+          : payout.problem === "pool"
+            ? t`The pool can't pay itself.`
+            : null
+      }
+    >
+      <RecipientAddressInput
+        id={id}
+        defaultValue={payout.recipient}
+        onValueChange={payout.setRecipient}
+        onRecipientChange={(next) => {
+          if (next) payout.setRecipient(next.address);
+        }}
+        ariaLabel={t`Recipient`}
+        className="min-w-0"
+        ariaInvalid={payout.problem !== null}
+      />
+      <RecipientOwnerNotice address={payout.payable ?? ""} />
+    </Field>
+  );
+}
+
 function WithdrawLiquiditySide({
   pool,
   vouchers,
@@ -421,6 +453,7 @@ function WithdrawLiquiditySide({
           </div>
         </Field>
       ) : null}
+      <PayoutRecipientField id="desk-pool-withdraw-recipient" payout={form.payout} />
     </PoolSidePanel>
   );
 }
@@ -429,26 +462,27 @@ function CollectFeesSide({
   pool,
   vouchers,
   treasury,
-  feeAddress,
+  settings,
   inventory,
   onClose,
 }: {
   pool: UserPool;
   vouchers: PoolVoucher[];
   treasury: Map<string, { feesRaw: string }> | undefined;
-  feeAddress: `0x${string}` | null;
+  settings: PoolFeeSettings | undefined;
   inventory: ReactNode;
   onClose: () => void;
 }) {
   const { t } = useLingui();
-  const form = usePoolCollectFeesForm({ pool, vouchers, treasury, onDone: onClose });
+  const form = usePoolCollectFeesForm({ pool, vouchers, treasury, settings, onDone: onClose });
+  const feeAddress = settings?.feeAddress ?? null;
   return (
     <PoolSidePanel
       title={<Trans>Withdraw fees</Trans>}
       onClose={onClose}
       onSubmit={() => void form.submit()}
       footer={
-        <Button type="submit" disabled={!form.selected || !feeAddress} pending={form.inFlight}>
+        <Button type="submit" disabled={!form.canSubmit} pending={form.inFlight}>
           {form.inFlight ? <Trans>Waiting for the chain…</Trans> : <Trans>Collect fees</Trans>}
         </Button>
       }
@@ -458,7 +492,11 @@ function CollectFeesSide({
           labelWidth="130px"
           rows={[
             [
-              <Trans key="label">Fee recipient</Trans>,
+              form.locked ? (
+                <Trans key="label">Recipient</Trans>
+              ) : (
+                <Trans key="label">Fee recipient</Trans>
+              ),
               <FullValue
                 key="value"
                 value={feeAddress}
@@ -470,11 +508,7 @@ function CollectFeesSide({
             ],
           ]}
         />
-      ) : (
-        <p role="alert" className="text-sm text-destructive">
-          <Trans>Set a fee recipient before collecting, or the pool has nowhere to pay.</Trans>
-        </p>
-      )}
+      ) : null}
       {inventory}
       <TokenChoice
         vouchers={vouchers}
@@ -482,6 +516,13 @@ function CollectFeesSide({
         onSelect={form.selectToken}
         amountFor={form.amountFor}
       />
+      {!settings ? (
+        <p className="text-xs text-muted-foreground">
+          <Trans>Reading this pool's fee…</Trans>
+        </p>
+      ) : form.locked ? null : (
+        <PayoutRecipientField id="desk-pool-fees-recipient" payout={form.payout} />
+      )}
     </PoolSidePanel>
   );
 }
