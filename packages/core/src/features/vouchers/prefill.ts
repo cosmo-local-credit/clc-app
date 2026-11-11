@@ -29,7 +29,7 @@ import {
 } from "./logic";
 
 /** The step a voucher prefill lands on, and the only one that reads it. */
-export const VOUCHER_PREFILL_PATH = "/vouchers/create/voucher";
+const VOUCHER_PREFILL_PATH = "/vouchers/create/voucher";
 
 /**
  * What a v1 link may seed into the voucher create form. Never the owner, the

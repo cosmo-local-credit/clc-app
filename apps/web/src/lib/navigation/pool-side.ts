@@ -13,7 +13,7 @@ declare module "@tanstack/react-router" {
   }
 }
 
-export type PoolTool =
+type PoolTool =
   | "details"
   | "liquidity"
   | "fees"
