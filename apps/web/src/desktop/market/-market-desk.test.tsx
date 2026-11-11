@@ -41,17 +41,17 @@ function renderMarket(url: string) {
   const rootRoute = createRootRoute({
     component: () => (
       <>
-        {/* What the shell's sidebar and the breadcrumbs link with: a scope, no view. */}
-        <Link to="/market" search={{ scope: "vouchers" }}>
+        {/* Resource destinations are always their full-page lists. */}
+        <Link to="/market" search={{ scope: "vouchers", view: "list" }}>
           Sidebar Vouchers
         </Link>
-        <Link to="/market" search={{ scope: "wants" }}>
+        <Link to="/market" search={{ scope: "wants", view: "list" }}>
           Sidebar Wants
         </Link>
         <Link to="/market" search={{ scope: "wants", view: "list" }}>
           Segment List
         </Link>
-        <Link to="/market" search={{ scope: "wants", view: "map" }}>
+        <Link to="/market" search={{ scope: "all", view: "map" }}>
           Segment Map
         </Link>
         <Outlet />
@@ -108,34 +108,34 @@ describe("resolveMarketView", () => {
 describe("MarketDesk", () => {
   it("opens the map on a first visit and writes the view into the URL", async () => {
     const router = renderMarket("/market?scope=wants");
-    expect((await screen.findByTestId("view")).textContent).toBe("map:wants");
+    expect((await screen.findByTestId("view")).textContent).toBe("map:");
     await waitFor(() => expect(router.state.location.search).toMatchObject({ view: "map" }));
     expect(router.state.location.search).toMatchObject({ scope: "wants" });
   });
 
-  it("keeps the List view across scope changes made by links that name no view", async () => {
+  it("keeps resource destinations in List view across scope changes", async () => {
     const router = renderMarket("/market?scope=wants");
     await screen.findByTestId("view");
 
     fireEvent.click(screen.getByRole("link", { name: "Segment List" }));
     await waitFor(() => expect(screen.getByTestId("view").textContent).toBe("list:wants"));
 
-    // The shell's scope link carries a scope and no view: it must not flip the view.
+    // Every resource link names its full-page list explicitly.
     fireEvent.click(screen.getByRole("link", { name: "Sidebar Vouchers" }));
     await waitFor(() => expect(screen.getByTestId("view").textContent).toBe("list:vouchers"));
     await waitFor(() => expect(router.state.location.search).toMatchObject({ view: "list" }));
     expect(window.localStorage.getItem(MARKET_VIEW_STORAGE_KEY)).toBe("list");
   });
 
-  it("keeps the Map view the same way, and switches only when Map | List is used", async () => {
+  it("uses one unified Map and sends resource links back to their lists", async () => {
     renderMarket("/market?scope=wants&view=list");
     expect((await screen.findByTestId("view")).textContent).toBe("list:wants");
 
     fireEvent.click(screen.getByRole("link", { name: "Segment Map" }));
-    await waitFor(() => expect(screen.getByTestId("view").textContent).toBe("map:wants"));
+    await waitFor(() => expect(screen.getByTestId("view").textContent).toBe("map:"));
 
     fireEvent.click(screen.getByRole("link", { name: "Sidebar Vouchers" }));
-    await waitFor(() => expect(screen.getByTestId("view").textContent).toBe("map:vouchers"));
+    await waitFor(() => expect(screen.getByTestId("view").textContent).toBe("list:vouchers"));
   });
 
   it("opens in the remembered view on a later visit with no view in the link", async () => {
@@ -148,6 +148,6 @@ describe("MarketDesk", () => {
   it("lets an explicit view in the link win over the remembered one", async () => {
     window.localStorage.setItem(MARKET_VIEW_STORAGE_KEY, "list");
     renderMarket("/market?scope=pools&view=map");
-    expect((await screen.findByTestId("view")).textContent).toBe("map:pools");
+    expect((await screen.findByTestId("view")).textContent).toBe("map:");
   });
 });

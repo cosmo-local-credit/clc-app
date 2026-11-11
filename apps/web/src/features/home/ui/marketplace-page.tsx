@@ -10,7 +10,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useId, useRef, useState } from "react";
-import { RiArrowRightSLine } from "react-icons/ri";
+import { RiArrowRightSLine, RiArticleLine } from "react-icons/ri";
 
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
@@ -18,7 +18,7 @@ import { MarketBar } from "#/components/market-bar";
 import { MarketEmptyMessage } from "#/components/market-empty-message";
 import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
 import { nearbyQueryPolicy, useNearbyCatalog } from "#/components/nearby-catalog";
-import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
+import { POST_RESOURCE_HUE, RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
@@ -36,7 +36,7 @@ import { cn } from "#/lib/utils";
 
 const ROW_TAG_LIMIT = 3;
 
-const KIND_SCOPE: Record<MarketplaceKind, MarketplaceScope> = {
+const KIND_SCOPE: Record<Exclude<MarketplaceKind, "post">, MarketplaceScope> = {
   offering: "offers",
   want: "wants",
   voucher: "vouchers",
@@ -263,8 +263,8 @@ function MarketplaceResultRow({
   distanceOrigin: { lat: number; lng: number } | null | undefined;
 }) {
   const { i18n, t } = useLingui();
-  const scope = KIND_SCOPE[row.kind];
-  const Icon = RESOURCE_ICON[scope];
+  const scope = row.kind === "post" ? null : KIND_SCOPE[row.kind];
+  const Icon = scope ? RESOURCE_ICON[scope] : RiArticleLine;
   const symbol =
     row.kind === "voucher" ? row.symbol : row.kind === "offering" ? row.voucherSymbol : null;
   // The nearby result carries its distance; otherwise it is measured from the
@@ -310,7 +310,10 @@ function MarketplaceResultRow({
           <Badge
             variant="outline"
             size="sm"
-            className={cn("gap-1 border-(--hue) text-(--ink)", RESOURCE_HUE[scope])}
+            className={cn(
+              "gap-1 border-(--hue) text-(--ink)",
+              scope ? RESOURCE_HUE[scope] : POST_RESOURCE_HUE,
+            )}
           >
             <Icon className="size-3" aria-hidden="true" />
             <ResultKind kind={row.kind} />
@@ -357,6 +360,13 @@ function MarketplaceResultRow({
       </Link>
     );
   }
+  if (row.kind === "post") {
+    return (
+      <Link to="/posts/$reportId" params={{ reportId: row.id }} className={className}>
+        {content}
+      </Link>
+    );
+  }
   // An offer is bought through its voucher, so it opens the voucher's page.
   return (
     <Link
@@ -393,6 +403,17 @@ function ResultPicture({ row }: { row: MarketplaceResult }) {
       />
     );
   }
+  if (row.kind === "post") {
+    return (
+      <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden border border-border bg-card">
+        {row.imageUrl ? (
+          <ProgressiveImage src={row.imageUrl} alt="" className="size-full object-cover" />
+        ) : (
+          <RiArticleLine className="size-5 text-muted-foreground" aria-hidden="true" />
+        )}
+      </span>
+    );
+  }
   const Icon = RESOURCE_ICON[KIND_SCOPE[row.kind]];
   return (
     <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden border border-border bg-card">
@@ -410,5 +431,6 @@ function ResultKind({ kind }: { kind: MarketplaceKind }) {
   if (kind === "want") return <Trans>Want</Trans>;
   if (kind === "voucher") return <Trans>Voucher</Trans>;
   if (kind === "pool") return <Trans>Pool</Trans>;
+  if (kind === "post") return <Trans>Post</Trans>;
   return <Trans>Catalog</Trans>;
 }

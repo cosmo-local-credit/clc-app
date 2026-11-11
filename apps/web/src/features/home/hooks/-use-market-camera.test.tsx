@@ -1,6 +1,6 @@
 import { DiscoveryLocationProvider } from "#/lib/discovery-location";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -234,6 +234,44 @@ describe("useMarketCamera explicit request", () => {
     // Identical coordinates, but a new object so the map applies it again.
     expect(result.current.camera).not.toBe(first);
     expect(result.current.camera).toEqual(first);
+  });
+
+  it("does not keep an earlier GPS button press explicit after the map remounts", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    function CameraProbe() {
+      const result = useMarketCamera("guest");
+      return (
+        <button type="button" data-testid="camera-rank" onClick={result.requestLocation}>
+          {result.camera?.rank ?? "none"}
+        </button>
+      );
+    }
+
+    function PersistentLocationHarness({ showMap }: { showMap: boolean }) {
+      return (
+        <QueryClientProvider client={client}>
+          <DiscoveryLocationProvider owner="guest">
+            {showMap ? <CameraProbe /> : null}
+          </DiscoveryLocationProvider>
+        </QueryClientProvider>
+      );
+    }
+
+    const view = render(<PersistentLocationHarness showMap />);
+    fireEvent.click(screen.getByTestId("camera-rank"));
+    await waitFor(() => expect(mockRequest).toHaveBeenCalledOnce());
+
+    geoState.current = { status: "granted", lat: -1.29, lng: 36.82, accuracy: 8 };
+    view.rerender(<PersistentLocationHarness showMap />);
+    await waitFor(() =>
+      expect(screen.getByTestId("camera-rank").textContent).toBe(String(CAMERA_RANK.explicit)),
+    );
+
+    view.rerender(<PersistentLocationHarness showMap={false} />);
+    view.rerender(<PersistentLocationHarness showMap />);
+
+    expect(screen.getByTestId("camera-rank").textContent).toBe(String(CAMERA_RANK.liveGps));
   });
 });
 

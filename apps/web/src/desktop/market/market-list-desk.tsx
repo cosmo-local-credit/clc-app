@@ -28,7 +28,7 @@ import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { useWantSheetSelection } from "#/lib/navigation/use-want-sheet-selection";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
-import { DeskTable, type DeskColumn } from "#/desktop/ui/data-table";
+import { cn } from "#/lib/utils";
 import { DeskSplit } from "#/desktop/ui/inspector";
 import { DeskCanvas } from "#/desktop/ui/page";
 import { MarketAvatar, MarketKindBadge, marketSeedGradient } from "#/desktop/market/market-bits";
@@ -133,12 +133,10 @@ export function MarketListDesk({
     });
 
   const distanceOf = (row: MarketplaceResult) => {
-    const meters =
-      row.distanceMeters ??
-      (distanceOrigin
-        ? haversineMeters(distanceOrigin, { lat: row.geoLat, lng: row.geoLng })
-        : null);
-    return meters;
+    if (!distanceOrigin) return null;
+    return (
+      row.distanceMeters ?? haversineMeters(distanceOrigin, { lat: row.geoLat, lng: row.geoLng })
+    );
   };
 
   // Search, tags, Credit or a requested output narrow what the list can show.
@@ -173,6 +171,11 @@ export function MarketListDesk({
               count={narrowed && list.phase === "ready" ? list.count : undefined}
               refreshing={list.refreshing}
             />
+            {list.sortedToMap && !distanceOrigin ? (
+              <p className="text-xs text-muted-foreground">
+                <Trans>Sorted nearest to the map view</Trans>
+              </p>
+            ) : null}
             <div className="grid gap-2 empty:hidden">
               <MarketCreditNotice credit={credit} onClear={clearCredit} />
               <MarketOutputNotice
@@ -201,7 +204,6 @@ export function MarketListDesk({
                 filterActive={filter.isFiltered}
                 onClear={clearAll}
                 distanceOf={distanceOf}
-                partial={hasMore}
                 receiveOutput={credit.auth.isAuthenticated ? output.address : null}
                 selectedKey={
                   voucher.voucher
@@ -252,7 +254,6 @@ function ListBody({
   filterActive,
   onClear,
   distanceOf,
-  partial,
   receiveOutput,
   selectedKey,
   onOpenVoucher,
@@ -277,7 +278,6 @@ function ListBody({
   /** Clears search, tags, Credit and the requested output. */
   onClear: () => void;
   distanceOf: (row: MarketplaceResult) => number | null;
-  partial: boolean;
   /** The voucher a pool's row should open the swap with, for a signed-in member who asked for it. */
   receiveOutput: `0x${string}` | null;
   selectedKey: string | null;
@@ -285,7 +285,7 @@ function ListBody({
   onOpenWant: (id: string) => void;
   sheetOpen: boolean;
 }) {
-  const { t, i18n } = useLingui();
+  const { t } = useLingui();
   if (phase === "failed") return null;
   if (phase === "loading" || waiting) {
     return <MarketListSkeleton scope={scope} label={t`Loading marketplace…`} />;
@@ -334,69 +334,159 @@ function ListBody({
     );
   }
 
-  const columns = columnsFor(scope, distanceOf, i18n.locale, t);
   return (
-    <div className={retained ? "opacity-60 transition-opacity" : undefined} aria-busy={retained}>
-      <DeskTable
-        label={t`Market`}
-        rows={rows}
-        columns={columns}
-        rowKey={selectionKey}
-        selectedKey={selectedKey}
-        partial={partial}
-        empty={<Trans>No marketplace results found.</Trans>}
-        renderRow={(row, props, cells) => {
-          if (row.kind === "pool" && row.address) {
-            return receiveOutput ? (
-              <Link
-                to="/pools/$poolAddress/swap"
-                params={{ poolAddress: row.address }}
-                search={{ receive: receiveOutput }}
-                {...props}
-              >
-                {cells}
-              </Link>
-            ) : (
-              <Link to="/pools/$poolAddress" params={{ poolAddress: row.address }} {...props}>
-                {cells}
-              </Link>
-            );
-          }
-          if (row.kind === "catalog") {
-            return (
-              <Link to="/catalogs/$catalogId" params={{ catalogId: row.id }} {...props}>
-                {cells}
-              </Link>
-            );
-          }
-          if (row.kind === "offering" && row.voucherAddress) {
-            return (
-              <Link
-                to="/vouchers/$voucherAddress"
-                params={{ voucherAddress: row.voucherAddress }}
-                search={{ from: "market" }}
-                {...props}
-              >
-                {cells}
-              </Link>
-            );
-          }
-          return (
-            <button
-              type="button"
-              {...props}
-              onFocus={(event) => {
-                if (!sheetOpen || !event.currentTarget.matches(":focus-visible")) return;
-                openRow(row, onOpenVoucher, onOpenWant);
-              }}
-              onClick={() => openRow(row, onOpenVoucher, onOpenWant)}
-            >
-              {cells}
-            </button>
-          );
-        }}
-      />
+    <div
+      className={cn(
+        "grid grid-cols-[repeat(auto-fill,minmax(min(100%,15rem),1fr))] gap-3",
+        retained && "opacity-60 transition-opacity",
+      )}
+      aria-busy={retained}
+    >
+      {rows.map((row) => (
+        <MarketResultTile
+          key={selectionKey(row)}
+          row={row}
+          distance={distanceOf(row)}
+          selected={selectionKey(row) === selectedKey}
+          receiveOutput={receiveOutput}
+          sheetOpen={sheetOpen}
+          onOpenVoucher={onOpenVoucher}
+          onOpenWant={onOpenWant}
+        />
+      ))}
     </div>
+  );
+}
+
+function MarketResultTile({
+  row,
+  distance,
+  selected,
+  receiveOutput,
+  sheetOpen,
+  onOpenVoucher,
+  onOpenWant,
+}: {
+  row: MarketplaceResult;
+  distance: number | null;
+  selected: boolean;
+  receiveOutput: `0x${string}` | null;
+  sheetOpen: boolean;
+  onOpenVoucher: (address: `0x${string}`) => void;
+  onOpenWant: (id: string) => void;
+}) {
+  const { t, i18n } = useLingui();
+  const [failedImage, setFailedImage] = useState<string | null>(null);
+  const image = row.imageUrl && failedImage !== row.imageUrl ? row.imageUrl : null;
+  const kind = row.kind === "voucher" ? row.voucherKind : row.kind;
+  const meta = [
+    row.kind === "voucher" && row.symbol ? row.symbol : null,
+    row.kind === "pool" ? t`${row.voucherCount} vouchers` : null,
+    row.kind === "catalog" && row.description ? row.description : null,
+    row.locationName,
+    distance === null ? null : distanceLabel(distance, i18n.locale, t),
+  ].filter((part): part is string => Boolean(part));
+  const content = (
+    <>
+      <span
+        className="relative block aspect-[4/3] overflow-hidden"
+        style={{ background: marketSeedGradient(row.address ?? row.id) }}
+      >
+        {image ? (
+          <ProgressiveImage
+            src={image}
+            alt=""
+            loading="lazy"
+            onError={() => setFailedImage(image)}
+            className="absolute inset-0 size-full object-cover"
+          />
+        ) : (
+          <span className="absolute inset-0 flex items-center justify-center">
+            <MarketAvatar name={row.name} seed={row.address ?? row.id} kind={kind} />
+          </span>
+        )}
+      </span>
+      <span className="grid min-w-0 gap-1 p-3">
+        <span className="flex min-w-0 items-start justify-between gap-2">
+          <span dir="auto" className="min-w-0 truncate text-sm font-semibold">
+            {row.name}
+          </span>
+          <MarketKindBadge kind={kind} />
+        </span>
+        <span className="min-h-4 truncate text-xs text-muted-foreground">{meta.join(" · ")}</span>
+        {row.tags.length > 0 ? (
+          <span className="flex min-w-0 gap-1 overflow-hidden">
+            {row.tags.slice(0, 2).map((tag) => (
+              <TagBadge key={tag} tag={tag} size="sm" />
+            ))}
+            {row.tags.length > 2 ? (
+              <Badge size="sm" variant="outline">
+                +{row.tags.length - 2}
+              </Badge>
+            ) : null}
+          </span>
+        ) : null}
+      </span>
+    </>
+  );
+  const className = cn(
+    "flex min-w-0 flex-col border border-border bg-card text-start hover:border-foreground/25",
+    selected && "border-primary",
+  );
+  if (row.kind === "pool" && row.address) {
+    return receiveOutput ? (
+      <Link
+        to="/pools/$poolAddress/swap"
+        params={{ poolAddress: row.address }}
+        search={{ receive: receiveOutput }}
+        className={className}
+      >
+        {content}
+      </Link>
+    ) : (
+      <Link to="/pools/$poolAddress" params={{ poolAddress: row.address }} className={className}>
+        {content}
+      </Link>
+    );
+  }
+  if (row.kind === "catalog") {
+    return (
+      <Link to="/catalogs/$catalogId" params={{ catalogId: row.id }} className={className}>
+        {content}
+      </Link>
+    );
+  }
+  if (row.kind === "post") {
+    return (
+      <Link to="/posts/$reportId" params={{ reportId: row.id }} className={className}>
+        {content}
+      </Link>
+    );
+  }
+  if (row.kind === "offering" && row.voucherAddress) {
+    return (
+      <Link
+        to="/vouchers/$voucherAddress"
+        params={{ voucherAddress: row.voucherAddress }}
+        search={{ from: "market" }}
+        className={className}
+      >
+        {content}
+      </Link>
+    );
+  }
+  return (
+    <button
+      type="button"
+      className={className}
+      onFocus={(event) => {
+        if (!sheetOpen || !event.currentTarget.matches(":focus-visible")) return;
+        openRow(row, onOpenVoucher, onOpenWant);
+      }}
+      onClick={() => openRow(row, onOpenVoucher, onOpenWant)}
+    >
+      {content}
+    </button>
   );
 }
 
@@ -433,139 +523,6 @@ function selectionKey(row: MarketplaceResult) {
   return `${row.kind}:${row.id}`;
 }
 
-function columnsFor(
-  scope: MarketListScope,
-  distanceOf: (row: MarketplaceResult) => number | null,
-  locale: string,
-  t: ReturnType<typeof useLingui>["t"],
-): DeskColumn<MarketplaceResult>[] {
-  const name: DeskColumn<MarketplaceResult> = {
-    id: "name",
-    header:
-      scope === "pools" ? (
-        <Trans>Pool</Trans>
-      ) : scope === "vouchers" ? (
-        <Trans>Voucher</Trans>
-      ) : scope === "catalogs" ? (
-        <Trans>Catalog</Trans>
-      ) : scope === "wants" ? (
-        <Trans>Want</Trans>
-      ) : (
-        <Trans>Name</Trans>
-      ),
-    width: "minmax(0,2fr)",
-    sortValue: (row) => row.name,
-    cell: (row) => (
-      <span className="flex min-w-0 items-center gap-2.5">
-        <MarketAvatar
-          name={row.name}
-          seed={row.address ?? row.id}
-          kind={row.kind === "voucher" ? row.voucherKind : row.kind}
-          size="sm"
-        />
-        <span dir="auto" className="min-w-0 truncate font-semibold">
-          {row.name}
-        </span>
-      </span>
-    ),
-  };
-  const place: DeskColumn<MarketplaceResult> = {
-    id: "place",
-    header: <Trans>Location</Trans>,
-    sortValue: (row) => row.locationName ?? "",
-    cell: (row) => <span dir="auto">{row.locationName}</span>,
-  };
-  const distance: DeskColumn<MarketplaceResult> = {
-    id: "distance",
-    header: <Trans>Distance</Trans>,
-    align: "end",
-    width: "7rem",
-    sortValue: (row) => distanceOf(row) ?? Number.POSITIVE_INFINITY,
-    cell: (row) => (
-      <span className="font-mono font-semibold">{distanceLabel(distanceOf(row), locale, t)}</span>
-    ),
-  };
-  const tags: DeskColumn<MarketplaceResult> = {
-    id: "tags",
-    header: <Trans>Tags</Trans>,
-    width: "minmax(0,1.4fr)",
-    cell: (row) => (
-      <span className="flex min-w-0 gap-1">
-        {row.tags.slice(0, 2).map((tag) => (
-          <TagBadge key={tag} tag={tag} size="sm" />
-        ))}
-        {row.tags.length > 2 ? (
-          <Badge size="sm" variant="outline">
-            +{row.tags.length - 2}
-          </Badge>
-        ) : null}
-      </span>
-    ),
-  };
-  const kind: DeskColumn<MarketplaceResult> = {
-    id: "kind",
-    header: <Trans>Type</Trans>,
-    width: "8rem",
-    sortValue: (row) => (row.kind === "voucher" ? row.voucherKind : row.kind),
-    cell: (row) => <MarketKindBadge kind={row.kind === "voucher" ? row.voucherKind : row.kind} />,
-  };
-  if (scope === "pools") {
-    return [
-      name,
-      {
-        id: "vouchers",
-        header: <Trans>Vouchers</Trans>,
-        align: "end",
-        width: "7rem",
-        sortValue: (row) => (row.kind === "pool" ? row.voucherCount : 0),
-        cell: (row) => (
-          <span className="font-mono font-semibold">
-            {row.kind === "pool" ? row.voucherCount : ""}
-          </span>
-        ),
-      },
-      place,
-      distance,
-      tags,
-    ];
-  }
-  if (scope === "vouchers") {
-    return [
-      name,
-      {
-        id: "symbol",
-        header: <Trans>Symbol</Trans>,
-        width: "7rem",
-        sortValue: (row) => (row.kind === "voucher" ? (row.symbol ?? "") : ""),
-        cell: (row) => (
-          <span dir="ltr" className="font-mono font-semibold">
-            {row.kind === "voucher" ? row.symbol : ""}
-          </span>
-        ),
-      },
-      kind,
-      place,
-      distance,
-      tags,
-    ];
-  }
-  if (scope === "catalogs") {
-    return [
-      name,
-      {
-        id: "description",
-        header: <Trans>Description</Trans>,
-        width: "minmax(0,2fr)",
-        cell: (row) => <span dir="auto">{row.description}</span>,
-      },
-      place,
-      distance,
-    ];
-  }
-  if (scope === "wants") return [name, place, distance, tags];
-  return [name, kind, place, distance, tags];
-}
-
 /**
  * An offer as an image tile: the voucher and symbol, the offering, its price,
  * then quantity · frequency · distance, as the phone's offering tile reads.
@@ -597,16 +554,15 @@ function OfferTile({
         )
       : quantity?.value;
   const frequency = useOfferingFrequencyLabel(offering.frequency);
-  const meters =
-    offering.distanceMeters ??
-    (distanceOrigin &&
-    typeof offering.effectiveGeoLat === "number" &&
-    typeof offering.effectiveGeoLng === "number"
-      ? haversineMeters(distanceOrigin, {
-          lat: offering.effectiveGeoLat,
-          lng: offering.effectiveGeoLng,
-        })
-      : null);
+  const meters = distanceOrigin
+    ? (offering.distanceMeters ??
+      (typeof offering.effectiveGeoLat === "number" && typeof offering.effectiveGeoLng === "number"
+        ? haversineMeters(distanceOrigin, {
+            lat: offering.effectiveGeoLat,
+            lng: offering.effectiveGeoLng,
+          })
+        : null))
+    : null;
   const meta = [
     quantityValue ? `${quantityValue}${quantity?.unit ? ` ${quantity.unit}` : ""}` : null,
     frequency,

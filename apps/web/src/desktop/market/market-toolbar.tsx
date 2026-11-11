@@ -25,24 +25,13 @@ import { cn } from "#/lib/utils";
 import { MapLayersChip, type MapLayers } from "#/desktop/market/market-layers";
 import { MarketSearchField } from "#/desktop/market/market-search-field";
 import { DeskChip, DeskSegment, DeskSegmentItem } from "#/desktop/ui/segment";
-import { DeskTab, DeskTabs } from "#/desktop/ui/tabs";
-
-const SCOPES: { id: MarketListScope; label: ReactNode }[] = [
-  { id: "all", label: <Trans>All</Trans> },
-  { id: "offers", label: <Trans>Offers</Trans> },
-  { id: "wants", label: <Trans>Wants</Trans> },
-  { id: "vouchers", label: <Trans>Vouchers</Trans> },
-  { id: "pools", label: <Trans>Pools</Trans> },
-  { id: "catalogs", label: <Trans>Catalogs</Trans> },
-];
 
 type Credit = ReturnType<typeof useCreditableBrowse>;
 
 /**
  * Search, Filters, Credit, the requested output, the result count and
- * Map | List over the scope tabs. `column` is the map's 400px results column;
- * `page` is the list. The scope tabs are route links to a marketplace category
- * and keep the current view; Map | List is the one place that changes it.
+ * Map | List. `column` is the map's 400px results column; `page` is one full
+ * resource list. Resource navigation lives in the desktop sidebar.
  */
 export function MarketDeskToolbar({
   layout,
@@ -109,25 +98,6 @@ export function MarketDeskToolbar({
       </DeskSegmentItem>
     </DeskSegment>
   );
-  const tabs = (
-    <DeskTabs
-      label={t`Marketplace`}
-      tight={layout === "column"}
-      // The column carries no rail at all: the result count sits right under
-      // the tabs, and a hairline there boxes it in against the list's own rows.
-      rule={layout !== "column"}
-      className={layout === "column" ? "-mx-3.5 px-1" : undefined}
-    >
-      {SCOPES.map((entry) => (
-        <DeskTab key={entry.id} active={entry.id === scope}>
-          <MarketLink scope={entry.id} view={view}>
-            {entry.label}
-          </MarketLink>
-        </DeskTab>
-      ))}
-    </DeskTabs>
-  );
-
   if (layout === "column") {
     return (
       <div className="grid shrink-0 gap-2.5 px-3.5 pt-3.5">
@@ -136,12 +106,11 @@ export function MarketDeskToolbar({
           {chips}
           {segment}
         </div>
-        {tabs}
       </div>
     );
   }
   return (
-    <div className="grid min-w-0 gap-6">
+    <div className="grid min-w-0 gap-3">
       <div className="flex min-w-0 flex-wrap items-center gap-2">
         <div className="w-[420px] max-w-full min-w-0 shrink">{search}</div>
         {chips}
@@ -161,7 +130,6 @@ export function MarketDeskToolbar({
         ) : null}
         {segment}
       </div>
-      {tabs}
     </div>
   );
 }
@@ -395,9 +363,8 @@ function OutputChip({ output, onClear }: { output: OutputVoucherBrowse; onClear:
 }
 
 /**
- * One scope in one view. All on the map is the home map; every other pairing
- * lives on /market. The requested output belongs to the pools scope, so it
- * travels between Map and List there and nowhere else.
+ * The map is unified; List opens the current full-page resource scope (All
+ * from the map). Compatible filters travel in both directions.
  */
 function MarketLink({
   scope,
@@ -410,7 +377,7 @@ function MarketLink({
   children: ReactNode;
   className?: string;
 }) {
-  const home = view === "map" && scope === "all";
+  const home = view === "map";
   return (
     <Link
       {...props}

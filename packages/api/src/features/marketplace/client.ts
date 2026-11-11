@@ -12,6 +12,7 @@ const tagFacetSchema = z.object({ tag: z.string(), count: z.number().int().nonne
 const marketplacePageSchema = z.object({
   results: z.array(marketplaceResultSchema),
   nextCursor: z.string().nullable(),
+  total: z.number().int().nonnegative().optional(),
   tagFacets: z.array(tagFacetSchema).optional(),
 });
 
@@ -24,6 +25,7 @@ export type MarketplaceParams = {
   tagMatch?: "any" | "all";
   facets?: boolean;
   nearby?: boolean;
+  sort?: "nearest";
   bounds?: readonly MarketBoundingBox[];
   pools?: readonly { chainId: number; address: string }[];
 };
@@ -42,6 +44,7 @@ export function createMarketplaceClient(http: HttpClient) {
       if (params.tagMatch === "all" && (params.tags?.length ?? 0) > 1) query.set("tagMatch", "all");
       if (params.facets) query.set("facets", "true");
       if (params.nearby) query.set("nearby", "true");
+      if (params.sort) query.set("sort", params.sort);
       appendMarketBounds(query, params.bounds);
       if (params.pools?.length)
         query.set("pools", params.pools.map((pool) => `${pool.chainId}:${pool.address}`).join(","));
@@ -49,7 +52,7 @@ export function createMarketplaceClient(http: HttpClient) {
         await http.request<unknown>(`/api/v2/marketplace?${query}`, {
           method: "GET",
           cache: "no-store",
-          credentials: params.nearby ? "include" : "omit",
+          credentials: params.nearby || params.sort ? "include" : "omit",
           signal,
         }),
       );

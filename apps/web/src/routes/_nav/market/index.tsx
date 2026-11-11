@@ -93,8 +93,22 @@ export const Route = createFileRoute("/_nav/market/")({
         replace: true,
       });
     }
+    const requestedScope = parseMarketplaceScope(search.scope);
+    if (search.view === "map" && requestedScope && requestedScope !== "all") {
+      throw redirect({
+        to: "/",
+        search: {
+          ...mapSearchFrom(search),
+          tab: "market",
+          view: "map",
+          ...(voucherAddress ? { voucher: voucherAddress } : {}),
+          ...(search.want ? { want: search.want } : {}),
+        },
+        replace: true,
+      });
+    }
     // Without a list it knows, the market is the map; All is asked for by name.
-    if (parseMarketplaceScope(search.scope) === null) {
+    if (requestedScope === null) {
       throw redirect({ to: "/", search: mapSearchFrom(search), replace: true });
     }
     const next = canonicalMarketplaceSearch(search);

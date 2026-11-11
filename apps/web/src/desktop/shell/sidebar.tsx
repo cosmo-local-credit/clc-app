@@ -1,10 +1,9 @@
 import { plural } from "@lingui/core/macro";
-import { Trans, useLingui } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react/macro";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { type ReactElement, type ReactNode, useState } from "react";
+import { type ReactElement, type ReactNode } from "react";
 import {
   RiArticleLine,
-  RiArrowRightSLine,
   RiMap2Line,
   RiPulseLine,
   RiSettings3Line,
@@ -13,7 +12,7 @@ import {
 } from "react-icons/ri";
 
 import { CLCLogo } from "#/components/ui/clc-logo";
-import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
+import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
 import { UnreadCount, UnreadCountLabel } from "#/components/ui/unread-count";
 import { desktopNavSelection, type DesktopScopeId } from "#/desktop/chrome";
 import { MarketHomeLink, MarketScopeLink } from "#/desktop/shell/market-links";
@@ -27,13 +26,7 @@ import { cn } from "#/lib/utils";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { DESK_SELECTED_EDGE } from "#/desktop/ui/page";
 
-const SCOPES: readonly { id: DesktopScopeId; label: ReactNode }[] = [
-  { id: "offers", label: <Trans>Offers</Trans> },
-  { id: "wants", label: <Trans>Wants</Trans> },
-  { id: "vouchers", label: <Trans>Vouchers</Trans> },
-  { id: "pools", label: <Trans>Pools</Trans> },
-  { id: "catalogs", label: <Trans>Catalogs</Trans> },
-];
+const SCOPES: readonly DesktopScopeId[] = ["offers", "wants", "vouchers", "pools", "catalogs"];
 
 const FOOTER_ICON =
   "flex size-8 shrink-0 items-center justify-center text-muted-foreground hover:bg-sidebar-accent hover:text-foreground";
@@ -63,41 +56,12 @@ function RailTip({
   return show ? <DeskTooltip label={label}>{children}</DeskTooltip> : children;
 }
 
-/** The indented list a top-level item owns: the marketplace lists, the Wallet's sections. */
-function SubNav({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div
-      aria-label={label}
-      role="group"
-      className="ms-[17px] mt-0.5 mb-1.5 flex flex-col gap-px border-sidebar-border border-s ps-2"
-    >
-      {children}
-    </div>
-  );
-}
-
-function subItemClass(active: boolean) {
-  return cn(
-    "flex h-7 items-center px-2 text-xs font-medium hover:bg-sidebar-accent",
-    active
-      ? "bg-sidebar-accent font-semibold text-foreground"
-      : "text-muted-foreground hover:text-foreground",
-  );
-}
-
-function railItemClass(active: boolean) {
-  return cn(
-    "flex h-8 items-center px-3 text-sm hover:bg-muted",
-    active ? `bg-muted font-semibold ${DESK_SELECTED_EDGE}` : "font-medium",
-  );
-}
-
 /**
  * The 192px sidebar, or the 56px rail. The rail keeps every destination and
  * control the sidebar has, as an icon with a name: it is the sidebar's
  * collapsed state, not a different set of places, and nothing but the person's
- * own Collapse puts it there. Each collapsed parent that owns a list keeps it
- * in a popover beside its icon, so the rail still reaches every one.
+ * own Collapse puts it there. Resource lists remain top-level destinations in
+ * both forms.
  */
 export function DesktopSidebar() {
   const { t } = useLingui();
@@ -114,7 +78,6 @@ export function DesktopSidebar() {
   const unreadActivity = useActivityCounts().total;
   const address = auth.address;
   const name = profile.data?.name?.trim();
-  const marketChild = selection.nav === "market" && Boolean(selection.scope);
   const settingsCurrent = selection.nav === "settings";
   const itemClass = (active: boolean) =>
     cn(
@@ -201,56 +164,53 @@ export function DesktopSidebar() {
         >
           <RailTip show={collapsed} label={marketLabel}>
             <MarketHomeLink
-              aria-current={selection.nav === "market" && !marketChild ? "page" : undefined}
+              aria-current={selection.nav === "market" && !selection.scope ? "page" : undefined}
               aria-label={collapsed ? marketLabel : undefined}
-              className={itemClass(selection.nav === "market" && (!selection.scope || collapsed))}
+              className={itemClass(selection.nav === "market" && !selection.scope)}
             >
               {body(<RiMap2Line aria-hidden="true" />, marketLabel)}
             </MarketHomeLink>
           </RailTip>
-          {collapsed ? (
-            <RailMenu trigger={t`Marketplace lists`} title={t`Marketplace`}>
-              {(close) =>
-                SCOPES.map((scope) => (
-                  <MarketScopeLink
-                    key={scope.id}
-                    scope={scope.id}
-                    aria-current={selection.scope === scope.id ? "page" : undefined}
-                    onClick={close}
-                    className={railItemClass(selection.scope === scope.id)}
-                  >
-                    {scope.label}
-                  </MarketScopeLink>
-                ))
-              }
-            </RailMenu>
-          ) : (
-            <SubNav label={t`Marketplace`}>
-              {SCOPES.map((scope) => (
+          {SCOPES.map((scope) => {
+            const Icon = RESOURCE_ICON[scope];
+            const label =
+              scope === "offers"
+                ? t`Offers`
+                : scope === "wants"
+                  ? t`Wants`
+                  : scope === "vouchers"
+                    ? t`Vouchers`
+                    : scope === "pools"
+                      ? t`Pools`
+                      : t`Catalogs`;
+            return (
+              <RailTip key={scope} show={collapsed} label={label}>
                 <MarketScopeLink
-                  key={scope.id}
-                  scope={scope.id}
-                  aria-current={selection.scope === scope.id ? "page" : undefined}
-                  className={subItemClass(selection.scope === scope.id)}
+                  scope={scope}
+                  aria-current={selection.scope === scope ? "page" : undefined}
+                  aria-label={collapsed ? label : undefined}
+                  className={cn(
+                    itemClass(selection.scope === scope),
+                    RESOURCE_HUE[scope],
+                    "[&_svg]:text-(--ink)",
+                  )}
                 >
-                  {scope.label}
+                  {body(<Icon aria-hidden="true" />, label)}
                 </MarketScopeLink>
-              ))}
-            </SubNav>
-          )}
-          {privateNav ? (
-            <RailTip show={collapsed} label={walletLabel}>
-              <Link
-                to="/"
-                search={{ tab: "wallet" }}
-                aria-label={collapsed ? walletLabel : undefined}
-                aria-current={selection.nav === "wallet" ? "page" : undefined}
-                className={itemClass(selection.nav === "wallet")}
-              >
-                {body(<RiWallet3Line aria-hidden="true" />, walletLabel)}
-              </Link>
-            </RailTip>
-          ) : null}
+              </RailTip>
+            );
+          })}
+          <RailTip show={collapsed} label={postsLabel}>
+            <Link
+              to="/"
+              search={{ tab: "posts" }}
+              aria-label={collapsed ? postsLabel : undefined}
+              aria-current={selection.nav === "posts" ? "page" : undefined}
+              className={itemClass(selection.nav === "posts")}
+            >
+              {body(<RiArticleLine aria-hidden="true" />, postsLabel)}
+            </Link>
+          </RailTip>
           {privateNav ? (
             <RailTip show={collapsed} label={activityLabel}>
               <Link
@@ -278,17 +238,19 @@ export function DesktopSidebar() {
               </Link>
             </RailTip>
           ) : null}
-          <RailTip show={collapsed} label={postsLabel}>
-            <Link
-              to="/"
-              search={{ tab: "posts" }}
-              aria-label={collapsed ? postsLabel : undefined}
-              aria-current={selection.nav === "posts" ? "page" : undefined}
-              className={itemClass(selection.nav === "posts")}
-            >
-              {body(<RiArticleLine aria-hidden="true" />, postsLabel)}
-            </Link>
-          </RailTip>
+          {privateNav ? (
+            <RailTip show={collapsed} label={walletLabel}>
+              <Link
+                to="/"
+                search={{ tab: "wallet" }}
+                aria-label={collapsed ? walletLabel : undefined}
+                aria-current={selection.nav === "wallet" ? "page" : undefined}
+                className={itemClass(selection.nav === "wallet")}
+              >
+                {body(<RiWallet3Line aria-hidden="true" />, walletLabel)}
+              </Link>
+            </RailTip>
+          ) : null}
         </nav>
         {collapsed ? (
           <div className="flex shrink-0 flex-col items-center gap-1 border-sidebar-border border-t p-2.5">
@@ -335,40 +297,5 @@ export function DesktopSidebar() {
         )}
       </aside>
     </DeskTooltipProvider>
-  );
-}
-
-/**
- * A collapsed parent's list, as a popover beside its icon. The expanded
- * sidebar lists the same places inline; here they open from a control under
- * the icon, so the rail reaches every one of them too.
- */
-function RailMenu({
-  trigger,
-  title,
-  children,
-}: {
-  trigger: string;
-  title: string;
-  children: (close: () => void) => ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <PopoverRoot open={open} onOpenChange={setOpen}>
-      <DeskTooltip label={trigger}>
-        <PopoverTrigger
-          aria-label={trigger}
-          className="mx-auto flex h-5 w-full items-center justify-center text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
-        >
-          <RiArrowRightSLine aria-hidden="true" className="size-3.5 rtl:-scale-x-100" />
-        </PopoverTrigger>
-      </DeskTooltip>
-      <PopoverContent side="inline-end" align="start" sideOffset={4} className="w-44 p-1">
-        <PopoverTitle className="sr-only">{title}</PopoverTitle>
-        <nav aria-label={title} className="flex flex-col">
-          {children(() => setOpen(false))}
-        </nav>
-      </PopoverContent>
-    </PopoverRoot>
   );
 }

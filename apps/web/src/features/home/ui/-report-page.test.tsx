@@ -372,8 +372,8 @@ describe("ReportPage", () => {
 
   it("collapses a single-day period to one date", () => {
     mocks.detail.data = detail({
-      periodFrom: "2026-07-01T06:00:00Z",
-      periodTo: "2026-07-01T18:00:00Z",
+      periodFrom: "2026-07-01T01:00:00Z",
+      periodTo: "2026-07-01T12:00:00Z",
     });
     render(<ReportPage reportId="3182" />);
 
