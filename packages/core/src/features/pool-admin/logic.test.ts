@@ -1,6 +1,7 @@
-import { decodeFunctionData } from "viem";
+import { decodeFunctionData, getAddress, zeroAddress } from "viem";
 import { describe, expect, it } from "vite-plus/test";
 
+import { swapPoolWithdrawAllFeesAbi } from "../pool-swaps/logic";
 import { parseTokenAmount } from "../wallet/logic";
 
 import {
@@ -14,6 +15,7 @@ import {
   buildSetOracleMultiplierCall,
   buildSetPairFeeCall,
   buildSetPoolFeeCalls,
+  buildWithdrawPoolFeesCalls,
   buildWithdrawPoolLiquidityCalls,
   feePolicyPairFeeAbi,
   feePolicySetDefaultFeeAbi,
@@ -303,6 +305,77 @@ describe("buildWithdrawPoolLiquidityCalls", () => {
         amountRaw: "1",
       }),
     ).toThrow(/recipient must be a non-zero address/);
+  });
+
+  it("refuses to pay the pool itself", () => {
+    expect(() =>
+      buildWithdrawPoolLiquidityCalls({
+        poolAddress: POOL,
+        tokenAddress: TOKEN,
+        recipientAddress: POOL,
+        amountRaw: "1",
+      }),
+    ).toThrow(/cannot be the pool itself/);
+  });
+});
+
+describe("buildWithdrawPoolFeesCalls", () => {
+  const FEE_ADDRESS = "0x5ee0000000000000000000000000000000000fee" as const;
+  const decodeAll = (calls: { data: `0x${string}` }[]) =>
+    calls.map((call) =>
+      decodeFunctionData({
+        abi: [...swapPoolSetFeeAddressAbi, ...swapPoolWithdrawAllFeesAbi],
+        data: call.data,
+      }),
+    );
+
+  it("collects with the single call when the recipient is the pool's own", () => {
+    const calls = buildWithdrawPoolFeesCalls({
+      poolAddress: POOL,
+      tokenAddress: TOKEN,
+      recipientAddress: getAddress(FEE_ADDRESS),
+      currentFeeAddress: getAddress(FEE_ADDRESS),
+    });
+    expect(calls.map((call) => call.to)).toEqual([POOL]);
+    expect(decodeAll(calls)).toEqual([{ functionName: "withdraw", args: [getAddress(TOKEN)] }]);
+  });
+
+  it("points the fee address at another recipient for the collection and restores it", () => {
+    const calls = buildWithdrawPoolFeesCalls({
+      poolAddress: POOL,
+      tokenAddress: TOKEN,
+      recipientAddress: RECIPIENT,
+      currentFeeAddress: getAddress(FEE_ADDRESS),
+    });
+    expect(calls.map((call) => call.to)).toEqual([POOL, POOL, POOL]);
+    expect(decodeAll(calls)).toEqual([
+      { functionName: "setFeeAddress", args: [getAddress(RECIPIENT)] },
+      { functionName: "withdraw", args: [getAddress(TOKEN)] },
+      { functionName: "setFeeAddress", args: [getAddress(FEE_ADDRESS)] },
+    ]);
+  });
+
+  it("restores an unset fee address as unset", () => {
+    const calls = buildWithdrawPoolFeesCalls({
+      poolAddress: POOL,
+      tokenAddress: TOKEN,
+      recipientAddress: RECIPIENT,
+      currentFeeAddress: null,
+    });
+    expect(decodeAll(calls).at(-1)).toEqual({ functionName: "setFeeAddress", args: [zeroAddress] });
+  });
+
+  it("rejects the zero address and the pool as recipients", () => {
+    for (const recipientAddress of [zeroAddress, POOL]) {
+      expect(() =>
+        buildWithdrawPoolFeesCalls({
+          poolAddress: POOL,
+          tokenAddress: TOKEN,
+          recipientAddress,
+          currentFeeAddress: null,
+        }),
+      ).toThrow(/recipient/);
+    }
   });
 });
 

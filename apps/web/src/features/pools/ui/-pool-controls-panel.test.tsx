@@ -14,9 +14,10 @@ vi.mock("#/features/pools/hooks/use-pool-ownership-transfer", () => ({
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render as rtlRender, screen, waitFor, within } from "@testing-library/react";
 import type { ReactElement } from "react";
-import { decodeFunctionData } from "viem";
+import { decodeFunctionData, zeroAddress } from "viem";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
+import { BackendApiError } from "@clc/api/client/errors";
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import type { CaliburCall } from "@clc/core/features/webauthn/index";
 import {
@@ -31,6 +32,7 @@ const TOKEN = "0x3aa7000000000000000000000000000000000102";
 const OWNER = "0x1234000000000000000000000000000000005678";
 const RECIPIENT = "0x9911000000000000000000000000000000002244";
 const FEE_POLICY = "0x70c1000000000000000000000000000000003b55";
+const SAFE = "0x5AFe000000000000000000000000000000000005";
 
 const mocks = vi.hoisted(() => ({
   relay: vi.fn(),
@@ -39,9 +41,18 @@ const mocks = vi.hoisted(() => ({
   treasury: new Map<string, { balanceRaw: string; feesRaw: string; withdrawableRaw: string }>(),
   // The fee and the recipient come from the chain, never from the catalog row.
   feeSettings: { data: undefined } as {
-    data?: { feePpm: string; feePercent: string; feeAddress: string | null };
+    data?: {
+      feePpm: string;
+      feePercent: string;
+      feeAddress: string | null;
+      feeAddressSealed?: boolean | null;
+    };
     isError?: boolean;
   },
+  safeOwned: false,
+  // The fee address on chain at submit, which may differ from the form's read.
+  liveFeeAddress: vi.fn(),
+  reverse: vi.fn(),
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
   indexed: {
@@ -55,16 +66,32 @@ const mocks = vi.hoisted(() => ({
 vi.mock("#/components/safe/recipient-owner-notice", () => ({ RecipientOwnerNotice: () => null }));
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: OWNER }),
-  useClient: () => undefined,
+  useClient: () => ({ chain: { id: 100 } }),
+}));
+vi.mock("viem/actions", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  readContract: (_client: unknown, request: { functionName: string }) =>
+    request.functionName === "feeAddress"
+      ? mocks.liveFeeAddress()
+      : Promise.reject(new Error(`unexpected read ${request.functionName}`)),
 }));
 vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
-  useAssetOwnerInfo: () => ({
-    owner: undefined,
-    info: undefined,
-    isSafeOwned: false,
-    isSafeSigner: false,
-    canManage: true,
-  }),
+  useAssetOwnerInfo: () =>
+    mocks.safeOwned
+      ? {
+          owner: SAFE,
+          info: { kind: "safe", owner: SAFE, signers: [OWNER], threshold: 1 },
+          isSafeOwned: true,
+          isSafeSigner: true,
+          canManage: true,
+        }
+      : {
+          owner: undefined,
+          info: undefined,
+          isSafeOwned: false,
+          isSafeSigner: false,
+          canManage: true,
+        },
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-admin", async (importOriginal) => ({
@@ -88,7 +115,7 @@ vi.mock("sonner", () => ({
 
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
   useRecipientSearch: () => ({ data: null, error: null, isPending: false }),
-  useReverseRecipientResolution: () => ({ data: null, error: null, isPending: false }),
+  useReverseRecipientResolution: (address: string | null) => mocks.reverse(address),
 }));
 
 import { PoolControlsPanel } from "./pool-controls-panel";
@@ -173,6 +200,9 @@ beforeEach(() => {
   mocks.feeSettings = {
     data: { feePpm: "10000", feePercent: "1", feeAddress: RECIPIENT },
   };
+  mocks.safeOwned = false;
+  mocks.liveFeeAddress.mockReset().mockResolvedValue(RECIPIENT);
+  mocks.reverse.mockReset().mockReturnValue({ data: null, error: null, isPending: false });
   mocks.toastError.mockReset();
   mocks.toastSuccess.mockReset();
   mocks.indexed = { tokens: [], isPending: false, isError: false, refetch: vi.fn() };
@@ -192,32 +222,116 @@ function render(ui: ReactElement) {
   });
 }
 
-describe("PoolControlsPanel withdrawing liquidity", () => {
-  it("sends the named amount to the owner and leaves reserved fees behind", async () => {
-    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
-    fireEvent.click(screen.getByRole("button", { name: /Withdraw liquidity/ }));
+const poolCallsAbi = [
+  ...swapPoolSetFeeAddressAbi,
+  ...swapPoolWithdrawAllFeesAbi,
+  ...swapPoolWithdrawLiquidityAbi,
+];
+const REPLACED_CARD = {
+  data: undefined,
+  error: new BackendApiError(410, "card replaced", "E20", { kind: "card-replaced" }),
+  isPending: false,
+};
+const LOOKING_UP = { data: undefined, error: null, isPending: true };
 
-    const dialog = await screen.findByRole("dialog");
+const decodeRelayed = () =>
+  relayedCalls().map((call) => decodeFunctionData({ abi: poolCallsAbi, data: call.data }));
+
+async function openSheet(row: RegExp) {
+  render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
+  fireEvent.click(screen.getByRole("button", { name: row }));
+  const dialog = await screen.findByRole("dialog");
+  fireEvent.click(within(dialog).getByRole("button", { name: /Pepas Voucher/ }));
+  return dialog;
+}
+
+describe("PoolControlsPanel withdrawing liquidity", () => {
+  it("sends the named amount to the signed-in wallet and leaves reserved fees behind", async () => {
+    const dialog = await openSheet(/Withdraw liquidity/);
     // Decoupled fees are not withdrawable liquidity, so the row offers 996, not 1000.
-    fireEvent.click(within(dialog).getByRole("button", { name: /Pepas Voucher/ }));
     fireEvent.click(within(dialog).getByRole("button", { name: "Max" }));
     expect((within(dialog).getByLabelText("Amount") as HTMLInputElement).value).toBe("996");
+    expect((within(dialog).getByLabelText("Recipient") as HTMLInputElement).value).toBe(OWNER);
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Withdraw" }));
     await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
-    const calls = relayedCalls();
-    expect(calls.map((call) => call.to)).toEqual([POOL]);
-    expect(decodeFunctionData({ abi: swapPoolWithdrawLiquidityAbi, data: calls[0]!.data })).toEqual(
+    expect(relayedCalls().map((call) => call.to)).toEqual([POOL]);
+    expect(decodeRelayed()).toEqual([
       { functionName: "withdrawLiquidity", args: [TOKEN, OWNER, 996000000n] },
+    ]);
+  });
+
+  it("pays the signed-in signer, not the Safe, on a Safe-owned pool", async () => {
+    mocks.safeOwned = true;
+    const dialog = await openSheet(/Withdraw liquidity/);
+    expect((within(dialog).getByLabelText("Recipient") as HTMLInputElement).value).toBe(OWNER);
+    fireEvent.change(within(dialog).getByLabelText("Amount"), { target: { value: "5" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Withdraw" }));
+
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    expect(decodeRelayed()).toEqual([
+      { functionName: "withdrawLiquidity", args: [TOKEN, OWNER, 5000000n] },
+    ]);
+  });
+
+  it("pays the recipient the steward names", async () => {
+    const dialog = await openSheet(/Withdraw liquidity/);
+    fireEvent.change(within(dialog).getByLabelText("Amount"), { target: { value: "5" } });
+    fireEvent.change(within(dialog).getByLabelText("Recipient"), { target: { value: SAFE } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Withdraw" }));
+
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    expect(decodeRelayed()).toEqual([
+      { functionName: "withdrawLiquidity", args: [TOKEN, SAFE, 5000000n] },
+    ]);
+  });
+
+  it("refuses an invalid recipient and the pool itself", async () => {
+    const dialog = await openSheet(/Withdraw liquidity/);
+    fireEvent.change(within(dialog).getByLabelText("Amount"), { target: { value: "5" } });
+    const withdraw = within(dialog).getByRole("button", { name: "Withdraw" }) as HTMLButtonElement;
+
+    fireEvent.change(within(dialog).getByLabelText("Recipient"), { target: { value: "0x12" } });
+    expect(within(dialog).getByText("Enter a valid wallet address")).toBeTruthy();
+    expect(withdraw.disabled).toBe(true);
+
+    fireEvent.change(within(dialog).getByLabelText("Recipient"), { target: { value: POOL } });
+    expect(within(dialog).getByText("The pool can't pay itself.")).toBeTruthy();
+    expect(withdraw.disabled).toBe(true);
+  });
+
+  it("pays nothing to a replaced Sign-in card", async () => {
+    mocks.reverse.mockImplementation((address: string | null) =>
+      address?.toLowerCase() === SAFE.toLowerCase()
+        ? REPLACED_CARD
+        : { data: null, error: null, isPending: false },
     );
+    const dialog = await openSheet(/Withdraw liquidity/);
+    fireEvent.change(within(dialog).getByLabelText("Amount"), { target: { value: "5" } });
+    fireEvent.change(within(dialog).getByLabelText("Recipient"), { target: { value: SAFE } });
+
+    expect(
+      await within(dialog).findByText(
+        "This sign-in card was replaced. Ask its owner for their new address.",
+      ),
+    ).toBeTruthy();
+    const withdraw = within(dialog).getByRole("button", { name: "Withdraw" }) as HTMLButtonElement;
+    expect(withdraw.disabled).toBe(true);
+    fireEvent.click(withdraw);
+    expect(mocks.relay).not.toHaveBeenCalled();
+  });
+
+  it("waits for the recipient lookup before paying", async () => {
+    mocks.reverse.mockReturnValue(LOOKING_UP);
+    const dialog = await openSheet(/Withdraw liquidity/);
+    fireEvent.change(within(dialog).getByLabelText("Amount"), { target: { value: "5" } });
+    expect(
+      (within(dialog).getByRole("button", { name: "Withdraw" }) as HTMLButtonElement).disabled,
+    ).toBe(true);
   });
 
   it("refuses an amount above what the pool can release", async () => {
-    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
-    fireEvent.click(screen.getByRole("button", { name: /Withdraw liquidity/ }));
-
-    const dialog = await screen.findByRole("dialog");
-    fireEvent.click(within(dialog).getByRole("button", { name: /Pepas Voucher/ }));
+    const dialog = await openSheet(/Withdraw liquidity/);
     fireEvent.change(within(dialog).getByLabelText("Amount"), { target: { value: "1000" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "Withdraw" }));
 
@@ -227,29 +341,111 @@ describe("PoolControlsPanel withdrawing liquidity", () => {
 });
 
 describe("PoolControlsPanel collecting fees", () => {
-  it("collects the whole accrued balance for one voucher", async () => {
-    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
-    fireEvent.click(screen.getByRole("button", { name: /Withdraw fees/ }));
-
-    const dialog = await screen.findByRole("dialog");
-    fireEvent.click(within(dialog).getByRole("button", { name: /Pepas Voucher/ }));
+  it("pays the signed-in wallet by pointing the fee address there and back", async () => {
+    const dialog = await openSheet(/Withdraw fees/);
+    expect((within(dialog).getByLabelText("Recipient") as HTMLInputElement).value).toBe(OWNER);
     fireEvent.click(within(dialog).getByRole("button", { name: "Collect fees" }));
 
     await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
-    expect(
-      decodeFunctionData({ abi: swapPoolWithdrawAllFeesAbi, data: relayedCalls()[0]!.data }),
-    ).toEqual({ functionName: "withdraw", args: [TOKEN] });
+    expect(relayedCalls().map((call) => call.to)).toEqual([POOL, POOL, POOL]);
+    expect(decodeRelayed()).toEqual([
+      { functionName: "setFeeAddress", args: [OWNER] },
+      { functionName: "withdraw", args: [TOKEN] },
+      { functionName: "setFeeAddress", args: [RECIPIENT] },
+    ]);
   });
 
-  it("blocks collection while the pool has no fee recipient", async () => {
-    // `withdraw(token)` pays `feeAddress`, so with none set it reverts
-    // InvalidFeeAddress; saying so beforehand is cheaper than a failed relay.
-    mocks.feeSettings = { data: { feePpm: "10000", feePercent: "1", feeAddress: null } };
-    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
-    fireEvent.click(screen.getByRole("button", { name: /Withdraw fees/ }));
+  it("collects with the single call when the recipient is the pool's fee address", async () => {
+    const dialog = await openSheet(/Withdraw fees/);
+    fireEvent.change(within(dialog).getByLabelText("Recipient"), { target: { value: RECIPIENT } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Collect fees" }));
 
-    const dialog = await screen.findByRole("dialog");
-    fireEvent.click(within(dialog).getByRole("button", { name: /Pepas Voucher/ }));
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    expect(decodeRelayed()).toEqual([{ functionName: "withdraw", args: [TOKEN] }]);
+  });
+
+  it("restores the fee address the chain holds at submit, not the form's read", async () => {
+    // The form read RECIPIENT; another transaction has since moved it to SAFE.
+    mocks.liveFeeAddress.mockResolvedValue(SAFE);
+    const dialog = await openSheet(/Withdraw fees/);
+    fireEvent.click(within(dialog).getByRole("button", { name: "Collect fees" }));
+
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    expect(decodeRelayed()).toEqual([
+      { functionName: "setFeeAddress", args: [OWNER] },
+      { functionName: "withdraw", args: [TOKEN] },
+      { functionName: "setFeeAddress", args: [SAFE] },
+    ]);
+  });
+
+  it("pays the named recipient even when the fee address moved off it since the read", async () => {
+    mocks.liveFeeAddress.mockResolvedValue(SAFE);
+    const dialog = await openSheet(/Withdraw fees/);
+    fireEvent.change(within(dialog).getByLabelText("Recipient"), { target: { value: RECIPIENT } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Collect fees" }));
+
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    expect(decodeRelayed()).toEqual([
+      { functionName: "setFeeAddress", args: [RECIPIENT] },
+      { functionName: "withdraw", args: [TOKEN] },
+      { functionName: "setFeeAddress", args: [SAFE] },
+    ]);
+  });
+
+  it("relays nothing when the live fee address cannot be read", async () => {
+    mocks.liveFeeAddress.mockRejectedValue(new Error("rpc down"));
+    const dialog = await openSheet(/Withdraw fees/);
+    fireEvent.click(within(dialog).getByRole("button", { name: "Collect fees" }));
+
+    await waitFor(() => expect(mocks.toastError).toHaveBeenCalled());
+    expect(mocks.relay).not.toHaveBeenCalled();
+  });
+
+  it("pays no fees to a replaced Sign-in card", async () => {
+    mocks.reverse.mockImplementation((address: string | null) =>
+      address?.toLowerCase() === SAFE.toLowerCase()
+        ? REPLACED_CARD
+        : { data: null, error: null, isPending: false },
+    );
+    const dialog = await openSheet(/Withdraw fees/);
+    fireEvent.change(within(dialog).getByLabelText("Recipient"), { target: { value: SAFE } });
+    await within(dialog).findByText(
+      "This sign-in card was replaced. Ask its owner for their new address.",
+    );
+    expect(
+      (within(dialog).getByRole("button", { name: "Collect fees" }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+  });
+
+  it("collects from a pool with no fee recipient and leaves it unset", async () => {
+    mocks.feeSettings = { data: { feePpm: "10000", feePercent: "1", feeAddress: null } };
+    mocks.liveFeeAddress.mockResolvedValue(zeroAddress);
+    const dialog = await openSheet(/Withdraw fees/);
+    fireEvent.click(within(dialog).getByRole("button", { name: "Collect fees" }));
+
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    expect(decodeRelayed()).toEqual([
+      { functionName: "setFeeAddress", args: [OWNER] },
+      { functionName: "withdraw", args: [TOKEN] },
+      { functionName: "setFeeAddress", args: [zeroAddress] },
+    ]);
+  });
+
+  it("pins the recipient to a sealed fee address", async () => {
+    mocks.feeSettings = {
+      data: { feePpm: "10000", feePercent: "1", feeAddress: RECIPIENT, feeAddressSealed: true },
+    };
+    const dialog = await openSheet(/Withdraw fees/);
+    expect(within(dialog).queryByLabelText("Recipient")).toBeNull();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Collect fees" }));
+
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    expect(decodeRelayed()).toEqual([{ functionName: "withdraw", args: [TOKEN] }]);
+  });
+
+  it("waits for the pool's fee address before collecting", async () => {
+    mocks.feeSettings = { data: undefined };
+    const dialog = await openSheet(/Withdraw fees/);
     expect(
       (within(dialog).getByRole("button", { name: "Collect fees" }) as HTMLButtonElement).disabled,
     ).toBe(true);

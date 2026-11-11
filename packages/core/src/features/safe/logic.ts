@@ -3,6 +3,7 @@ import {
   decodeFunctionData,
   encodeFunctionData,
   encodePacked,
+  getAddress,
   hashTypedData,
   isAddressEqual,
   pad,
@@ -536,4 +537,78 @@ export function describeSafeCall(call: SafeCall, safe: `0x${string}`): SafeCallD
   } catch {
     return null;
   }
+}
+
+const withdrawalAbi = parseAbi([
+  "function withdrawLiquidity(address token, address to, uint256 amount)",
+  "function withdraw(address outToken)",
+  "function withdraw(address outToken, uint256 value)",
+  "function setFeeAddress(address feeAddress)",
+]);
+
+/**
+ * Money a proposal takes out of a pool, and who receives it.
+ *
+ * `recipient` is null for fees paid to the pool's own fee address, and
+ * `amountRaw` is null for every fee accrued in the token: neither is in the
+ * calldata, only on chain.
+ */
+export type SafeWithdrawal = {
+  kind: "liquidity" | "fees";
+  pool: `0x${string}`;
+  token: `0x${string}`;
+  recipient: `0x${string}` | null;
+  amountRaw: string | null;
+};
+
+/**
+ * The pool withdrawals in a batch, in order. A fee collection is paid to the
+ * fee address the batch itself last set on that pool before it, which is how a
+ * steward sends fees somewhere other than the configured recipient; otherwise
+ * to whatever the pool holds.
+ */
+export function safeWithdrawals(
+  calls: readonly SafeCall[] | null,
+  safe: `0x${string}`,
+): SafeWithdrawal[] {
+  const feeAddressSet = new Map<string, `0x${string}`>();
+  const withdrawals: SafeWithdrawal[] = [];
+  for (const call of calls ?? []) {
+    if (isAddressEqual(call.to, safe)) continue;
+    let decoded;
+    try {
+      decoded = decodeFunctionData({ abi: withdrawalAbi, data: call.data });
+    } catch {
+      continue;
+    }
+    const pool = getAddress(call.to);
+    switch (decoded.functionName) {
+      case "setFeeAddress":
+        feeAddressSet.set(pool, decoded.args[0]);
+        break;
+      case "withdrawLiquidity": {
+        const [token, recipient, amount] = decoded.args;
+        withdrawals.push({
+          kind: "liquidity",
+          pool,
+          token,
+          recipient,
+          amountRaw: amount.toString(),
+        });
+        break;
+      }
+      case "withdraw": {
+        const { args } = decoded;
+        withdrawals.push({
+          kind: "fees",
+          pool,
+          token: args[0],
+          recipient: feeAddressSet.get(pool) ?? null,
+          amountRaw: args.length === 2 ? args[1].toString() : null,
+        });
+        break;
+      }
+    }
+  }
+  return withdrawals;
 }

@@ -114,9 +114,14 @@ msgid "{0} failed on-chain. The pool was not created."
 msgstr "{0} није успела на блокчејну. Тржница није направљена."
 
 #. placeholder {0}: selected.symbol
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:261
+msgid "{0} fees collected."
+msgstr "Накнаде за {0} су наплаћене."
+
+#. placeholder {0}: selected.symbol
 #: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:181
-msgid "{0} fees sent to the fee recipient."
-msgstr "Накнаде за {0} су послате примаоцу накнада."
+#~ msgid "{0} fees sent to the fee recipient."
+#~ msgstr "Накнаде за {0} су послате примаоцу накнада."
 
 #. placeholder {0}: contract.name
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:148
@@ -229,7 +234,7 @@ msgid "{0} wallet address"
 msgstr "Адреса {0} новчаника"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:116
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:162
 msgid "{amount} {0} withdrawn."
 msgstr "{amount} {0} је повучено."
 
@@ -367,8 +372,8 @@ msgid "{value} stars"
 msgstr "{value} звјездица"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:399
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:300
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:429
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:340
 msgid "{withdrawable} {0} available. Fees held for collection stay in the pool."
 msgstr "Доступно: {withdrawable} {0}. Накнаде задржане за наплату остају у "
 "тржници."
@@ -739,7 +744,7 @@ msgstr "Додај фотографије"
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:76
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:90
 #: apps/web/src/features/safe/hooks/use-multisig-signer-change.ts:52
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:25
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:32
 msgid "Add signer"
 msgstr "Додај потписника"
 
@@ -869,6 +874,14 @@ msgstr "Пољопривреда"
 msgid "All"
 msgstr "Све"
 
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:239
+msgid "All accrued"
+msgstr "Све акумулирано"
+
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:235
+msgid "All accrued <0>{symbol}</0>"
+msgstr "Сав акумулирани <0>{symbol}</0>"
+
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:612
 #: apps/web/src/features/home/ui/wallet-page.tsx:388
 msgid "All pools"
@@ -924,9 +937,10 @@ msgstr "Пре слања увек проверите да ли се токен 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
 #: apps/web/src/desktop/activity/transactions-desk.tsx:302
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:120
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:395
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:425
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:919
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:144
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:146
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:155
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:113
 #: apps/web/src/desktop/wallet/send-desk.tsx:210
 #: apps/web/src/desktop/wallet/send-desk.tsx:217
@@ -940,8 +954,9 @@ msgstr "Пре слања увек проверите да ли се токен 
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:549
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:618
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:127
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:296
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:138
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:336
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:157
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:87
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:176
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:318
@@ -1050,7 +1065,7 @@ msgstr "Примењујемо лозинку…"
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:292
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:208
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:271
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:119
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:131
 msgid "Approvals required"
 msgstr "Потребна одобрења"
 
@@ -1062,7 +1077,7 @@ msgstr "Потребна одобрења"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:83
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:265
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:458
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:44
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:51
 msgid "Approve voucher"
 msgstr "Одобри ваучер"
 
@@ -1457,7 +1472,7 @@ msgstr "Промијени"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:228
 #: apps/web/src/features/safe/hooks/use-multisig-signer-change.ts:58
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:31
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:38
 msgid "Change approvals required"
 msgstr "Промени потребна одобрења"
 
@@ -1509,7 +1524,7 @@ msgid "Check supply again"
 msgstr "Поново провери количину"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:435
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:612
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:651
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:511
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:45
 msgid "Check the existing submission before another transfer:"
@@ -1520,7 +1535,7 @@ msgid "Check the Want details."
 msgstr "Проверите податке о потреби."
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:470
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:575
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:614
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:549
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:84
 msgid "Check transfer status"
@@ -1851,13 +1866,13 @@ msgstr "Обриши претрагу"
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:63
 #: apps/web/src/desktop/pools/detail/pool-side-panel.tsx:103
 #: apps/web/src/desktop/posts/post-desk.tsx:500
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:50
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:52
 #: apps/web/src/desktop/shell/shortcut-help.tsx:144
 #: apps/web/src/desktop/ui/inspector.tsx:107
 #: apps/web/src/desktop/vouchers/detail/voucher-dialog.tsx:56
 #: apps/web/src/desktop/wants/want-place-desk.tsx:60
 #: apps/web/src/features/home/ui/report-page.tsx:282
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:103
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:105
 msgid "Close"
 msgstr "Затвори"
 
@@ -1939,8 +1954,8 @@ msgstr "Поново наплати са ове картице"
 msgid "Collect by card"
 msgstr "Наплата картицом"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:452
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:391
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:484
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:447
 msgid "Collect fees"
 msgstr "Наплати накнаде"
 
@@ -1949,8 +1964,8 @@ msgstr "Наплати накнаде"
 #~ msgstr "Наплаћене накнаде за замјену се исплаћују овдје."
 
 #. placeholder {0}: formatVoucherAddress(connectedAddress as `0x${string}`)
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:533
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:447
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:572
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:503
 msgid "Collected swap fees are paid here. Your own wallet is {0}."
 msgstr "Прикупљене накнаде за размену се исплаћују овде. Ваш новчаник је {0}."
 
@@ -1998,8 +2013,8 @@ msgstr "Довршите захтјев на телефону."
 msgid "Complete your profile"
 msgstr "Допуни свој профил"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:235
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:221
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:244
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:240
 msgid "Confirm"
 msgstr "Потврдите"
 
@@ -2067,23 +2082,23 @@ msgstr "Потврдите приступним кључем. Ваша стар�
 #: apps/web/src/desktop/activity/transactions-desk.tsx:817
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:280
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:214
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:223
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:361
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:105
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:46
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:72
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:257
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:200
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:219
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:232
 msgid "Confirmed"
 msgstr "Потврђено"
 
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1093
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:235
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:244
 #: apps/web/src/features/home/hooks/use-passkey-settings.ts:41
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:361
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:221
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:240
 msgid "Confirming"
 msgstr "Потврђивање"
 
@@ -2361,8 +2376,8 @@ msgid "Copy deployment transaction hash"
 msgstr "Копирај хеш трансакције постављања"
 
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:340
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:465
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:597
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:501
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:636
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:54
 msgid "Copy fee recipient"
 msgstr "Копирај примаоца накнаде"
@@ -2467,7 +2482,7 @@ msgstr "Није могуће проверити салда. Покушајте 
 
 #: apps/web/src/components/retirement/my-retirement-requests.tsx:21
 #: apps/web/src/components/retirement/retirement-control.tsx:72
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:671
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:710
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:279
 #: apps/web/src/desktop/wallet/wallet-retirements.tsx:46
 msgid "Could not load retirement requests."
@@ -2606,8 +2621,8 @@ msgstr "Није могуће копирати хеш трансакције п�
 
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:291
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:297
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:467
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:599
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:503
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:638
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:151
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:104
 msgid "Couldn't copy fee recipient"
@@ -2949,7 +2964,7 @@ msgid "Couldn't load vouchers"
 msgstr "Ваучере није могуће учитати"
 
 #: apps/web/src/components/wants/want-detail.tsx:217
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:252
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:253
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:156
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:175
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:324
@@ -2958,7 +2973,7 @@ msgstr "Ваучере није могуће учитати"
 #: apps/web/src/desktop/wants/want-place-desk.tsx:295
 #: apps/web/src/features/home/ui/wallet-page.tsx:185
 #: apps/web/src/features/home/ui/wallet-page.tsx:203
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:226
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:229
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:176
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:193
 msgid "Couldn't load vouchers."
@@ -3039,6 +3054,10 @@ msgid "Couldn't read that card. Hold it still against the back of your phone "
 "and try again."
 msgstr "Картицу није могуће очитати. Држите је мирно уз полеђину телефона и "
 "покушајте поново."
+
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:249
+msgid "Couldn't read the pool's fee recipient. Try again."
+msgstr "Није могуће прочитати примаоца накнаде тржнице. Покушајте поново."
 
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:207
 msgid "Couldn't read this voucher's current rate, so it can't be changed right "
@@ -3287,7 +3306,7 @@ msgstr "Креирај ваучер"
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:353
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:408
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:190
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:33
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:40
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:206
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:165
 msgid "Create vouchers"
@@ -3750,9 +3769,9 @@ msgid "Edit catalog"
 msgstr "Уреди каталог"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:89
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:100
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:101
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:105
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:91
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:94
 msgid "Edit details"
 msgstr "Уреди податке"
 
@@ -3894,8 +3913,8 @@ msgstr "Завршава се {0}"
 msgid "Enter a credit limit greater than zero"
 msgstr "Унесите кредитни лимит већи од нуле"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:515
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:428
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:554
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:484
 msgid "Enter a fee from 0 to 100"
 msgstr "Унесите накнаду од 0 до 100"
 
@@ -3935,8 +3954,10 @@ msgstr "Унесите важећи приватни кључ или карти�
 msgid "Enter a valid wallet address"
 msgstr "Унесите исправну адресу новчаника"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:536
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:450
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:369
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:575
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:289
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:506
 #: apps/web/src/features/vouchers/hooks/use-voucher-controls.ts:112
 msgid "Enter a valid wallet address"
 msgstr "Унесите исправну адресу новчаника"
@@ -3952,7 +3973,7 @@ msgid "Enter an amount greater than zero."
 msgstr "Унесите износ већи од нуле."
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:379
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:98
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:145
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:214
 msgid "Enter an amount greater than zero."
 msgstr "Унесите износ већи од нуле."
@@ -3962,7 +3983,7 @@ msgstr "Унесите износ већи од нуле."
 msgid "Enter an amount this voucher supports."
 msgstr "Унесите износ који овај ваучер подржава."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:94
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:141
 msgid "Enter an amount this voucher supports."
 msgstr "Унесите износ који овај ваучер подржава."
 
@@ -4075,17 +4096,17 @@ msgstr "Курс размјене"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "Курс размјене у односу на подразумијевани ваучер ({unitSymbol})"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:242
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:228
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:251
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:247
 msgid "Execute it in Safe."
 msgstr "Извршите га у Safe-у."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:226
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:217
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:235
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:236
 msgid "Executing…"
 msgstr "Извршава се…"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:592
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:631
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:38
 msgid "Existing fee recipient"
 msgstr "Тренутни прималац накнаде"
@@ -4172,12 +4193,12 @@ msgstr "Пољопривреда"
 #~ msgid "fee"
 #~ msgstr "накнада"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:138
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:285
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:503
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:115
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:201
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:42
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:139
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:286
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:542
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:118
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:204
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:49
 msgid "Fee % and recipient"
 msgstr "Проценат накнаде и прималац"
 
@@ -4199,20 +4220,20 @@ msgstr "Политика накнада"
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:333
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:324
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:408
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:461
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:529
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:545
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:496
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:568
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:584
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:350
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:363
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:443
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:459
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:499
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:515
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:48
 msgid "Fee recipient"
 msgstr "Прималац накнаде"
 
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:296
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:467
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:599
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:503
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:638
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:151
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:104
 msgid "Fee recipient copied"
@@ -4228,8 +4249,8 @@ msgstr "Прималац накнаде је копиран"
 
 #. placeholder {0}: formatVoucherAddress(feeAddress)
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:366
-msgid "Fees are paid to {0}."
-msgstr "Накнаде се исплаћују на {0}."
+#~ msgid "Fees are paid to {0}."
+#~ msgstr "Накнаде се исплаћују на {0}."
 
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:327
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:44
@@ -5276,7 +5297,7 @@ msgid "Loading private attachment…"
 msgstr "Учитавање приватног прилога…"
 
 #: apps/web/src/components/retirement/retirement-control.tsx:67
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:666
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:705
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:274
 msgid "Loading retirement requests…"
 msgstr "Учитавање захтева за повлачење из употребе…"
@@ -5310,13 +5331,13 @@ msgstr "Учитавање токена…"
 msgid "Loading voucher…"
 msgstr "Учитавање ваучера…"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:247
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:248
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:524
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:151
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:427
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:541
 #: apps/web/src/features/home/ui/wallet-page.tsx:170
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:221
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:224
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:565
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:170
 #: apps/web/src/features/wallet/ui/collect-page.tsx:167
@@ -5376,7 +5397,7 @@ msgstr "Учитавање вашег профила…"
 #: apps/web/src/desktop/market/market-search-field.tsx:358
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:69
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:622
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:70
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:72
 #: apps/web/src/desktop/shell/desk-loading.tsx:19
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:157
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
@@ -5396,7 +5417,7 @@ msgstr "Учитавање вашег профила…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:808
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:67
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:69
 #: apps/web/src/features/wallet/hooks/use-send-payment.ts:130
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:247
 msgid "Loading…"
@@ -5479,7 +5500,7 @@ msgstr "У менију прегледача потражите „Инстал�
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:111
 #: apps/web/src/desktop/account/settings-desk.tsx:384
 #: apps/web/src/desktop/account/settings-desk.tsx:528
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:90
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:91
 msgid "Manage"
 msgstr "Upravljaj"
 
@@ -5492,7 +5513,7 @@ msgstr "Управљај: {0}"
 
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:58
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:83
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:48
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:55
 msgid "Manage voucher"
 msgstr "Управљање ваучером"
 
@@ -5585,10 +5606,10 @@ msgstr "Пронађене особе"
 msgid "Matching recipients"
 msgstr "Пронађени примаоци"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:419
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:449
 #: apps/web/src/desktop/wallet/send-desk.tsx:245
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:440
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:321
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:361
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:168
 msgid "Max"
 msgstr "Макс."
@@ -5801,9 +5822,9 @@ msgid "Multisig owned · {0} signers"
 msgstr "У власништву мултисига · {0} потписника"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:72
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:48
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:50
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:93
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:50
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:52
 msgid "Multisig transactions"
 msgstr "Мултисиг трансакције"
 
@@ -5960,15 +5981,15 @@ msgstr "Ново"
 msgid "New message"
 msgstr "Нова порука"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:150
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:144
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:159
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:163
 msgid "New owner"
 msgstr "Нови власник"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:442
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:454
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:619
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:631
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:658
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:670
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:518
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:530
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:52
@@ -6002,8 +6023,8 @@ msgstr "Нова објава"
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:255
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:231
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:234
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:129
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:152
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:141
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:164
 msgid "New signer"
 msgstr "Нови потписник"
 
@@ -6066,7 +6087,7 @@ msgid "No"
 msgstr "Не"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:171
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:236
 msgid "No {0} fees have accrued yet."
 msgstr "Још нема наплаћених накнада за {0}."
 
@@ -6357,8 +6378,8 @@ msgstr "Још нема објава."
 msgid "No QR code found. Try again with a clearer image."
 msgstr "QR код није пронађен. Покушајте поново са јаснијом сликом."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:78
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:75
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:80
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:77
 msgid "No queued proposals found."
 msgstr "Нема предлога у реду."
 
@@ -6500,8 +6521,8 @@ msgid "No. of participants"
 msgstr "Број учесника"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:171
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:180
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:203
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -6552,10 +6573,10 @@ msgid "Not sent"
 msgstr "Није послато"
 
 #: apps/web/src/desktop/account/profile-desk.tsx:363
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:131
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:604
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:132
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:643
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:47
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:119
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:122
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:40
 msgid "Not set"
 msgstr "Није постављено"
@@ -6736,8 +6757,8 @@ msgid "Open in Maps"
 msgstr "Отвори у мапама"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:100
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:98
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:102
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:100
 msgid "Open in Safe"
 msgstr "Отвори у Safe"
 
@@ -7009,9 +7030,9 @@ msgstr "Стање приступног кључа није могло бити 
 #~ msgstr "Приступни кључеви могу да потписују за мултисиг новчанике од Safe 1.5 "
 #~ "надаље. Користите свој папирни новчаник."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:244
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:253
 #: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:230
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:249
 msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in "
 "card."
 msgstr "Приступни кључеви могу да потписују за мултисиг новчанике од Safe 1.5 "
@@ -7101,7 +7122,7 @@ msgstr "Статус плаћања непознат"
 #: apps/web/src/desktop/messaging/thread-desk.tsx:58
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1095
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:145
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:214
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:223
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:85
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:160
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:384
@@ -7314,7 +7335,7 @@ msgstr "Стања тржнице"
 msgid "Pool contents"
 msgstr "Садржај фонда"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:88
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:91
 msgid "Pool controls"
 msgstr "Контроле фонда"
 
@@ -7361,7 +7382,12 @@ msgstr "Накнада тржнице"
 #~ msgid "Pool fee ({poolFeePercent})"
 #~ msgstr "Накнада тржнице ({poolFeePercent})"
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:258
+#. placeholder {0}: formatVoucherAddress(settings.feeAddress)
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:431
+msgid "Pool fee recipient: {0}"
+msgstr "Прималац накнаде тржнице: {0}"
+
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:342
 msgid "Pool fee updated."
 msgstr "Накнада тржнице је ажурирана."
 
@@ -7807,8 +7833,8 @@ msgstr "Профил је ажуриран"
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "Предлог је додат у ред. Потврдите га и извршите у Safe-у."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:74
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:71
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:76
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:73
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "Предлози овде нису доступни. И даље можете користити свој мултисиг "
 "новчаник."
@@ -7980,22 +8006,24 @@ msgstr "Расподјела оцјена"
 msgid "Reading the current rate…"
 msgstr "Учитавање тренутног курса…"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:400
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:430
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:148
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:301
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:341
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:240
 msgid "Reading the pool's balance…"
 msgstr "Учитавање стања тржнице…"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:287
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:417
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:288
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:519
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:416
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:473
 msgid "Reading this pool's fee…"
 msgstr "Учитавање накнаде ове тржнице…"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:134
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:604
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:135
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:643
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:438
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:122
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:125
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:40
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:586
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:600
@@ -8099,13 +8127,21 @@ msgstr "Недавни примаоци"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:258
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:270
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:136
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:365
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:380
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:494
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:138
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:152
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:377
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:389
 #: apps/web/src/desktop/wallet/send-desk.tsx:314
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:174
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:82
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:135
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:284
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:300
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:421
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:144
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:154
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:327
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:613
@@ -8227,7 +8263,7 @@ msgstr "Релативно одређивање цена"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:96
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:420
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:50
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:57
 msgid "Remove"
 msgstr "Уклони"
 
@@ -8290,12 +8326,12 @@ msgstr "Уклони фотографију {0}"
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:211
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:195
 #: apps/web/src/features/safe/hooks/use-multisig-signer-change.ts:55
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:27
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:34
 msgid "Remove signer"
 msgstr "Уклони потписника"
 
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:138
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:147
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:150
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:159
 msgid "Removed signer"
 msgstr "Уклоњени потписник"
 
@@ -8319,7 +8355,7 @@ msgstr "Уклањање…"
 msgid "Replace sign-in card"
 msgstr "Замијени картицу за пријаву"
 
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:29
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:36
 msgid "Replace signer"
 msgstr "Замени потписника"
 
@@ -8411,7 +8447,7 @@ msgstr "Захтев је одбијен"
 
 #: apps/web/src/components/retirement/retirement-control.tsx:44
 #: apps/web/src/components/retirement/retirement-request-form.tsx:148
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:54
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:55
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:253
 msgid "Request retirement"
 msgstr "Затражи повлачење из употребе"
@@ -8502,19 +8538,19 @@ msgstr "Повлачење из употребе не брише ваучер н
 "Постојећа салда и историја трансакција остају сачувани."
 
 #: apps/web/src/components/retirement/retirement-control.tsx:45
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:55
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:56
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:254
 msgid "Retirement history"
 msgstr "Историја повлачења из употребе"
 
 #: apps/web/src/components/retirement/retirement-control.tsx:42
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:52
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:53
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:251
 msgid "Retirement requested"
 msgstr "Повлачење из употребе је затражено"
 
 #: apps/web/src/components/retirement/retirement-control.tsx:87
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:685
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:724
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:293
 msgid "Retirement requested — awaiting admin review. This resource stays active "
 "until approval."
@@ -8565,7 +8601,7 @@ msgstr "Повлачење и одмор"
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:99
 #: apps/web/src/desktop/pools/create/unit-combobox-desk.tsx:132
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:50
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:678
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:717
 #: apps/web/src/desktop/pools/detail/pool-profile-desk.tsx:33
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:130
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:162
@@ -8668,8 +8704,8 @@ msgstr "Поништено"
 msgid "Review"
 msgstr "Преглед"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:248
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:234
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:257
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:253
 msgid "Review this transaction in your multisig wallet."
 msgstr "Прегледајте ову трансакцију у свом мултисиг новчанику."
 
@@ -8698,9 +8734,9 @@ msgid "Revoke this conversation?"
 msgstr "Опозвати овај разговор?"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:98
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:112
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:113
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:112
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:99
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:102
 msgid "Safe transactions"
 msgstr "Safe трансакције"
 
@@ -8739,8 +8775,8 @@ msgstr "Сачувај и поново отвори потребу"
 msgid "Save changes"
 msgstr "Сачувај измјене"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:508
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:474
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:547
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:530
 msgid "Save fee settings"
 msgstr "Сачувај подешавања накнаде"
 
@@ -9315,9 +9351,9 @@ msgstr "Sesija nije mogla biti verifikovana. Pokušajte ponovo."
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:475
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:370
-msgid "Set a fee recipient before collecting, or the pool has nowhere to pay."
-msgstr "Поставите примаоца накнада прије наплате, иначе тржница нема гдје да "
-"исплати."
+#~ msgid "Set a fee recipient before collecting, or the pool has nowhere to pay."
+#~ msgstr "Поставите примаоца накнада прије наплате, иначе тржница нема гдје да "
+#~ "исплати."
 
 #: apps/web/src/components/app-menu.tsx:157
 #~ msgid "Set saved location"
@@ -9625,7 +9661,7 @@ msgstr "Картица за пријаву"
 #~ msgstr "Начини пријаве"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:198
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:186
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:195
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:178
 msgid "Signers"
 msgstr "Потписници"
@@ -9895,8 +9931,8 @@ msgid "Swap fee"
 msgstr "Накнада за размену"
 
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:273
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:513
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:426
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:552
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:482
 msgid "Swap fee (%)"
 msgstr "Накнада за размену (%)"
 
@@ -10338,12 +10374,17 @@ msgstr "Фотографија није отпремљена. Уклоните �
 msgid "The pool"
 msgstr "Тржница"
 
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:371
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:291
+msgid "The pool can't pay itself."
+msgstr "Тржница не може да плати сама себи."
+
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:84
 msgid "The pool could not be published."
 msgstr "Тржница није могла бити објављена."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:102
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:149
 msgid "The pool doesn't hold that much {0}."
 msgstr "Тржница нема толико {0}."
 
@@ -10351,7 +10392,7 @@ msgstr "Тржница нема толико {0}."
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "Процјена се промијенила. Прегледајте ажуриране износе прије потврде."
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:583
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:622
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:33
 msgid "The recipient gains pool management and liquidity withdrawal authority. "
 "You lose ownership immediately when the transaction confirms."
@@ -10368,9 +10409,9 @@ msgstr "Захтјев је истекао без одговора сервис�
 msgid "The selected unit does not have a configured price feed."
 msgstr "Изабрана јединица нема подешен извор цене."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:119
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:184
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:261
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:165
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:264
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:345
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:388
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:406
 msgid "The transaction failed."
@@ -10633,8 +10674,8 @@ msgid "This pool has no limiter, so deposits are uncapped and no credit limit "
 msgstr "Ова тржница нема ограничавач, па депозити нису ограничени и кредитни "
 "лимит се не може поставити."
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:320
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:496
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:321
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:552
 msgid "This pool holds no vouchers yet."
 msgstr "Ова тржница још нема ваучера."
 
@@ -10869,16 +10910,16 @@ msgstr "Detalji prenosa"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:117
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:419
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:472
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:145
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:567
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:577
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:146
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:606
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:616
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:133
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:195
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:551
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:130
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:133
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:196
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:86
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:35
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:42
 msgid "Transfer ownership"
 msgstr "Пренеси власништво"
 
@@ -10919,7 +10960,7 @@ msgstr "Вожња"
 #: apps/web/src/desktop/messaging/thread-desk.tsx:89
 #: apps/web/src/desktop/messaging/thread-desk.tsx:113
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:199
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:255
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:256
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:68
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:61
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:315
@@ -10958,7 +10999,7 @@ msgstr "Вожња"
 #: apps/web/src/features/messaging/ui/thread-page.tsx:189
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:192
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:93
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:229
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:232
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:56
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:83
 #: apps/web/src/features/pools/ui/pool-holding-list.tsx:55
@@ -11021,7 +11062,7 @@ msgstr "Језик није могуће учитати. Враћено је н�
 #: apps/web/src/components/resource-usage.tsx:62
 #: apps/web/src/components/vouchers/voucher-summary.tsx:146
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:295
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:133
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:134
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:439
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:628
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:37
@@ -11039,7 +11080,7 @@ msgstr "Језик није могуће учитати. Враћено је н�
 #: apps/web/src/features/home/hooks/use-notification-settings.tsx:206
 #: apps/web/src/features/home/hooks/use-notification-settings.tsx:215
 #: apps/web/src/features/pools/hooks/use-pool-swap-form.ts:233
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:121
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:34
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:588
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:602
@@ -11102,8 +11143,8 @@ msgstr "Обрачунска јединица"
 msgid "Unknown"
 msgstr "Непознато"
 
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:52
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:68
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:59
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:75
 msgid "Unknown call"
 msgstr "Непознат позив"
 
@@ -11627,7 +11668,7 @@ msgstr "Vaučer: bilo koji"
 #: apps/web/src/desktop/market/market-list-desk.tsx:517
 #: apps/web/src/desktop/market/market-search-field.tsx:348
 #: apps/web/src/desktop/market/market-toolbar.tsx:34
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:325
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:326
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:502
 #: apps/web/src/desktop/pools/pool-main.tsx:399
 #: apps/web/src/desktop/pools/pool-main.tsx:434
@@ -11700,14 +11741,14 @@ msgstr "Чека се потврда…"
 msgid "Waiting for on-chain confirmation"
 msgstr "Чекање потврде на ланцу"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:382
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:452
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:508
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:573
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:412
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:484
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:547
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:612
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:241
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:337
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:391
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:474
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:379
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:447
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:530
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:82
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:454
 msgid "Waiting for the chain…"
@@ -11940,30 +11981,30 @@ msgstr "Гдје се то догодило?"
 msgid "With"
 msgstr "Са"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:382
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:412
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:73
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:331
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:342
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:337
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:379
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:119
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:61
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:205
 msgid "Withdraw"
 msgstr "Исплати"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:125
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:447
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:110
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:174
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:39
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:126
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:479
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:113
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:177
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:46
 msgid "Withdraw fees"
 msgstr "Повуци накнаде"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:119
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:377
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:105
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:156
-#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:37
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:120
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:407
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:108
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:159
+#: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:44
 msgid "Withdraw liquidity"
 msgstr "Повуци ликвидност"
 
@@ -12083,8 +12124,8 @@ msgstr "Можете написати или измијенити своју р�
 msgid "You can't message this person."
 msgstr "Не можете слати поруке овој особи."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:240
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:226
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:249
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:245
 msgid "You confirmed"
 msgstr "Потврдили сте"
 

@@ -6,6 +6,10 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 const SAFE = "0x1111111111111111111111111111111111111111";
 const ME = "0x00000000000000000000000000000000000000a1";
 const OTHER = "0x00000000000000000000000000000000000000b2";
+const POOL = "0x3333333333333333333333333333333333333333" as const;
+const TOKEN = "0x2222222222222222222222222222222222222222";
+const FEE_ADDRESS = "0x00000000000000000000000000000000000000c3";
+const MULTISEND = "0x4444444444444444444444444444444444444444";
 
 const mocks = vi.hoisted(() => ({
   pending: vi.fn(),
@@ -20,7 +24,10 @@ vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
   useReverseRecipientResolution: () => ({ data: null, isPending: false }),
 }));
 vi.mock("#/lib/api/safe", () => ({ safeClient: { pending: mocks.pending } }));
-vi.mock("#/lib/safe-config", () => ({ SAFE_APP_PREFIX: "gno", SAFE_MULTISEND_CALL_ONLY: [] }));
+vi.mock("#/lib/safe-config", () => ({
+  SAFE_APP_PREFIX: "gno",
+  SAFE_MULTISEND_CALL_ONLY: ["0x4444444444444444444444444444444444444444"],
+}));
 vi.mock("#/connectors/calibur-webauthn", () => ({
   CALIBUR_WEBAUTHN_CONNECTOR_ID: "calibur-webauthn",
 }));
@@ -43,6 +50,7 @@ vi.mock("../hooks/use-safe-confirm", () => ({
   useSafeConfirm: () => ({ mutate: mocks.confirm, isPending: false, variables: undefined }),
 }));
 
+import { encodeMultiSend } from "@clc/core/features/safe/logic";
 import { useSafeSheet } from "../state/safe-sheet";
 import { SafePendingSheet } from "./safe-pending-sheet";
 
@@ -131,6 +139,69 @@ describe("SafePendingSheet", () => {
     expect(within(sheet).getByText("Transfer ownership")).toBeTruthy();
     expect(within(sheet).getByText("New owner")).toBeTruthy();
     expect(within(sheet).queryByText("Amount")).toBeNull();
+  });
+
+  describe("pool withdrawals", () => {
+    const poolAbi = parseAbi([
+      "function withdrawLiquidity(address token, address to, uint256 amount)",
+      "function withdraw(address outToken)",
+      "function setFeeAddress(address feeAddress)",
+    ]);
+    const onPool = (data: `0x${string}`) => ({ to: POOL, value: "0", data });
+    const addressShown = (sheet: HTMLElement, address: string) =>
+      within(sheet).getByText(
+        (_text, node) => node?.getAttribute("dir") === "ltr" && node.textContent === address,
+      );
+
+    it("shows who receives withdrawn liquidity and how much", async () => {
+      const data = encodeFunctionData({
+        abi: poolAbi,
+        functionName: "withdrawLiquidity",
+        args: [TOKEN, OTHER, 2_500_000n],
+      });
+      const sheet = await openWith([proposal({ to: POOL, data })]);
+      expect(within(sheet).getByText("Withdraw liquidity")).toBeTruthy();
+      expect(within(sheet).getByText("Recipient")).toBeTruthy();
+      expect(addressShown(sheet, OTHER)).toBeTruthy();
+      expect(
+        await within(sheet).findByText(
+          (_text, node) => node?.tagName === "SPAN" && node.textContent === "2.50 MLTT",
+        ),
+      ).toBeTruthy();
+    });
+
+    it("reads fees paid elsewhere as one collection to that recipient", async () => {
+      const data = encodeMultiSend([
+        onPool(encodeFunctionData({ abi: poolAbi, functionName: "setFeeAddress", args: [OTHER] })),
+        onPool(encodeFunctionData({ abi: poolAbi, functionName: "withdraw", args: [TOKEN] })),
+        onPool(
+          encodeFunctionData({
+            abi: poolAbi,
+            functionName: "setFeeAddress",
+            args: [FEE_ADDRESS],
+          }),
+        ),
+      ]);
+      const sheet = await openWith([proposal({ to: MULTISEND, operation: 1, data })]);
+      expect(within(sheet).getAllByText("Withdraw fees")[0]!.tagName).toBe("SPAN");
+      expect(within(sheet).queryByText(/Fee % and recipient,/)).toBeNull();
+      expect(addressShown(sheet, OTHER)).toBeTruthy();
+      expect(await within(sheet).findByText("All accrued")).toBeTruthy();
+    });
+
+    it("reads the pool's fee address for a plain collection", async () => {
+      mocks.version.mockImplementation(
+        async (_client: unknown, request: { functionName: string }) =>
+          request.functionName === "feeAddress" ? FEE_ADDRESS : "1.4.1",
+      );
+      const data = encodeFunctionData({ abi: poolAbi, functionName: "withdraw", args: [TOKEN] });
+      const sheet = await openWith([proposal({ to: POOL, data })]);
+      await waitFor(() => expect(addressShown(sheet, FEE_ADDRESS)).toBeTruthy());
+      expect(mocks.version).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ address: POOL, functionName: "feeAddress" }),
+      );
+    });
   });
 
   it("shows the viewer's own confirmation instead of the button", async () => {

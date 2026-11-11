@@ -1,8 +1,10 @@
 import type { UserPool } from "@clc/api/features/pools/client";
 import {
   feePolicyDefaultFeeAbi,
+  POOL_FEE_ADDRESS_SEAL_STATE,
   POOL_FEE_PERCENT_DECIMALS,
   swapPoolFeeAddressAbi,
+  swapPoolIsSealedAbi,
 } from "@clc/core/features/pool-admin/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { useQuery } from "@tanstack/react-query";
@@ -17,6 +19,12 @@ export type PoolFeeSettings = {
   feePercent: string;
   /** Null where the pool has no recipient, in which case `withdraw` reverts. */
   feeAddress: `0x${string}` | null;
+  /**
+   * Whether `setFeeAddress` reverts `Sealed`, which pins fee collection to the
+   * current recipient. Null when the read failed: unknown, so the steward may
+   * try and the relay reports a refusal.
+   */
+  feeAddressSealed: boolean | null;
 };
 
 export const poolFeeSettingsQueryKeys = {
@@ -47,8 +55,8 @@ export function usePoolFeeSettings(pool: UserPool | null | undefined, enabled: b
       if (!client || !poolAddress || !feePolicyAddress) {
         throw new Error("The pool fee read is missing a client or a fee policy.");
       }
-      const [feeAddress, feePpm] = await multicall(client, {
-        allowFailure: false,
+      const [feeAddressRead, feePpmRead, sealedRead] = await multicall(client, {
+        allowFailure: true,
         contracts: [
           { address: poolAddress, abi: swapPoolFeeAddressAbi, functionName: "feeAddress" as const },
           {
@@ -56,8 +64,19 @@ export function usePoolFeeSettings(pool: UserPool | null | undefined, enabled: b
             abi: feePolicyDefaultFeeAbi,
             functionName: "getDefaultFee" as const,
           },
+          {
+            address: poolAddress,
+            abi: swapPoolIsSealedAbi,
+            functionName: "isSealed" as const,
+            args: [POOL_FEE_ADDRESS_SEAL_STATE],
+          },
         ],
       });
+      // The seal is advisory; the rate and the recipient are what the form shows.
+      if (feeAddressRead.status !== "success") throw feeAddressRead.error;
+      if (feePpmRead.status !== "success") throw feePpmRead.error;
+      const feeAddress = feeAddressRead.result;
+      const feePpm = feePpmRead.result;
 
       return {
         feePpm: feePpm.toString(),
@@ -67,6 +86,7 @@ export function usePoolFeeSettings(pool: UserPool | null | undefined, enabled: b
           POOL_FEE_PERCENT_DECIMALS,
         ),
         feeAddress: feeAddress.toLowerCase() === zeroAddress ? null : feeAddress,
+        feeAddressSealed: sealedRead.status === "success" ? sealedRead.result : null,
       };
     },
     enabled: enabled && !!client && !!poolAddress && !!feePolicyAddress,

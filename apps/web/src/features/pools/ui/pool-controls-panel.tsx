@@ -16,7 +16,9 @@ import { RetirementControl } from "#/components/retirement/retirement-control";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
+import { RecipientOwnerNotice } from "#/components/safe/recipient-owner-notice";
 import { RecipientAddressInput } from "#/components/wallet/recipient-address-input";
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import {
   SheetBackdrop,
   SheetContent,
@@ -29,6 +31,7 @@ import {
 import { useSafeSheet } from "#/features/safe/state/safe-sheet";
 import type { PoolFeeSettings } from "#/features/pools/hooks/use-pool-fee-settings";
 import {
+  type PayoutRecipient,
   usePoolCollectFeesForm,
   usePoolControls,
   usePoolFeeSettingsForm,
@@ -183,7 +186,7 @@ export function PoolControlsPanel({
           pool={pool}
           vouchers={withdrawalVouchers}
           treasury={treasury.data}
-          feeAddress={fee?.feeAddress ?? null}
+          settings={fee}
           onDone={() => setSheet(null)}
         />
       </ControlSheetShell>
@@ -265,7 +268,44 @@ function ControlSheetShell({
   );
 }
 
-/** Sends pool liquidity to the owner's own wallet; see `usePoolWithdrawLiquidityForm`. */
+/** Where a withdrawal is paid, starting from the signed-in wallet; see `usePayoutRecipient`. */
+function PayoutRecipientField({
+  id,
+  payout,
+  hint,
+}: {
+  id: string;
+  payout: PayoutRecipient;
+  hint?: string;
+}) {
+  const { t } = useLingui();
+  return (
+    <Field
+      label={t`Recipient`}
+      htmlFor={id}
+      hint={hint}
+      error={
+        payout.problem === "invalid"
+          ? t`Enter a valid wallet address`
+          : payout.problem === "pool"
+            ? t`The pool can't pay itself.`
+            : null
+      }
+    >
+      <RecipientAddressInput
+        id={id}
+        defaultValue={payout.recipient}
+        onValueChange={payout.setRecipient}
+        onRecipientChange={(next) => payout.setResolved(next?.address ?? null)}
+        ariaLabel={t`Recipient`}
+        ariaInvalid={payout.problem !== null}
+      />
+      <RecipientOwnerNotice address={payout.payable ?? ""} />
+    </Field>
+  );
+}
+
+/** Sends pool liquidity to the chosen recipient; see `usePoolWithdrawLiquidityForm`. */
 function WithdrawLiquidityForm({
   pool,
   vouchers,
@@ -323,6 +363,8 @@ function WithdrawLiquidityForm({
             </div>
           </Field>
         ) : null}
+
+        <PayoutRecipientField id="pool-withdraw-recipient" payout={form.payout} />
       </div>
 
       <SheetFooter>
@@ -346,37 +388,51 @@ function CollectFeesForm({
   pool,
   vouchers,
   treasury,
-  feeAddress,
+  settings,
   onDone,
 }: {
   pool: UserPool;
   vouchers: PoolVoucher[];
   treasury: Map<string, { feesRaw: string }> | undefined;
   /** Read from the pool, not the catalog — see `usePoolFeeSettings`. */
-  feeAddress: `0x${string}` | null;
+  settings: PoolFeeSettings | undefined;
   onDone: () => void;
 }) {
-  const form = usePoolCollectFeesForm({ pool, vouchers, treasury, onDone });
+  const { t } = useLingui();
+  const form = usePoolCollectFeesForm({ pool, vouchers, treasury, settings, onDone });
 
   return (
     <>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-2">
-        {feeAddress ? (
-          <p className="text-muted-foreground text-xs">
-            <Trans>Fees are paid to {formatVoucherAddress(feeAddress)}.</Trans>
-          </p>
-        ) : (
-          <p role="alert" className="border border-border bg-card p-4 text-destructive text-sm">
-            <Trans>Set a fee recipient before collecting, or the pool has nowhere to pay.</Trans>
-          </p>
-        )}
-
         <TokenChooser
           vouchers={vouchers}
           selectedAddress={form.tokenAddress}
           onSelect={form.selectToken}
           amountFor={form.amountFor}
         />
+
+        {!settings ? (
+          <p className="text-muted-foreground text-xs">
+            <Trans>Reading this pool's fee…</Trans>
+          </p>
+        ) : form.locked && settings.feeAddress ? (
+          <div className="flex items-start justify-between gap-3">
+            <span className="shrink-0 font-medium text-sm">
+              <Trans>Recipient</Trans>
+            </span>
+            <RecipientIdentityLabel address={settings.feeAddress} showAddress />
+          </div>
+        ) : (
+          <PayoutRecipientField
+            id="pool-fees-recipient"
+            payout={form.payout}
+            hint={
+              settings.feeAddress
+                ? t`Pool fee recipient: ${formatVoucherAddress(settings.feeAddress)}`
+                : undefined
+            }
+          />
+        )}
       </div>
 
       <SheetFooter>
@@ -384,7 +440,7 @@ function CollectFeesForm({
           type="button"
           tap
           className="w-full"
-          disabled={!form.selected || !feeAddress}
+          disabled={!form.canSubmit}
           pending={form.inFlight}
           onClick={() => void form.submit()}
         >
