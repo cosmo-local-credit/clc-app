@@ -8,6 +8,9 @@ import type { WalletToken } from "./wallet-data";
  * token amount beneath. Vouchers state different units and there is no rate
  * between them, so each row keeps its own unit and nothing is summed. A
  * holding with no stated rate shows its token amount alone.
+ *
+ * Each figure keeps its locked font: the value, like every KES or USD amount,
+ * is mono; the token amount, as a row balance, is the heading font.
  */
 export function HoldingBalance({
   token,
@@ -21,22 +24,22 @@ export function HoldingBalance({
         i18n.locales?.[0] ?? i18n.locale,
       )
     : null;
-  const figure = value && token.unitValue ? `${value} ${token.unitValue.unit}` : token.amount;
 
   return (
     <div className="shrink-0 text-end">
-      <p className="text-sm">
-        <span dir="ltr" className="font-heading font-semibold tracking-tight">
-          {figure}
-        </span>
-      </p>
-      {value ? (
-        <p className="text-muted-foreground text-2xs">
-          <span dir="ltr" className="font-mono">
-            {token.amount} {token.symbol}
+      {value && token.unitValue ? (
+        <p className="text-sm">
+          <span dir="ltr" className="font-mono font-semibold">
+            {value} {token.unitValue.unit}
           </span>
         </p>
       ) : null}
+      <p className={value ? "text-muted-foreground text-2xs" : "text-sm"}>
+        <span dir="ltr" className="font-heading font-semibold tracking-tight">
+          {token.amount}
+          {value ? ` ${token.symbol}` : null}
+        </span>
+      </p>
     </div>
   );
 }

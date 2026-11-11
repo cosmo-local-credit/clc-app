@@ -52,7 +52,7 @@ const INTER_COUNT_FILES = new Set([
 /** Balances in voucher and token rows, set in the heading font as on master. */
 const HEADING_BALANCES: Record<string, string> = {
   // The Wallet's Holdings and My Vouchers, and All vouchers.
-  "components/wallet/holding-balance.tsx": "{figure}",
+  "components/wallet/holding-balance.tsx": "{token.amount}",
   "features/wallet/ui/token-picker-sheet.tsx": "{token.amount}",
 };
 

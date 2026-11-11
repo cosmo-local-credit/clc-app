@@ -17,6 +17,17 @@ describe("HoldingBalance", () => {
     expect(screen.getByText("15.3 X")).toBeTruthy();
   });
 
+  it("keeps the value in mono and the token balance in the heading font", () => {
+    render(
+      <HoldingBalance
+        token={{ amount: "15.3", symbol: "X", unitValue: { value: "153", unit: "KES" } }}
+      />,
+    );
+    expect(screen.getByText("153 KES").className).toMatch(/\bfont-mono\b/);
+    expect(screen.getByText("153 KES").className).not.toMatch(/\bfont-heading\b/);
+    expect(screen.getByText("15.3 X").className).toMatch(/\bfont-heading\b.*\btracking-tight\b/);
+  });
+
   it("keeps each voucher in its own unit", () => {
     render(
       <HoldingBalance
@@ -30,7 +41,7 @@ describe("HoldingBalance", () => {
     const { container } = render(
       <HoldingBalance token={{ amount: "4", symbol: "Z", unitValue: null }} />,
     );
-    expect(screen.getByText("4")).toBeTruthy();
+    expect(screen.getByText("4").className).toMatch(/\bfont-heading\b/);
     expect(container.querySelectorAll("p")).toHaveLength(1);
   });
 
