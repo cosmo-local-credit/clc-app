@@ -16,8 +16,10 @@ import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useReportFeed } from "#/features/home/hooks/use-filtered-reports";
 import { useReportsInfinite } from "#/features/home/hooks/use-reports";
 import { useReportFilterNotice } from "#/features/home/hooks/use-report-filter-notice";
+import { PostedWithinChips } from "#/features/home/ui/posted-within-chips";
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
+import { usePostedWithin } from "#/lib/navigation/use-posted-within";
 import { formatReportDate } from "#/lib/report-display";
 import { cn } from "#/lib/utils";
 
@@ -33,14 +35,16 @@ const POST_GRID = "grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4";
 
 export function PostsDesk() {
   const { t, i18n } = useLingui();
-  const filter = usePersistedCatalogFilter(
-    CATALOG_FILTER_PREFERENCE_NAMES.posts,
-    useStorageOwner(),
-    { voucherRelationships: true, poolRelationships: true },
-  );
+  const owner = useStorageOwner();
+  const { posted, setPosted } = usePostedWithin(owner);
+  const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_NAMES.posts, owner, {
+    voucherRelationships: true,
+    poolRelationships: true,
+  });
   const reportsQuery = useReportsInfinite(
     undefined,
     !filter.isFiltered && !filter.isRestoringPreference,
+    posted,
   );
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   // Below 56rem of canvas the facets leave the page and open from the toolbar,
@@ -62,6 +66,7 @@ export function PostsDesk() {
       isFetchingNextPage: reportsQuery.isFetchingNextPage,
     },
     true,
+    posted,
   );
   const notice = useReportFilterNotice({
     filter,
@@ -158,6 +163,8 @@ export function PostsDesk() {
           tagFacets={feed.tagFacets}
           voucherFacets={feed.voucherFacets}
           poolFacets={feed.poolFacets}
+          posted={posted}
+          onPostedChange={setPosted}
         />
       </div>
 
@@ -181,6 +188,7 @@ export function PostsDesk() {
           </div>
         ) : null}
         <MarketViewportSearchNotice query={filter.result.ok ? filter.result.filter.term : ""} />
+        <PostedWithinChips posted={posted} onChange={setPosted} />
 
         {feed.status === "loading" ? (
           <div aria-busy="true" aria-label={t`Loading posts…`} className={POST_GRID}>
@@ -204,7 +212,11 @@ export function PostsDesk() {
                 </>
               ) : (
                 <p className="text-sm">
-                  <Trans>No posts yet.</Trans>
+                  {posted === "all" ? (
+                    <Trans>No posts yet.</Trans>
+                  ) : (
+                    <Trans>No posts in this period.</Trans>
+                  )}
                 </p>
               )}
             </div>

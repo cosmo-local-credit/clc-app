@@ -113,6 +113,7 @@ describe("useVoucherReportsInfinite", () => {
       {
         perPage: 2,
         cursor: undefined,
+        posted: "all",
         filter: {
           term: "",
           tags: [],

@@ -98,8 +98,18 @@ describe("useMarketMap", () => {
     expect(result.current.isSettled).toBe(true);
     expect(mocks.options).toHaveBeenCalledWith(
       {},
-      expect.objectContaining({ zoom: 9, kinds: ["voucher", "post"], facets: true }),
+      expect.objectContaining({
+        zoom: 9,
+        kinds: ["voucher", "post"],
+        facets: true,
+        posted: "1m",
+      }),
     );
+  });
+
+  it("forwards the posted window into the map query", () => {
+    renderHook(() => useMarketMap({ ...options, posted: "all" }));
+    expect(mocks.options).toHaveBeenCalledWith({}, expect.objectContaining({ posted: "all" }));
   });
 
   it("retains an error for recovery and retries on demand", () => {

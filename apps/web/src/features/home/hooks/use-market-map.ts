@@ -1,6 +1,7 @@
 import { marketMapQueryOptions } from "@clc/api/features/market-map/queries";
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { DEFAULT_POSTED_WITHIN, type PostedWithin } from "@clc/core/features/reports/logic";
 import type {
   MarketMapCluster,
   MarketMapKind,
@@ -24,6 +25,7 @@ type UseMarketMapOptions = {
   kinds: readonly MarketMapKind[];
   filter: Pick<CatalogFilter, "term" | "tags" | "tagMatch">;
   creditablePools?: readonly { chainId: number; address: string }[];
+  posted?: PostedWithin;
   facets: boolean;
   enabled: boolean;
 };
@@ -36,6 +38,7 @@ export function useMarketMap(options: UseMarketMapOptions) {
       kinds: options.kinds,
       filter: options.filter,
       creditablePools: options.creditablePools,
+      posted: options.posted ?? DEFAULT_POSTED_WITHIN,
       facets: options.facets,
     }),
     enabled: options.enabled,

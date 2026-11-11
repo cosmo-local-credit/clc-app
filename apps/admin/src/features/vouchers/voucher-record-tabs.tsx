@@ -329,7 +329,9 @@ function catalogFilter(voucher: MarketVoucherDetail): CatalogFilter | null {
  * is the question a voucher record is asked.
  */
 function ReportsPanel({ filter }: { filter: CatalogFilter }) {
-  const query = useQuery(reportFilteredQueryOptions(clcApi.reports, filter, RECORD_PAGE_SIZE));
+  const query = useQuery(
+    reportFilteredQueryOptions(clcApi.reports, filter, RECORD_PAGE_SIZE, "all"),
+  );
   const state = useDataState(query, (page) => page.reports.length === 0);
 
   return (

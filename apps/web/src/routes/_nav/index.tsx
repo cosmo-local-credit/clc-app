@@ -15,6 +15,7 @@ import {
   isPrivateHomeTab,
   parseHomeSearch,
 } from "#/lib/navigation/home-tabs";
+import { canonicalPostedSearch } from "#/lib/navigation/posted-search";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { parseWantId } from "#/lib/navigation/want-sheet-search";
 import {
@@ -121,12 +122,17 @@ export const Route = createFileRoute("/_nav/")({
         replace: true,
       });
     }
+    const posted = canonicalPostedSearch(search);
     const next = canonicalRedirectSearch(search, {
       voucherRelationships: search.tab === "posts",
       poolRelationships: search.tab === "posts",
     });
-    if (!next) return;
-    throw redirect({ to: "/", search: next, replace: true });
+    if (!posted && !next) return;
+    throw redirect({
+      to: "/",
+      search: { ...(next ?? search), ...posted },
+      replace: true,
+    });
   },
   component: IndexPage,
 });

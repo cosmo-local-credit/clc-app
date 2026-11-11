@@ -1,5 +1,6 @@
 import { useNearbyCatalog, nearbyQueryPolicy } from "#/components/nearby-catalog";
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
+import { DEFAULT_POSTED_WITHIN, type PostedWithin } from "@clc/core/features/reports/logic";
 import { queryOptions, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import {
@@ -26,9 +27,13 @@ const reportQueryKeys = {
     [...reportKeys.all, "location", { lat: lat ?? "none", lng: lng ?? "none" }] as const,
 };
 
-export function useReportsInfinite(perPage = REPORTS_PAGE_SIZE, enabled = true) {
+export function useReportsInfinite(
+  perPage = REPORTS_PAGE_SIZE,
+  enabled = true,
+  posted: PostedWithin = DEFAULT_POSTED_WITHIN,
+) {
   const nearby = useNearbyCatalog();
-  const options = reportFeedInfiniteQueryOptions(reportsClient, perPage, nearby);
+  const options = reportFeedInfiniteQueryOptions(reportsClient, perPage, nearby, posted);
   return useInfiniteQuery({
     ...options,
     enabled,

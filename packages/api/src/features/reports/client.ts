@@ -4,12 +4,14 @@ import {
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
 import {
+  type PostedWithin,
   type ReportAttachmentKind,
   type ReportMarkerIcon,
   type ReportStatus,
   type ReportWrite,
   isReportStatus,
   reportWriteSchema,
+  serializePostedWithin,
 } from "@clc/core/features/reports/logic";
 import {
   isMarkerColor,
@@ -207,6 +209,8 @@ export type FilteredReportsParams = {
   facets?: boolean;
   /** Posts directly linked to these pools or to vouchers they accept. */
   creditablePools?: readonly VoucherRef[];
+  /** Created-at window. Omitted is 1 month; `all` is every approved post. */
+  posted?: PostedWithin;
 };
 
 export type FilteredReportPage = ReportPage & {
@@ -364,12 +368,14 @@ export function createReportsClient(http: HttpClient) {
         cursor?: ReportCursor;
         nearby?: boolean;
         bounds?: readonly MarketBoundingBox[];
+        posted?: PostedWithin;
       },
       signal?: AbortSignal,
     ): Promise<ReportPage> {
       const query = new URLSearchParams({ perPage: String(params.perPage) });
       if (params.nearby) query.set("nearby", "true");
       appendMarketBounds(query, params.bounds);
+      appendPostedWithin(query, params.posted);
       if (params.cursor) {
         query.set("cursorUpdatedAt", params.cursor.updatedAt);
         query.set("cursorId", params.cursor.id);
@@ -388,7 +394,16 @@ export function createReportsClient(http: HttpClient) {
     },
 
     async getFilteredReports(
-      { filter, facets, perPage, cursor, nearby, bounds, creditablePools }: FilteredReportsParams,
+      {
+        filter,
+        facets,
+        perPage,
+        cursor,
+        nearby,
+        bounds,
+        creditablePools,
+        posted,
+      }: FilteredReportsParams,
       signal?: AbortSignal,
     ): Promise<FilteredReportPage> {
       const query = new URLSearchParams({ perPage: String(perPage) });
@@ -397,6 +412,7 @@ export function createReportsClient(http: HttpClient) {
         query.set("cursorId", cursor.id);
       }
       appendCatalogFilter(query, filter);
+      appendPostedWithin(query, posted);
       if (facets) query.set("facets", "true");
       if (nearby) query.set("nearby", "true");
       appendMarketBounds(query, bounds);
@@ -515,6 +531,11 @@ export function createReportsClient(http: HttpClient) {
       return normalizeID(result.id) ?? id;
     },
   };
+}
+
+function appendPostedWithin(query: URLSearchParams, posted: PostedWithin | undefined): void {
+  const value = serializePostedWithin(posted ?? "1m");
+  if (value) query.set("posted", value);
 }
 
 function appendCatalogFilter(query: URLSearchParams, filter: CatalogFilter): void {

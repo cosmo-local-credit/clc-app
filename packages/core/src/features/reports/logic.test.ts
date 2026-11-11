@@ -4,9 +4,14 @@ import {
   formatByteSize,
   isExternalMarkdownHref,
   safeMarkdownHref,
+  DEFAULT_POSTED_WITHIN,
+  POSTED_WITHIN,
   REPORT_ATTACHMENT_KINDS,
   REPORT_STATUSES,
   emptyReportWrite,
+  isPostedWithin,
+  parsePostedWithin,
+  serializePostedWithin,
   formValuesToReportWrite,
   fromDateTimeLocalValue,
   isReportStatus,
@@ -31,6 +36,29 @@ function firstError(value: ReportWrite): string | undefined {
   const result = reportWriteSchema.safeParse(value);
   return result.success ? undefined : result.error.issues[0]?.message;
 }
+
+describe("posted within", () => {
+  it("holds the five public windows", () => {
+    expect(POSTED_WITHIN).toEqual(["1m", "3m", "6m", "1y", "all"]);
+    expect(DEFAULT_POSTED_WITHIN).toBe("1m");
+  });
+
+  it("parses known values and defaults the rest", () => {
+    expect(parsePostedWithin("3m")).toBe("3m");
+    expect(parsePostedWithin("all")).toBe("all");
+    expect(parsePostedWithin(undefined)).toBe("1m");
+    expect(parsePostedWithin("1m")).toBe("1m");
+    expect(parsePostedWithin("2m")).toBe("1m");
+    expect(isPostedWithin("1y")).toBe(true);
+    expect(isPostedWithin("week")).toBe(false);
+  });
+
+  it("omits the default from the wire and always sends all-time", () => {
+    expect(serializePostedWithin("1m")).toBeUndefined();
+    expect(serializePostedWithin("3m")).toBe("3m");
+    expect(serializePostedWithin("all")).toBe("all");
+  });
+});
 
 describe("the closed sets", () => {
   // The exact set, not "at least these": a status this list gains without

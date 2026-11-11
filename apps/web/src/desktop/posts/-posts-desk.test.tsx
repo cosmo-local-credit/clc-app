@@ -177,6 +177,15 @@ describe("the Posts feed", () => {
     expect(search.getAttribute("placeholder")).toBe("Search posts");
     expect(screen.queryByPlaceholderText(/by title or description/i)).toBeNull();
   });
+
+  it("keeps the posted window above the grid and in the facet column", () => {
+    render(<PostsDesk />);
+
+    const groups = screen.getAllByRole("group", { name: "Posted within" });
+    expect(groups.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole("button", { name: "1 month" }).length).toBeGreaterThan(1);
+    expect(screen.getByRole("heading", { name: "Posted within" })).toBeTruthy();
+  });
 });
 
 describe("the Posts filters", () => {

@@ -2,6 +2,7 @@ import type { NearbyRequest } from "@clc/core/features/catalog/nearby";
 import { marketBoundsKey, type MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { type VoucherRef, serializeVoucherRef } from "@clc/core/features/catalog/logic";
+import { DEFAULT_POSTED_WITHIN, type PostedWithin } from "@clc/core/features/reports/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import type { ManagedReportsParams, ReportCursor, ReportFilter, ReportsClient } from "./client";
 import { isRetryableBackendError } from "../../client/errors";
@@ -35,12 +36,16 @@ export const reportKeys = {
 
   /** Finite and infinite reads cache different shapes, so they never share a key. */
   list: (perPage: number) => ["clc", "reports", "list", perPage] as const,
-  feed: (perPage: number) => ["clc", "reports", "feed", perPage] as const,
+  feed: (perPage: number, posted: PostedWithin = DEFAULT_POSTED_WITHIN) =>
+    ["clc", "reports", "feed", perPage, posted] as const,
 
   detail: (id: string) => ["clc", "reports", "detail", id] as const,
 
-  filtered: (filter: ReportFilter | null, perPage: number) =>
-    ["clc", "reports", "filtered", { filter, perPage }] as const,
+  filtered: (
+    filter: ReportFilter | null,
+    perPage: number,
+    posted: PostedWithin = DEFAULT_POSTED_WITHIN,
+  ) => ["clc", "reports", "filtered", { filter, perPage, posted }] as const,
   map: (
     filter: CatalogFilter,
     bounds: readonly MarketBoundingBox[],
@@ -71,7 +76,8 @@ export const reportKeys = {
       voucher ? serializeVoucherRef(voucher) : "none",
       perPage,
     ] as const,
-  facetVocabulary: () => ["clc", "reports", "facet-vocabulary"] as const,
+  facetVocabulary: (posted: PostedWithin = DEFAULT_POSTED_WITHIN) =>
+    ["clc", "reports", "facet-vocabulary", posted] as const,
 
   /**
    * One author's own posts, in every status.
@@ -97,16 +103,18 @@ export function reportFeedInfiniteQueryOptions(
   reports: ReportsClient,
   perPage: number,
   nearby?: NearbyRequest,
+  posted: PostedWithin = DEFAULT_POSTED_WITHIN,
 ) {
   return infiniteQueryOptions({
     queryKey: nearby?.scope
-      ? ([...reportKeys.feed(perPage), nearby.scope] as const)
-      : reportKeys.feed(perPage),
+      ? ([...reportKeys.feed(perPage, posted), nearby.scope] as const)
+      : reportKeys.feed(perPage, posted),
     queryFn: ({ pageParam, signal }) =>
       reports.getReports(
         {
           perPage,
           cursor: pageParam,
+          posted,
           ...(nearby?.nearby === true ? { nearby: true } : {}),
           ...(nearby?.bounds ? { bounds: nearby.bounds } : {}),
         },
@@ -132,6 +140,7 @@ export function reportVoucherFeedInfiniteQueryOptions(
           perPage,
           cursor: pageParam,
           filter: { ...EMPTY_REPORT_FILTER, vouchers: [voucher] },
+          posted: "all",
         },
         signal,
       );
@@ -145,10 +154,11 @@ export function reportFilteredQueryOptions(
   reports: ReportsClient,
   filter: ReportFilter,
   perPage: number,
+  posted: PostedWithin = DEFAULT_POSTED_WITHIN,
 ) {
   return queryOptions({
-    queryKey: reportKeys.filtered(filter, perPage),
-    queryFn: ({ signal }) => reports.getFilteredReports({ filter, perPage }, signal),
+    queryKey: reportKeys.filtered(filter, perPage, posted),
+    queryFn: ({ signal }) => reports.getFilteredReports({ filter, perPage, posted }, signal),
     placeholderData: keepPreviousData,
   });
 }

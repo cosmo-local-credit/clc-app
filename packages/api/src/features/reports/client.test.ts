@@ -36,6 +36,25 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("posted window", () => {
+  it("omits the 1-month default and always sends all-time", async () => {
+    const fetcher = mockFetch({ reports: [] });
+    vi.stubGlobal("fetch", fetcher);
+
+    await api.getReports({ perPage: 20 });
+    expect(new URL(String(fetcher.mock.calls[0]?.[0])).searchParams.has("posted")).toBe(false);
+
+    await api.getReports({ perPage: 20, posted: "1m" });
+    expect(new URL(String(fetcher.mock.calls[1]?.[0])).searchParams.has("posted")).toBe(false);
+
+    await api.getReports({ perPage: 20, posted: "all" });
+    expect(new URL(String(fetcher.mock.calls[2]?.[0])).searchParams.get("posted")).toBe("all");
+
+    await api.getFilteredReports({ perPage: 20, filter: EMPTY_FILTER, posted: "6m" });
+    expect(new URL(String(fetcher.mock.calls[3]?.[0])).searchParams.get("posted")).toBe("6m");
+  });
+});
+
 describe("getFilteredReports", () => {
   it("serializes stable voucher identities and all-match with the cursor", async () => {
     const fetcher = mockFetch({ reports: [] });
