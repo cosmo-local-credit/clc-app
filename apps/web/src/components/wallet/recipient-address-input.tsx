@@ -13,12 +13,7 @@ import {
   useRecipientSearch,
   useReverseRecipientResolution,
 } from "#/features/wallet/hooks/use-recipient-resolution";
-import {
-  isAddress,
-  isPhone,
-  normalizePhone,
-  normalizeScannedRecipient,
-} from "./recipient-validation";
+import { acceptScannedRecipient, isAddress, isPhone, normalizePhone } from "./recipient-validation";
 import { EllipsizedAddress } from "./wallet-address";
 import { CHAIN_ID } from "#/lib/chain";
 import { cn } from "#/lib/utils";
@@ -70,6 +65,7 @@ export function RecipientAddressInput({
   const { t } = useLingui();
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [scanError, setScanError] = useState(false);
   const [selected, setSelected] = useState<{ query: string; identity: RecipientIdentity } | null>(
     null,
   );
@@ -144,8 +140,19 @@ export function RecipientAddressInput({
     onValueChange?.(next);
   }
 
+  function closeScanner() {
+    setScanError(false);
+    setScannerOpen(false);
+  }
+
   function handleScanDecoded(scanned: string) {
-    setQuery(normalizeScannedRecipient(scanned), true);
+    const accepted = acceptScannedRecipient(scanned);
+    if (!accepted.ok) {
+      setScanError(true);
+      return;
+    }
+    setScanError(false);
+    setQuery(accepted.value, true);
     setScannerOpen(false);
   }
 
@@ -228,10 +235,15 @@ export function RecipientAddressInput({
         <div className="mt-3 border border-border bg-card p-3">
           <PaperWalletScanner
             title={<Trans>Scan recipient address</Trans>}
-            onCancel={() => setScannerOpen(false)}
+            onCancel={closeScanner}
             onKeyDecoded={handleScanDecoded}
           />
         </div>
+      ) : null}
+      {scanError ? (
+        <p className="mt-3 text-destructive text-xs" role="alert">
+          <Trans>This QR is a sign-in card. Scan a wallet address.</Trans>
+        </p>
       ) : null}
 
       {resolutionError ? (

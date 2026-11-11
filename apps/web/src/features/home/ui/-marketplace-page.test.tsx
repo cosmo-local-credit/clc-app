@@ -212,6 +212,20 @@ function catalog(): MarketplaceResult {
   };
 }
 
+function post(): MarketplaceResult {
+  return {
+    ...base,
+    kind: "post",
+    id: "57",
+    name: "Community harvest",
+    chainId: null,
+    address: null,
+    symbol: null,
+    markerIcon: "post",
+    markerColor: "pink",
+  };
+}
+
 function rowLink(name: string) {
   const link = screen.getByText(name).closest("a");
   if (!link) throw new Error(`no row for ${name}`);
@@ -306,6 +320,14 @@ describe("MarketplacePage", () => {
     expect(rowLink("Bike voucher").textContent).toContain("+1");
     expect(rowLink("Kibera pool").textContent).toContain("Pool");
     expect(rowLink("Market day").textContent).toContain("Catalog");
+  });
+
+  it("renders an explicitly returned Post with its own artwork and destination", () => {
+    mocks.query.data = { pages: [{ results: [post()] }] };
+    render(<MarketplacePage />);
+
+    expect(rowLink("Community harvest").getAttribute("href")).toBe("/posts/57");
+    expect(rowLink("Community harvest").textContent).toContain("Post");
   });
 
   it("asks for every kind with the search, its tags and the Credit pools", () => {

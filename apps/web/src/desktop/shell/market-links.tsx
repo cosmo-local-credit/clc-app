@@ -1,8 +1,7 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import type { ComponentProps } from "react";
 
-import { type DesktopScopeId, marketViewOf } from "#/desktop/chrome";
-import { resolveMarketView } from "#/desktop/market/market-view";
+import type { DesktopScopeId } from "#/desktop/chrome";
 import {
   marketplaceSearchForScope,
   marketplaceSharedSearch,
@@ -14,52 +13,33 @@ type LinkLook = Pick<
 >;
 
 /**
- * Where the shell's marketplace links go. Every one keeps the Map/List choice
- * the URL already carries and never adds one: a fresh visit is the map, which
- * is what an absent `view` already means. The toolbar's own links follow the
- * same rule, so a scope is the same place however it is reached.
+ * A resource destination is always its full-page list. The map is one unified
+ * destination whose visible resources are controlled by the Resources chip.
  */
 function marketScopeSearch(previous: unknown, scope: DesktopScopeId) {
-  const view = marketViewOf(previous);
   return {
     ...marketplaceSearchForScope(marketplaceSharedSearch(previous), scope),
-    ...(view ? { view } : {}),
+    view: "list" as const,
   };
 }
 
-/** One list of the marketplace, in the view the person is already using. */
+/** One full-page marketplace resource list. */
 export function MarketScopeLink({ scope, ...props }: LinkLook & { scope: DesktopScopeId }) {
   return <Link to="/market" search={(previous) => marketScopeSearch(previous, scope)} {...props} />;
 }
 
 /**
- * The marketplace as a whole. On the map that is the home map; in the list
- * view it is the list of everything, because the home route has no list.
- * From a screen whose URL names no view (the Wallet), it opens in the view the
- * person last used: the home map would otherwise record "map" and overwrite a
- * remembered list.
+ * The unified marketplace map. It never inherits a list scope or a remembered
+ * view because the sidebar's Market destination is explicit.
  */
 export function MarketHomeLink(props: LinkLook) {
-  const view = useRouterState({ select: (state) => marketViewOf(state.location.search) });
-  if (resolveMarketView(view) === "list") {
-    return (
-      <Link
-        to="/market"
-        search={(previous) => ({
-          ...marketplaceSearchForScope(marketplaceSharedSearch(previous), "all"),
-          view: "list" as const,
-        })}
-        {...props}
-      />
-    );
-  }
   return (
     <Link
       to="/"
       search={(previous) => ({
         ...marketplaceSharedSearch(previous),
         tab: "market" as const,
-        ...(view ? { view } : {}),
+        view: "map" as const,
       })}
       {...props}
     />

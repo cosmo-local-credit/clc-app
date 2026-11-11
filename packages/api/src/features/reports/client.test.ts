@@ -132,6 +132,34 @@ describe("getFilteredReports", () => {
     );
   });
 
+  it("preserves nearest cursor distance and origin for an exact viewport", async () => {
+    const fetcher = mockFetch({ reports: [] });
+    vi.stubGlobal("fetch", fetcher);
+
+    await api.getFilteredReports({
+      perPage: 20,
+      filter: EMPTY_FILTER,
+      sort: "nearest",
+      bounds: [{ minLng: 170, minLat: -20, maxLng: 180, maxLat: 20 }],
+      cursor: {
+        updatedAt: "2026-08-03T12:00:00Z",
+        id: "90",
+        distance: 125.5,
+        origin: "viewport-hash",
+      },
+    });
+
+    const url = new URL(String(fetcher.mock.calls[0]?.[0]));
+    expect(url.searchParams.get("sort")).toBe("nearest");
+    expect(url.searchParams.get("cursorDistance")).toBe("125.5");
+    expect(url.searchParams.get("cursorOrigin")).toBe("viewport-hash");
+    expect(url.searchParams.getAll("bbox")).toEqual(["170,-20,180,20"]);
+    expect(fetcher.mock.calls[0]?.[1]).toMatchObject({
+      credentials: "include",
+      cache: "no-store",
+    });
+  });
+
   it("normalizes report relationships and facets while dropping malformed rows", async () => {
     vi.stubGlobal(
       "fetch",
@@ -204,6 +232,11 @@ describe("getFilteredReports", () => {
             count: 2,
           },
         ],
+        tagFacets: [
+          { tag: "Food", count: 3 },
+          { tag: "", count: 1 },
+          { tag: "Broken", count: -1 },
+        ],
       }),
     );
 
@@ -247,6 +280,7 @@ describe("getFilteredReports", () => {
         count: 2,
       },
     ]);
+    expect(page.tagFacets).toEqual([{ tag: "Food", count: 3 }]);
   });
 });
 

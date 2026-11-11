@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 import {
   buildPaperWalletUrl,
   isPlaceholderSignupEmail,
+  isSignInCardPayload,
   parsePaperWalletImportPayload,
   placeholderSignupEmail,
 } from "./paper-wallet";
@@ -71,6 +72,36 @@ describe("parsePaperWalletImportPayload", () => {
       type: "invalid",
       error: "Sign-in card payload is empty.",
     });
+  });
+});
+
+describe("isSignInCardPayload", () => {
+  const address = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
+  const outOfRange = "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141";
+
+  it("recognises a raw key, a bare key, and both inside a link", () => {
+    expect(isSignInCardPayload(RAW_KEY)).toBe(true);
+    expect(isSignInCardPayload(BARE_RAW_KEY)).toBe(true);
+    expect(isSignInCardPayload(`https://cosmolocal.credit/?w=${RAW_KEY}`)).toBe(true);
+    expect(isSignInCardPayload(`https://sarafu.network/login?w=${BARE_RAW_KEY}`)).toBe(true);
+  });
+
+  it("recognises an encrypted card, including one carried in a link", () => {
+    expect(isSignInCardPayload(ENCRYPTED_KEY)).toBe(true);
+    expect(isSignInCardPayload(`https://cosmolocal.credit/?w=${ENCRYPTED_KEY}`)).toBe(true);
+  });
+
+  it("recognises 64 hex digits that are not a usable secp256k1 key", () => {
+    expect(isSignInCardPayload(`0x${outOfRange}`)).toBe(true);
+    expect(isSignInCardPayload(`0x${"0".repeat(64)}`)).toBe(true);
+    expect(isSignInCardPayload(`https://cosmolocal.credit/?w=${outOfRange}`)).toBe(true);
+  });
+
+  it("leaves an address and a receive QR alone", () => {
+    expect(isSignInCardPayload(address)).toBe(false);
+    expect(isSignInCardPayload(`ethereum:${address}@100`)).toBe(false);
+    expect(isSignInCardPayload("https://cosmolocal.credit/login")).toBe(false);
+    expect(isSignInCardPayload("alice")).toBe(false);
   });
 });
 

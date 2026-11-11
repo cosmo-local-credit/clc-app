@@ -17,11 +17,12 @@ const MarketListDesk = lazy(() =>
 );
 
 /**
- * The /market page on desktop: the map or the list of one marketplace scope.
+ * The /market page on desktop: the unified map or one full marketplace list.
  * The view is the URL's, else the one the person last used, else (a first
  * visit) the map. A list is keyed by its scope, so changing scope starts that
  * list's own page chain instead of keeping the previous scope's rows under the
- * new scope's columns; the map keeps its camera and its retained markers.
+ * new scope's columns. The map has no scope: Resources controls its contents,
+ * and it keeps its camera and retained markers.
  */
 export function MarketDesk({
   scope,
@@ -56,7 +57,6 @@ export function MarketDesk({
       isAuthenticated={isAuthenticated}
       creditableSearch={creditableSearch}
       outputVoucherSearch={outputVoucherSearch}
-      scope={scope ?? "all"}
       creditRoute="market"
     />
   );

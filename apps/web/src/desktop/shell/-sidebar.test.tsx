@@ -126,51 +126,39 @@ describe("the Activity unread count", () => {
   });
 });
 
-describe("the marketplace lists in the rail", () => {
-  beforeEach(() => {
-    window.localStorage.setItem("clc.desktop.sidebar", "collapsed");
-  });
-
-  it("opens a menu from the Market icon that reaches every list", async () => {
-    const { router } = await renderInShell(<DesktopSidebar />, "/");
-    expect(screen.queryByRole("link", { name: "Offers" })).toBeNull();
-
-    fireEvent.click(screen.getByRole("button", { name: "Marketplace lists" }));
-    const lists = await screen.findByRole("navigation", { name: "Marketplace" });
-    expect(
-      within(lists)
-        .getAllByRole("link")
-        .map((link) => link.textContent),
-    ).toEqual(["Offers", "Wants", "Vouchers", "Pools", "Catalogs"]);
-
-    fireEvent.click(within(lists).getByRole("link", { name: "Pools" }));
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe("/market");
-    });
-    expect(router.state.location.search).toMatchObject({ scope: "pools" });
-    await waitFor(() => {
-      expect(screen.queryByRole("navigation", { name: "Marketplace" })).toBeNull();
-    });
-  });
-
-  it("keeps the list view when it opens a list", async () => {
-    const { router } = await renderInShell(<DesktopSidebar />, "/market?scope=offers&view=list");
-    fireEvent.click(screen.getByRole("button", { name: "Marketplace lists" }));
-    const lists = await screen.findByRole("navigation", { name: "Marketplace" });
-    fireEvent.click(within(lists).getByRole("link", { name: "Wants" }));
-    await waitFor(() => {
-      expect(router.state.location.search).toMatchObject({ scope: "wants", view: "list" });
-    });
-  });
-});
-
-describe("marketplace links keep the Map/List choice", () => {
+describe("top-level marketplace destinations", () => {
   async function scopeLink(url: string, name: string) {
     const view = await renderInShell(<DesktopSidebar />, url);
     return { ...view, link: screen.getByRole("link", { name }) };
   }
 
-  it("keeps list when the list is the view in use", async () => {
+  it("uses the specified order and keeps every resource at the top level", async () => {
+    const view = await renderInShell(<DesktopSidebar />, "/");
+    const nav = screen.getByRole("navigation", { name: "Primary navigation" });
+    expect(
+      within(nav)
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual([
+      "Market",
+      "Offers",
+      "Wants",
+      "Vouchers",
+      "Pools",
+      "Catalogs",
+      "Posts",
+      "Activity",
+      "Wallet",
+    ]);
+    view.unmount();
+
+    window.localStorage.setItem("clc.desktop.sidebar", "collapsed");
+    await renderInShell(<DesktopSidebar />, "/");
+    expect(screen.getByRole("link", { name: "Offers" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Marketplace lists" })).toBeNull();
+  });
+
+  it("always opens a resource as its full-page list", async () => {
     const { link, router } = await scopeLink("/market?scope=offers&view=list", "Wants");
     expect(link.getAttribute("href")).toBe("/market?scope=wants&view=list");
     fireEvent.click(link);
@@ -179,43 +167,18 @@ describe("marketplace links keep the Map/List choice", () => {
     });
   });
 
-  it("keeps map when the map is the view in use", async () => {
+  it("does not generate scoped map URLs from resource links", async () => {
     const { link } = await scopeLink("/market?scope=offers&view=map", "Catalogs");
-    expect(link.getAttribute("href")).toBe("/market?scope=catalogs&view=map");
+    expect(link.getAttribute("href")).toBe("/market?scope=catalogs&view=list");
   });
 
-  it("adds no view when there is none, so a fresh visit lands on the default", async () => {
-    const { link, unmount } = await scopeLink("/?tab=wallet", "Pools");
-    expect(link.getAttribute("href")).toBe("/market?scope=pools");
-    unmount();
-    const fromScope = await scopeLink("/market?scope=offers", "Vouchers");
-    expect(fromScope.link.getAttribute("href")).toBe("/market?scope=vouchers");
-  });
-
-  it("sends the Market item to the map, or to the list of everything in list view", async () => {
+  it("always sends Market to the unified map", async () => {
     const fromWallet = await scopeLink("/?tab=wallet", "Market");
-    expect(fromWallet.link.getAttribute("href")).toBe("/?tab=market");
+    expect(fromWallet.link.getAttribute("href")).toBe("/?tab=market&view=map");
     fromWallet.unmount();
 
     const fromList = await scopeLink("/market?scope=offers&view=list", "Market");
-    expect(fromList.link.getAttribute("href")).toBe("/market?scope=all&view=list");
-  });
-
-  it("opens the Market item in the last view used when the screen names none", async () => {
-    window.localStorage.setItem("clc.desktop.market-view", "list");
-    const fromWallet = await scopeLink("/?tab=wallet", "Market");
-    expect(fromWallet.link.getAttribute("href")).toBe("/market?scope=all&view=list");
-    fromWallet.unmount();
-
-    window.localStorage.setItem("clc.desktop.market-view", "map");
-    const remembersMap = await scopeLink("/?tab=wallet", "Market");
-    expect(remembersMap.link.getAttribute("href")).toBe("/?tab=market");
-  });
-
-  it("lets the view in the URL win over the remembered one", async () => {
-    window.localStorage.setItem("clc.desktop.market-view", "list");
-    const { link } = await scopeLink("/market?scope=offers&view=map", "Market");
-    expect(link.getAttribute("href")).toBe("/?tab=market&view=map");
+    expect(fromList.link.getAttribute("href")).toBe("/?tab=market&view=map");
   });
 
   it("keeps the shared search while it changes the list", async () => {

@@ -95,6 +95,7 @@ export type ReportSummary = {
   locationName: string | null;
   lat: number | null;
   lng: number | null;
+  distanceMeters?: number | null;
   periodFrom: string | null;
   periodTo: string | null;
   createdAt: string | null;
@@ -134,6 +135,8 @@ export type ManagedReportDetail = ReportDetail & {
 export type ReportCursor = {
   updatedAt: string;
   id: string;
+  distance?: number;
+  origin?: string;
 };
 
 export type ReportPage = {
@@ -202,6 +205,7 @@ export type ReportFilter = CatalogFilter;
 
 export type FilteredReportsParams = {
   nearby?: boolean;
+  sort?: "nearest";
   bounds?: readonly MarketBoundingBox[];
   perPage: number;
   cursor?: ReportCursor;
@@ -289,6 +293,7 @@ type BackendReport = Partial<{
   locationName: string | null;
   geoLat: string | number | null;
   geoLng: string | number | null;
+  distanceMeters: string | number | null;
   periodFrom: string | null;
   periodTo: string | null;
   authorAddress: string | null;
@@ -309,7 +314,12 @@ type BackendReport = Partial<{
 
 type BackendReportPage = {
   reports?: BackendReport[] | null;
-  next?: Partial<{ updatedAt: string | null; id: string | number }> | null;
+  next?: Partial<{
+    updatedAt: string | null;
+    id: string | number;
+    distance: string | number;
+    origin: string;
+  }> | null;
 };
 
 type BackendManagedReportPage = {
@@ -400,6 +410,7 @@ export function createReportsClient(http: HttpClient) {
         perPage,
         cursor,
         nearby,
+        sort,
         bounds,
         creditablePools,
         posted,
@@ -410,11 +421,14 @@ export function createReportsClient(http: HttpClient) {
       if (cursor) {
         query.set("cursorUpdatedAt", cursor.updatedAt);
         query.set("cursorId", cursor.id);
+        if (cursor.distance !== undefined) query.set("cursorDistance", String(cursor.distance));
+        if (cursor.origin) query.set("cursorOrigin", cursor.origin);
       }
       appendCatalogFilter(query, filter);
       appendPostedWithin(query, posted);
       if (facets) query.set("facets", "true");
       if (nearby) query.set("nearby", "true");
+      if (sort) query.set("sort", sort);
       appendMarketBounds(query, bounds);
       if (creditablePools?.length) {
         query.set("creditablePools", creditablePools.map(serializeVoucherRef).join(","));
@@ -425,6 +439,7 @@ export function createReportsClient(http: HttpClient) {
         {
           method: "GET",
           cache: "no-store",
+          credentials: nearby || sort ? "include" : "omit",
           signal,
         },
       );
@@ -658,11 +673,25 @@ function normalizeReportTagFacet(facet: { tag?: unknown; count?: unknown }): Rep
 }
 
 function normalizeCursor(
-  cursor: Partial<{ updatedAt: string | null; id: string | number }> | null | undefined,
+  cursor:
+    | Partial<{
+        updatedAt: string | null;
+        id: string | number;
+        distance: string | number;
+        origin: string;
+      }>
+    | null
+    | undefined,
 ): ReportCursor | null {
   const updatedAt = normalizeText(cursor?.updatedAt);
   if (!updatedAt || cursor?.id === undefined || cursor.id === null) return null;
-  return { updatedAt, id: String(cursor.id) };
+  const distance = normalizeNumber(cursor.distance);
+  const origin = normalizeText(cursor.origin);
+  return {
+    updatedAt,
+    id: String(cursor.id),
+    ...(distance !== null && origin ? { distance, origin } : {}),
+  };
 }
 
 function normalizeReportSummary(report: BackendReport): ReportSummary | null {
@@ -680,6 +709,7 @@ function normalizeReportSummary(report: BackendReport): ReportSummary | null {
     locationName: normalizeText(report.locationName),
     lat: hasLocation ? lat : null,
     lng: hasLocation ? lng : null,
+    distanceMeters: normalizeNumber(report.distanceMeters),
     periodFrom: normalizeText(report.periodFrom),
     periodTo: normalizeText(report.periodTo),
     createdAt: normalizeText(report.createdAt),
