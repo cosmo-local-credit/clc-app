@@ -116,7 +116,7 @@ msgid "{0} failed on-chain. The pool was not created."
 msgstr "{0}: помилка в блокчейні. Пул не створено."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:261
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:260
 msgid "{0} fees collected."
 msgstr "Комісії в {0} зібрано."
 
@@ -234,7 +234,7 @@ msgid "{0} wallet address"
 msgstr "Адрес гаманця {0}"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:162
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:161
 msgid "{amount} {0} withdrawn."
 msgstr "{amount} {0} виведено."
 
@@ -3061,7 +3061,7 @@ msgid "Couldn't read that card. Hold it still against the back of your phone "
 msgstr "Не вдалося зчитати картку. Тримайте її нерухомо біля задньої панелі "
 "телефона й спробуйте ще раз."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:249
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:248
 msgid "Couldn't read the pool's fee recipient. Try again."
 msgstr "Не вдалося прочитати отримувача комісії пулу. Спробуйте ще раз."
 
@@ -3075,8 +3075,8 @@ msgstr "Не вдалося прочитати поточний курс цьо�
 msgid "Couldn't remove the offering."
 msgstr "Не вдалося видалити пропозицію."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:239
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:190
+#: apps/web/src/components/wallet/recipient-address-input.tsx:256
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:210
 msgid "Couldn't resolve that recipient."
 msgstr "Не вдалося визначити цього отримувача."
 
@@ -3981,7 +3981,7 @@ msgid "Enter an amount greater than zero."
 msgstr "Введіть суму, більшу за нуль."
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:379
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:145
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:144
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:214
 msgid "Enter an amount greater than zero."
 msgstr "Введіть суму, більшу за нуль."
@@ -3991,18 +3991,18 @@ msgstr "Введіть суму, більшу за нуль."
 msgid "Enter an amount this voucher supports."
 msgstr "Введіть суму, яку підтримує цей ваучер."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:141
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:140
 msgid "Enter an amount this voucher supports."
 msgstr "Введіть суму, яку підтримує цей ваучер."
 
 #~ msgid "Enter an ENS, phone number or address."
 #~ msgstr "Введіть ENS, номер телефону або адресу."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:188
+#: apps/web/src/components/wallet/recipient-address-input.tsx:200
 msgid "Enter an exact username or full phone number."
 msgstr "Введіть точне ім’я користувача або повний номер телефону."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:186
+#: apps/web/src/components/wallet/recipient-address-input.tsx:198
 msgid "Enter an exact username or full phone number. Pool names can be "
 "searched."
 msgstr "Введіть точне ім’я користувача або повний номер телефону. Назви пулів "
@@ -5600,8 +5600,8 @@ msgstr "Збіг"
 msgid "Matching people"
 msgstr "Знайдені люди"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:193
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:147
+#: apps/web/src/components/wallet/recipient-address-input.tsx:205
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
 msgid "Matching recipients"
 msgstr "Відповідні отримувачі"
 
@@ -6085,7 +6085,7 @@ msgid "No"
 msgstr "Ні"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:236
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:235
 msgid "No {0} fees have accrued yet."
 msgstr "Комісії {0} ще не накопичилися."
 
@@ -6276,8 +6276,8 @@ msgstr "Збігів немає"
 msgid "No matching people."
 msgstr "Нікого не знайдено."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:223
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:185
+#: apps/web/src/components/wallet/recipient-address-input.tsx:235
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:205
 msgid "No matching recipients."
 msgstr "Відповідних отримувачів не знайдено."
 
@@ -7267,7 +7267,7 @@ msgstr "Розсадник"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
 #: apps/web/src/components/market-search.tsx:334
-#: apps/web/src/components/wallet/recipient-address-input.tsx:204
+#: apps/web/src/components/wallet/recipient-address-input.tsx:216
 #: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/market/market-bits.tsx:72
 #: apps/web/src/desktop/market/market-list-desk.tsx:446
@@ -7278,7 +7278,7 @@ msgstr "Розсадник"
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:243
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:392
 #: apps/web/src/desktop/shell/command-palette.tsx:85
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:187
 #: apps/web/src/features/home/ui/activity-page.tsx:282
 #: apps/web/src/features/home/ui/marketplace-page.tsx:412
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:11
@@ -7378,7 +7378,7 @@ msgstr "Комісія пулу"
 msgid "Pool fee recipient: {0}"
 msgstr "Отримувач комісії пулу: {0}"
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:342
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:341
 msgid "Pool fee updated."
 msgstr "Комісію пулу оновлено."
 
@@ -8846,8 +8846,8 @@ msgstr "Збережено. Ваш допис знову очікує схвал
 msgid "Saving…"
 msgstr "Збереження…"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:176
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:137
+#: apps/web/src/components/wallet/recipient-address-input.tsx:188
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:154
 msgid "Scan QR"
 msgstr "Сканувати QR-код"
 
@@ -8855,8 +8855,8 @@ msgstr "Сканувати QR-код"
 msgid "Scan QR Code"
 msgstr "Сканувати QR-код"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:230
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:197
+#: apps/web/src/components/wallet/recipient-address-input.tsx:242
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:217
 msgid "Scan recipient address"
 msgstr "Сканувати адресу отримувача"
 
@@ -8962,7 +8962,7 @@ msgstr "Шукайте пропозиції, ваучери, описи або �
 msgid "Search or add tags"
 msgstr "Шукати або додати теги"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:163
+#: apps/web/src/components/wallet/recipient-address-input.tsx:175
 msgid "Search or enter"
 msgstr "Знайдіть або введіть"
 
@@ -9101,8 +9101,8 @@ msgstr "Пошук місць…"
 msgid "Searching pools…"
 msgstr "Пошук пулів…"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:214
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:176
+#: apps/web/src/components/wallet/recipient-address-input.tsx:226
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:196
 msgid "Searching recipients…"
 msgstr "Пошук отримувачів…"
 
@@ -10365,7 +10365,7 @@ msgid "The pool could not be published."
 msgstr "Не вдалося опублікувати пул."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:149
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:148
 msgid "The pool doesn't hold that much {0}."
 msgstr "У пулі немає такої кількості {0}."
 
@@ -10390,9 +10390,9 @@ msgstr "Час очікування запиту минув, а платіжни
 msgid "The selected unit does not have a configured price feed."
 msgstr "Для вибраної одиниці не налаштовано джерело цін."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:165
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:264
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:345
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:164
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:263
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:344
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:388
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:406
 msgid "The transaction failed."
@@ -10722,6 +10722,11 @@ msgstr "Цей QR-код не містить дійсного приватног
 msgid "This QR code does not contain a valid sign-in card."
 msgstr "Цей QR-код не містить дійсної картки для входу."
 
+#: apps/web/src/components/wallet/recipient-address-input.tsx:250
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:225
+msgid "This QR is a sign-in card. Scan a wallet address."
+msgstr "Цей QR-код — картка для входу. Скануйте адресу гаманця."
+
 #: apps/web/src/desktop/messaging/thread-desk.tsx:198
 #: apps/web/src/features/messaging/ui/thread-page.tsx:121
 msgid "This request was declined."
@@ -10731,7 +10736,7 @@ msgstr "Цей запит відхилено."
 msgid "This resource is already retired."
 msgstr "Цей ресурс уже виведено з обігу."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:244
+#: apps/web/src/components/wallet/recipient-address-input.tsx:261
 msgid "This sign-in card was replaced. Ask its owner for their new address."
 msgstr "Цю картку для входу замінено. Попросіть її власника надати нову адресу."
 
@@ -11741,12 +11746,12 @@ msgid "Waiting for them to accept your request."
 msgstr "Очікуємо, поки співрозмовник прийме ваш запит."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:47
-#: apps/web/src/components/wallet/recipient-address-input.tsx:204
+#: apps/web/src/components/wallet/recipient-address-input.tsx:216
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1063
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1064
 #: apps/web/src/desktop/shell/crumbs.tsx:14
 #: apps/web/src/desktop/shell/sidebar.tsx:133
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:187
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:293
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:21
 #: apps/web/src/features/home/ui/wallet-page.tsx:123

@@ -118,7 +118,7 @@ msgid "{0} failed on-chain. The pool was not created."
 msgstr "{0} a échoué sur la chaîne. Le bassin n’a pas été créé."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:261
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:260
 msgid "{0} fees collected."
 msgstr "Frais en {0} collectés."
 
@@ -238,7 +238,7 @@ msgid "{0} wallet address"
 msgstr "Adresse du portefeuille {0}"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:162
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:161
 msgid "{amount} {0} withdrawn."
 msgstr "{amount} {0} retiré."
 
@@ -3077,7 +3077,7 @@ msgid "Couldn't read that card. Hold it still against the back of your phone "
 msgstr "Impossible de lire cette carte. Maintenez-la immobile contre le dos de "
 "votre téléphone, puis réessayez."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:249
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:248
 msgid "Couldn't read the pool's fee recipient. Try again."
 msgstr "Impossible de lire le bénéficiaire des frais du bassin. Réessayez."
 
@@ -3091,8 +3091,8 @@ msgstr "Impossible de lire le taux actuel de ce bon d’échange ; il ne peut 
 msgid "Couldn't remove the offering."
 msgstr "Impossible de supprimer l’offre."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:239
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:190
+#: apps/web/src/components/wallet/recipient-address-input.tsx:256
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:210
 msgid "Couldn't resolve that recipient."
 msgstr "Impossible d’identifier ce destinataire."
 
@@ -3999,7 +3999,7 @@ msgid "Enter an amount greater than zero."
 msgstr "Saisissez un montant supérieur à zéro."
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:379
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:145
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:144
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:214
 msgid "Enter an amount greater than zero."
 msgstr "Saisissez un montant supérieur à zéro."
@@ -4009,7 +4009,7 @@ msgstr "Saisissez un montant supérieur à zéro."
 msgid "Enter an amount this voucher supports."
 msgstr "Saisissez un montant pris en charge par ce bon d’échange."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:141
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:140
 msgid "Enter an amount this voucher supports."
 msgstr "Saisissez un montant pris en charge par ce bon d’échange."
 
@@ -4017,11 +4017,11 @@ msgstr "Saisissez un montant pris en charge par ce bon d’échange."
 #~ msgid "Enter an ENS, phone number or address."
 #~ msgstr "Entrez un ENS, un numéro de téléphone ou une adresse."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:188
+#: apps/web/src/components/wallet/recipient-address-input.tsx:200
 msgid "Enter an exact username or full phone number."
 msgstr "Saisissez un nom d’utilisateur exact ou un numéro de téléphone complet."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:186
+#: apps/web/src/components/wallet/recipient-address-input.tsx:198
 msgid "Enter an exact username or full phone number. Pool names can be "
 "searched."
 msgstr "Saisissez un nom d’utilisateur exact ou un numéro de téléphone complet. "
@@ -5630,8 +5630,8 @@ msgstr "Correspondance"
 msgid "Matching people"
 msgstr "Personnes correspondantes"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:193
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:147
+#: apps/web/src/components/wallet/recipient-address-input.tsx:205
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
 msgid "Matching recipients"
 msgstr "Destinataires correspondants"
 
@@ -6118,7 +6118,7 @@ msgid "No"
 msgstr "Non"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:236
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:235
 msgid "No {0} fees have accrued yet."
 msgstr "Aucun frais de {0} n’a encore été perçu."
 
@@ -6312,8 +6312,8 @@ msgstr "Aucune correspondance"
 msgid "No matching people."
 msgstr "Aucune personne correspondante."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:223
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:185
+#: apps/web/src/components/wallet/recipient-address-input.tsx:235
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:205
 msgid "No matching recipients."
 msgstr "Aucun destinataire correspondant."
 
@@ -7316,7 +7316,7 @@ msgstr "Pépinière"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
 #: apps/web/src/components/market-search.tsx:334
-#: apps/web/src/components/wallet/recipient-address-input.tsx:204
+#: apps/web/src/components/wallet/recipient-address-input.tsx:216
 #: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/market/market-bits.tsx:72
 #: apps/web/src/desktop/market/market-list-desk.tsx:446
@@ -7327,7 +7327,7 @@ msgstr "Pépinière"
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:243
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:392
 #: apps/web/src/desktop/shell/command-palette.tsx:85
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:187
 #: apps/web/src/features/home/ui/activity-page.tsx:282
 #: apps/web/src/features/home/ui/marketplace-page.tsx:412
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:11
@@ -7427,7 +7427,7 @@ msgstr "Frais du bassin"
 msgid "Pool fee recipient: {0}"
 msgstr "Bénéficiaire des frais du bassin : {0}"
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:342
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:341
 msgid "Pool fee updated."
 msgstr "Frais du bassin mis à jour."
 
@@ -8902,8 +8902,8 @@ msgstr "Enregistré. Votre publication est de nouveau en attente d’approbation
 msgid "Saving…"
 msgstr "Enregistrement…"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:176
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:137
+#: apps/web/src/components/wallet/recipient-address-input.tsx:188
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:154
 msgid "Scan QR"
 msgstr "Scanner un code QR"
 
@@ -8911,8 +8911,8 @@ msgstr "Scanner un code QR"
 msgid "Scan QR Code"
 msgstr "Scanner le code QR"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:230
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:197
+#: apps/web/src/components/wallet/recipient-address-input.tsx:242
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:217
 msgid "Scan recipient address"
 msgstr "Scanner l’adresse du destinataire"
 
@@ -9020,7 +9020,7 @@ msgstr "Rechercher des offres, des bons d’échange, des descriptions ou des "
 msgid "Search or add tags"
 msgstr "Rechercher ou ajouter des étiquettes"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:163
+#: apps/web/src/components/wallet/recipient-address-input.tsx:175
 msgid "Search or enter"
 msgstr "Rechercher ou saisir"
 
@@ -9160,8 +9160,8 @@ msgstr "Recherche de lieux…"
 msgid "Searching pools…"
 msgstr "Recherche de pools…"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:214
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:176
+#: apps/web/src/components/wallet/recipient-address-input.tsx:226
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:196
 msgid "Searching recipients…"
 msgstr "Recherche de destinataires…"
 
@@ -10441,7 +10441,7 @@ msgid "The pool could not be published."
 msgstr "Impossible de publier le bassin."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:149
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:148
 msgid "The pool doesn't hold that much {0}."
 msgstr "Le bassin ne contient pas autant de {0}."
 
@@ -10467,9 +10467,9 @@ msgstr "La demande a expiré sans réponse du service de paiement. Vérifiez le 
 msgid "The selected unit does not have a configured price feed."
 msgstr "Aucun flux de prix n’est configuré pour l’unité sélectionnée."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:165
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:264
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:345
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:164
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:263
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:344
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:388
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:406
 msgid "The transaction failed."
@@ -10807,6 +10807,12 @@ msgstr "Ce code QR ne contient pas de clé privée valide."
 msgid "This QR code does not contain a valid sign-in card."
 msgstr "Ce code QR ne contient pas de carte de connexion valide."
 
+#: apps/web/src/components/wallet/recipient-address-input.tsx:250
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:225
+msgid "This QR is a sign-in card. Scan a wallet address."
+msgstr "Ce code QR est une carte de connexion. Scannez une adresse de "
+"portefeuille."
+
 #: apps/web/src/desktop/messaging/thread-desk.tsx:198
 #: apps/web/src/features/messaging/ui/thread-page.tsx:121
 msgid "This request was declined."
@@ -10816,7 +10822,7 @@ msgstr "Cette demande a été refusée."
 msgid "This resource is already retired."
 msgstr "Cette ressource est déjà retirée."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:244
+#: apps/web/src/components/wallet/recipient-address-input.tsx:261
 msgid "This sign-in card was replaced. Ask its owner for their new address."
 msgstr "Cette carte de connexion a été remplacée. Demandez à son propriétaire "
 "sa nouvelle adresse."
@@ -11831,12 +11837,12 @@ msgid "Waiting for them to accept your request."
 msgstr "En attente de l’acceptation de votre demande."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:47
-#: apps/web/src/components/wallet/recipient-address-input.tsx:204
+#: apps/web/src/components/wallet/recipient-address-input.tsx:216
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1063
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1064
 #: apps/web/src/desktop/shell/crumbs.tsx:14
 #: apps/web/src/desktop/shell/sidebar.tsx:133
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:187
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:293
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:21
 #: apps/web/src/features/home/ui/wallet-page.tsx:123

@@ -114,7 +114,7 @@ msgid "{0} failed on-chain. The pool was not created."
 msgstr "{0} није успела на блокчејну. Тржница није направљена."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:261
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:260
 msgid "{0} fees collected."
 msgstr "Накнаде за {0} су наплаћене."
 
@@ -234,7 +234,7 @@ msgid "{0} wallet address"
 msgstr "Адреса {0} новчаника"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:162
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:161
 msgid "{amount} {0} withdrawn."
 msgstr "{amount} {0} је повучено."
 
@@ -3055,7 +3055,7 @@ msgid "Couldn't read that card. Hold it still against the back of your phone "
 msgstr "Картицу није могуће очитати. Држите је мирно уз полеђину телефона и "
 "покушајте поново."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:249
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:248
 msgid "Couldn't read the pool's fee recipient. Try again."
 msgstr "Није могуће прочитати примаоца накнаде тржнице. Покушајте поново."
 
@@ -3069,8 +3069,8 @@ msgstr "Нисмо могли очитати тренутни курс овог 
 msgid "Couldn't remove the offering."
 msgstr "Понуда није могла да буде уклоњена."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:239
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:190
+#: apps/web/src/components/wallet/recipient-address-input.tsx:256
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:210
 msgid "Couldn't resolve that recipient."
 msgstr "Тог примаоца није могуће пронаћи."
 
@@ -3973,7 +3973,7 @@ msgid "Enter an amount greater than zero."
 msgstr "Унесите износ већи од нуле."
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:379
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:145
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:144
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:214
 msgid "Enter an amount greater than zero."
 msgstr "Унесите износ већи од нуле."
@@ -3983,7 +3983,7 @@ msgstr "Унесите износ већи од нуле."
 msgid "Enter an amount this voucher supports."
 msgstr "Унесите износ који овај ваучер подржава."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:141
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:140
 msgid "Enter an amount this voucher supports."
 msgstr "Унесите износ који овај ваучер подржава."
 
@@ -3991,11 +3991,11 @@ msgstr "Унесите износ који овај ваучер подржав�
 #~ msgid "Enter an ENS, phone number or address."
 #~ msgstr "Унесите ENS, број телефона или адресу."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:188
+#: apps/web/src/components/wallet/recipient-address-input.tsx:200
 msgid "Enter an exact username or full phone number."
 msgstr "Унесите тачно корисничко име или цео број телефона."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:186
+#: apps/web/src/components/wallet/recipient-address-input.tsx:198
 msgid "Enter an exact username or full phone number. Pool names can be "
 "searched."
 msgstr "Унесите тачно корисничко име или цео број телефона. Називи пулова могу "
@@ -5601,8 +5601,8 @@ msgstr "Подударање"
 msgid "Matching people"
 msgstr "Пронађене особе"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:193
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:147
+#: apps/web/src/components/wallet/recipient-address-input.tsx:205
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
 msgid "Matching recipients"
 msgstr "Пронађени примаоци"
 
@@ -6087,7 +6087,7 @@ msgid "No"
 msgstr "Не"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:236
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:235
 msgid "No {0} fees have accrued yet."
 msgstr "Још нема наплаћених накнада за {0}."
 
@@ -6281,8 +6281,8 @@ msgstr "Нема подударања"
 msgid "No matching people."
 msgstr "Нема пронађених особа."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:223
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:185
+#: apps/web/src/components/wallet/recipient-address-input.tsx:235
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:205
 msgid "No matching recipients."
 msgstr "Нема одговарајућих прималаца."
 
@@ -7276,7 +7276,7 @@ msgstr "Расадник"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
 #: apps/web/src/components/market-search.tsx:334
-#: apps/web/src/components/wallet/recipient-address-input.tsx:204
+#: apps/web/src/components/wallet/recipient-address-input.tsx:216
 #: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/market/market-bits.tsx:72
 #: apps/web/src/desktop/market/market-list-desk.tsx:446
@@ -7287,7 +7287,7 @@ msgstr "Расадник"
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:243
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:392
 #: apps/web/src/desktop/shell/command-palette.tsx:85
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:187
 #: apps/web/src/features/home/ui/activity-page.tsx:282
 #: apps/web/src/features/home/ui/marketplace-page.tsx:412
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:11
@@ -7387,7 +7387,7 @@ msgstr "Накнада тржнице"
 msgid "Pool fee recipient: {0}"
 msgstr "Прималац накнаде тржнице: {0}"
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:342
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:341
 msgid "Pool fee updated."
 msgstr "Накнада тржнице је ажурирана."
 
@@ -8859,8 +8859,8 @@ msgstr "Сачувано. Ваша објава поново чека одобр
 msgid "Saving…"
 msgstr "Чување…"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:176
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:137
+#: apps/web/src/components/wallet/recipient-address-input.tsx:188
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:154
 msgid "Scan QR"
 msgstr "Скенирај QR"
 
@@ -8868,8 +8868,8 @@ msgstr "Скенирај QR"
 msgid "Scan QR Code"
 msgstr "Скенирај QR код"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:230
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:197
+#: apps/web/src/components/wallet/recipient-address-input.tsx:242
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:217
 msgid "Scan recipient address"
 msgstr "Скенирај адресу примаоца"
 
@@ -8975,7 +8975,7 @@ msgstr "Претражите понуде, ваучере, описе или о�
 msgid "Search or add tags"
 msgstr "Претражи или додај ознаке"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:163
+#: apps/web/src/components/wallet/recipient-address-input.tsx:175
 msgid "Search or enter"
 msgstr "Претражите или унесите"
 
@@ -9114,8 +9114,8 @@ msgstr "Претрага мјеста…"
 msgid "Searching pools…"
 msgstr "Претрага пулова…"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:214
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:176
+#: apps/web/src/components/wallet/recipient-address-input.tsx:226
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:196
 msgid "Searching recipients…"
 msgstr "Тражимо примаоце…"
 
@@ -10384,7 +10384,7 @@ msgid "The pool could not be published."
 msgstr "Тржница није могла бити објављена."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:149
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:148
 msgid "The pool doesn't hold that much {0}."
 msgstr "Тржница нема толико {0}."
 
@@ -10409,9 +10409,9 @@ msgstr "Захтјев је истекао без одговора сервис�
 msgid "The selected unit does not have a configured price feed."
 msgstr "Изабрана јединица нема подешен извор цене."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:165
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:264
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:345
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:164
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:263
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:344
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:388
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:406
 msgid "The transaction failed."
@@ -10743,6 +10743,11 @@ msgstr "Овај QR код не садржи важећи приватни кљ�
 msgid "This QR code does not contain a valid sign-in card."
 msgstr "Овај QR код не садржи важећу картицу за пријаву."
 
+#: apps/web/src/components/wallet/recipient-address-input.tsx:250
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:225
+msgid "This QR is a sign-in card. Scan a wallet address."
+msgstr "Овај QR код је картица за пријаву. Скенирајте адресу новчаника."
+
 #: apps/web/src/desktop/messaging/thread-desk.tsx:198
 #: apps/web/src/features/messaging/ui/thread-page.tsx:121
 msgid "This request was declined."
@@ -10752,7 +10757,7 @@ msgstr "Овај захтјев је одбијен."
 msgid "This resource is already retired."
 msgstr "Овај ресурс је већ повучен из употребе."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:244
+#: apps/web/src/components/wallet/recipient-address-input.tsx:261
 msgid "This sign-in card was replaced. Ask its owner for their new address."
 msgstr "Ова картица за пријаву је замијењена. Затражите од њеног власника нову "
 "адресу."
@@ -11760,12 +11765,12 @@ msgid "Waiting for them to accept your request."
 msgstr "Чека се да прихвате ваш захтјев."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:47
-#: apps/web/src/components/wallet/recipient-address-input.tsx:204
+#: apps/web/src/components/wallet/recipient-address-input.tsx:216
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1063
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1064
 #: apps/web/src/desktop/shell/crumbs.tsx:14
 #: apps/web/src/desktop/shell/sidebar.tsx:133
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:187
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:293
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:21
 #: apps/web/src/features/home/ui/wallet-page.tsx:123

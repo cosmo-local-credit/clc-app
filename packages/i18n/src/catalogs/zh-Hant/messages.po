@@ -111,7 +111,7 @@ msgid "{0} failed on-chain. The pool was not created."
 msgstr "{0} 鏈上失敗。未建立資金池。"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:261
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:260
 msgid "{0} fees collected."
 msgstr "已收取 {0} 費用。"
 
@@ -231,7 +231,7 @@ msgid "{0} wallet address"
 msgstr "{0} 錢包地址"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:162
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:161
 msgid "{amount} {0} withdrawn."
 msgstr "{amount} {0} 已撤回。"
 
@@ -3012,7 +3012,7 @@ msgid "Couldn't read that card. Hold it still against the back of your phone "
 "and try again."
 msgstr "無法讀取該卡。將其固定在手機背面，然後重試。"
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:249
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:248
 msgid "Couldn't read the pool's fee recipient. Try again."
 msgstr "無法讀取資金池費用接收方。請重試。"
 
@@ -3025,8 +3025,8 @@ msgstr "無法讀取此代金券的當前匯率，因此現在無法更改。"
 msgid "Couldn't remove the offering."
 msgstr "無法刪除商品或服務項目。"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:239
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:190
+#: apps/web/src/components/wallet/recipient-address-input.tsx:256
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:210
 msgid "Couldn't resolve that recipient."
 msgstr "無法解析該接收方。"
 
@@ -3927,7 +3927,7 @@ msgid "Enter an amount greater than zero."
 msgstr "輸入大於零的金額。"
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:379
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:145
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:144
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:214
 msgid "Enter an amount greater than zero."
 msgstr "輸入大於零的金額。"
@@ -3937,7 +3937,7 @@ msgstr "輸入大於零的金額。"
 msgid "Enter an amount this voucher supports."
 msgstr "輸入此代金券支援的金額。"
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:141
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:140
 msgid "Enter an amount this voucher supports."
 msgstr "輸入此代金券支援的金額。"
 
@@ -3945,11 +3945,11 @@ msgstr "輸入此代金券支援的金額。"
 #~ msgid "Enter an ENS, phone number or address."
 #~ msgstr "輸入 ENS、電話號碼或地址。"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:188
+#: apps/web/src/components/wallet/recipient-address-input.tsx:200
 msgid "Enter an exact username or full phone number."
 msgstr "請輸入完整使用者名稱或完整電話號碼。"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:186
+#: apps/web/src/components/wallet/recipient-address-input.tsx:198
 msgid "Enter an exact username or full phone number. Pool names can be "
 "searched."
 msgstr "請輸入完整使用者名稱或完整電話號碼。可以搜尋資金池名稱。"
@@ -5538,8 +5538,8 @@ msgstr "匹配"
 msgid "Matching people"
 msgstr "符合的使用者"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:193
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:147
+#: apps/web/src/components/wallet/recipient-address-input.tsx:205
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
 msgid "Matching recipients"
 msgstr "匹配接收方"
 
@@ -6021,7 +6021,7 @@ msgid "No"
 msgstr "否"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:236
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:235
 msgid "No {0} fees have accrued yet."
 msgstr "尚未產生 {0} 費用。"
 
@@ -6210,8 +6210,8 @@ msgstr "無相符項目"
 msgid "No matching people."
 msgstr "沒有符合的使用者。"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:223
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:185
+#: apps/web/src/components/wallet/recipient-address-input.tsx:235
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:205
 msgid "No matching recipients."
 msgstr "沒有匹配的接收方。"
 
@@ -7192,7 +7192,7 @@ msgstr "苗圃"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
 #: apps/web/src/components/market-search.tsx:334
-#: apps/web/src/components/wallet/recipient-address-input.tsx:204
+#: apps/web/src/components/wallet/recipient-address-input.tsx:216
 #: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/market/market-bits.tsx:72
 #: apps/web/src/desktop/market/market-list-desk.tsx:446
@@ -7203,7 +7203,7 @@ msgstr "苗圃"
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:243
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:392
 #: apps/web/src/desktop/shell/command-palette.tsx:85
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:187
 #: apps/web/src/features/home/ui/activity-page.tsx:282
 #: apps/web/src/features/home/ui/marketplace-page.tsx:412
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:11
@@ -7303,7 +7303,7 @@ msgstr "資金池費用"
 msgid "Pool fee recipient: {0}"
 msgstr "資金池費用接收方：{0}"
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:342
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:341
 msgid "Pool fee updated."
 msgstr "資金池費用已更新。"
 
@@ -8768,8 +8768,8 @@ msgstr "已儲存。您的貼文再次等待批准。"
 msgid "Saving…"
 msgstr "儲存…"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:176
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:137
+#: apps/web/src/components/wallet/recipient-address-input.tsx:188
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:154
 msgid "Scan QR"
 msgstr "掃描QR 碼"
 
@@ -8777,8 +8777,8 @@ msgstr "掃描QR 碼"
 msgid "Scan QR Code"
 msgstr "掃描QR 碼"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:230
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:197
+#: apps/web/src/components/wallet/recipient-address-input.tsx:242
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:217
 msgid "Scan recipient address"
 msgstr "掃描接收方地址"
 
@@ -8884,7 +8884,7 @@ msgstr "搜尋商品或服務項目、代金券、描述或標籤"
 msgid "Search or add tags"
 msgstr "搜尋或新增標籤"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:163
+#: apps/web/src/components/wallet/recipient-address-input.tsx:175
 msgid "Search or enter"
 msgstr "搜尋或輸入"
 
@@ -9023,8 +9023,8 @@ msgstr "搜尋地點…"
 msgid "Searching pools…"
 msgstr "正在搜尋資金池…"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:214
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:176
+#: apps/web/src/components/wallet/recipient-address-input.tsx:226
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:196
 msgid "Searching recipients…"
 msgstr "正在搜尋接收方…"
 
@@ -10276,7 +10276,7 @@ msgid "The pool could not be published."
 msgstr "資金池無法發佈。"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:149
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:148
 msgid "The pool doesn't hold that much {0}."
 msgstr "資金池沒有那麼多 {0}。"
 
@@ -10299,9 +10299,9 @@ msgstr "請求已過期，中繼服務未回應。再次向卡扣款前，請檢
 msgid "The selected unit does not have a configured price feed."
 msgstr "所選計價單位未設定價格源。"
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:165
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:264
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:345
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:164
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:263
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:344
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:388
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:406
 msgid "The transaction failed."
@@ -10616,6 +10616,11 @@ msgstr "此QR 碼不包含有效的私鑰。"
 msgid "This QR code does not contain a valid sign-in card."
 msgstr "此 QR 碼不包含有效的登入卡。"
 
+#: apps/web/src/components/wallet/recipient-address-input.tsx:250
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:225
+msgid "This QR is a sign-in card. Scan a wallet address."
+msgstr "此 QR 碼是登入卡。請掃描錢包地址。"
+
 #: apps/web/src/desktop/messaging/thread-desk.tsx:198
 #: apps/web/src/features/messaging/ui/thread-page.tsx:121
 msgid "This request was declined."
@@ -10625,7 +10630,7 @@ msgstr "此請求已被拒絕。"
 msgid "This resource is already retired."
 msgstr "此資源已停用。"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:244
+#: apps/web/src/components/wallet/recipient-address-input.tsx:261
 msgid "This sign-in card was replaced. Ask its owner for their new address."
 msgstr "此登入卡已被更換。請向其持有人索取新地址。"
 
@@ -11633,12 +11638,12 @@ msgid "Waiting for them to accept your request."
 msgstr "正在等待對方接受您的請求。"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:47
-#: apps/web/src/components/wallet/recipient-address-input.tsx:204
+#: apps/web/src/components/wallet/recipient-address-input.tsx:216
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1063
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1064
 #: apps/web/src/desktop/shell/crumbs.tsx:14
 #: apps/web/src/desktop/shell/sidebar.tsx:133
-#: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
+#: apps/web/src/desktop/wallet/send-recipient-field.tsx:187
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:293
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:21
 #: apps/web/src/features/home/ui/wallet-page.tsx:123

@@ -26,6 +26,22 @@ export function parsePaperWalletImportPayload(raw: string): PaperWalletImportPay
   return { type: "invalid", error: "This QR code does not contain a valid sign-in card." };
 }
 
+const KEY_SHAPED_HEX = /^(?:0x)?[0-9a-fA-F]{64}$/i;
+
+/**
+ * True when a scanned code is a sign-in card rather than an address. A raw
+ * key, an encrypted card, and a `?w=` link are cards. So are 64 hex digits
+ * outside the secp256k1 range: `normalizePrivateKey` rejects those, and an
+ * address matcher must not keep the first 20 bytes.
+ */
+export function isSignInCardPayload(raw: string): boolean {
+  const parsed = parsePaperWalletImportPayload(raw);
+  if (parsed.type === "raw" || parsed.type === "encrypted") return true;
+
+  const extracted = extractPaperWalletPayload(raw);
+  return extracted.ok && KEY_SHAPED_HEX.test(extracted.payload.trim());
+}
+
 function extractPaperWalletPayload(
   raw: string,
 ): { ok: true; payload: string } | { ok: false; error: string } {
