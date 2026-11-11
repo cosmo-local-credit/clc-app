@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useDiscoveryLocation } from "#/lib/discovery-location";
 import type { useBrowserGeolocation } from "#/lib/use-browser-geolocation";
 import { EXPLICIT_CAMERA_RANK, type MarketCamera } from "#/features/home/logic/market-camera";
@@ -53,13 +53,18 @@ export type MarketCameraResult = {
 export function useMarketCamera(owner: string): MarketCameraResult {
   const { realFix, liveFix, ip, ipPending, locationStatus, requestLocation, explicitRequests } =
     useDiscoveryLocation(owner);
+  const explicitBaselineRef = useRef({ owner, revision: explicitRequests });
+  if (explicitBaselineRef.current.owner !== owner) {
+    explicitBaselineRef.current = { owner, revision: explicitRequests };
+  }
+  const hasNewExplicitRequest = explicitRequests > explicitBaselineRef.current.revision;
   const camera = useMemo<MarketCamera | null>(() => {
     if (liveFix)
       return {
         lat: liveFix.lat,
         lng: liveFix.lng,
         zoom: REAL_FIX_ZOOM,
-        rank: explicitRequests > 0 ? CAMERA_RANK.explicit : CAMERA_RANK.liveGps,
+        rank: hasNewExplicitRequest ? CAMERA_RANK.explicit : CAMERA_RANK.liveGps,
       };
     if (realFix)
       return {
@@ -76,7 +81,7 @@ export function useMarketCamera(owner: string): MarketCameraResult {
         rank: CAMERA_RANK.ipCity,
       };
     return null;
-  }, [realFix, liveFix, ip, explicitRequests]);
+  }, [realFix, liveFix, ip, explicitRequests, hasNewExplicitRequest]);
   return {
     camera,
     realFix,

@@ -42,3 +42,18 @@ export const MARKET_SOURCE_ID = "market-vouchers";
  * can never be separated by zooming, so they are stacked instead.
  */
 export const MAP_MAX_ZOOM = 20;
+
+/** MapLibre projects one world onto a 512 CSS-pixel square at zoom zero. */
+const MAP_WORLD_SIZE_PX = 512;
+
+/**
+ * Keep one projected world at least as wide as the viewport. This preserves
+ * seamless antimeridian wrapping without letting a wide canvas show duplicate
+ * copies of the same geography.
+ */
+export function marketMinimumZoom(viewportWidth: number): number {
+  if (!Number.isFinite(viewportWidth) || viewportWidth <= MAP_WORLD_SIZE_PX) return 0;
+  // Keep a tiny margin above the exact ratio so floating-point rounding cannot
+  // make the projected world a fraction of a pixel narrower than the canvas.
+  return Math.min(MAP_MAX_ZOOM, Math.log2(viewportWidth / MAP_WORLD_SIZE_PX) + 1e-9);
+}

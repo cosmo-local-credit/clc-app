@@ -15,6 +15,7 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     style: string;
     center: [number, number];
     zoom: number;
+    minZoom?: number;
     maxZoom?: number;
     bearing?: number;
     pitch?: number;
@@ -90,8 +91,10 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     hasImage = vi.fn((id: string) => this.images.has(id));
     remove = vi.fn();
     removeImage = vi.fn((id: string) => this.images.delete(id));
-    getCanvas = vi.fn(() => ({ clientWidth: 360, clientHeight: 640 }));
+    canvas = { clientWidth: 360, clientHeight: 640 };
+    getCanvas = vi.fn(() => this.canvas);
     isMoving = vi.fn(() => false);
+    minZoom = 0;
     zoom = 12;
     maxZoom = 21;
     bounds = { west: 36.6, south: -1.5, east: 37.1, north: -1.1 };
@@ -99,6 +102,7 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
 
     constructor(options: MockMapOptions) {
       this.options = options;
+      this.minZoom = options.minZoom ?? 0;
       this.maxZoom = options.maxZoom ?? 21;
       mapInstances.push(this);
     }
@@ -159,6 +163,15 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     getMaxZoom() {
       return this.maxZoom;
     }
+
+    getMinZoom() {
+      return this.minZoom;
+    }
+
+    setMinZoom = vi.fn((zoom: number) => {
+      this.minZoom = zoom;
+      return this;
+    });
 
     getBounds = () => {
       const { west, south, east, north } = this.bounds;
@@ -227,7 +240,7 @@ vi.mock("maplibre-gl", () => ({
 }));
 
 import { installCanvasStub, installPath2DStub } from "./-market-canvas-stub";
-import { type MarketLocation, MARKET_SOURCE_ID } from "./market-data";
+import { marketMinimumZoom, type MarketLocation, MARKET_SOURCE_ID } from "./market-data";
 import type { MarketMapCluster } from "@clc/core/features/market-map/logic";
 import { EXPLICIT_CAMERA_RANK } from "#/features/home/logic/market-camera";
 import { useThemeStore } from "#/providers/theme";
@@ -301,6 +314,29 @@ beforeEach(() => {
   vi.stubGlobal("CSS", { supports: () => true });
 });
 
+describe("marketMinimumZoom", () => {
+  it.each([
+    [360, 0],
+    [512, 0],
+    [1024, 1],
+    [1440, Math.log2(1440 / 512)],
+    [2560, Math.log2(2560 / 512)],
+    [4096, 3],
+  ])("keeps a single projected world across a %ipx viewport", (width, expected) => {
+    const minZoom = marketMinimumZoom(width);
+
+    expect(minZoom).toBeCloseTo(expected);
+    expect(512 * 2 ** minZoom).toBeGreaterThanOrEqual(width);
+  });
+
+  it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+    "falls back safely for an unusable width %s",
+    (width) => {
+      expect(marketMinimumZoom(width)).toBe(0);
+    },
+  );
+});
+
 function clickFeature(
   map: ReturnType<typeof loadedMap>,
   layerId: string,
@@ -324,6 +360,31 @@ function clickEmptyMap(map: ReturnType<typeof loadedMap>) {
 }
 
 describe("MarketMap lifecycle", () => {
+  it("sets the responsive minimum zoom during construction", () => {
+    const clientWidth = vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(2048);
+    try {
+      renderWithCamera(null);
+
+      expect(firstMap().options.minZoom).toBeCloseTo(2);
+    } finally {
+      clientWidth.mockRestore();
+    }
+  });
+
+  it("updates the minimum zoom after the canvas resizes without rebuilding the map", () => {
+    renderWithCamera(null);
+    const map = firstMap();
+    map.canvas.clientWidth = 2560;
+
+    act(() => map.trigger("resize"));
+
+    expect(map.setMinZoom).toHaveBeenCalledWith(marketMinimumZoom(2560));
+    expect(mapInstances).toHaveLength(1);
+
+    act(() => map.trigger("resize"));
+    expect(map.setMinZoom).toHaveBeenCalledOnce();
+  });
+
   it("switches Standard themes in place and restores theme-aware overlays", () => {
     render(
       <MarketMap
