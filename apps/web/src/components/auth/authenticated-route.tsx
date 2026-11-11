@@ -12,9 +12,9 @@ import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { returnDestination } from "#/lib/navigation/return-destination";
 import { onboardingSearch } from "#/lib/onboarding-search";
 import { type AuthGateSlot, useAuthGateSlot } from "./auth-gate-slot";
-import { sanitizeInternalRedirect } from "./redirect";
 
 export function AuthenticatedRoute({ children }: { children: ReactNode }) {
   const auth = useAuthStatus();
@@ -42,10 +42,12 @@ export function AuthenticatedRoute({ children }: { children: ReactNode }) {
   return <AuthRequiredScreen />;
 }
 
-/** The destination to return to after sign-in: this URL, if it is an internal path. */
+/**
+ * The destination to return to after sign-in: this URL, if it is an internal
+ * path, or only its pathname when the whole URL is over the link budget.
+ */
 function useReturnDestination() {
-  const location = useLocation();
-  return sanitizeInternalRedirect(`${location.pathname}${location.searchStr}${location.hash}`);
+  return returnDestination(useLocation());
 }
 
 function SlottedAuthRequired({ render }: { render: AuthGateSlot["required"] }) {

@@ -1,3 +1,4 @@
+import type { VoucherPrefill } from "@clc/core/features/vouchers/prefill";
 import { locationSchema } from "@clc/core/features/location/logic";
 import { resolveMarkerStyle } from "@clc/core/features/markers/logic";
 import {
@@ -53,7 +54,13 @@ import { VoucherDetailsRows } from "./voucher-details-rows";
 
 export type { VoucherCreateStep };
 
-export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
+export function CreateVoucherFlow({
+  step,
+  prefill,
+}: {
+  step: VoucherCreateStep;
+  prefill?: VoucherPrefill | null;
+}) {
   const { i18n, t } = useLingui();
   const router = useRouter();
   const advancedRef = useRef<HTMLDetailsElement>(null);
@@ -70,11 +77,14 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
     fillSuggestedSymbol,
     iconBusy,
     setIconBusy,
+    changeIcon,
+    iconImportFailed,
     advancing,
     goToPlace,
     goToReview,
   } = useCreateVoucherForm({
     step,
+    prefill,
     revealAdvanced: () => {
       if (advancedRef.current) advancedRef.current.open = true;
     },
@@ -403,12 +413,17 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                         hint={t`Optional`}
                         purpose="voucher.icon"
                         value={field.state.value || null}
-                        onChange={(url) => field.handleChange(url ?? "")}
+                        onChange={changeIcon}
                         onBusyChange={setIconBusy}
                         disabled={inFlight}
                       />
                     )}
                   </form.Field>
+                  {iconImportFailed ? (
+                    <p role="alert" className="mt-1.5 text-xs text-destructive">
+                      <Trans>Couldn't import the image</Trans>
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
 
@@ -726,7 +741,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                     type="submit"
                     tap
                     className="w-full"
-                    disabled={!acceptedTerms || blocked}
+                    disabled={!acceptedTerms || blocked || iconBusy}
                     pending={isSubmitting || inFlight}
                   >
                     {isSubmitting || inFlight ? (

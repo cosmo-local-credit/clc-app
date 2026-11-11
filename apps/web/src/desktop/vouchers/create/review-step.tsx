@@ -119,7 +119,7 @@ export function ReviewStep({ wizard }: { wizard: VoucherWizard }) {
             return (
               <Button
                 type="submit"
-                disabled={!acceptedTerms || wizard.blocked}
+                disabled={!acceptedTerms || wizard.blocked || wizard.iconBusy}
                 pending={publishing}
               >
                 {publishing ? <Trans>Publishing…</Trans> : <Trans>Confirm and publish</Trans>}

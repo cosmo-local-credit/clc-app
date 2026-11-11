@@ -10,16 +10,22 @@ import {
 import { describe, expect, it } from "vite-plus/test";
 import { z } from "zod";
 
-import { parsePoolSideRequest, usePoolSideNavigation } from "./pool-side-state";
+import { parsePoolApproveSeed, parsePoolSideRequest, usePoolSideNavigation } from "./pool-side";
 
 const POOL = "0x5c4e18f7329bb8b533e5be0d8b176ee1ed735aaa";
 const TOKEN = "0x9d1e18f7329bb8b533e5be0d8b176ee1ed73bbbb";
+/** EIP-55: the only form a link's candidate is taken in. */
+const CANDIDATE = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
 
 function Harness() {
-  const { request, open, close } = usePoolSideNavigation();
+  const { request, approveSeed, open, close } = usePoolSideNavigation();
   return (
     <div>
       <p data-testid="request">{JSON.stringify(request)}</p>
+      <p data-testid="seed">{JSON.stringify(approveSeed)}</p>
+      <button type="button" onClick={() => open({ kind: "tool", tool: "approve" })}>
+        approve
+      </button>
       <button type="button" onClick={() => open({ kind: "tool", tool: "liquidity" })}>
         liquidity
       </button>
@@ -79,6 +85,7 @@ function mount(initialEntries: string[], initialIndex?: number) {
 }
 
 const current = () => JSON.parse(screen.getByTestId("request").textContent ?? "null");
+const seed = () => JSON.parse(screen.getByTestId("seed").textContent ?? "null");
 
 describe("parsePoolSideRequest", () => {
   it("reads one panel from the URL", () => {
@@ -194,5 +201,75 @@ describe("usePoolSideNavigation", () => {
     fireEvent.click(screen.getByText("close twice"));
     await waitFor(() => expect(current()).toBeNull());
     expect(history.location.pathname).toBe(`/pools/${POOL}`);
+  });
+
+  it("clears all four approve params on close, and Back after a deep-linked one leaves the pool", async () => {
+    const link = `/pools/${POOL}?tab=vouchers&tool=approve&candidate=${CANDIDATE}&exchangeRate=%221%22&creditLimit=%22500%22`;
+    const { router, history } = mount(["/elsewhere", link], 1);
+    await waitFor(() =>
+      expect(seed()).toEqual({ candidate: CANDIDATE, exchangeRate: "1", creditLimit: "500" }),
+    );
+
+    fireEvent.click(screen.getByText("close"));
+
+    await waitFor(() => expect(current()).toBeNull());
+    expect(seed()).toBeNull();
+    for (const key of ["tool", "candidate", "exchangeRate", "creditLimit"]) {
+      expect(router.state.location.search).not.toHaveProperty(key);
+    }
+    expect(router.state.location.search).toMatchObject({ tab: "vouchers" });
+    history.back();
+    await waitFor(() => expect(router.state.location.pathname).toBe("/elsewhere"));
+  });
+
+  it("opens an in-app approve panel with no seeds, and Back closes it", async () => {
+    const { router, history } = mount(["/elsewhere", `/pools/${POOL}?tab=vouchers`], 1);
+    await screen.findByText("approve");
+
+    fireEvent.click(screen.getByText("approve"));
+    await waitFor(() => expect(current()).toEqual({ kind: "tool", tool: "approve" }));
+    expect(seed()).toBeNull();
+
+    history.back();
+    await waitFor(() => expect(current()).toBeNull());
+    expect(router.state.location.pathname).toBe(`/pools/${POOL}`);
+  });
+});
+
+describe("parsePoolApproveSeed", () => {
+  it("takes a checksummed candidate and quoted decimal seeds beside tool=approve", () => {
+    expect(
+      parsePoolApproveSeed({
+        tool: "approve",
+        candidate: CANDIDATE,
+        exchangeRate: "1.25",
+        creditLimit: "500",
+      }),
+    ).toEqual({ candidate: CANDIDATE, exchangeRate: "1.25", creditLimit: "500" });
+    expect(parsePoolApproveSeed({ tool: "approve", candidate: CANDIDATE })).toEqual({
+      candidate: CANDIDATE,
+    });
+  });
+
+  it("ignores a candidate in any other form, and the seeds with it", () => {
+    for (const candidate of [CANDIDATE.toLowerCase(), CANDIDATE.toUpperCase(), "0x1234", 7]) {
+      expect(parsePoolApproveSeed({ tool: "approve", candidate, exchangeRate: "1" })).toBeNull();
+    }
+  });
+
+  it("drops a seed that arrived as a bare number", () => {
+    expect(
+      parsePoolApproveSeed({ tool: "approve", candidate: CANDIDATE, exchangeRate: 1.5 }),
+    ).toEqual({ candidate: CANDIDATE });
+  });
+
+  it("ignores the seeds when entry or manage wins over tool=approve", () => {
+    expect(
+      parsePoolApproveSeed({ tool: "approve", entry: "tx-1", candidate: CANDIDATE }),
+    ).toBeNull();
+    expect(
+      parsePoolApproveSeed({ tool: "approve", manage: TOKEN, candidate: CANDIDATE }),
+    ).toBeNull();
+    expect(parsePoolApproveSeed({ tool: "liquidity", candidate: CANDIDATE })).toBeNull();
   });
 });

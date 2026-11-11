@@ -26,6 +26,7 @@ import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-to
 import { useRefreshPoolOfferingsOnMembership } from "#/features/pools/hooks/use-pool-offerings-refresh";
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
+import { usePoolSideNavigation } from "#/lib/navigation/pool-side";
 import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
 import { isAdminRole } from "@clc/core/features/users/roles";
 import { PoolActivityPanel } from "./pool-activity-panel";
@@ -123,7 +124,11 @@ export function PoolDetailPage({
   const canManageOnChain = isPoolOwner;
   const rates = usePoolVoucherRates(pool, vouchers, canManageOnChain);
   const [managing, setManaging] = useState<PoolVoucher | null>(null);
-  const [approving, setApproving] = useState(false);
+  // The approve sheet lives in `tool=approve`, the param the desktop panel
+  // uses, so one link opens either view and Back closes it.
+  const side = usePoolSideNavigation();
+  const approving = side.request?.kind === "tool" && side.request.tool === "approve";
+  const openApprove = () => side.open({ kind: "tool", tool: "approve" });
   const [receiving, setReceiving] = useState(false);
   const selectedTab =
     pool?.active === false && activeTab !== "activity" && activeTab !== "info"
@@ -338,7 +343,7 @@ export function PoolDetailPage({
           className="space-y-3"
         >
           {canManageOnChain ? (
-            <Button variant="outline" tap className="w-full" onClick={() => setApproving(true)}>
+            <Button variant="outline" tap className="w-full" onClick={openApprove}>
               <RiAddLine className="size-4" aria-hidden="true" />
               <Trans>Approve voucher</Trans>
             </Button>
@@ -405,8 +410,9 @@ export function PoolDetailPage({
           pool={pool}
           poolVouchers={poolVouchers}
           voucher={null}
+          approveSeed={approving ? side.approveSeed : null}
           open={approving}
-          onClose={() => setApproving(false)}
+          onClose={side.close}
         />
       ) : null}
 

@@ -13,6 +13,7 @@ import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { clearIdentitySecrets } from "#/features/auth/api/identity-reset";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
+import { returnDestination } from "#/lib/navigation/return-destination";
 import { onboardingSearch } from "#/lib/onboarding-search";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { useCaliburSignin } from "#/features/webauthn/hooks/use-calibur-signin";
@@ -82,9 +83,7 @@ export function useSignIn({
 
   const isSigningIn = signinStep === "asserting" || signinStep === "verifying";
   const connecting = isSigningIn || pkConnecting || backendSignin.isPending;
-  const currentRedirect =
-    sanitizeInternalRedirect(redirectTo) ??
-    sanitizeInternalRedirect(`${location.pathname}${location.searchStr}${location.hash}`);
+  const currentRedirect = sanitizeInternalRedirect(redirectTo) ?? returnDestination(location);
   const createAccountSearch = onboardingSearch(createAccountStep, currentRedirect);
 
   function routeToSignup() {

@@ -21,13 +21,10 @@ import {
   usePoolDeskReceive,
   usePoolDeskRequestedTab,
 } from "#/desktop/pools/pool-main";
-import {
-  type PoolSideRequest,
-  requestForSide,
-  usePoolSideNavigation,
-} from "#/desktop/pools/pool-side-state";
+import { requestForSide } from "#/desktop/pools/pool-side-state";
 import { PoolSwapColumn } from "#/desktop/pools/pool-swap-column";
 import { DeskCanvas, DeskDetail } from "#/desktop/ui/page";
+import { type PoolSideRequest, usePoolSideNavigation } from "#/lib/navigation/pool-side";
 
 export function PoolDesk({
   poolAddress,
@@ -182,6 +179,7 @@ export function PoolDeskFrame({
             pool={pool}
             poolVouchers={model.poolVouchers}
             voucher={panel.kind === "voucher" ? panel.voucher : null}
+            approveSeed={panel.kind === "approve" ? navigation.approveSeed : null}
             onClose={close}
           />
         );

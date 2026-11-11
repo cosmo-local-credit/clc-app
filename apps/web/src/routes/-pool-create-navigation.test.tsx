@@ -182,11 +182,14 @@ describe("pool create navigation", () => {
 
   it("redirects an unknown pool step before the flow loads", async () => {
     const { Route } = await import("./pools/create/$step");
-    const beforeLoad = Route.options.beforeLoad as (ctx: { params: { step: string } }) => void;
+    const beforeLoad = Route.options.beforeLoad as (ctx: {
+      params: { step: string };
+      search: Record<string, unknown>;
+    }) => void;
 
-    expect(() => beforeLoad({ params: { step: "review" } })).not.toThrow();
+    expect(() => beforeLoad({ params: { step: "review" }, search: {} })).not.toThrow();
     try {
-      beforeLoad({ params: { step: "unknown" } });
+      beforeLoad({ params: { step: "unknown" }, search: {} });
       expect.unreachable("expected a redirect");
     } catch (error) {
       expect(isRedirect(error)).toBe(true);
