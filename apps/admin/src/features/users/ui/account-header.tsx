@@ -1,6 +1,7 @@
 import type { AdminUser } from "@clc/api/features/admin/client";
+import { mayActOnAccount } from "@clc/core/features/account-retirement/logic";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
-import { isSuperAdminRole } from "@clc/core/features/users/roles";
+import { isSuperAdminRole, isUserRole } from "@clc/core/features/users/roles";
 import { HiOutlineExternalLink, HiOutlinePencil } from "react-icons/hi";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -18,7 +19,11 @@ import { cn } from "#/lib/utils";
 import { useAdminSession } from "#/features/auth/admin-session";
 import { KEY_ROTATION_ENABLED } from "#/lib/key-rotation-config";
 import { useApproveUser, useRejectUser, useUpdateUserRole } from "../use-admin-users";
+import { useRestoreAccount } from "../use-account-retirement";
+import { AccountLifecycleBadge } from "./account-lifecycle-badge";
+import { ModerationDialog } from "./moderation-dialog";
 import { ReplaceCardDialog } from "./replace-card-dialog";
+import { RetireAccountSheet } from "./retire-account-sheet";
 
 /** Shown when an account has no name, so the title is never an empty line. */
 const UNNAMED = "Unnamed account";
@@ -59,10 +64,14 @@ export function AccountHeader({
   const approve = useApproveUser();
   const reject = useRejectUser();
   const updateRole = useUpdateUserRole();
+  const restore = useRestoreAccount();
   const session = useAdminSession();
   const [roleTarget, setRoleTarget] = useState<"ADMIN" | "USER" | null>(null);
   const [replacingCard, setReplacingCard] = useState(false);
-  const busy = approve.isPending || reject.isPending || updateRole.isPending;
+  const [moderation, setModeration] = useState<"ban" | "unban" | null>(null);
+  const [retiring, setRetiring] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const busy = approve.isPending || reject.isPending || updateRole.isPending || restore.isPending;
   const canManageRoles =
     session.status === "authenticated" && isSuperAdminRole(session.operator.role);
   // clc-core refuses the operator's own account and any superadmin's.
@@ -73,6 +82,25 @@ export function AccountHeader({
     !isSuperAdminRole(account.role) &&
     session.status === "authenticated" &&
     session.operator.address.toLowerCase() !== account.ethereumAddress.toLowerCase();
+
+  // Ban, Unban and Retire follow the role hierarchy. clc-core refuses the rest
+  // with a 403; the console just does not offer what it knows will be refused.
+  const operator = session.status === "authenticated" ? session.operator : null;
+  const mayAct =
+    account !== null &&
+    operator !== null &&
+    isUserRole(operator.role) &&
+    mayActOnAccount(
+      { role: operator.role, address: operator.address },
+      { role: account.role, address: account.ethereumAddress },
+    );
+  const lifecycle = account?.lifecycle ?? "ACTIVE";
+  const canRetire = mayAct && lifecycle === "ACTIVE";
+  const canRestore =
+    mayAct &&
+    lifecycle === "RETIREMENT_SCHEDULED" &&
+    !!account?.closesAt &&
+    new Date(account.closesAt).getTime() > Date.now();
 
   const name = account?.name?.trim() ? account.name : UNNAMED;
 
@@ -131,6 +159,7 @@ export function AccountHeader({
             {account ? (
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 <StateBadge state={account.status} kind="account" />
+                <AccountLifecycleBadge lifecycle={account.lifecycle} closesAt={account.closesAt} />
                 <Badge variant="outline" className="font-mono text-xs uppercase">
                   {account.role}
                 </Badge>
@@ -171,17 +200,22 @@ export function AccountHeader({
                   choice and cost a click to read a two-item list. Approval leads
                   because it is the decision a pending account is opened to make;
                   banning is last and styled as the destructive thing it is. */}
-              {account.status !== "APPROVED" ? (
+              {mayAct && account.status === "PENDING" ? (
                 <Button
                   size="sm"
                   disabled={busy}
                   onClick={() =>
                     void run("Account approved.", () =>
-                      approve.mutateAsync(account.ethereumAddress),
+                      approve.mutateAsync({ address: account.ethereumAddress }),
                     )
                   }
                 >
                   {approve.isPending ? "Approving…" : "Approve account"}
+                </Button>
+              ) : null}
+              {mayAct && account.status === "REJECTED" ? (
+                <Button size="sm" disabled={busy} onClick={() => setModeration("unban")}>
+                  Unban user
                 </Button>
               ) : null}
 
@@ -222,7 +256,28 @@ export function AccountHeader({
                 </Button>
               ) : null}
 
-              {account.status !== "REJECTED" ? (
+              {canRestore ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() => setRestoring(true)}
+                >
+                  Restore account
+                </Button>
+              ) : null}
+              {canRetire ? (
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={busy}
+                  onClick={() => setRetiring(true)}
+                >
+                  Retire account
+                </Button>
+              ) : null}
+
+              {mayAct && account.status !== "REJECTED" ? (
                 // "Ban user" over "Reject": the same endpoint serves both a
                 // never-approved signup and an account being shut out later, and only
                 // the second reads as rejection. The stored status stays REJECTED, so
@@ -231,11 +286,9 @@ export function AccountHeader({
                   size="sm"
                   variant="destructive"
                   disabled={busy}
-                  onClick={() =>
-                    void run("User banned.", () => reject.mutateAsync(account.ethereumAddress))
-                  }
+                  onClick={() => setModeration("ban")}
                 >
-                  {reject.isPending ? "Banning…" : "Ban user"}
+                  Ban user
                 </Button>
               ) : null}
             </>
@@ -248,6 +301,51 @@ export function AccountHeader({
           address={account.ethereumAddress}
           name={account.name}
           onClose={() => setReplacingCard(false)}
+        />
+      ) : null}
+
+      {account && moderation ? (
+        <ModerationDialog
+          action={moderation}
+          pending={moderation === "ban" ? reject.isPending : approve.isPending}
+          onCancel={() => setModeration(null)}
+          onConfirm={(reason) => {
+            const request = { address: account.ethereumAddress, reason };
+            void run(moderation === "ban" ? "User banned." : "User unbanned.", () =>
+              (moderation === "ban" ? reject : approve).mutateAsync(request).then((user) => {
+                setModeration(null);
+                return user;
+              }),
+            );
+          }}
+        />
+      ) : null}
+
+      {account && retiring ? (
+        <RetireAccountSheet
+          address={account.ethereumAddress}
+          name={name}
+          open
+          onClose={() => setRetiring(false)}
+        />
+      ) : null}
+
+      {account && restoring ? (
+        <ConfirmDialog
+          open
+          title="Restore this account?"
+          description="The account returns to ordinary use and its hidden posts, reviews, wants and catalogs become visible again. A ban is not lifted."
+          confirmLabel="Restore account"
+          pending={restore.isPending}
+          onCancel={() => setRestoring(false)}
+          onConfirm={() =>
+            void run("Account restored.", () =>
+              restore.mutateAsync(account.ethereumAddress).then((state) => {
+                setRestoring(false);
+                return state;
+              }),
+            )
+          }
         />
       ) : null}
 

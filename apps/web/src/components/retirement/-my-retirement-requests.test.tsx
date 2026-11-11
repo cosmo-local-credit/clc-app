@@ -13,6 +13,7 @@ function request(id: number, status: RetirementRequest["status"]): RetirementReq
   return {
     id,
     resourceType: "voucher",
+    source: "OWNER",
     resourceAddress: ADDRESS,
     resourceName: `Voucher ${id}`,
     symbol: `V${id}`,

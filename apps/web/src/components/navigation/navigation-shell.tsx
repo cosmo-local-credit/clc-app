@@ -1,6 +1,7 @@
 import { Outlet, useMatches, useSearch } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 
+import { isRecoverySession } from "#/features/account-retirement/logic/lifecycle";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useActivityCounts } from "#/features/messaging/hooks/use-activity-counts";
 import {
@@ -33,6 +34,10 @@ export function NavigationShell() {
 
   // A shared install link is a landing page: it belongs with onboarding.
   if (navOwner === "install" && search.from !== "settings") return <Outlet />;
+
+  // A retiring account has no tabs to go to: the screens it may open are the
+  // recovery set, and they lead back to the shell.
+  if (isRecoverySession(auth)) return <Outlet />;
 
   let activeTab: HomeTab;
   let atActiveTabRoot = false;

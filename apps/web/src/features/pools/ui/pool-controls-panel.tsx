@@ -154,42 +154,12 @@ export function PoolControlsPanel({
         onClose={() => setSheet(null)}
       />
 
-      <ControlSheetShell
-        open={sheet === "liquidity"}
-        title={t`Withdraw liquidity`}
+      <PoolWithdrawalSheets
+        pool={pool}
+        controls={{ indexed, withdrawalVouchers, treasury, fee }}
+        sheet={sheet === "liquidity" || sheet === "fees" ? sheet : null}
         onClose={() => setSheet(null)}
-      >
-        <WithdrawalInventoryNotice
-          pending={indexed.isPending}
-          error={indexed.isError}
-          retry={() => void indexed.refetch()}
-        />
-        <WithdrawLiquidityForm
-          pool={pool}
-          vouchers={withdrawalVouchers}
-          treasury={treasury.data}
-          onDone={() => setSheet(null)}
-        />
-      </ControlSheetShell>
-
-      <ControlSheetShell
-        open={sheet === "fees"}
-        title={t`Withdraw fees`}
-        onClose={() => setSheet(null)}
-      >
-        <WithdrawalInventoryNotice
-          pending={indexed.isPending}
-          error={indexed.isError}
-          retry={() => void indexed.refetch()}
-        />
-        <CollectFeesForm
-          pool={pool}
-          vouchers={withdrawalVouchers}
-          treasury={treasury.data}
-          settings={fee}
-          onDone={() => setSheet(null)}
-        />
-      </ControlSheetShell>
+      />
 
       <ControlSheetShell
         open={sheet === "ownership"}
@@ -206,6 +176,105 @@ export function PoolControlsPanel({
       >
         <FeeSettingsForm pool={pool} settings={fee} onDone={() => setSheet(null)} />
       </ControlSheetShell>
+    </>
+  );
+}
+
+type WithdrawalSheet = "liquidity" | "fees";
+
+/** The slice of `usePoolControls` the two withdrawal sheets read. */
+type WithdrawalControls = Pick<
+  ReturnType<typeof usePoolControls>,
+  "indexed" | "withdrawalVouchers" | "treasury" | "fee"
+>;
+
+function PoolWithdrawalSheets({
+  pool,
+  controls: { indexed, withdrawalVouchers, treasury, fee },
+  sheet,
+  onClose,
+}: {
+  pool: UserPool;
+  controls: WithdrawalControls;
+  sheet: WithdrawalSheet | null;
+  onClose: () => void;
+}) {
+  const { t } = useLingui();
+  return (
+    <>
+      <ControlSheetShell
+        open={sheet === "liquidity"}
+        title={t`Withdraw liquidity`}
+        onClose={onClose}
+      >
+        <WithdrawalInventoryNotice
+          pending={indexed.isPending}
+          error={indexed.isError}
+          retry={() => void indexed.refetch()}
+        />
+        <WithdrawLiquidityForm
+          pool={pool}
+          vouchers={withdrawalVouchers}
+          treasury={treasury.data}
+          onDone={onClose}
+        />
+      </ControlSheetShell>
+
+      <ControlSheetShell open={sheet === "fees"} title={t`Withdraw fees`} onClose={onClose}>
+        <WithdrawalInventoryNotice
+          pending={indexed.isPending}
+          error={indexed.isError}
+          retry={() => void indexed.refetch()}
+        />
+        <CollectFeesForm
+          pool={pool}
+          vouchers={withdrawalVouchers}
+          treasury={treasury.data}
+          settings={fee}
+          onDone={onClose}
+        />
+      </ControlSheetShell>
+    </>
+  );
+}
+
+/** Reads the pool's holdings only once a withdrawal sheet is opened. */
+function PoolWithdrawalSheetsLoaded({
+  pool,
+  sheet,
+  onClose,
+}: {
+  pool: UserPool;
+  sheet: WithdrawalSheet;
+  onClose: () => void;
+}) {
+  const controls = usePoolControls(pool, [], true);
+  return <PoolWithdrawalSheets pool={pool} controls={controls} sheet={sheet} onClose={onClose} />;
+}
+
+/**
+ * Withdraw liquidity and fees for a pool the signed-in wallet owns, without the
+ * rest of the pool controls. The recovery shell uses it: withdrawing is how a
+ * retiring account gets its funds out, and it needs no other pool screen.
+ */
+export function PoolWithdrawActions({ pool }: { pool: UserPool }) {
+  const { t } = useLingui();
+  const [sheet, setSheet] = useState<WithdrawalSheet | null>(null);
+  return (
+    <>
+      <ActionRow
+        icon={<RiSafe2Line className="size-4" aria-hidden="true" />}
+        label={t`Withdraw liquidity`}
+        onClick={() => setSheet("liquidity")}
+      />
+      <ActionRow
+        icon={<RiHandCoinLine className="size-4" aria-hidden="true" />}
+        label={t`Withdraw fees`}
+        onClick={() => setSheet("fees")}
+      />
+      {sheet ? (
+        <PoolWithdrawalSheetsLoaded pool={pool} sheet={sheet} onClose={() => setSheet(null)} />
+      ) : null}
     </>
   );
 }

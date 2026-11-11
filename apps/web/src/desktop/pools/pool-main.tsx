@@ -14,6 +14,7 @@ import type { ReactNode } from "react";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { ReviewSummaryContent } from "#/components/reviews/review-summary";
 import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
+import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { PoolLogo } from "#/components/wallet";
@@ -269,6 +270,8 @@ export function PoolMain({
           </p>
         </div>
       ) : null}
+
+      <ManagerClosureNotice closure={pool.managerClosure} resource="pool" active={pool.active} />
 
       {auth.isAuthenticated ? (
         <PoolStats

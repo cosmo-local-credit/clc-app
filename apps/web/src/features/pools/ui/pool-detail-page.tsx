@@ -10,6 +10,7 @@ import {
   RiQrCodeLine,
   RiSettings3Line,
 } from "react-icons/ri";
+import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Badge } from "#/components/ui/badge";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { PoolReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
@@ -201,6 +202,8 @@ export function PoolDetailPage({
           </p>
         </div>
       ) : null}
+
+      <ManagerClosureNotice closure={pool.managerClosure} resource="pool" active={pool.active} />
 
       {/* The three-up action row the wallet screen already uses, so a pool's
           actions are read the same way as every other screen's: the icon over
@@ -506,6 +509,12 @@ function VoucherRow({
         {token ? <TokenLogo token={token} size={36} /> : null}
         <div className="min-w-0 flex-1 overflow-hidden">
           <p className="truncate font-semibold text-sm">{voucher.name}</p>
+          <ManagerClosureNotice
+            closure={voucher.managerClosure}
+            resource="voucher"
+            active={voucher.active}
+            compact
+          />
           {ratePpm === undefined ? null : (
             <p className="truncate font-mono text-muted-foreground text-xs">
               1 {voucher.symbol} ={" "}

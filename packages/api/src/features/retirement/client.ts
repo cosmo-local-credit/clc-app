@@ -44,6 +44,8 @@ const requestSchema = z.object({
   ownerAddress: addressSchema,
   reason: z.string(),
   status: statusSchema,
+  /** Who started it: the owner asking, or an operator retiring directly. */
+  source: z.enum(["OWNER", "ADMIN"]).default("OWNER"),
   requestedAt: z.string(),
   decisionAt: z.string().nullable(),
   decisionBy: addressSchema.nullable(),
@@ -173,6 +175,19 @@ export function createRetirementClient(http: HttpClient) {
     },
     reject(id: number, body: { reason: string }) {
       return requestResult(write(`/api/v2/admin/retirement-requests/${id}/reject`, "PUT", body));
+    },
+    /**
+     * Retires a voucher or pool as an operator. A pending owner request is approved
+     * instead of duplicated, and an already retired resource answers `changed: false`.
+     */
+    async adminRetire(
+      type: RetirementResourceType,
+      address: string,
+      body: { acknowledgeBalances: boolean; reason?: string },
+    ) {
+      const path = resourcePath(type, address).replace("/api/v2/", "/api/v2/admin/");
+      const result = await write<{ changed: boolean }>(`${path}/retire`, "PUT", body);
+      return { changed: result.changed };
     },
     async restore(type: RetirementResourceType, address: string, body: { reason: string }) {
       const path = resourcePath(type, address).replace("/api/v2/", "/api/v2/admin/");

@@ -31,6 +31,7 @@ const preview: RetirementPreview = {
 };
 const pending: RetirementRequest = {
   id: 1,
+  source: "OWNER",
   resourceType: "voucher",
   resourceAddress: ADDRESS,
   resourceName: "Test voucher",

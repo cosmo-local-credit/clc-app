@@ -1,3 +1,4 @@
+import type { ManagerClosure } from "@clc/core/features/account-retirement/logic";
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import {
@@ -21,6 +22,7 @@ import {
   normalizeHex,
   normalizeNumber,
   normalizeNumericText,
+  normalizeManagerClosure,
   normalizeText,
 } from "../../lib/api-normalize";
 
@@ -50,6 +52,8 @@ export type MarketVoucher = {
 } & MarketVoucherMarker;
 
 export type MarketVoucherDetail = {
+  /** Set while the managing account is scheduled to close, or has closed. */
+  managerClosure?: ManagerClosure;
   id: string;
   chainId: number | null;
   address: HexAddress;
@@ -135,6 +139,7 @@ type BackendMarketVoucher = Partial<{
   kind: string;
   markerIcon: string | null;
   markerColor: string | null;
+  managerClosure: unknown;
 }>;
 
 export type BackendMarketVoucherDetail = BackendMarketVoucher &
@@ -507,6 +512,7 @@ export function normalizeMarketVoucherDetail(
       : [],
     kind: isMarketKind(kind) ? kind : "voucher",
     active: voucher.active !== false,
+    managerClosure: normalizeManagerClosure(voucher.managerClosure),
     ...normalizeMarker(voucher),
   };
 }

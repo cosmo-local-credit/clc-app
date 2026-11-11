@@ -624,3 +624,33 @@ describe("VoucherSheet unavailable state", () => {
     expect(mocks.refetchDetail).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("VoucherSheet manager closure", () => {
+  it("tells the viewer when the voucher's managing account is scheduled to close", () => {
+    mocks.detail = detail({
+      managerClosure: { state: "SCHEDULED", closesAt: "2026-12-15T12:00:00Z" },
+    });
+    renderSheet();
+    expect(screen.getByRole("status").textContent).toMatch(
+      /^The account managing this voucher is scheduled to close on December 1[45], 2026\. This voucher remains active\.$/,
+    );
+  });
+
+  it("tells the viewer when the managing account has closed", () => {
+    mocks.detail = detail({ managerClosure: { state: "CLOSED", closesAt: null } });
+    renderSheet();
+    expect(screen.getByRole("status").textContent).toBe(
+      "The account managing this voucher has closed. This voucher remains active.",
+    );
+  });
+
+  it("says nothing for a retired voucher or one with no closure", () => {
+    mocks.detail = detail({ active: false, managerClosure: { state: "CLOSED", closesAt: null } });
+    const view = renderSheet();
+    expect(screen.queryByText(/The account managing this/)).toBeNull();
+    view.unmount();
+    mocks.detail = detail({ managerClosure: null });
+    renderSheet();
+    expect(screen.queryByText(/The account managing this/)).toBeNull();
+  });
+});

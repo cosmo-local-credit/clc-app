@@ -383,7 +383,7 @@ function VoucherBurnSheet({
   );
 }
 
-function VoucherOwnershipTransferSheet({
+export function VoucherOwnershipTransferSheet({
   open,
   onClose,
   tokenAddress,

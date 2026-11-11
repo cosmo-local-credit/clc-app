@@ -11,6 +11,7 @@ import { PhoneInputField } from "#/components/ui/phone-input";
 import { Textarea } from "#/components/ui/textarea";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { type ProfileResult } from "@clc/api/features/auth/client";
+import { RetireAccountSection } from "#/components/account-retirement/retire-account-section";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useProfileEditForm } from "#/features/auth/hooks/use-profile-edit-form";
 import { isStorageConfigured } from "#/lib/api/storage";
@@ -354,6 +355,8 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
           </form.Subscribe>
         </div>
       </form>
+
+      <RetireAccountSection />
     </>
   );
 }

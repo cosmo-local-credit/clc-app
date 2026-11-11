@@ -4,6 +4,7 @@ import { useSearch } from "@tanstack/react-router";
 import { useId } from "react";
 import { useConnection } from "wagmi";
 
+import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { TagBadge } from "#/components/ui/tag-badge";
@@ -212,6 +213,11 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
                 }
               />
             </div>
+            <ManagerClosureNotice
+              closure={detail?.managerClosure}
+              resource="voucher"
+              active={detail?.active}
+            />
             <VoucherActionCells
               address={address}
               name={token.name}
