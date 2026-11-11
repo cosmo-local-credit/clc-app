@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
@@ -30,18 +30,19 @@ import {
   formatVoucherAddress,
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
-import type { PostedWithin } from "@clc/core/features/reports/logic";
+import type { PostTiming } from "@clc/core/features/reports/logic";
 import { useReportFilterNotice } from "#/features/home/hooks/use-report-filter-notice";
 import type { PersistedCatalogFilterControls } from "#/lib/navigation/use-persisted-catalog-filter";
-import { PostedWithinChips } from "./posted-within-chips";
+import { PostTimingChips } from "./post-timing-chips";
 
 export function ReportFilterSheet({
   filter,
   facets,
   voucherFacets,
   poolFacets,
-  posted,
-  onPostedChange,
+  timing,
+  onTimingChange,
+  title,
   open,
   onOpenChange,
 }: {
@@ -49,8 +50,9 @@ export function ReportFilterSheet({
   facets: ReportTagFacet[];
   voucherFacets: ReportVoucherFacet[];
   poolFacets: ReportPoolFacet[];
-  posted: PostedWithin;
-  onPostedChange: (next: PostedWithin) => void;
+  timing: PostTiming;
+  onTimingChange: (next: PostTiming) => void;
+  title?: ReactNode;
   open: boolean;
   onOpenChange: (next: boolean) => void;
 }) {
@@ -75,15 +77,16 @@ export function ReportFilterSheet({
     <CatalogFilterSheet
       filter={filter}
       facets={facets}
-      title={<Trans>Filter posts</Trans>}
+      title={title ?? <Trans>Filter posts</Trans>}
       facetTitle={<Trans>Categories</Trans>}
       voucherFacets={voucherFacets}
       voucherSearch={voucherSearch}
-      additionalAppliedCount={filter.pools.length}
-      additionalDraftCount={draftPools.length}
+      additionalAppliedCount={filter.pools.length + (timing === "future" ? 0 : 1)}
+      additionalDraftCount={draftPools.length + (timing === "future" ? 0 : 1)}
       onResetAdditional={() => {
         setDraftPools([]);
         setDraftPoolMatch("any");
+        onTimingChange("future");
       }}
       showHeader={false}
       open={open}
@@ -99,20 +102,22 @@ export function ReportFilterSheet({
         )
       }
       trigger="bar"
+      afterFacets={
+        <ReportPoolFilter
+          pools={draftPools}
+          match={draftPoolMatch}
+          facets={poolFacets}
+          search={poolSearch}
+          onPoolsChange={setDraftPools}
+          onMatchChange={setDraftPoolMatch}
+        />
+      }
     >
-      <PostedWithinChips
-        posted={posted}
-        onChange={onPostedChange}
+      <PostTimingChips
+        timing={timing}
+        onChange={onTimingChange}
         labeled
         className="mb-4 border-border border-b pb-4"
-      />
-      <ReportPoolFilter
-        pools={draftPools}
-        match={draftPoolMatch}
-        facets={poolFacets}
-        search={poolSearch}
-        onPoolsChange={setDraftPools}
-        onMatchChange={setDraftPoolMatch}
       />
     </CatalogFilterSheet>
   );

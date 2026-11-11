@@ -12,7 +12,7 @@ import {
   formatVoucherAddress,
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
-import type { PostedWithin } from "@clc/core/features/reports/logic";
+import type { PostTiming } from "@clc/core/features/reports/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { type ReactNode, useId, useMemo, useState } from "react";
 import { RiSearchLine } from "react-icons/ri";
@@ -37,7 +37,7 @@ import {
   VOUCHER_SEARCH_MIN_CHARS,
   useVoucherSearch,
 } from "#/features/home/hooks/use-voucher-search";
-import { PostedWithinChips } from "#/features/home/ui/posted-within-chips";
+import { PostTimingChips } from "#/features/home/ui/post-timing-chips";
 import type { PersistedCatalogFilterControls } from "#/lib/navigation/use-persisted-catalog-filter";
 import { cn } from "#/lib/utils";
 
@@ -54,15 +54,17 @@ export function PostFacets({
   tagFacets,
   voucherFacets,
   poolFacets,
-  posted,
-  onPostedChange,
+  timing,
+  onTimingChange,
+  ariaLabel,
 }: {
   filter: PersistedCatalogFilterControls;
   tagFacets: ReportTagFacet[];
   voucherFacets: ReportVoucherFacet[];
   poolFacets: ReportPoolFacet[];
-  posted: PostedWithin;
-  onPostedChange: (next: PostedWithin) => void;
+  timing: PostTiming;
+  onTimingChange: (next: PostTiming) => void;
+  ariaLabel?: string;
 }) {
   const { t } = useLingui();
   const [voucherQuery, setVoucherQuery] = useState("");
@@ -99,12 +101,12 @@ export function PostFacets({
 
   return (
     <aside
-      aria-label={t`Filter posts`}
+      aria-label={ariaLabel ?? t`Filter posts`}
       className="grid min-w-0 content-start @max-[56rem]:grid-cols-3 @max-[56rem]:gap-x-6"
     >
-      <PostedWithinChips
-        posted={posted}
-        onChange={onPostedChange}
+      <PostTimingChips
+        timing={timing}
+        onChange={onTimingChange}
         labeled
         headingAs="h2"
         className="border-border border-b py-4 pt-0 @max-[56rem]:col-span-full"

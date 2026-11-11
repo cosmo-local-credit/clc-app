@@ -46,12 +46,12 @@ describe("parseHomeTab", () => {
   });
 });
 
-describe("parseHomeSearch posted", () => {
-  it("omits the default window and keeps an explicit one", () => {
-    expect(parseHomeSearch({ tab: "posts" }).posted).toBeUndefined();
-    expect(parseHomeSearch({ tab: "posts", posted: "1m" }).posted).toBe("1m");
-    expect(parseHomeSearch({ tab: "posts", posted: "all" }).posted).toBe("all");
-    expect(parseHomeSearch({ tab: "posts", posted: "2m" }).posted).toBe("1m");
+describe("parseHomeSearch Post timing", () => {
+  it("omits the default and keeps explicit or legacy timing", () => {
+    expect(parseHomeSearch({ tab: "posts" }).timing).toBeUndefined();
+    expect(parseHomeSearch({ tab: "posts", timing: "past" }).timing).toBe("past");
+    expect(parseHomeSearch({ tab: "posts", posted: "all" }).timing).toBe("all");
+    expect(parseHomeSearch({ tab: "posts", posted: "3m" }).timing).toBe("future");
   });
 });
 

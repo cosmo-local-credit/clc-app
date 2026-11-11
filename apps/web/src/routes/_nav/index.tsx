@@ -15,7 +15,7 @@ import {
   isPrivateHomeTab,
   parseHomeSearch,
 } from "#/lib/navigation/home-tabs";
-import { canonicalPostedSearch } from "#/lib/navigation/posted-search";
+import { canonicalPostTimingSearch } from "#/lib/navigation/post-timing-search";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { parseWantId } from "#/lib/navigation/want-sheet-search";
 import {
@@ -122,15 +122,15 @@ export const Route = createFileRoute("/_nav/")({
         replace: true,
       });
     }
-    const posted = canonicalPostedSearch(search);
+    const postTiming = canonicalPostTimingSearch(search);
     const next = canonicalRedirectSearch(search, {
       voucherRelationships: search.tab === "posts",
       poolRelationships: search.tab === "posts",
     });
-    if (!posted && !next) return;
+    if (!postTiming && !next) return;
     throw redirect({
       to: "/",
-      search: { ...(next ?? search), ...posted },
+      search: { ...(next ?? search), ...postTiming },
       replace: true,
     });
   },

@@ -1,17 +1,20 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 
-import type { MarketplaceClient } from "./client";
+import type { MarketplaceClient, MarketplaceParams } from "./client";
 import { marketplaceInfiniteQueryOptions, marketplaceKeys } from "./queries";
 import { BackendApiError } from "../../client/errors";
 
 describe("marketplace cache", () => {
   it("canonicalizes query identity and verified pool references", () => {
-    const params = {
+    const params: Omit<MarketplaceParams, "cursor"> & { scope?: string } = {
       scope: "nearby:account:100:1:2:500",
       q: "  repair  ",
       kinds: ["offering", "voucher"] as const,
       tags: ["Repair"],
       pools: [{ chainId: 100, address: `0x${"A".repeat(40)}` }],
+      postTiming: "future" as const,
+      postVouchers: [{ chainId: 100, address: `0x${"B".repeat(40)}` }],
+      postPools: [{ chainId: 100, address: `0x${"C".repeat(40)}` }],
     };
 
     expect(marketplaceKeys.list(params)).toEqual([
@@ -24,13 +27,23 @@ describe("marketplace cache", () => {
         kinds: ["offering", "voucher"],
         tags: ["Repair"],
         pools: [`100:0x${"a".repeat(40)}`],
+        postTiming: "future",
+        postVouchers: [`100:0x${"b".repeat(40)}`],
+        postPools: [`100:0x${"c".repeat(40)}`],
       },
     ]);
     expect(marketplaceKeys.list({})).toEqual([
       "clc",
       "marketplace",
       "list",
-      { q: "", kinds: [], tags: [], pools: undefined },
+      {
+        q: "",
+        kinds: [],
+        tags: [],
+        pools: undefined,
+        postVouchers: undefined,
+        postPools: undefined,
+      },
     ]);
   });
 

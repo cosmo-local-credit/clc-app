@@ -27,7 +27,11 @@ describe("market map query", () => {
         kinds: ["voucher", "want"],
         filter: { term: "market", tags: ["Food"], tagMatch: "any" },
         creditablePools: [`100:0x${"a".repeat(40)}`],
-        posted: "1m",
+        postTiming: "future",
+        postVouchers: undefined,
+        postVoucherMatch: "any",
+        postPools: undefined,
+        postPoolMatch: "any",
       },
     ]);
   });

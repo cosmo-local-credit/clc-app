@@ -1,6 +1,14 @@
-import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import {
+  type CatalogFilter,
+  type VoucherRef,
+  serializeVoucherRef,
+} from "@clc/core/features/catalog/logic";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
-import { type PostedWithin, serializePostedWithin } from "@clc/core/features/reports/logic";
+import {
+  DEFAULT_POST_TIMING,
+  type PostTiming,
+  serializePostTiming,
+} from "@clc/core/features/reports/logic";
 import {
   canonicalMarketMapZoom,
   marketMapResponseSchema,
@@ -19,7 +27,11 @@ export type MarketMapParams = {
   filter: Pick<CatalogFilter, "term" | "tags" | "tagMatch">;
   facets?: boolean;
   creditablePools?: readonly { chainId: number; address: string }[];
-  posted?: PostedWithin;
+  postTiming?: PostTiming;
+  postVouchers?: readonly VoucherRef[];
+  postVoucherMatch?: "any" | "all";
+  postPools?: readonly VoucherRef[];
+  postPoolMatch?: "any" | "all";
 };
 
 export type MarketMapClient = ReturnType<typeof createMarketMapClient>;
@@ -40,8 +52,24 @@ export function createMarketMapClient(http: HttpClient) {
       for (const pool of params.creditablePools ?? []) {
         query.append("creditablePools", `${pool.chainId}:${pool.address}`);
       }
-      const posted = serializePostedWithin(params.posted ?? "1m");
-      if (posted) query.set("posted", posted);
+      query.set(
+        "postTiming",
+        serializePostTiming(params.postTiming ?? DEFAULT_POST_TIMING) ?? DEFAULT_POST_TIMING,
+      );
+      appendPostRelationships(
+        query,
+        "postVouchers",
+        "postVoucherMatch",
+        params.postVouchers,
+        params.postVoucherMatch,
+      );
+      appendPostRelationships(
+        query,
+        "postPools",
+        "postPoolMatch",
+        params.postPools,
+        params.postPoolMatch,
+      );
 
       const parsed = marketMapResponseSchema.safeParse(
         await http.request<unknown>(`/api/v2/market-map?${query}`, {
@@ -59,4 +87,15 @@ export function createMarketMapClient(http: HttpClient) {
       return parsed.data;
     },
   };
+}
+
+function appendPostRelationships(
+  query: URLSearchParams,
+  key: "postVouchers" | "postPools",
+  matchKey: "postVoucherMatch" | "postPoolMatch",
+  values: readonly VoucherRef[] | undefined,
+  match: "any" | "all" | undefined,
+): void {
+  for (const value of values ?? []) query.append(key, serializeVoucherRef(value));
+  if ((values?.length ?? 0) > 1 && match === "all") query.set(matchKey, "all");
 }

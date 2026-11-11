@@ -69,6 +69,7 @@ export function MarketMapDesk({
     kinds: screen.activeKinds,
     bounds: screen.exactBounds,
     settled: screen.hasSettledViewport,
+    postTiming: screen.postTiming.timing,
   });
   const narrowed = screen.filter.isFiltered || screen.credit.enabled || output.active;
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -144,6 +145,17 @@ export function MarketMapDesk({
             scope="all"
             filter={screen.filter}
             facets={screen.tagFacets}
+            postFilters={
+              screen.includesPosts
+                ? {
+                    timing: screen.postTiming.timing,
+                    onTimingChange: screen.postTiming.setTiming,
+                    voucherFacets: screen.postVoucherFacets,
+                    poolFacets: screen.postPoolFacets,
+                    postsOnly: screen.activeKinds.length === 1,
+                  }
+                : undefined
+            }
             filtersOpen={screen.filtersOpen}
             onFiltersOpenChange={(next) => {
               if (next) screen.setFiltersEverOpened(true);

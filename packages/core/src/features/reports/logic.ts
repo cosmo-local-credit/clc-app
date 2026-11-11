@@ -43,6 +43,26 @@ export function serializePostedWithin(value: PostedWithin): PostedWithin | undef
   return value === DEFAULT_POSTED_WITHIN ? undefined : value;
 }
 
+/** Schedule-based public Post discovery. Future is the product default. */
+export const POST_TIMINGS = ["future", "past", "all"] as const;
+
+export type PostTiming = (typeof POST_TIMINGS)[number];
+
+export const DEFAULT_POST_TIMING: PostTiming = "future";
+
+export function isPostTiming(value: unknown): value is PostTiming {
+  return typeof value === "string" && (POST_TIMINGS as readonly string[]).includes(value);
+}
+
+export function parsePostTiming(value: unknown): PostTiming {
+  return isPostTiming(value) ? value : DEFAULT_POST_TIMING;
+}
+
+/** Omit Future from browser URLs; API clients still send it explicitly. */
+export function serializePostTiming(value: PostTiming): PostTiming | undefined {
+  return value === DEFAULT_POST_TIMING ? undefined : value;
+}
+
 /** The four workflow states, in workflow order. */
 export const REPORT_STATUSES = ["DRAFT", "SUBMITTED", "APPROVED", "REJECTED"] as const;
 
@@ -315,7 +335,7 @@ export function poolRefKey(pool: ReportPoolRef): string {
  * as a `FILE` and once as an `EMBED`, which are two rows on the backend.
  */
 function attachmentKey(attachment: ReportAttachmentWrite): string {
-  return `${attachment.kind} ${attachment.url.trim()}`;
+  return `${attachment.kind}\u0000${attachment.url.trim()}`;
 }
 
 /**

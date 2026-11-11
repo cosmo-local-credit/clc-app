@@ -15,6 +15,10 @@ export const marketplaceKeys = {
         tags: [...(params.tags ?? [])],
         kinds: [...(params.kinds ?? [])],
         pools: params.pools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`),
+        postVouchers: params.postVouchers?.map(
+          (voucher) => `${voucher.chainId}:${voucher.address.toLowerCase()}`,
+        ),
+        postPools: params.postPools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`),
       },
     ] as const,
 };

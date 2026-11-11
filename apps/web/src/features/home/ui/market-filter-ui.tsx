@@ -7,6 +7,9 @@ import type { MarketTagFacet } from "@clc/api/features/market/client";
 import { FilteredCatalogTooLargeError } from "#/features/home/hooks/use-filtered-market-vouchers";
 import type { MarketFilterControls } from "#/features/home/hooks/use-market-filter";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import type { ReportPoolFacet, ReportVoucherFacet } from "@clc/api/features/reports/client";
+import type { PostTiming } from "@clc/core/features/reports/logic";
+import { ReportFilterSheet } from "./report-filter-ui";
 
 export type MarketFilterNotice = {
   message: string;
@@ -100,12 +103,37 @@ export function MarketFilterSheet({
   facets,
   open,
   onOpenChange,
+  postFilters,
 }: {
   filter: MarketFilterControls;
   facets: MarketTagFacet[];
   open: boolean;
   onOpenChange: (next: boolean) => void;
+  postFilters?: {
+    timing: PostTiming;
+    onTimingChange: (next: PostTiming) => void;
+    voucherFacets: ReportVoucherFacet[];
+    poolFacets: ReportPoolFacet[];
+    postsOnly: boolean;
+  };
 }) {
+  if (postFilters) {
+    return (
+      <ReportFilterSheet
+        filter={filter}
+        facets={facets}
+        voucherFacets={postFilters.voucherFacets}
+        poolFacets={postFilters.poolFacets}
+        timing={postFilters.timing}
+        onTimingChange={postFilters.onTimingChange}
+        title={
+          postFilters.postsOnly ? <Trans>Filter posts</Trans> : <Trans>Filter marketplace</Trans>
+        }
+        open={open}
+        onOpenChange={onOpenChange}
+      />
+    );
+  }
   return (
     <CatalogFilterSheet
       filter={filter}

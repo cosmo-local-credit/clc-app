@@ -1,7 +1,8 @@
 import { marketMapQueryOptions } from "@clc/api/features/market-map/queries";
-import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import type { ReportPoolFacet, ReportVoucherFacet } from "@clc/api/features/reports/client";
+import type { CatalogFilter, VoucherRef } from "@clc/core/features/catalog/logic";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
-import { DEFAULT_POSTED_WITHIN, type PostedWithin } from "@clc/core/features/reports/logic";
+import { DEFAULT_POST_TIMING, type PostTiming } from "@clc/core/features/reports/logic";
 import type {
   MarketMapCluster,
   MarketMapKind,
@@ -25,7 +26,11 @@ type UseMarketMapOptions = {
   kinds: readonly MarketMapKind[];
   filter: Pick<CatalogFilter, "term" | "tags" | "tagMatch">;
   creditablePools?: readonly { chainId: number; address: string }[];
-  posted?: PostedWithin;
+  postTiming?: PostTiming;
+  postVouchers?: readonly VoucherRef[];
+  postVoucherMatch?: "any" | "all";
+  postPools?: readonly VoucherRef[];
+  postPoolMatch?: "any" | "all";
   facets: boolean;
   enabled: boolean;
 };
@@ -38,7 +43,11 @@ export function useMarketMap(options: UseMarketMapOptions) {
       kinds: options.kinds,
       filter: options.filter,
       creditablePools: options.creditablePools,
-      posted: options.posted ?? DEFAULT_POSTED_WITHIN,
+      postTiming: options.postTiming ?? DEFAULT_POST_TIMING,
+      postVouchers: options.postVouchers,
+      postVoucherMatch: options.postVoucherMatch,
+      postPools: options.postPools,
+      postPoolMatch: options.postPoolMatch,
       facets: options.facets,
     }),
     enabled: options.enabled,
@@ -68,6 +77,10 @@ export function useMarketMap(options: UseMarketMapOptions) {
     locations,
     clusters,
     tagFacets: options.enabled ? (data?.tagFacets ?? []) : [],
+    postVoucherFacets: (options.enabled
+      ? (data?.postVoucherFacets ?? [])
+      : []) as ReportVoucherFacet[],
+    postPoolFacets: (options.enabled ? (data?.postPoolFacets ?? []) : []) as ReportPoolFacet[],
     error: options.enabled ? query.error : null,
     /** A successful response, fresh or retained, exists for what is on the map. */
     hasData: options.enabled && data !== undefined,

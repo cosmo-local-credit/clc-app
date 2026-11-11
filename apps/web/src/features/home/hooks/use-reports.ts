@@ -1,10 +1,11 @@
 import { useNearbyCatalog, nearbyQueryPolicy } from "#/components/nearby-catalog";
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
-import { DEFAULT_POSTED_WITHIN, type PostedWithin } from "@clc/core/features/reports/logic";
+import { DEFAULT_POST_TIMING, type PostTiming } from "@clc/core/features/reports/logic";
 import { queryOptions, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import {
   reportFeedInfiniteQueryOptions,
+  reportPoolFeedInfiniteQueryOptions,
   reportKeys,
   reportVoucherFeedInfiniteQueryOptions,
 } from "@clc/api/features/reports/queries";
@@ -30,15 +31,34 @@ const reportQueryKeys = {
 export function useReportsInfinite(
   perPage = REPORTS_PAGE_SIZE,
   enabled = true,
-  posted: PostedWithin = DEFAULT_POSTED_WITHIN,
+  timing: PostTiming = DEFAULT_POST_TIMING,
 ) {
   const nearby = useNearbyCatalog();
-  const options = reportFeedInfiniteQueryOptions(reportsClient, perPage, nearby, posted);
+  const options = reportFeedInfiniteQueryOptions(reportsClient, perPage, nearby, timing);
   return useInfiniteQuery({
     ...options,
     enabled,
     ...MARKET_QUERY_FRESHNESS,
     ...nearbyQueryPolicy(nearby),
+  });
+}
+
+export function usePoolReportsInfinite(
+  pool: VoucherRef | undefined,
+  perPage = VOUCHER_REPORTS_PAGE_SIZE,
+  enabled = true,
+) {
+  const normalizedPool = pool
+    ? {
+        chainId: pool.chainId,
+        address: pool.address.toLowerCase() as VoucherRef["address"],
+      }
+    : undefined;
+
+  return useInfiniteQuery({
+    ...reportPoolFeedInfiniteQueryOptions(reportsClient, normalizedPool, perPage),
+    enabled: enabled && !!normalizedPool,
+    ...MARKET_QUERY_FRESHNESS,
   });
 }
 

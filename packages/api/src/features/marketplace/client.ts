@@ -6,6 +6,8 @@ import { z } from "zod";
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { type VoucherRef, serializeVoucherRef } from "@clc/core/features/catalog/logic";
+import type { PostTiming } from "@clc/core/features/reports/logic";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
 
 const tagFacetSchema = z.object({ tag: z.string(), count: z.number().int().nonnegative() });
@@ -28,6 +30,11 @@ export type MarketplaceParams = {
   sort?: "nearest";
   bounds?: readonly MarketBoundingBox[];
   pools?: readonly { chainId: number; address: string }[];
+  postTiming?: PostTiming;
+  postVouchers?: readonly VoucherRef[];
+  postVoucherMatch?: "any" | "all";
+  postPools?: readonly VoucherRef[];
+  postPoolMatch?: "any" | "all";
 };
 
 export type MarketplacePage = z.infer<typeof marketplacePageSchema>;
@@ -48,6 +55,21 @@ export function createMarketplaceClient(http: HttpClient) {
       appendMarketBounds(query, params.bounds);
       if (params.pools?.length)
         query.set("pools", params.pools.map((pool) => `${pool.chainId}:${pool.address}`).join(","));
+      if (params.postTiming) query.set("postTiming", params.postTiming);
+      appendPostRelationships(
+        query,
+        "postVouchers",
+        "postVoucherMatch",
+        params.postVouchers,
+        params.postVoucherMatch,
+      );
+      appendPostRelationships(
+        query,
+        "postPools",
+        "postPoolMatch",
+        params.postPools,
+        params.postPoolMatch,
+      );
       const parsed = marketplacePageSchema.safeParse(
         await http.request<unknown>(`/api/v2/marketplace?${query}`, {
           method: "GET",
@@ -63,4 +85,15 @@ export function createMarketplaceClient(http: HttpClient) {
       return parsed.data;
     },
   };
+}
+
+function appendPostRelationships(
+  query: URLSearchParams,
+  key: "postVouchers" | "postPools",
+  matchKey: "postVoucherMatch" | "postPoolMatch",
+  values: readonly VoucherRef[] | undefined,
+  match: "any" | "all" | undefined,
+): void {
+  if (values?.length) query.set(key, values.map(serializeVoucherRef).join(","));
+  if ((values?.length ?? 0) > 1 && match === "all") query.set(matchKey, "all");
 }

@@ -1,9 +1,9 @@
 import type { TagMatch, VoucherRef } from "@clc/core/features/catalog/logic";
 import { parseCatalogFilter, serializeVoucherRef } from "@clc/core/features/catalog/logic";
 import {
-  DEFAULT_POSTED_WITHIN,
-  type PostedWithin,
-  isPostedWithin,
+  DEFAULT_POST_TIMING,
+  type PostTiming,
+  isPostTiming,
 } from "@clc/core/features/reports/logic";
 import {
   readOwnerScoped,
@@ -46,7 +46,8 @@ export const CATALOG_FILTER_PREFERENCE_NAMES = {
   posts: "posts.filter-preferences.v1",
 } as const;
 
-export const POSTED_WITHIN_PREFERENCE_NAME = "posts.posted-within.v1";
+const POSTED_WITHIN_PREFERENCE_NAME = "posts.posted-within.v1";
+const POST_TIMING_PREFERENCE_NAME = "posts.timing.v1";
 
 export type CatalogFilterPreference = {
   tags: readonly string[];
@@ -173,16 +174,22 @@ export function clearCatalogFilterPreference(owner: StorageOwner, name: string):
   removeOwnerScoped(owner, name);
 }
 
-export function readPostedWithinPreference(owner: StorageOwner): PostedWithin | null {
-  const raw = readOwnerScoped(owner, POSTED_WITHIN_PREFERENCE_NAME);
-  if (!isPostedWithin(raw)) return null;
-  return raw === DEFAULT_POSTED_WITHIN ? null : raw;
+export function readPostTimingPreference(owner: StorageOwner): PostTiming | null {
+  const raw = readOwnerScoped(owner, POST_TIMING_PREFERENCE_NAME);
+  if (isPostTiming(raw)) return raw === DEFAULT_POST_TIMING ? null : raw;
+
+  // Migrate the one legacy value whose meaning remains exact. Creation-age
+  // windows cannot safely be reinterpreted as schedule state.
+  const legacy = readOwnerScoped(owner, POSTED_WITHIN_PREFERENCE_NAME);
+  removeOwnerScoped(owner, POSTED_WITHIN_PREFERENCE_NAME);
+  return legacy === "all" ? "all" : null;
 }
 
-export function writePostedWithinPreference(owner: StorageOwner, posted: PostedWithin): void {
-  if (posted === DEFAULT_POSTED_WITHIN) {
-    removeOwnerScoped(owner, POSTED_WITHIN_PREFERENCE_NAME);
+export function writePostTimingPreference(owner: StorageOwner, timing: PostTiming): void {
+  removeOwnerScoped(owner, POSTED_WITHIN_PREFERENCE_NAME);
+  if (timing === DEFAULT_POST_TIMING) {
+    removeOwnerScoped(owner, POST_TIMING_PREFERENCE_NAME);
     return;
   }
-  writeOwnerScoped(owner, POSTED_WITHIN_PREFERENCE_NAME, posted);
+  writeOwnerScoped(owner, POST_TIMING_PREFERENCE_NAME, timing);
 }
