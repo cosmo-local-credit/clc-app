@@ -1,13 +1,10 @@
-import { marketMapQueryOptions } from "@clc/api/features/market-map/queries";
-import type { ReportPoolFacet, ReportVoucherFacet } from "@clc/api/features/reports/client";
+import { marketMapPointsQueryOptions } from "@clc/api/features/market-map/queries";
 import type { CatalogFilter, VoucherRef } from "@clc/core/features/catalog/logic";
-import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import { DEFAULT_POST_TIMING, type PostTiming } from "@clc/core/features/reports/logic";
 import type {
-  MarketMapCluster,
   MarketMapKind,
-  MarketMapMarker,
-  MarketMapResponse,
+  MarketMapPoint,
+  MarketMapPointsResponse,
 } from "@clc/core/features/market-map/logic";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef } from "react";
@@ -21,8 +18,6 @@ type MarketMapLocation = MarketLocation & {
 };
 
 type UseMarketMapOptions = {
-  bounds: readonly MarketBoundingBox[];
-  zoom: number;
   kinds: readonly MarketMapKind[];
   filter: Pick<CatalogFilter, "term" | "tags" | "tagMatch">;
   creditablePools?: readonly { chainId: number; address: string }[];
@@ -31,15 +26,16 @@ type UseMarketMapOptions = {
   postVoucherMatch?: "any" | "all";
   postPools?: readonly VoucherRef[];
   postPoolMatch?: "any" | "all";
-  facets: boolean;
   enabled: boolean;
 };
 
+/**
+ * Every point the filters match, fetched once per filter. The map clusters
+ * them itself, so panning and zooming never reach the network.
+ */
 export function useMarketMap(options: UseMarketMapOptions) {
   const query = useQuery({
-    ...marketMapQueryOptions(marketMapClient, {
-      bounds: options.bounds,
-      zoom: options.zoom,
+    ...marketMapPointsQueryOptions(marketMapClient, {
       kinds: options.kinds,
       filter: options.filter,
       creditablePools: options.creditablePools,
@@ -48,12 +44,11 @@ export function useMarketMap(options: UseMarketMapOptions) {
       postVoucherMatch: options.postVoucherMatch,
       postPools: options.postPools,
       postPoolMatch: options.postPoolMatch,
-      facets: options.facets,
     }),
     enabled: options.enabled,
     placeholderData: keepPreviousData,
   });
-  const lastSuccess = useRef<MarketMapResponse | undefined>(undefined);
+  const lastSuccess = useRef<MarketMapPointsResponse | undefined>(undefined);
   useEffect(() => {
     if (!options.enabled) lastSuccess.current = undefined;
     else if (query.isSuccess && !query.isPlaceholderData) lastSuccess.current = query.data;
@@ -61,26 +56,15 @@ export function useMarketMap(options: UseMarketMapOptions) {
   const data = query.data ?? lastSuccess.current;
 
   const locations = useMemo(
-    () =>
-      options.enabled
-        ? (data?.features.filter(isMarker).map(toLocation) ?? [])
-        : ([] as MarketMapLocation[]),
-    [options.enabled, data],
-  );
-  const clusters = useMemo(
-    () => (options.enabled ? (data?.features.filter(isCluster) ?? []) : ([] as MarketMapCluster[])),
+    () => (options.enabled ? (data?.points.map(toLocation) ?? []) : ([] as MarketMapLocation[])),
     [options.enabled, data],
   );
   const retry = useCallback(() => void query.refetch(), [query.refetch]);
 
   return {
     locations,
-    clusters,
-    tagFacets: options.enabled ? (data?.tagFacets ?? []) : [],
-    postVoucherFacets: (options.enabled
-      ? (data?.postVoucherFacets ?? [])
-      : []) as ReportVoucherFacet[],
-    postPoolFacets: (options.enabled ? (data?.postPoolFacets ?? []) : []) as ReportPoolFacet[],
+    /** More points matched than one response carries. */
+    truncated: options.enabled && data?.truncated === true,
     error: options.enabled ? query.error : null,
     /** A successful response, fresh or retained, exists for what is on the map. */
     hasData: options.enabled && data !== undefined,
@@ -101,25 +85,17 @@ export function useMarketMap(options: UseMarketMapOptions) {
   };
 }
 
-function isMarker(feature: MarketMapMarker | MarketMapCluster): feature is MarketMapMarker {
-  return feature.type === "marker";
-}
-
-function isCluster(feature: MarketMapMarker | MarketMapCluster): feature is MarketMapCluster {
-  return feature.type === "cluster";
-}
-
-function toLocation(marker: MarketMapMarker): MarketMapLocation {
+function toLocation(point: MarketMapPoint): MarketMapLocation {
   return {
-    id: marker.id,
-    resourceKind: marker.kind,
-    resourceId: marker.resourceId,
-    name: marker.name,
-    kind: marker.kind,
-    markerIcon: marker.markerIcon,
-    markerColor: marker.markerColor,
-    lat: marker.lat,
-    lng: marker.lng,
+    id: `marker:${point.kind}:${point.resourceId}`,
+    resourceKind: point.kind,
+    resourceId: point.resourceId,
+    name: point.name,
+    kind: point.kind,
+    markerIcon: point.markerIcon,
+    markerColor: point.markerColor,
+    lat: point.lat,
+    lng: point.lng,
     locationName: null,
   };
 }

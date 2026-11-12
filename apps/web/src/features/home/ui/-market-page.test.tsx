@@ -7,13 +7,11 @@ import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { MarketLocation } from "./market-data";
 import type { MarketCamera } from "./market-map";
-import type { MarketMapCluster } from "@clc/core/features/market-map/logic";
 
 type MarketPoolLocation = MarketLocation & { kind: "pool"; address: `0x${string}` };
 
 type MapProps = {
   locations: MarketLocation[];
-  clusters?: unknown[];
   mode?: "standard" | "satellite";
   selectedLocationId: string | null;
   camera: MarketCamera | null;
@@ -84,14 +82,15 @@ const {
   },
   mapRequests: {
     voucherBounds: [] as unknown[],
-    unifiedBounds: [] as unknown[],
+    unifiedParams: [] as Record<string, unknown>[],
     unifiedEnabled: [] as boolean[],
-    unifiedZoom: [] as number[],
+    facetBounds: [] as unknown[],
+    facetEnabled: [] as boolean[],
   },
   mapQueryState: {
-    clusters: [] as MarketMapCluster[],
     isFetching: false,
     isPlaceholderData: false,
+    truncated: false,
   },
   mapResourceSelection: {
     current: ["voucher", "want"] as ("voucher" | "want" | "pool" | "catalog" | "post")[],
@@ -240,16 +239,13 @@ vi.mock("#/features/home/hooks/use-market-map-resource-selection", () => ({
 
 vi.mock("#/features/home/hooks/use-market-map", () => ({
   useMarketMap: (options: {
-    bounds: unknown;
-    zoom: number;
     enabled: boolean;
     kinds: ("voucher" | "want" | "pool" | "catalog" | "post")[];
-    facets: boolean;
     filter: { term: string };
   }) => {
-    mapRequests.unifiedBounds.push(options.bounds);
-    mapRequests.unifiedEnabled.push(options.enabled);
-    mapRequests.unifiedZoom.push(options.zoom);
+    const { enabled, ...params } = options;
+    mapRequests.unifiedParams.push(params);
+    mapRequests.unifiedEnabled.push(enabled);
     const filtered = options.filter.term !== "" || "tags" in routeSearch.current;
     const source = filtered
       ? (filteredResult.current.data?.vouchers ?? [])
@@ -300,14 +296,12 @@ vi.mock("#/features/home/hooks/use-market-map", () => ({
     const error = filtered ? filteredResult.current.error : resourceError;
     const ready = filtered
       ? filteredResult.current.data !== undefined
-      : vouchersResult.current.isCatalogComplete ||
-        locations.length > 0 ||
-        mapQueryState.clusters.length > 0;
+      : vouchersResult.current.isCatalogComplete || locations.length > 0;
     const retry = filtered ? filteredResult.current.refetch : vouchersResult.current.retry;
     return {
       locations: options.enabled ? locations : [],
-      clusters: options.enabled ? mapQueryState.clusters : [],
-      tagFacets: options.enabled ? (filteredResult.current.data?.tagFacets ?? []) : [],
+      truncated: options.enabled && mapQueryState.truncated,
+      hasData: options.enabled && ready,
       error: options.enabled ? error : null,
       retry,
       retrying: options.enabled && mapQueryState.isFetching,
@@ -320,6 +314,18 @@ vi.mock("#/features/home/hooks/use-market-map", () => ({
         !mapQueryState.isFetching &&
         !mapQueryState.isPlaceholderData,
       status: !options.enabled ? "disabled" : error ? "error" : ready ? "ready" : "loading",
+    };
+  },
+}));
+
+vi.mock("#/features/home/hooks/use-market-map-facets", () => ({
+  useMarketMapFacets: (options: { bounds: unknown; enabled: boolean }) => {
+    mapRequests.facetBounds.push(options.bounds);
+    mapRequests.facetEnabled.push(options.enabled);
+    return {
+      tagFacets: options.enabled ? (filteredResult.current.data?.tagFacets ?? []) : [],
+      postVoucherFacets: [],
+      postPoolFacets: [],
     };
   },
 }));
@@ -526,28 +532,6 @@ function renderPage(node: ReactNode = <MarketPage />) {
   });
 }
 
-function expectBoundsCover(
-  value: unknown,
-  expected: {
-    minLng: number;
-    minLat: number;
-    maxLng: number;
-    maxLat: number;
-  },
-) {
-  const bounds = value as Array<{
-    minLng: number;
-    minLat: number;
-    maxLng: number;
-    maxLat: number;
-  }>;
-  expect(bounds).toHaveLength(1);
-  expect(bounds[0]?.minLng).toBeLessThanOrEqual(expected.minLng);
-  expect(bounds[0]?.minLat).toBeLessThanOrEqual(expected.minLat);
-  expect(bounds[0]?.maxLng).toBeGreaterThanOrEqual(expected.maxLng);
-  expect(bounds[0]?.maxLat).toBeGreaterThanOrEqual(expected.maxLat);
-}
-
 beforeEach(() => {
   authState.current = { isAuthenticated: false, isLoading: false, session: null };
   creditFeedback.current = false;
@@ -591,12 +575,13 @@ beforeEach(() => {
   discoveryArea.clearArea.mockReset();
   mapResourceSelection.current = ["voucher", "want"];
   mapRequests.voucherBounds = [];
-  mapRequests.unifiedBounds = [];
+  mapRequests.unifiedParams = [];
   mapRequests.unifiedEnabled = [];
-  mapRequests.unifiedZoom = [];
-  mapQueryState.clusters = [];
+  mapRequests.facetBounds = [];
+  mapRequests.facetEnabled = [];
   mapQueryState.isFetching = false;
   mapQueryState.isPlaceholderData = false;
+  mapQueryState.truncated = false;
   catalogsResult.current = [];
   catalogsResult.error = null;
   catalogsResult.retry.mockReset();
@@ -684,7 +669,7 @@ describe("MarketPage location button", () => {
 });
 
 describe("MarketPage guest entry", () => {
-  it("waits for the IP-city camera before mounting or querying the map", () => {
+  it("waits for the IP-city camera before mounting the map, but already loads its points", () => {
     cameraResult.current = {
       ...cameraResult.current,
       camera: null,
@@ -694,8 +679,7 @@ describe("MarketPage guest entry", () => {
     renderPage();
 
     expect(screen.queryByTestId("market-map")).toBeNull();
-    expect(mapRequests.unifiedBounds.length).toBeGreaterThan(0);
-    expect(mapRequests.unifiedEnabled.at(-1)).toBe(false);
+    expect(mapRequests.unifiedEnabled.at(-1)).toBe(true);
     expect(lastMapProps.current).toBeNull();
   });
 
@@ -797,22 +781,51 @@ describe("MarketPage saved profile location", () => {
 });
 
 describe("MarketPage data states", () => {
-  it("does not show an empty notice over a cluster-only response", () => {
-    mapQueryState.clusters = [
-      {
-        type: "cluster",
-        id: "cluster:8:1:2",
-        lat: -3.68,
-        lng: 39.83,
-        count: 6,
-        kinds: { voucher: 5, want: 1 },
-        expansionZoom: 16,
-      },
-    ];
+  it("does not show an empty notice while a point is inside the visible area", () => {
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      isCatalogComplete: true,
+      vouchers: [voucher("1", { lat: -1.5, lng: 36.5 })],
+    };
+    discoveryArea.current = {
+      owner: "guest",
+      center: { lat: -1.5, lng: 36.5 },
+      zoom: 10,
+      boxes: [{ minLng: 36, minLat: -2, maxLng: 37, maxLat: -1 }],
+    };
     renderPage();
 
-    expect(lastMapProps.current?.clusters).toEqual(mapQueryState.clusters);
     expect(screen.queryByText(/No marketplace results/)).toBeNull();
+  });
+
+  it("shows the empty notice when every point lies outside the visible area", () => {
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      isCatalogComplete: true,
+      vouchers: [voucher("1", { lat: 40.7, lng: -74 })],
+    };
+    discoveryArea.current = {
+      owner: "guest",
+      center: { lat: -1.5, lng: 36.5 },
+      zoom: 10,
+      boxes: [{ minLng: 36, minLat: -2, maxLng: 37, maxLat: -1 }],
+    };
+    renderPage();
+
+    expect(lastMapProps.current?.locations).toHaveLength(1);
+    expect(screen.getByText(/No marketplace results/)).toBeTruthy();
+  });
+
+  it("says the results are incomplete when the points were truncated", () => {
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      isCatalogComplete: true,
+      vouchers: [voucher("1")],
+    };
+    mapQueryState.truncated = true;
+    renderPage();
+
+    expect(screen.getByText("Couldn't load complete marketplace results.")).toBeTruthy();
   });
 
   it.each(["fetching", "placeholder"])("suppresses empty notices for %s data", (state) => {
@@ -1354,7 +1367,7 @@ describe("MarketPage distance", () => {
 describe("MarketPage viewport", () => {
   const savedBox = { minLng: 36, minLat: -2, maxLng: 37, maxLat: -1 } as const;
 
-  it("restores the saved camera and prefetches a padded marker envelope", () => {
+  it("restores the saved camera and loads the points without waiting for a viewport", () => {
     discoveryArea.current = {
       owner: "guest",
       center: { lat: -1.5, lng: 36.5 },
@@ -1364,15 +1377,12 @@ describe("MarketPage viewport", () => {
     renderPage();
 
     expect(lastMapProps.current?.camera).toMatchObject({ lat: -1.5, lng: 36.5, zoom: 10 });
-    expectBoundsCover(mapRequests.unifiedBounds.at(-1), {
-      minLng: 35.8,
-      minLat: -2.2,
-      maxLng: 37.2,
-      maxLat: -0.8,
-    });
+    expect(mapRequests.unifiedEnabled.at(-1)).toBe(true);
+    expect(mapRequests.unifiedParams.at(-1)).not.toHaveProperty("bounds");
+    expect(mapRequests.unifiedParams.at(-1)).not.toHaveProperty("zoom");
   });
 
-  it("waits for a trustworthy initial camera to settle before loading bounded markers", () => {
+  it("loads points before a trustworthy initial camera settles", () => {
     mapResourceSelection.current = ["voucher", "pool"];
     profileResult.current = {
       data: { geoLat: -1.5, geoLng: 36.5 },
@@ -1382,30 +1392,10 @@ describe("MarketPage viewport", () => {
     renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
 
     expect(lastMapProps.current?.camera).toMatchObject({ lat: -1.5, lng: 36.5, rank: 2 });
-    expect(mapRequests.unifiedEnabled.at(-1)).toBe(false);
-
-    act(() =>
-      lastMapProps.current?.onViewportSettled?.({
-        center: { lat: -1.5, lng: 36.5 },
-        west: 36,
-        south: -2,
-        east: 37,
-        north: -1,
-        zoom: 10,
-        userInitiated: false,
-      }),
-    );
-
     expect(mapRequests.unifiedEnabled.at(-1)).toBe(true);
-    expectBoundsCover(mapRequests.unifiedBounds.at(-1), {
-      minLng: 35.8,
-      minLat: -2.2,
-      maxLng: 37.2,
-      maxLat: -0.8,
-    });
   });
 
-  it("persists exact settled bounds without refetching inside the marker envelope", () => {
+  it("persists exact settled bounds and never changes the points request on a pan or zoom", () => {
     discoveryArea.current = {
       owner: "guest",
       center: { lat: -1.5, lng: 36.5 },
@@ -1413,92 +1403,40 @@ describe("MarketPage viewport", () => {
       boxes: [savedBox],
     };
     renderPage();
-    const original = mapRequests.unifiedBounds.at(-1);
+    const original = mapRequests.unifiedParams.at(-1);
 
-    act(() =>
-      lastMapProps.current?.onViewportSettled?.({
+    for (const viewport of [
+      {
         center: { lat: -1.5, lng: 36.55 },
         west: 36.1,
         south: -1.9,
         east: 36.9,
         north: -1.1,
         zoom: 10,
-        userInitiated: true,
-      }),
-    );
-
-    expect(discoveryArea.setArea).toHaveBeenCalledWith({
-      center: { lat: -1.5, lng: 36.55 },
-      zoom: 10,
-      boxes: [{ minLng: 36.1, minLat: -1.9, maxLng: 36.9, maxLat: -1.1 }],
-    });
-    expect(mapRequests.unifiedBounds.at(-1)).toEqual(original);
-  });
-
-  it("tightens the fetch envelope when zooming back in from a regional view", () => {
-    discoveryArea.current = {
-      owner: "guest",
-      center: { lat: -3.68, lng: 39.83 },
-      zoom: 5,
-      boxes: [{ minLng: 20, minLat: -20, maxLng: 50, maxLat: 10 }],
-    };
-    renderPage();
-    const broad = mapRequests.unifiedBounds.at(-1);
-    act(() =>
-      lastMapProps.current?.onViewportSettled?.({
+      },
+      { center: { lat: 10.5, lng: 10.5 }, west: 10, south: 10, east: 11, north: 11, zoom: 10 },
+      {
         center: { lat: -3.68, lng: 39.83 },
-        zoom: 16.5,
         west: 39.82,
         south: -3.69,
         east: 39.84,
         north: -3.67,
-        userInitiated: true,
-      }),
-    );
+        zoom: 16.5,
+      },
+    ]) {
+      act(() => lastMapProps.current?.onViewportSettled?.({ ...viewport, userInitiated: true }));
+      expect(mapRequests.unifiedParams.at(-1)).toEqual(original);
+    }
 
-    const narrow = mapRequests.unifiedBounds.at(-1) as Array<{ minLng: number; maxLng: number }>;
-    expect(narrow).not.toEqual(broad);
-    expect(narrow[0]!.maxLng - narrow[0]!.minLng).toBeLessThan(0.1);
-    expect(mapRequests.unifiedZoom.at(-1)).toBe(16.5);
-  });
-
-  it("refreshes at quarter-zoom boundaries without refetching inside a bucket", () => {
-    discoveryArea.current = {
-      owner: "guest",
-      center: { lat: -3.689, lng: 39.83 },
-      zoom: 14.5,
-      boxes: [{ minLng: 39.82, minLat: -3.7, maxLng: 39.84, maxLat: -3.67 }],
-    };
-    renderPage();
-    act(() =>
-      lastMapProps.current?.onViewportSettled?.({
-        center: { lat: -3.689, lng: 39.83 },
-        zoom: 14.74,
-        west: 39.82,
-        south: -3.7,
-        east: 39.84,
-        north: -3.67,
-        userInitiated: true,
-      }),
-    );
-    expect(mapRequests.unifiedZoom.at(-1)).toBe(14.5);
-
-    act(() =>
-      lastMapProps.current?.onViewportSettled?.({
-        center: { lat: -3.689, lng: 39.83 },
-        zoom: 14.75,
-        west: 39.82,
-        south: -3.7,
-        east: 39.84,
-        north: -3.67,
-        userInitiated: true,
-      }),
-    );
-    expect(mapRequests.unifiedZoom.at(-1)).toBe(14.75);
+    expect(discoveryArea.setArea).toHaveBeenNthCalledWith(1, {
+      center: { lat: -1.5, lng: 36.55 },
+      zoom: 10,
+      boxes: [{ minLng: 36.1, minLat: -1.9, maxLng: 36.9, maxLat: -1.1 }],
+    });
   });
 
   it.each([false, true])(
-    "queries a saved close viewport immediately on refresh (authenticated=%s)",
+    "queries the points of a saved close viewport immediately on refresh (authenticated=%s)",
     (authenticated) => {
       const bounds = { minLng: 39.82, minLat: -3.69, maxLng: 39.84, maxLat: -3.67 };
       discoveryArea.current = {
@@ -1512,13 +1450,11 @@ describe("MarketPage viewport", () => {
       );
 
       expect(mapRequests.unifiedEnabled.at(-1)).toBe(true);
-      expect(mapRequests.unifiedZoom.at(-1)).toBe(16);
-      expectBoundsCover(mapRequests.unifiedBounds.at(-1), bounds);
       expect(discoveryArea.setArea).not.toHaveBeenCalled();
     },
   );
 
-  it("moves the buffered marker query once the visible viewport leaves it", () => {
+  it("counts facets in the exact visible boxes, only once filters have been opened", () => {
     discoveryArea.current = {
       owner: "guest",
       center: { lat: -1.5, lng: 36.5 },
@@ -1527,24 +1463,11 @@ describe("MarketPage viewport", () => {
     };
     renderPage();
 
-    act(() =>
-      lastMapProps.current?.onViewportSettled?.({
-        center: { lat: 10.5, lng: 10.5 },
-        west: 10,
-        south: 10,
-        east: 11,
-        north: 11,
-        zoom: 10,
-        userInitiated: true,
-      }),
-    );
-
-    expectBoundsCover(mapRequests.unifiedBounds.at(-1), {
-      minLng: 9.8,
-      minLat: 9.8,
-      maxLng: 11.2,
-      maxLat: 11.2,
-    });
+    expect(mapRequests.facetBounds.at(-1)).toEqual([savedBox]);
+    expect(mapRequests.facetEnabled.at(-1)).toBe(false);
+    fireEvent.click(screen.getByRole("button", { name: /Filters/ }));
+    expect(mapRequests.facetEnabled.at(-1)).toBe(true);
+    expect(mapRequests.facetBounds.at(-1)).toEqual([savedBox]);
   });
 
   it("turns a settled coarse guest camera into the initial discovery viewport", () => {
@@ -1614,7 +1537,7 @@ describe("MarketPage viewport", () => {
     expect(discoveryArea.setArea).not.toHaveBeenCalled();
   });
 
-  it("keeps the settled world zoom when clearing the saved area", () => {
+  it("counts facets worldwide once the saved area is cleared", () => {
     discoveryArea.current = {
       owner: "guest",
       center: { lat: -1.5, lng: 36.5 },
@@ -1633,14 +1556,14 @@ describe("MarketPage viewport", () => {
         userInitiated: true,
       }),
     );
+    expect(discoveryArea.clearArea).toHaveBeenCalledOnce();
     discoveryArea.current = null;
     view.rerender(<MarketPage />);
 
-    expect(mapRequests.unifiedBounds.at(-1)).toEqual([]);
-    expect(mapRequests.unifiedZoom.at(-1)).toBe(1);
+    expect(mapRequests.facetBounds.at(-1)).toEqual([]);
   });
 
-  it("resets the query envelope and zoom when the storage owner changes", () => {
+  it("follows the new owner's saved area when the storage owner changes", () => {
     discoveryArea.current = {
       owner: "guest",
       center: { lat: -1.5, lng: 36.5 },
@@ -1657,8 +1580,8 @@ describe("MarketPage viewport", () => {
     };
     view.rerender(<MarketPage isAuthenticated locationOwner="0xabc" />);
 
-    expect(mapRequests.unifiedZoom.at(-1)).toBe(8);
-    expectBoundsCover(mapRequests.unifiedBounds.at(-1), ownerBounds);
+    expect(lastMapProps.current?.camera).toMatchObject({ lat: 40.5, lng: 12.5, zoom: 8 });
+    expect(mapRequests.facetBounds.at(-1)).toEqual([ownerBounds]);
   });
 
   it("splits an antimeridian viewport before persisting and querying it", () => {

@@ -28,7 +28,6 @@ export function MarketPage({
     realFix,
     userLocation,
     locations,
-    clusters,
     isFetching,
     tagFacets,
     postVoucherFacets,
@@ -71,7 +70,6 @@ export function MarketPage({
         >
           <MarketMap
             locations={locations}
-            clusters={clusters}
             selectedLocationId={selectedLocationId}
             camera={camera}
             fitBounds={null}
