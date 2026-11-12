@@ -8,10 +8,13 @@ import {
 } from "../../lib/contact";
 import { isUnitOfAccount, normalizeUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
 import {
+  CELO_MAINNET_CEUR_ADDRESS,
   CELO_MAINNET_CHAIN_ID,
   CELO_MAINNET_CKES_ADDRESS,
   CELO_MAINNET_CUSD_ADDRESS,
+  CELO_MAINNET_CZAR_ADDRESS,
 } from "../../lib/constants/celo";
+import { GNOSIS_MAINNET_CHAIN_ID, GNOSIS_MAINNET_USDCE_ADDRESS } from "../../lib/constants/gnosis";
 import { optionalStoredImageUrlSchema } from "../../lib/image-url";
 import { isTerminalOtxFailure } from "../../lib/otx";
 import { locationSchema } from "../location/logic";
@@ -118,18 +121,26 @@ export const POOL_QUOTER_TYPES = poolQuoterTypeSchema.options;
  * The token an OracleQuoter prices a pool's unit against, per chain.
  *
  * A unit is offered for oracle pricing only where the chain has a stable whose
- * feed the quoter can read. Celo has Mento's; a chain absent from this table
- * has none, so oracle pricing is refused there rather than deploying a quoter
- * with a base currency that does not exist.
+ * feed the quoter can read. Celo has Mento's; Gnosis has bridged USDC. A chain
+ * absent from this table has none, so oracle pricing is refused there rather
+ * than deploying a quoter with a base currency that does not exist.
+ *
+ * The one table both apps read: `baseCurrency` is metadata on the quoter, but a
+ * second copy of this list is how the console drifted from it before.
  */
 const POOL_ORACLE_BASE_CURRENCY: Record<number, Partial<Record<PoolUnit, string>>> = {
   [CELO_MAINNET_CHAIN_ID]: {
     KES: CELO_MAINNET_CKES_ADDRESS,
     USD: CELO_MAINNET_CUSD_ADDRESS,
+    EUR: CELO_MAINNET_CEUR_ADDRESS,
+    ZAR: CELO_MAINNET_CZAR_ADDRESS,
+  },
+  [GNOSIS_MAINNET_CHAIN_ID]: {
+    USD: GNOSIS_MAINNET_USDCE_ADDRESS,
   },
 };
 
-function getPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): string | undefined {
+export function getPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): string | undefined {
   return POOL_ORACLE_BASE_CURRENCY[chainId]?.[unit];
 }
 

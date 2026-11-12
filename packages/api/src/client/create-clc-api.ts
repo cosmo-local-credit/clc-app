@@ -16,6 +16,7 @@ import { createAuthClient } from "../features/auth/client";
 import { createDeploymentsClient } from "../features/deployments/client";
 import { createMarketClient } from "../features/market/client";
 import { createOfferingsClient } from "../features/offerings/client";
+import { createOracleFeedsClient } from "../features/oracle-feeds/client";
 import { createPoolsClient } from "../features/pools/client";
 import { createPretiumClient } from "../features/pretium/client";
 import { createPoolDeployClient } from "../features/pools/deploy-client";
@@ -64,6 +65,7 @@ export function createClcApi({
     deployments: createDeploymentsClient(http),
     market: createMarketClient(http, { cache: catalogCache }),
     offerings: createOfferingsClient(http, { cache: catalogCache }),
+    oracleFeeds: createOracleFeedsClient(http),
     pools: createPoolsClient(http, { adminComposition: adminPoolComposition }),
     poolDeploy: createPoolDeployClient(http),
     pretium: createPretiumClient(http),

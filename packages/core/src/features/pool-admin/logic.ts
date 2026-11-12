@@ -150,6 +150,7 @@ export type PoolVoucherPricing =
   | { kind: "decimal" };
 
 export type RelativePoolVoucherPricing = Extract<PoolVoucherPricing, { kind: "relative" }>;
+export type OraclePoolVoucherPricing = Extract<PoolVoucherPricing, { kind: "oracle" }>;
 
 export type BuildAddPoolVoucherCallsInput = {
   poolAddress: `0x${string}`;
@@ -637,6 +638,183 @@ export function seedPoolVoucherRateInput(input: {
     exchangeRate,
     creditLimit: formatTokenAmount(unitValueRaw, POOL_PRICE_INDEX_DECIMALS, 2),
   };
+}
+
+/**
+ * What an OracleQuoter reads from a feed. Anything implementing these two is a
+ * feed: a native Chainlink aggregator or a `clc-protocol` `OracleRelay`.
+ */
+export const chainlinkAggregatorAbi = parseAbi([
+  "function decimals() view returns (uint8)",
+  "function latestRoundData() view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)",
+]);
+
+/** `OracleQuoter.maxStaleness` as deployed, used when a feed carries no bound of its own. */
+export const ORACLE_DEFAULT_MAX_STALENESS_SECONDS = 86_400;
+
+/** The parts of a registry feed the oracle form layer reads. */
+export type PoolVoucherFeedOption = {
+  address: `0x${string}`;
+  maxStalenessSeconds: number | null;
+};
+
+/** The feed select's value for an address typed by hand rather than chosen from the registry. */
+export const POOL_VOUCHER_CUSTOM_FEED = "custom";
+
+/**
+ * The fields a steward fills when an OracleQuoter prices a pool.
+ *
+ * `feed` is a registry feed's address, `POOL_VOUCHER_CUSTOM_FEED`, or empty
+ * before a choice. The credit limit is in the voucher's own units: there is no
+ * hand-set rate to convert a unit-of-account figure through, and a floating
+ * price would make the stored cap drift from what was typed.
+ */
+export type PoolVoucherFeedInput = {
+  feed: string;
+  customAddress: string;
+  creditLimit: string;
+};
+
+/** The registry feed at an address, compared exactly: addresses are EIP-55 throughout. */
+export function findPoolVoucherFeed<T extends PoolVoucherFeedOption>(
+  feeds: readonly T[],
+  address: string | null | undefined,
+): T | undefined {
+  if (!address || !isAddress(address, { strict: false })) return undefined;
+  const checksummed = getAddress(address);
+  return feeds.find((feed) => feed.address === checksummed);
+}
+
+function isNonZeroAddress(value: string): value is `0x${string}` {
+  return isAddress(value, { strict: false }) && value.toLowerCase() !== zeroAddress;
+}
+
+/** The aggregator a set of feed fields names, or null when they name none yet. */
+export function resolvePoolVoucherFeedAddress(
+  values: Pick<PoolVoucherFeedInput, "feed" | "customAddress">,
+): `0x${string}` | null {
+  const value =
+    values.feed === POOL_VOUCHER_CUSTOM_FEED ? values.customAddress.trim() : values.feed;
+  return isNonZeroAddress(value) ? getAddress(value) : null;
+}
+
+/**
+ * Validates the feed choice, and a credit limit only where the pool has a
+ * limiter to write one to. The limit is checked against the voucher's decimals
+ * because that is the precision the limiter stores.
+ */
+export function poolVoucherFeedSchema(options: {
+  requireCreditLimit: boolean;
+  decimals: number | null;
+}) {
+  const limitPattern =
+    options.decimals === null
+      ? null
+      : new RegExp(options.decimals > 0 ? `^\\d+(\\.\\d{1,${options.decimals}})?$` : "^\\d+$");
+  return z
+    .object({ feed: z.string(), customAddress: z.string(), creditLimit: z.string() })
+    .superRefine((value, ctx) => {
+      if (value.feed === "") {
+        ctx.addIssue({ code: "custom", path: ["feed"], message: "Choose a price feed" });
+      } else if (value.feed === POOL_VOUCHER_CUSTOM_FEED) {
+        if (!isNonZeroAddress(value.customAddress.trim())) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["customAddress"],
+            message: "Enter a valid feed address",
+          });
+        }
+      } else if (!isNonZeroAddress(value.feed)) {
+        ctx.addIssue({ code: "custom", path: ["feed"], message: "Choose a price feed" });
+      }
+      if (options.requireCreditLimit && !limitPattern?.test(value.creditLimit.trim())) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["creditLimit"],
+          message: "Enter a credit limit of zero or more",
+        });
+      }
+    });
+}
+
+/**
+ * Turns the oracle fields into the batch builder's arguments.
+ *
+ * A registry feed carries its own freshness bound, sent with the three-argument
+ * `setOracle`; a custom address takes the quoter's global bound. The cap is
+ * omitted rather than zeroed when the pool has no limiter.
+ */
+export function toPoolVoucherFeedConfig(input: {
+  values: PoolVoucherFeedInput;
+  feeds: readonly PoolVoucherFeedOption[];
+  decimals: number;
+  hasLimiter: boolean;
+}): { pricing: OraclePoolVoucherPricing; depositCapRaw?: string } {
+  const aggregatorAddress = resolvePoolVoucherFeedAddress(input.values);
+  if (!aggregatorAddress) throw new Error("Choose a price feed.");
+  const registered =
+    input.values.feed === POOL_VOUCHER_CUSTOM_FEED
+      ? undefined
+      : findPoolVoucherFeed(input.feeds, aggregatorAddress);
+  const pricing: OraclePoolVoucherPricing = {
+    kind: "oracle",
+    aggregatorAddress,
+    ...(registered?.maxStalenessSeconds
+      ? { maxStalenessSeconds: String(registered.maxStalenessSeconds) }
+      : {}),
+  };
+  if (!input.hasLimiter) return { pricing };
+  return {
+    pricing,
+    depositCapRaw: parseTokenAmount(input.values.creditLimit.trim(), input.decimals),
+  };
+}
+
+/**
+ * Reads a voucher's on-chain feed and cap back into the fields.
+ *
+ * A current aggregator the registry does not list is seeded as a custom
+ * address, so it is shown and can be replaced; nothing is preselected for a
+ * voucher without one.
+ */
+export function seedPoolVoucherFeedInput(input: {
+  aggregatorAddress: `0x${string}` | null;
+  feeds: readonly PoolVoucherFeedOption[];
+  capRaw: string | null;
+  decimals: number | null;
+}): PoolVoucherFeedInput {
+  const current =
+    input.aggregatorAddress && isNonZeroAddress(input.aggregatorAddress)
+      ? getAddress(input.aggregatorAddress)
+      : null;
+  const registered = findPoolVoucherFeed(input.feeds, current);
+  const creditLimit =
+    input.capRaw === null || input.decimals === null
+      ? ""
+      : formatTokenAmount(input.capRaw, input.decimals, input.decimals);
+  if (!current) return { feed: "", customAddress: "", creditLimit };
+  if (registered) return { feed: registered.address, customAddress: "", creditLimit };
+  return { feed: POOL_VOUCHER_CUSTOM_FEED, customAddress: current, creditLimit };
+}
+
+/** A feed's answer as a decimal string, or null when it is not a usable price. */
+export function oracleFeedPrice(answer: bigint, decimals: number): string | null {
+  if (answer <= 0n || !Number.isInteger(decimals) || decimals < 0) return null;
+  return formatTokenAmount(answer.toString(), decimals, Math.min(decimals, 4));
+}
+
+/**
+ * Whether the quoter would refuse a feed's latest round as too old. Mirrors
+ * `OracleQuoter`: the per-feed bound when set, the global one otherwise.
+ */
+export function isOracleFeedStale(input: {
+  updatedAt: bigint;
+  nowSeconds: number;
+  maxStalenessSeconds: number | null;
+}): boolean {
+  const bound = input.maxStalenessSeconds || ORACLE_DEFAULT_MAX_STALENESS_SECONDS;
+  if (input.updatedAt <= 0n) return true;
+  return BigInt(Math.floor(input.nowSeconds)) - input.updatedAt > BigInt(bound);
 }
 
 export const oracleQuoterBaseCurrencyAbi = parseAbi([
