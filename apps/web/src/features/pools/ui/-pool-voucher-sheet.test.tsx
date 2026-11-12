@@ -6,8 +6,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import type { CaliburCall } from "@clc/core/features/webauthn/index";
+import type { OracleFeed } from "@clc/api/features/oracle-feeds/client";
+import { oracleFeedKeys } from "@clc/api/features/oracle-feeds/queries";
 import {
   limiterSetLimitForAbi,
+  oracleQuoterSetOracleAbi,
+  oracleQuoterSetOracleWithStalenessAbi,
   relativeQuoterSetPriceIndexValueAbi,
   tokenIndexAddAbi,
   tokenIndexRemoveAbi,
@@ -19,6 +23,18 @@ const REGISTRY = "0x61a8000000000000000000000000000000007001";
 const LIMITER = "0x4d90000000000000000000000000000000000a1c";
 const QUOTER = "0xb91c000000000000000000000000000000007d20";
 const CANDIDATE = "0x2211000000000000000000000000000000000909";
+const EUR_FEED = "0xab70BCB260073d036d1660201e9d5405F5829b7a";
+const UNREGISTERED_FEED = "0x26C31ac71010aF62E6B486D1132E266D6298857D";
+
+const EUR: OracleFeed = {
+  id: "7",
+  chainId: 100,
+  name: "EUR",
+  address: EUR_FEED,
+  description: "EUR / USD",
+  decimals: 8,
+  maxStalenessSeconds: 93_600,
+};
 
 const mocks = vi.hoisted(() => ({
   relay: vi.fn(),
@@ -66,6 +82,27 @@ const mocks = vi.hoisted(() => ({
     isError: false,
     refetch: vi.fn(),
   },
+  oracles: {
+    data: new Map<
+      string,
+      { aggregatorAddress: `0x${string}` | null; maxStalenessSeconds: bigint }
+    >() as
+      | Map<string, { aggregatorAddress: `0x${string}` | null; maxStalenessSeconds: bigint }>
+      | undefined,
+    isPending: false,
+    isError: false,
+    isFetching: false,
+    refetch: vi.fn(),
+  },
+  rounds: {
+    data: new Map<
+      string,
+      { status: "ready"; price: string; stale: boolean } | { status: "unreadable" }
+    >(),
+    isPending: false,
+    fetchStatus: "idle",
+  },
+  listFeeds: vi.fn(),
   treasury: {
     data: new Map<
       string,
@@ -84,9 +121,18 @@ vi.mock("#/features/pools/hooks/use-pool-admin", async (importOriginal) => ({
   usePoolAdminRelay: () => ({ mutateAsync: mocks.relay, isPending: false }),
 }));
 
-vi.mock("#/features/pools/hooks/use-pool-quoter", () => ({
+// The feed registry runs through the real query lifecycle; only its client is
+// faked. The chain reads stay mocked.
+vi.mock("#/features/pools/hooks/use-pool-quoter", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   usePoolQuoterKind: () => mocks.quoterKind,
   usePoolVoucherRatesByAddress: () => mocks.rates,
+  usePoolVoucherOracles: () => mocks.oracles,
+  useOracleFeedRounds: () => mocks.rounds,
+}));
+
+vi.mock("#/lib/api/oracle-feeds", () => ({
+  oracleFeedsClient: { listOracleFeeds: mocks.listFeeds },
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-treasury", () => ({
@@ -123,6 +169,7 @@ vi.mock("sonner", () => ({
   toast: { error: mocks.toastError, success: mocks.toastSuccess },
 }));
 
+import { CHAIN_ID } from "#/lib/chain";
 import { PoolVoucherSheet } from "./pool-voucher-sheet";
 
 function pool(overrides: Partial<UserPool> = {}): UserPool {
@@ -195,8 +242,23 @@ function relayedCalls(): CaliburCall[] {
   return mocks.relay.mock.calls[0]?.[0] as CaliburCall[];
 }
 
-function renderSheet(node: ReactNode) {
-  return render(<QueryClientProvider client={new QueryClient()}>{node}</QueryClientProvider>);
+function renderSheet(
+  node: ReactNode,
+  client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
+  return render(<QueryClientProvider client={client}>{node}</QueryClientProvider>);
+}
+
+/** Base UI commits an unhighlighted item only for a touch pointer; jsdom fires no hover. */
+async function chooseFeed(dialog: HTMLElement, name: string | RegExp) {
+  fireEvent.click(within(dialog).getByLabelText("Price feed"));
+  const option = await screen.findByRole("option", { name });
+  fireEvent.pointerDown(option, { pointerType: "touch" });
+  fireEvent.click(option);
+}
+
+function onChainFeed(token: string, aggregatorAddress: `0x${string}` | null) {
+  mocks.oracles.data?.set(token.toLowerCase(), { aggregatorAddress, maxStalenessSeconds: 0n });
 }
 
 /** Search results stay hidden until the field has a real term. */
@@ -247,6 +309,23 @@ beforeEach(() => {
     isError: false,
     refetch: vi.fn(),
   };
+  mocks.oracles = {
+    data: new Map([
+      [TOKEN.toLowerCase(), { aggregatorAddress: null, maxStalenessSeconds: 0n }],
+      [CANDIDATE.toLowerCase(), { aggregatorAddress: null, maxStalenessSeconds: 0n }],
+    ]),
+    isPending: false,
+    isError: false,
+    isFetching: false,
+    refetch: vi.fn(),
+  };
+  mocks.rounds = {
+    data: new Map([[EUR_FEED, { status: "ready" as const, price: "1.1081", stale: false }]]),
+    isPending: false,
+    fetchStatus: "idle",
+  };
+  mocks.listFeeds.mockReset();
+  mocks.listFeeds.mockResolvedValue([EUR]);
   mocks.searchResults = [];
   mocks.suggestions = {
     issued: { rows: [], status: "ready", completeness: "complete", retry: vi.fn() },
@@ -368,13 +447,13 @@ describe("PoolVoucherSheet approving", () => {
   });
 
   it("refuses a quoter this screen cannot configure", async () => {
-    mocks.quoterKind = { kind: "oracle", isPending: false };
+    mocks.quoterKind = { kind: "decimal", isPending: false };
     mocks.searchResults = [
       { id: "m1", address: CANDIDATE, name: "Juan's Voucher", symbol: "JUAN" },
     ];
     renderSheet(
       <PoolVoucherSheet
-        pool={pool({ quoterType: "oracle" })}
+        pool={pool({ quoterType: "decimal" })}
         poolVouchers={[]}
         voucher={null}
         open
@@ -794,5 +873,319 @@ describe("PoolVoucherSheet registration", () => {
     ).toBe(true);
     fireEvent.click(within(dialog).getByRole("button", { name: "Retry" }));
     expect(retry).toHaveBeenCalledOnce();
+  });
+});
+
+describe("PoolVoucherSheet on an oracle pool", () => {
+  const oraclePool = () => pool({ quoterType: "oracle" });
+
+  beforeEach(() => {
+    mocks.quoterKind = { kind: "oracle", isPending: false };
+    mocks.searchResults = [
+      { id: "m1", address: CANDIDATE, name: "Juan's Voucher", symbol: "JUAN" },
+    ];
+  });
+
+  async function pickCandidate() {
+    const dialog = await screen.findByRole("dialog");
+    searchVouchers(dialog);
+    fireEvent.click(within(dialog).getByRole("button", { name: /Juan's Voucher/ }));
+    await within(dialog).findByLabelText("Price feed");
+    return dialog;
+  }
+
+  it("approves with a verified feed: add, setLimitFor and setOracle in one batch", async () => {
+    renderSheet(
+      <PoolVoucherSheet
+        pool={oraclePool()}
+        poolVouchers={[]}
+        voucher={null}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+    const dialog = await pickCandidate();
+
+    // A feed, not a typed rate, and nothing preselected.
+    expect(within(dialog).queryByLabelText("Exchange rate")).toBeNull();
+    expect(within(dialog).getByLabelText("Price feed").textContent).toContain(
+      "Choose a price feed",
+    );
+    // No hand-set rate means no unit-of-account value for the holding.
+    expect(within(dialog).queryByText("Value in KES")).toBeNull();
+
+    await chooseFeed(dialog, /EUR \/ USD/);
+    expect(within(dialog).getByLabelText("Price feed").textContent).toContain("1.1081");
+    // The limit is in voucher units.
+    fireEvent.change(within(dialog).getByLabelText("Credit limit"), { target: { value: "250" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Approve voucher" }));
+
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    const calls = relayedCalls();
+    expect(calls.map((call) => call.to)).toEqual([REGISTRY, LIMITER, QUOTER]);
+    expect(decodeFunctionData({ abi: tokenIndexAddAbi, data: calls[0]!.data })).toEqual({
+      functionName: "add",
+      args: [CANDIDATE],
+    });
+    expect(decodeFunctionData({ abi: limiterSetLimitForAbi, data: calls[1]!.data })).toEqual({
+      functionName: "setLimitFor",
+      args: [CANDIDATE, POOL, 250_000_000n],
+    });
+    expect(
+      decodeFunctionData({ abi: oracleQuoterSetOracleWithStalenessAbi, data: calls[2]!.data }),
+    ).toEqual({ functionName: "setOracle", args: [CANDIDATE, EUR_FEED, 93_600n] });
+  });
+
+  it("asks for a feed before signing", async () => {
+    renderSheet(
+      <PoolVoucherSheet
+        pool={oraclePool()}
+        poolVouchers={[]}
+        voucher={null}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+    const dialog = await pickCandidate();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Approve voucher" }));
+
+    expect(
+      await within(dialog).findByText("Choose a price feed", { selector: "p, span" }),
+    ).toBeTruthy();
+    expect(mocks.relay).not.toHaveBeenCalled();
+  });
+
+  it("marks a stale feed on its option", async () => {
+    mocks.rounds = {
+      data: new Map([[EUR_FEED, { status: "ready" as const, price: "1.1081", stale: true }]]),
+      isPending: false,
+      fetchStatus: "idle",
+    };
+    renderSheet(
+      <PoolVoucherSheet
+        pool={oraclePool()}
+        poolVouchers={[]}
+        voucher={null}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+    const dialog = await pickCandidate();
+
+    fireEvent.click(within(dialog).getByLabelText("Price feed"));
+    const option = await screen.findByRole("option", { name: /EUR \/ USD/ });
+    expect(within(option).getByText("Stale")).toBeTruthy();
+  });
+
+  it("sends only the limiter call when the feed is unchanged", async () => {
+    onChainFeed(TOKEN, EUR_FEED);
+    renderSheet(
+      <PoolVoucherSheet
+        pool={oraclePool()}
+        poolVouchers={[poolVoucher()]}
+        voucher={poolVoucher()}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+    const dialog = await screen.findByRole("dialog");
+    await within(dialog).findByLabelText("Price feed");
+
+    // Seeded from the chain: the feed by its pair, the cap in voucher units.
+    expect(within(dialog).getByLabelText("Price feed").textContent).toContain("EUR / USD");
+    expect((within(dialog).getByLabelText("Credit limit") as HTMLInputElement).value).toBe("200");
+
+    fireEvent.change(within(dialog).getByLabelText("Credit limit"), { target: { value: "300" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    const calls = relayedCalls();
+    expect(calls.map((call) => call.to)).toEqual([LIMITER]);
+    expect(decodeFunctionData({ abi: limiterSetLimitForAbi, data: calls[0]!.data })).toEqual({
+      functionName: "setLimitFor",
+      args: [TOKEN, POOL, 300_000_000n],
+    });
+  });
+
+  it("refuses a submission that changes neither feed nor limit", async () => {
+    onChainFeed(TOKEN, EUR_FEED);
+    renderSheet(
+      <PoolVoucherSheet
+        pool={oraclePool()}
+        poolVouchers={[poolVoucher()]}
+        voucher={poolVoucher()}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+    const dialog = await screen.findByRole("dialog");
+    await within(dialog).findByLabelText("Price feed");
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(mocks.toastError).toHaveBeenCalledWith("Nothing has changed."));
+    expect(mocks.relay).not.toHaveBeenCalled();
+  });
+
+  it("shows an unregistered current feed as unverified, and replaces it", async () => {
+    onChainFeed(TOKEN, UNREGISTERED_FEED);
+    renderSheet(
+      <PoolVoucherSheet
+        pool={oraclePool()}
+        poolVouchers={[poolVoucher()]}
+        voucher={poolVoucher()}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+    const dialog = await screen.findByRole("dialog");
+    await within(dialog).findByLabelText("Price feed");
+
+    expect(within(dialog).getByLabelText("Price feed").textContent).toContain("Custom address");
+    expect((within(dialog).getByLabelText("Feed address") as HTMLInputElement).value).toBe(
+      UNREGISTERED_FEED,
+    );
+    expect(within(dialog).getByText("Unverified")).toBeTruthy();
+
+    await chooseFeed(dialog, /EUR \/ USD/);
+    expect(within(dialog).queryByText("Unverified")).toBeNull();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    const calls = relayedCalls();
+    expect(calls.map((call) => call.to)).toEqual([QUOTER]);
+    expect(
+      decodeFunctionData({ abi: oracleQuoterSetOracleWithStalenessAbi, data: calls[0]!.data }),
+    ).toEqual({ functionName: "setOracle", args: [TOKEN, EUR_FEED, 93_600n] });
+  });
+
+  it("takes a custom address on an empty registry, under the quoter's global bound", async () => {
+    mocks.listFeeds.mockResolvedValue([]);
+    renderSheet(
+      <PoolVoucherSheet
+        pool={oraclePool()}
+        poolVouchers={[]}
+        voucher={null}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+    const dialog = await pickCandidate();
+
+    expect(within(dialog).getByText("No verified price feeds")).toBeTruthy();
+    await chooseFeed(dialog, "Custom address");
+    fireEvent.change(within(dialog).getByLabelText("Feed address"), {
+      target: { value: UNREGISTERED_FEED.toLowerCase() },
+    });
+    expect(within(dialog).getByText("Unverified")).toBeTruthy();
+    fireEvent.change(within(dialog).getByLabelText("Credit limit"), { target: { value: "0" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Approve voucher" }));
+
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    const calls = relayedCalls();
+    expect(calls.map((call) => call.to)).toEqual([REGISTRY, LIMITER, QUOTER]);
+    expect(decodeFunctionData({ abi: oracleQuoterSetOracleAbi, data: calls[2]!.data })).toEqual({
+      functionName: "setOracle",
+      args: [CANDIDATE, UNREGISTERED_FEED],
+    });
+  });
+
+  it("holds the form while the feed list is pending", async () => {
+    mocks.listFeeds.mockReturnValue(new Promise(() => {}));
+    renderSheet(
+      <PoolVoucherSheet
+        pool={oraclePool()}
+        poolVouchers={[]}
+        voucher={null}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+    const dialog = await screen.findByRole("dialog");
+    searchVouchers(dialog);
+    fireEvent.click(within(dialog).getByRole("button", { name: /Juan's Voucher/ }));
+
+    expect(await within(dialog).findByText("Loading price feeds…")).toBeTruthy();
+    expect(within(dialog).queryByLabelText("Price feed")).toBeNull();
+    expect(
+      (within(dialog).getByRole("button", { name: "Approve voucher" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+  });
+
+  it("blocks on a failed feed list and recovers on Retry", async () => {
+    mocks.listFeeds.mockRejectedValueOnce(new Error("offline"));
+    renderSheet(
+      <PoolVoucherSheet
+        pool={oraclePool()}
+        poolVouchers={[]}
+        voucher={null}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+    const dialog = await screen.findByRole("dialog");
+    searchVouchers(dialog);
+    fireEvent.click(within(dialog).getByRole("button", { name: /Juan's Voucher/ }));
+
+    expect(await within(dialog).findByText("Couldn't load price feeds.")).toBeTruthy();
+    expect(within(dialog).queryByLabelText("Price feed")).toBeNull();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Retry" }));
+
+    expect(await within(dialog).findByLabelText("Price feed")).toBeTruthy();
+    expect(mocks.listFeeds).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps the retained list when a refetch fails", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    renderSheet(
+      <PoolVoucherSheet
+        pool={oraclePool()}
+        poolVouchers={[]}
+        voucher={null}
+        open
+        onClose={vi.fn()}
+      />,
+      client,
+    );
+    const dialog = await pickCandidate();
+    await chooseFeed(dialog, /EUR \/ USD/);
+
+    mocks.listFeeds.mockRejectedValueOnce(new Error("offline"));
+    await client.refetchQueries({ queryKey: oracleFeedKeys.all });
+    await waitFor(() =>
+      expect(client.getQueryState(oracleFeedKeys.list(CHAIN_ID))?.status).toBe("error"),
+    );
+
+    // The steward's choice survives; the failure does not block a list already read.
+    expect(within(dialog).queryByText("Couldn't load price feeds.")).toBeNull();
+    expect(within(dialog).getByLabelText("Price feed").textContent).toContain("EUR / USD");
+    fireEvent.change(within(dialog).getByLabelText("Credit limit"), { target: { value: "1" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Approve voucher" }));
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+  });
+
+  it("blocks when the voucher's current feed cannot be read", async () => {
+    mocks.oracles = { ...mocks.oracles, data: undefined, isError: true };
+    renderSheet(
+      <PoolVoucherSheet
+        pool={oraclePool()}
+        poolVouchers={[poolVoucher()]}
+        voucher={poolVoucher()}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+    const dialog = await screen.findByRole("dialog");
+
+    expect(
+      await within(dialog).findByText(
+        "Couldn't read this voucher's current price feed, so it can't be changed right now.",
+      ),
+    ).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Retry" }));
+    expect(mocks.oracles.refetch).toHaveBeenCalled();
   });
 });

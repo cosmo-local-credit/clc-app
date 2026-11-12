@@ -21,7 +21,7 @@ import {
  */
 export function PoolHoldingsPanel({ pool, vouchers }: { pool: UserPool; vouchers: PoolVoucher[] }) {
   const { t } = useLingui();
-  const { holdings, unit, isPending, isError, isFetching, refetch } = usePoolHoldings(
+  const { holdings, feeds, unit, isPending, isError, isFetching, refetch } = usePoolHoldings(
     pool,
     vouchers,
   );
@@ -49,7 +49,11 @@ export function PoolHoldingsPanel({ pool, vouchers }: { pool: UserPool; vouchers
           isLast={index === list.length - 1}
         >
           <div className="flex items-center gap-3">
-            <PoolHoldingIdentity holding={holding} unit={unit} />
+            <PoolHoldingIdentity
+              holding={holding}
+              unit={unit}
+              feed={feeds?.get(holding.tokenAddress)}
+            />
             <HoldingAmount holding={holding} unit={unit} />
           </div>
           {/* Full width for the pool's largest holding, the rest in proportion.

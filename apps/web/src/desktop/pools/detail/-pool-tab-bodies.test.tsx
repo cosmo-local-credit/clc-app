@@ -218,6 +218,38 @@ describe("pool vouchers table", () => {
       />,
     );
     expect(screen.getByRole("columnheader", { name: /In pool/ })).toBeTruthy();
+    expect(screen.getByRole("columnheader", { name: /Rate/ })).toBeTruthy();
     expect(mocks.holdings).toHaveBeenCalled();
+  });
+
+  it("names each voucher's feed in place of the rate on an oracle pool", () => {
+    const UNREGISTERED = "0x26C31ac71010aF62E6B486D1132E266D6298857D";
+    const oracleVouchers = [
+      ...vouchers,
+      { id: "2", name: "Kilifi Rice", symbol: "RICE", tokenAddress: POOL, active: true },
+    ] as unknown as PoolVoucher[];
+    mocks.holdings.mockReturnValue({
+      holdings: [],
+      unit: "KES",
+      isPending: false,
+      feeds: new Map([
+        [PARTY.toLowerCase(), { kind: "verified", label: "EUR / USD" }],
+        [POOL.toLowerCase(), { kind: "unverified", address: UNREGISTERED }],
+      ]),
+    });
+    render(
+      <PoolVouchersTable
+        pool={pool}
+        figures
+        poolVouchers={oracleVouchers}
+        vouchers={oracleVouchers}
+        selectedKey={undefined}
+      />,
+    );
+
+    expect(screen.getByRole("columnheader", { name: /Price feed/ })).toBeTruthy();
+    expect(screen.queryByRole("columnheader", { name: /^Rate/ })).toBeNull();
+    expect(screen.getByText("EUR / USD")).toBeTruthy();
+    expect(screen.getByText("Unverified")).toBeTruthy();
   });
 });

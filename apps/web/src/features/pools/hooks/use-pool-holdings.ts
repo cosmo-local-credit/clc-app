@@ -2,6 +2,7 @@ import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 
 import {
   usePoolQuoterKind,
+  usePoolVoucherFeedStatuses,
   usePoolVoucherRatesByAddress,
 } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolTreasury } from "#/features/pools/hooks/use-pool-treasury";
@@ -44,6 +45,8 @@ export function usePoolHoldings(pool: UserPool, vouchers: PoolVoucher[]) {
   const rates = usePoolVoucherRatesByAddress(pool, rateAddresses, isRelative, {
     failOnReadError: true,
   });
+  // An oracle pool has no rate to print; its rows name the feed instead.
+  const feeds = usePoolVoucherFeedStatuses(pool, vouchers);
   // The indexer's view of the same address carries the vouchers the catalog
   // has not projected — a pool seeded at `initialize` holds tokens no catalog
   // row mentions, and a screen that dropped them would report a pool as emptier
@@ -60,6 +63,8 @@ export function usePoolHoldings(pool: UserPool, vouchers: PoolVoucher[]) {
 
   return {
     holdings,
+    /** Each catalog voucher's feed on an oracle pool, keyed by lowercased address; null otherwise. */
+    feeds,
     unit: pool.unitOfAccount ?? pool.symbol,
     isPending:
       (treasury.isPending && indexed.isPending && holdings.length === 0) ||

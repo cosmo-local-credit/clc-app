@@ -40,6 +40,7 @@ import { DeskTable, type DeskColumn } from "#/desktop/ui/data-table";
 import { DeskChip } from "#/desktop/ui/segment";
 import { usePoolOfferingsInfinite } from "#/features/home/hooks/use-voucher-offerings";
 import { usePoolHoldings } from "#/features/pools/hooks/use-pool-holdings";
+import type { PoolVoucherFeedStatus } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
 import type { PoolActivityEntry } from "#/features/pools/logic/pool-activity";
 import type { PoolHolding } from "#/features/pools/logic/pool-holdings";
@@ -468,14 +469,16 @@ function PoolVoucherRows({
             sortValue: (row) => sortable(limitRaw(row), row.holding?.decimals),
             cell: (row) => figure(limitRaw(row), row.holding?.decimals ?? null),
           },
-          {
-            id: "rate",
-            header: <Trans>Rate</Trans>,
-            align: "end",
-            width: "minmax(5.5rem,1fr)",
-            sortValue: (row) => sortable(row.holding?.ratePpm, POOL_PRICE_INDEX_DECIMALS),
-            cell: (row) => figure(row.holding?.ratePpm, POOL_PRICE_INDEX_DECIMALS),
-          },
+          state.feeds
+            ? feedColumn<Row>((row) => state.feeds?.get(row.voucher.tokenAddress.toLowerCase()))
+            : {
+                id: "rate",
+                header: <Trans>Rate</Trans>,
+                align: "end",
+                width: "minmax(5.5rem,1fr)",
+                sortValue: (row) => sortable(row.holding?.ratePpm, POOL_PRICE_INDEX_DECIMALS),
+                cell: (row) => figure(row.holding?.ratePpm, POOL_PRICE_INDEX_DECIMALS),
+              },
         ] satisfies DeskColumn<Row>[])
       : []),
     // Room for the row's own buttons, laid over its end: the voucher's page,
@@ -590,6 +593,53 @@ function holdingStates(
   return null;
 }
 
+/**
+ * An oracle pool's Rate column: the feed each voucher prices from. A row with
+ * no catalog voucher behind it (an indexed-only holding) has nothing to show.
+ */
+function feedColumn<Row>(feedOf: (row: Row) => PoolVoucherFeedStatus | undefined): DeskColumn<Row> {
+  return {
+    id: "rate",
+    header: <Trans>Price feed</Trans>,
+    width: "minmax(8rem,1fr)",
+    sortValue: (row) => {
+      const feed = feedOf(row);
+      return feed?.kind === "verified"
+        ? feed.label
+        : feed?.kind === "unverified"
+          ? feed.address
+          : "";
+    },
+    cell: (row) => <FeedCell feed={feedOf(row)} />,
+  };
+}
+
+function FeedCell({ feed }: { feed: PoolVoucherFeedStatus | undefined }) {
+  if (!feed) return dash;
+  if (feed.kind === "none") {
+    return (
+      <Badge variant="muted" size="sm" caps>
+        <Trans>No feed</Trans>
+      </Badge>
+    );
+  }
+  if (feed.kind === "unverified") {
+    return (
+      <span className="flex min-w-0 items-center gap-2">
+        <EllipsizedAddress address={feed.address} />
+        <Badge variant="outline" size="sm" caps>
+          <Trans>Unverified</Trans>
+        </Badge>
+      </span>
+    );
+  }
+  return (
+    <span dir="ltr" className="truncate font-mono text-xs">
+      {feed.label}
+    </span>
+  );
+}
+
 /** What the pool holds, in its unit of account, with each holding's share of the largest. */
 export function PoolHoldingsTable({ pool, vouchers }: { pool: UserPool; vouchers: PoolVoucher[] }) {
   const { t } = useLingui();
@@ -625,19 +675,21 @@ export function PoolHoldingsTable({ pool, vouchers }: { pool: UserPool; vouchers
           </Figure>
         ),
     },
-    {
-      id: "rate",
-      header: <Trans>Rate</Trans>,
-      align: "end",
-      width: "minmax(5.5rem,1fr)",
-      sortValue: (holding) => sortable(holding.ratePpm, POOL_PRICE_INDEX_DECIMALS),
-      cell: (holding) =>
-        holding.ratePpm === null ? (
-          dash
-        ) : (
-          <Figure>{formatTokenAmount(holding.ratePpm, POOL_PRICE_INDEX_DECIMALS)}</Figure>
-        ),
-    },
+    state.feeds
+      ? feedColumn<PoolHolding>((holding) => state.feeds?.get(holding.tokenAddress))
+      : {
+          id: "rate",
+          header: <Trans>Rate</Trans>,
+          align: "end",
+          width: "minmax(5.5rem,1fr)",
+          sortValue: (holding) => sortable(holding.ratePpm, POOL_PRICE_INDEX_DECIMALS),
+          cell: (holding) =>
+            holding.ratePpm === null ? (
+              dash
+            ) : (
+              <Figure>{formatTokenAmount(holding.ratePpm, POOL_PRICE_INDEX_DECIMALS)}</Figure>
+            ),
+        },
     {
       id: "value",
       header: <Trans>Value in {unitSymbol}</Trans>,

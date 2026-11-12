@@ -84,6 +84,9 @@ vi.mock("#/features/pools/hooks/use-pool-admin", async (importOriginal) => ({
 vi.mock("#/features/pools/hooks/use-pool-quoter", () => ({
   usePoolQuoterKind: () => mocks.quoterKind,
   usePoolVoucherRatesByAddress: () => mocks.rates,
+  usePoolVoucherOracles: () => ({ data: undefined, isPending: true, isFetching: false }),
+  useOracleFeeds: () => ({ data: undefined, isPending: true, isError: false, isFetching: false }),
+  useOracleFeedRounds: () => ({ data: undefined, isPending: true, fetchStatus: "idle" }),
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-treasury", () => ({

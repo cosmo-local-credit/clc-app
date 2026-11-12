@@ -51,6 +51,14 @@ vi.mock("#/components/reports/report-list", () => ({
 
 const mocks = vi.hoisted(() => ({
   search: {} as Record<string, unknown>,
+  quoterKind: "unknown" as string,
+  rateReadEnabled: vi.fn(),
+  feedStatuses: null as Map<
+    string,
+    | { kind: "none" }
+    | { kind: "verified"; label: string }
+    | { kind: "unverified"; address: `0x${string}` }
+  > | null,
   auth: {
     isAuthenticated: true,
     isLoading: false,
@@ -176,8 +184,12 @@ vi.mock("./pool-offerings-panel", () => ({
 // The on-chain steward surface has its own tests; here it only needs to stay out
 // of the way of the catalog editor, and its chain reads out of this render.
 vi.mock("#/features/pools/hooks/use-pool-quoter", () => ({
-  usePoolVoucherRates: () => ({ data: undefined }),
-  usePoolQuoterKind: () => ({ kind: "unknown", isPending: false }),
+  usePoolVoucherRates: (_pool: unknown, _vouchers: unknown, enabled: boolean) => {
+    mocks.rateReadEnabled(enabled);
+    return { data: enabled ? new Map([[OTHER.toLowerCase(), 1_000_000n]]) : undefined };
+  },
+  usePoolQuoterKind: () => ({ kind: mocks.quoterKind, isPending: false }),
+  usePoolVoucherFeedStatuses: (pool: unknown) => (pool ? mocks.feedStatuses : null),
 }));
 
 // The controls panel renders for real — it owns the catalog editor now, so a
@@ -323,6 +335,9 @@ const savedProfile = {
 beforeEach(() => {
   queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   mocks.search = {};
+  mocks.quoterKind = "unknown";
+  mocks.rateReadEnabled.mockReset();
+  mocks.feedStatuses = null;
   mocks.vouchersResult.vouchers = [];
   mocks.vouchersResult.isPending = false;
   mocks.vouchersResult.isError = false;
@@ -756,6 +771,58 @@ describe("PoolDetailPage on-chain management", () => {
     render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
 
     expect(screen.queryByTestId("approve-sheet")).toBeNull();
+  });
+
+  it("names each voucher's feed on an oracle pool instead of reading a rate", () => {
+    const UNREGISTERED = "0x26C31ac71010aF62E6B486D1132E266D6298857D" as const;
+    const vouchers = [
+      { id: "1", tokenAddress: OTHER, name: "Kilifi Maize", symbol: "MAIZE" },
+      {
+        id: "2",
+        tokenAddress: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+        name: "Kilifi Fish",
+        symbol: "FISH",
+      },
+      {
+        id: "3",
+        tokenAddress: "0x2211000000000000000000000000000000000909",
+        name: "Kilifi Rice",
+        symbol: "RICE",
+      },
+    ].map((voucher) => ({ ...voucher, active: true }) as PoolVoucher);
+    mocks.vouchersResult.vouchers = vouchers;
+    mocks.quoterKind = "oracle";
+    mocks.poolResult.data = pool({ quoterType: "oracle" });
+    mocks.feedStatuses = new Map([
+      [vouchers[0]!.tokenAddress.toLowerCase(), { kind: "verified" as const, label: "EUR / USD" }],
+      [vouchers[1]!.tokenAddress.toLowerCase(), { kind: "none" as const }],
+      [
+        vouchers[2]!.tokenAddress.toLowerCase(),
+        { kind: "unverified" as const, address: UNREGISTERED },
+      ],
+    ]);
+
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+
+    // `priceIndex` reverts on an OracleQuoter; the parity fallback is never read.
+    expect(mocks.rateReadEnabled).toHaveBeenCalled();
+    expect(mocks.rateReadEnabled.mock.calls.every(([enabled]) => enabled === false)).toBe(true);
+    expect(screen.queryByText(/1 MAIZE =/)).toBeNull();
+    expect(screen.getByText("EUR / USD")).toBeTruthy();
+    expect(screen.getByText("No feed")).toBeTruthy();
+    expect(screen.getByText("Unverified")).toBeTruthy();
+  });
+
+  it("still reads and prints the rate on a relative pool", () => {
+    mocks.vouchersResult.vouchers = [
+      { id: "1", tokenAddress: OTHER, name: "Kilifi Maize", symbol: "MAIZE", active: true },
+    ] as unknown as PoolVoucher[];
+    mocks.quoterKind = "relative";
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+
+    expect(mocks.rateReadEnabled).toHaveBeenLastCalledWith(true);
+    expect(screen.getByText(/1 MAIZE =/)).toBeTruthy();
+    expect(screen.queryByText("No feed")).toBeNull();
   });
 
   it("withholds them from anyone else", () => {

@@ -78,11 +78,14 @@ describe("poolPrefillForChain", () => {
     ).toBe("oracle");
     expect(
       poolPrefillForChain(
-        { pricing: "oracle", unitOfAccount: "EUR" },
+        { pricing: "oracle", unitOfAccount: "TZS" },
         CELO_MAINNET_CHAIN_ID,
         DEFAULTS,
       ).pricing,
     ).toBe("relative");
+    expect(
+      poolPrefillForChain({ pricing: "oracle", unitOfAccount: "USD" }, GNOSIS, DEFAULTS).pricing,
+    ).toBe("oracle");
   });
 
   it("ignores feesDecoupled when the fee is zero", () => {

@@ -1,11 +1,14 @@
+import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { TokenLogo } from "#/components/wallet";
+import type { PoolVoucherFeedStatus } from "#/features/pools/hooks/use-pool-quoter";
 import type { PoolHolding } from "#/features/pools/logic/pool-holdings";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 
@@ -130,8 +133,48 @@ export function PoolHoldingBar({
   );
 }
 
+/**
+ * The line an oracle pool prints where a relative pool prints its rate: the
+ * feed's pair, an unregistered aggregator, or no feed at all.
+ */
+export function PoolVoucherFeedLine({ feed }: { feed: PoolVoucherFeedStatus }) {
+  if (feed.kind === "none") {
+    return (
+      <Badge variant="muted" size="sm" caps className="mt-0.5">
+        <Trans>No feed</Trans>
+      </Badge>
+    );
+  }
+  if (feed.kind === "unverified") {
+    return (
+      <p className="flex min-w-0 items-center gap-2">
+        <span dir="ltr" className="truncate font-mono text-muted-foreground text-xs">
+          {formatVoucherAddress(feed.address)}
+        </span>
+        <Badge variant="outline" size="sm" caps>
+          <Trans>Unverified</Trans>
+        </Badge>
+      </p>
+    );
+  }
+  return (
+    <p dir="ltr" className="truncate font-mono text-muted-foreground text-xs">
+      {feed.label}
+    </p>
+  );
+}
+
 /** The logo, the name and the pool's rate — what a row is about, on both tabs. */
-export function PoolHoldingIdentity({ holding, unit }: { holding: PoolHolding; unit: string }) {
+export function PoolHoldingIdentity({
+  holding,
+  unit,
+  feed,
+}: {
+  holding: PoolHolding;
+  unit: string;
+  /** The voucher's feed on an oracle pool, in place of the rate. */
+  feed?: PoolVoucherFeedStatus;
+}) {
   // The logo and colour are derived from the address and symbol alone, so the
   // wallet's own mapper serves a pool's balance as well as a holder's.
   const token = accountTokenToWalletToken({
@@ -158,6 +201,7 @@ export function PoolHoldingIdentity({ holding, unit }: { holding: PoolHolding; u
             rate: on an oracle- or decimal-quoted pool nothing was read, and
             parity is what the contract falls back to rather than what it was
             told. */}
+        {feed ? <PoolVoucherFeedLine feed={feed} /> : null}
         {holding.ratePpm === null ? null : (
           <p className="truncate font-mono text-muted-foreground text-xs">
             1 {holding.symbol} = {formatTokenAmount(holding.ratePpm, POOL_PRICE_INDEX_DECIMALS)}{" "}

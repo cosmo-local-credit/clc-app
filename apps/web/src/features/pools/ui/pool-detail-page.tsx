@@ -24,7 +24,12 @@ import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { usePoolReportsInfinite } from "#/features/home/hooks/use-reports";
 import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
-import { usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
+import {
+  type PoolVoucherFeedStatus,
+  usePoolQuoterKind,
+  usePoolVoucherFeedStatuses,
+  usePoolVoucherRates,
+} from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
 import { useRefreshPoolOfferingsOnMembership } from "#/features/pools/hooks/use-pool-offerings-refresh";
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
@@ -35,6 +40,7 @@ import { isAdminRole } from "@clc/core/features/users/roles";
 import { PoolActivityPanel } from "./pool-activity-panel";
 import { PoolControlsPanel } from "./pool-controls-panel";
 import { PoolCreditPanel } from "./pool-credit-panel";
+import { PoolVoucherFeedLine } from "./pool-holding-list";
 import { PoolHoldingsPanel } from "./pool-holdings-panel";
 import { PoolInfoPanel } from "./pool-info-panel";
 import { PoolOfferingsPanel } from "./pool-offerings-panel";
@@ -125,7 +131,11 @@ export function PoolDetailPage({
   // it is `onlyOwner` on a contract the pool's owner deployed, so an administrator —
   // who may correct the catalog for anyone — would only be signing a revert.
   const canManageOnChain = isPoolOwner;
-  const rates = usePoolVoucherRates(pool, vouchers, canManageOnChain);
+  // Only a RelativeQuoter answers `priceIndex`. Read on an oracle pool, every
+  // reverted read fell back to parity and printed `1 X = 1` beside a live feed.
+  const quoterKind = usePoolQuoterKind(pool).kind;
+  const rates = usePoolVoucherRates(pool, vouchers, canManageOnChain && quoterKind === "relative");
+  const feedStatuses = usePoolVoucherFeedStatuses(canManageOnChain ? pool : null, vouchers);
   const [managing, setManaging] = useState<PoolVoucher | null>(null);
   // The approve sheet lives in `tool=approve`, the param the desktop panel
   // uses, so one link opens either view and Back closes it.
@@ -369,6 +379,7 @@ export function PoolDetailPage({
                   isLast={index === vouchers.length - 1}
                   unitSymbol={pool.unitOfAccount ?? pool.symbol}
                   ratePpm={rates.data?.get(voucher.tokenAddress.toLowerCase())}
+                  feed={feedStatuses?.get(voucher.tokenAddress.toLowerCase())}
                   onManage={canManageOnChain ? () => setManaging(voucher) : undefined}
                 />
               ))}
@@ -570,6 +581,7 @@ function VoucherRow({
   isLast,
   unitSymbol,
   ratePpm,
+  feed,
   onManage,
 }: {
   poolAddress: string;
@@ -579,6 +591,8 @@ function VoucherRow({
   unitSymbol: string;
   /** The pool's rate for this voucher. Only read for owners, so usually absent. */
   ratePpm: bigint | undefined;
+  /** The feed on an oracle pool, in place of the rate. Owners only, like the rate. */
+  feed: PoolVoucherFeedStatus | undefined;
   /** Present only for the pool's owner; the row stays a plain link for everyone else. */
   onManage?: () => void;
 }) {
@@ -601,6 +615,7 @@ function VoucherRow({
             active={voucher.active}
             compact
           />
+          {feed ? <PoolVoucherFeedLine feed={feed} /> : null}
           {ratePpm === undefined ? null : (
             <p className="truncate font-mono text-muted-foreground text-xs">
               1 {voucher.symbol} ={" "}
