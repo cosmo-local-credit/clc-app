@@ -1,27 +1,41 @@
 import { backendRetryDelayMs, BackendApiError } from "../../client/errors";
-import { canonicalMarketMapZoom } from "@clc/core/features/market-map/logic";
 import { queryOptions } from "@tanstack/react-query";
-import type { MarketMapClient, MarketMapParams } from "./client";
+import type { MarketMapClient, MarketMapFacetsParams, MarketMapParams } from "./client";
+
+function filterIdentity(params: MarketMapParams) {
+  return {
+    kinds: [...params.kinds],
+    filter: {
+      term: params.filter.term,
+      tags: [...params.filter.tags],
+      tagMatch: params.filter.tagMatch,
+    },
+    creditablePools: params.creditablePools?.map(
+      (pool) => `${pool.chainId}:${pool.address.toLowerCase()}`,
+    ),
+    postTiming: params.postTiming ?? "future",
+    postVouchers: params.postVouchers?.map(
+      (voucher) => `${voucher.chainId}:${voucher.address.toLowerCase()}`,
+    ),
+    postVoucherMatch: params.postVoucherMatch ?? "any",
+    postPools: params.postPools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`),
+    postPoolMatch: params.postPoolMatch ?? "any",
+  };
+}
 
 export const marketMapKeys = {
   all: ["clc", "market-map"] as const,
-  list: (params: MarketMapParams) =>
+  /** Filters only: panning and zooming reuse one entry. */
+  points: (params: MarketMapParams) =>
+    ["clc", "market-map", "points", filterIdentity(params)] as const,
+  facets: (params: MarketMapFacetsParams) =>
     [
       "clc",
       "market-map",
+      "facets",
       {
-        ...params,
-        zoom: canonicalMarketMapZoom(params.zoom),
+        ...filterIdentity(params),
         bounds: params.bounds.map((box) => [box.minLng, box.minLat, box.maxLng, box.maxLat]),
-        kinds: [...params.kinds],
-        filter: {
-          term: params.filter.term,
-          tags: [...params.filter.tags],
-          tagMatch: params.filter.tagMatch,
-        },
-        creditablePools: params.creditablePools?.map(
-          (pool) => `${pool.chainId}:${pool.address.toLowerCase()}`,
-        ),
       },
     ] as const,
 };
@@ -41,11 +55,28 @@ export function discoveryRetryDelayMs(
   return backendRetryDelayMs(error, attempt) + Math.floor(random() * 250);
 }
 
-export function marketMapQueryOptions(client: MarketMapClient, params: MarketMapParams) {
+const DISCOVERY_RETRY = {
+  retry: (failureCount: number, error: Error) =>
+    failureCount < 3 && isRetryableDiscoveryError(error),
+  retryDelay: (attempt: number, error: Error) => discoveryRetryDelayMs(attempt, error),
+};
+
+export function marketMapPointsQueryOptions(client: MarketMapClient, params: MarketMapParams) {
   return queryOptions({
-    queryKey: marketMapKeys.list(params),
-    queryFn: ({ signal }) => client.list(params, signal),
-    retry: (failureCount, error) => failureCount < 3 && isRetryableDiscoveryError(error),
-    retryDelay: (attempt, error) => discoveryRetryDelayMs(attempt, error),
+    queryKey: marketMapKeys.points(params),
+    queryFn: ({ signal }) => client.points(params, signal),
+    staleTime: 60_000,
+    ...DISCOVERY_RETRY,
+  });
+}
+
+export function marketMapFacetsQueryOptions(
+  client: MarketMapClient,
+  params: MarketMapFacetsParams,
+) {
+  return queryOptions({
+    queryKey: marketMapKeys.facets(params),
+    queryFn: ({ signal }) => client.facets(params, signal),
+    ...DISCOVERY_RETRY,
   });
 }

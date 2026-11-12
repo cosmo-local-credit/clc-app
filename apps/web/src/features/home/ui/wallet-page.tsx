@@ -10,8 +10,15 @@ import {
 import { myWantsInfiniteQueryOptions } from "@clc/api/features/wants/queries";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
+import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Button } from "#/components/ui/button";
-import { PoolLogo, SectionHeader, TokenLogo, type WalletToken } from "#/components/wallet";
+import {
+  HoldingBalance,
+  PoolLogo,
+  SectionHeader,
+  TokenLogo,
+  type WalletToken,
+} from "#/components/wallet";
 import { ResourceLimitMessage, ResourceQuotaTitle } from "#/components/resource-usage";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { useSafeOwnersSignedBy } from "#/features/ownership/hooks/use-asset-owner-info";
@@ -40,9 +47,7 @@ function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
           <p className="text-sm font-semibold">{token.symbol}</p>
           <p className="text-muted-foreground truncate text-xs">{token.name}</p>
         </div>
-        <div className="shrink-0 text-end">
-          <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
-        </div>
+        <HoldingBalance token={token} />
       </>
     );
     return address ? (
@@ -447,6 +452,12 @@ export function WalletPage({ address }: { address?: string }) {
               <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={34} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{pool.name}</p>
+                <ManagerClosureNotice
+                  closure={pool.managerClosure}
+                  resource="pool"
+                  active={pool.active}
+                  compact
+                />
                 {pool.active === false ? (
                   <p className="text-xs font-semibold">
                     <Trans>Retired — withdrawals available</Trans>

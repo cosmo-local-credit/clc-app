@@ -53,6 +53,9 @@ vi.mock("#/desktop/vouchers/detail/voucher-reviews", () => ({
     <section aria-label="Reviews">{`${kind ?? "voucher"} reviews of ${address}`}</section>
   ),
 }));
+vi.mock("#/desktop/pools/detail/pool-posts", () => ({
+  PoolPostsDesk: () => <section aria-label="Posts">pool posts</section>,
+}));
 vi.mock("#/desktop/pools/pool-swap-column", () => ({
   PoolSwapColumn: () => <section aria-label="Swap panel" />,
 }));

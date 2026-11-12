@@ -187,6 +187,18 @@ describe("ProfileEditPage", () => {
     expect(phone.value.replace(/\s/g, "")).toContain("712345678");
   });
 
+  it("puts Retire account at the foot of the page, outside the profile form", async () => {
+    mockBackend();
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    const section = await screen.findByRole("region", { name: "Retire account" });
+    const form = screen.getByRole("form", { name: /edit profile/i });
+    expect(form.contains(section)).toBe(false);
+    expect(within(section).getByRole("button", { name: "Retire account" })).toBeTruthy();
+    expect(within(form).queryByRole("button", { name: "Retire account" })).toBeNull();
+  });
+
   it("shows the saved username on its own, outside the contact form", async () => {
     mockBackend({ username: "alice" });
 

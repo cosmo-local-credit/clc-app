@@ -167,7 +167,11 @@ describe("useMarketList", () => {
     const pools = [{ chainId: 100, address: POOL }];
     const { result } = setup({ output: { blocksResults: false, poolRefs: pools } });
     await waitFor(() => expect(result.current.phase).toBe("ready"));
-    expect(mocks.list.mock.calls[0]?.[0]).toMatchObject({ pools, kinds: ["voucher"] });
+    expect(mocks.list.mock.calls[0]?.[0]).toMatchObject({
+      pools,
+      kinds: ["voucher"],
+      sort: "nearest",
+    });
   });
 
   it("holds the search request while the term is still debouncing, with the rows kept", async () => {

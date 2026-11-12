@@ -5,7 +5,11 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { FilteredReportPage, ReportSummary } from "@clc/api/features/reports/client";
-import { useReportLocation, useVoucherReportsInfinite } from "./use-reports";
+import {
+  usePoolReportsInfinite,
+  useReportLocation,
+  useVoucherReportsInfinite,
+} from "./use-reports";
 
 const getFilteredReports = vi.hoisted(() => vi.fn());
 const reverseLocation = vi.hoisted(() => vi.fn());
@@ -113,6 +117,7 @@ describe("useVoucherReportsInfinite", () => {
       {
         perPage: 2,
         cursor: undefined,
+        timing: "all",
         filter: {
           term: "",
           tags: [],
@@ -174,5 +179,48 @@ describe("useVoucherReportsInfinite", () => {
     expect(second.result.current.data?.pages[0]?.reports[0]?.id).toBe("1");
     expect(second.result.current.isPending).toBe(false);
     expect(getFilteredReports).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("usePoolReportsInfinite", () => {
+  it("normalizes the Pool identity and keeps it separate from Voucher feeds", async () => {
+    getFilteredReports.mockResolvedValue(page([1], null));
+    const client = newClient();
+    const { result } = renderHook(() => usePoolReportsInfinite(VOUCHER, 3), {
+      wrapper: wrapper(client),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(getFilteredReports).toHaveBeenCalledWith(
+      {
+        perPage: 3,
+        cursor: undefined,
+        timing: "all",
+        filter: {
+          term: "",
+          tags: [],
+          tagMatch: "any",
+          vouchers: [],
+          voucherMatch: "any",
+          pools: [{ ...VOUCHER, address: VOUCHER.address.toLowerCase() }],
+          poolMatch: "any",
+        },
+      },
+      expect.anything(),
+    );
+  });
+
+  it("does not request without a Pool or while access is disabled", () => {
+    const client = newClient();
+    const missing = renderHook(() => usePoolReportsInfinite(undefined), {
+      wrapper: wrapper(client),
+    });
+    const disabled = renderHook(() => usePoolReportsInfinite(VOUCHER, 3, false), {
+      wrapper: wrapper(client),
+    });
+
+    expect(missing.result.current.fetchStatus).toBe("idle");
+    expect(disabled.result.current.fetchStatus).toBe("idle");
+    expect(getFilteredReports).not.toHaveBeenCalled();
   });
 });

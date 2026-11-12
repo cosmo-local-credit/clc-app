@@ -10,10 +10,10 @@ import { Input } from "#/components/ui/input";
 import { RecipientIdentityText } from "#/components/wallet/recipient-identity-label";
 import type { ResolvedRecipientAddress } from "#/components/wallet/recipient-address-input";
 import {
+  acceptScannedRecipient,
   isAddress,
   isPhone,
   normalizePhone,
-  normalizeScannedRecipient,
 } from "#/components/wallet/recipient-validation";
 import {
   useRecipientSearch,
@@ -44,6 +44,7 @@ export function SendRecipientField({
 }) {
   const { t } = useLingui();
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [scanError, setScanError] = useState(false);
   const [selected, setSelected] = useState<{ query: string; identity: RecipientIdentity } | null>(
     null,
   );
@@ -108,6 +109,22 @@ export function SendRecipientField({
     onValueChange(next);
   }
 
+  function closeScanner() {
+    setScanError(false);
+    setScannerOpen(false);
+  }
+
+  function handleScanDecoded(scanned: string) {
+    const accepted = acceptScannedRecipient(scanned);
+    if (!accepted.ok) {
+      setScanError(true);
+      return;
+    }
+    setScanError(false);
+    setQuery(accepted.value, true);
+    setScannerOpen(false);
+  }
+
   return (
     <div className="grid min-w-0 gap-2">
       <div className="relative min-w-0">
@@ -136,7 +153,10 @@ export function SendRecipientField({
           className="absolute top-0 end-0"
           aria-label={t`Scan QR`}
           aria-expanded={scannerOpen}
-          onClick={() => setScannerOpen((open) => !open)}
+          onClick={() => {
+            if (scannerOpen) closeScanner();
+            else setScannerOpen(true);
+          }}
         >
           <RiQrScan2Line aria-hidden="true" />
         </Button>
@@ -195,13 +215,15 @@ export function SendRecipientField({
         <div className="border border-border bg-card p-3">
           <PaperWalletScanner
             title={<Trans>Scan recipient address</Trans>}
-            onCancel={() => setScannerOpen(false)}
-            onKeyDecoded={(scanned) => {
-              setQuery(normalizeScannedRecipient(scanned), true);
-              setScannerOpen(false);
-            }}
+            onCancel={closeScanner}
+            onKeyDecoded={handleScanDecoded}
           />
         </div>
+      ) : null}
+      {scanError ? (
+        <p className="text-xs text-destructive" role="alert">
+          <Trans>This QR is a sign-in card. Scan a wallet address.</Trans>
+        </p>
       ) : null}
     </div>
   );

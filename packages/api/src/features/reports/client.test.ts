@@ -36,6 +36,34 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("Post schedule timing", () => {
+  it("defaults new reads to Future and preserves explicit legacy windows", async () => {
+    const fetcher = mockFetch({ reports: [] });
+    vi.stubGlobal("fetch", fetcher);
+
+    await api.getReports({ perPage: 20 });
+    const future = new URL(String(fetcher.mock.calls[0]?.[0])).searchParams;
+    expect(future.get("timing")).toBe("future");
+    expect(future.has("posted")).toBe(false);
+
+    await api.getReports({ perPage: 20, posted: "1m" });
+    const legacyDefault = new URL(String(fetcher.mock.calls[1]?.[0])).searchParams;
+    expect(legacyDefault.has("timing")).toBe(false);
+    expect(legacyDefault.has("posted")).toBe(false);
+
+    await api.getReports({ perPage: 20, posted: "all" });
+    expect(new URL(String(fetcher.mock.calls[2]?.[0])).searchParams.get("posted")).toBe("all");
+
+    await api.getFilteredReports({ perPage: 20, filter: EMPTY_FILTER, posted: "6m" });
+    expect(new URL(String(fetcher.mock.calls[3]?.[0])).searchParams.get("posted")).toBe("6m");
+
+    await api.getFilteredReports({ perPage: 20, filter: EMPTY_FILTER, timing: "past" });
+    const past = new URL(String(fetcher.mock.calls[4]?.[0])).searchParams;
+    expect(past.get("timing")).toBe("past");
+    expect(past.has("posted")).toBe(false);
+  });
+});
+
 describe("getFilteredReports", () => {
   it("serializes stable voucher identities and all-match with the cursor", async () => {
     const fetcher = mockFetch({ reports: [] });
@@ -113,6 +141,34 @@ describe("getFilteredReports", () => {
     );
   });
 
+  it("preserves nearest cursor distance and origin for an exact viewport", async () => {
+    const fetcher = mockFetch({ reports: [] });
+    vi.stubGlobal("fetch", fetcher);
+
+    await api.getFilteredReports({
+      perPage: 20,
+      filter: EMPTY_FILTER,
+      sort: "nearest",
+      bounds: [{ minLng: 170, minLat: -20, maxLng: 180, maxLat: 20 }],
+      cursor: {
+        updatedAt: "2026-08-03T12:00:00Z",
+        id: "90",
+        distance: 125.5,
+        origin: "viewport-hash",
+      },
+    });
+
+    const url = new URL(String(fetcher.mock.calls[0]?.[0]));
+    expect(url.searchParams.get("sort")).toBe("nearest");
+    expect(url.searchParams.get("cursorDistance")).toBe("125.5");
+    expect(url.searchParams.get("cursorOrigin")).toBe("viewport-hash");
+    expect(url.searchParams.getAll("bbox")).toEqual(["170,-20,180,20"]);
+    expect(fetcher.mock.calls[0]?.[1]).toMatchObject({
+      credentials: "include",
+      cache: "no-store",
+    });
+  });
+
   it("normalizes report relationships and facets while dropping malformed rows", async () => {
     vi.stubGlobal(
       "fetch",
@@ -185,6 +241,11 @@ describe("getFilteredReports", () => {
             count: 2,
           },
         ],
+        tagFacets: [
+          { tag: "Food", count: 3 },
+          { tag: "", count: 1 },
+          { tag: "Broken", count: -1 },
+        ],
       }),
     );
 
@@ -228,6 +289,7 @@ describe("getFilteredReports", () => {
         count: 2,
       },
     ]);
+    expect(page.tagFacets).toEqual([{ tag: "Food", count: 3 }]);
   });
 });
 

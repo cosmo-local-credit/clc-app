@@ -3,12 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
   query: {
-    data: undefined as
-      | undefined
-      | {
-          features: Array<Record<string, unknown>>;
-          tagFacets?: Array<{ tag: string; count: number }>;
-        },
+    data: undefined as undefined | { points: Array<Record<string, unknown>>; truncated: boolean },
     error: null as Error | null,
     isFetching: false,
     isPending: false,
@@ -25,19 +20,26 @@ vi.mock("@tanstack/react-query", () => ({
   useQuery: () => mocks.query,
 }));
 vi.mock("@clc/api/features/market-map/queries", () => ({
-  marketMapQueryOptions: mocks.options,
+  marketMapPointsQueryOptions: mocks.options,
 }));
 vi.mock("#/lib/api/market-map", () => ({ marketMapClient: {} }));
 
 import { useMarketMap } from "./use-market-map";
 
 const options = {
-  bounds: [{ minLat: -2, minLng: 35, maxLat: 0, maxLng: 37 }],
-  zoom: 9,
   kinds: ["voucher", "post"] as const,
   filter: { term: "market", tags: ["Food"], tagMatch: "any" as const },
-  facets: true,
   enabled: true,
+};
+
+const voucher = {
+  kind: "voucher",
+  resourceId: `0x${"a".repeat(40)}`,
+  name: "Market voucher",
+  lat: -1.2920659,
+  lng: 36.8219462,
+  markerIcon: "goods",
+  markerColor: "orange",
 };
 
 beforeEach(() => {
@@ -53,53 +55,51 @@ beforeEach(() => {
 });
 
 describe("useMarketMap", () => {
-  it("separates lightweight markers from server clusters and exposes facets", () => {
-    mocks.query.data = {
-      features: [
-        {
-          type: "marker",
-          id: "marker:voucher:1",
-          kind: "voucher",
-          resourceId: `0x${"a".repeat(40)}`,
-          name: "Market voucher",
-          lat: -1,
-          lng: 36,
-          markerIcon: "goods",
-          markerColor: "orange",
-        },
-        {
-          type: "cluster",
-          id: "cluster:9:1:2",
-          lat: -1.1,
-          lng: 36.1,
-          count: 18,
-          kinds: { voucher: 12, post: 6 },
-          expansionZoom: 11,
-        },
-      ],
-      tagFacets: [{ tag: "Food", count: 18 }],
-    };
+  it("turns points into locations keyed by kind and resource", () => {
+    mocks.query.data = { points: [voucher], truncated: false };
 
     const { result } = renderHook(() => useMarketMap(options));
 
     expect(result.current.locations).toEqual([
-      expect.objectContaining({
-        id: "marker:voucher:1",
+      {
+        id: `marker:voucher:0x${"a".repeat(40)}`,
         resourceKind: "voucher",
         resourceId: `0x${"a".repeat(40)}`,
+        name: "Market voucher",
         kind: "voucher",
-      }),
+        markerIcon: "goods",
+        markerColor: "orange",
+        lat: -1.2920659,
+        lng: 36.8219462,
+        locationName: null,
+      },
     ]);
-    expect(result.current.clusters).toEqual([
-      expect.objectContaining({ id: "cluster:9:1:2", count: 18 }),
-    ]);
-    expect(result.current.tagFacets).toEqual([{ tag: "Food", count: 18 }]);
+    expect(result.current.truncated).toBe(false);
     expect(result.current.status).toBe("ready");
     expect(result.current.isSettled).toBe(true);
+  });
+
+  it("asks for filters only, never a viewport or zoom", () => {
+    const pool = { chainId: 100, address: `0x${"a".repeat(40)}` as const };
+    renderHook(() => useMarketMap({ ...options, postTiming: "all", postPools: [pool] }));
     expect(mocks.options).toHaveBeenCalledWith(
       {},
-      expect.objectContaining({ zoom: 9, kinds: ["voucher", "post"], facets: true }),
+      expect.objectContaining({
+        kinds: ["voucher", "post"],
+        postTiming: "all",
+        postPools: [pool],
+      }),
     );
+    const params = mocks.options.mock.calls[0]?.at(1) as unknown as Record<string, unknown>;
+    expect(params).not.toHaveProperty("bounds");
+    expect(params).not.toHaveProperty("zoom");
+    expect(params).not.toHaveProperty("facets");
+  });
+
+  it("reports a truncated response", () => {
+    mocks.query.data = { points: [voucher], truncated: true };
+    const { result } = renderHook(() => useMarketMap(options));
+    expect(result.current.truncated).toBe(true);
   });
 
   it("retains an error for recovery and retries on demand", () => {
@@ -113,22 +113,8 @@ describe("useMarketMap", () => {
     expect(mocks.query.refetch).toHaveBeenCalledOnce();
   });
 
-  it("clears retained features immediately when resource selection is empty", () => {
-    mocks.query.data = {
-      features: [
-        {
-          type: "marker",
-          id: "marker:post:7",
-          kind: "post",
-          resourceId: "7",
-          name: "Post",
-          lat: -1,
-          lng: 36,
-          markerIcon: "post",
-          markerColor: "pink",
-        },
-      ],
-    };
+  it("clears retained points immediately when resource selection is empty", () => {
+    mocks.query.data = { points: [{ ...voucher, kind: "post", resourceId: "7" }], truncated: true };
     mocks.query.error = new Error("stale");
     mocks.query.isFetching = true;
 
@@ -136,7 +122,7 @@ describe("useMarketMap", () => {
 
     expect(result.current.status).toBe("disabled");
     expect(result.current.locations).toEqual([]);
-    expect(result.current.clusters).toEqual([]);
+    expect(result.current.truncated).toBe(false);
     expect(result.current.error).toBeNull();
     expect(result.current.retrying).toBe(false);
     expect(result.current.isSettled).toBe(false);
@@ -147,7 +133,7 @@ describe("useMarketMap", () => {
     { isFetching: true, isPlaceholderData: true },
     { isFetching: false, isPlaceholderData: true },
   ])("keeps an empty retained response unsettled while refining: %j", (state) => {
-    mocks.query.data = { features: [] };
+    mocks.query.data = { points: [], truncated: false };
     Object.assign(mocks.query, state);
     const { result } = renderHook(() => useMarketMap(options));
 
@@ -157,17 +143,8 @@ describe("useMarketMap", () => {
     expect(result.current.isPlaceholderData).toBe(state.isPlaceholderData);
   });
 
-  it("keeps the last successful clusters when a later viewport request fails", () => {
-    const cluster = {
-      type: "cluster",
-      id: "cluster:8:1:2",
-      lat: -3.68,
-      lng: 39.83,
-      count: 12,
-      kinds: { voucher: 12 },
-      expansionZoom: 16,
-    };
-    mocks.query.data = { features: [cluster] };
+  it("keeps the last successful points when a later filter request fails", () => {
+    mocks.query.data = { points: [voucher], truncated: false };
     const { result, rerender } = renderHook(() => useMarketMap(options));
     mocks.query.data = undefined;
     mocks.query.isSuccess = false;
@@ -175,7 +152,7 @@ describe("useMarketMap", () => {
     mocks.query.error = new Error("network unavailable");
     rerender();
 
-    expect(result.current.clusters).toEqual([cluster]);
+    expect(result.current.locations).toHaveLength(1);
     expect(result.current.isSettled).toBe(false);
     expect(result.current.status).toBe("error");
   });

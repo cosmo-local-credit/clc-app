@@ -624,6 +624,33 @@ describe("WalletPage", () => {
     );
   });
 
+  it("marks an owned pool whose managing account is closing, but not a retired one", async () => {
+    mockEndpoints({
+      pools: [
+        {
+          ...OWNED_POOL,
+          managerClosure: { state: "SCHEDULED", closesAt: "2026-12-15T12:00:00Z" },
+        },
+        {
+          ...OWNED_POOL,
+          id: 9,
+          address: "0x0000000000000000000000000000000000000009",
+          name: "Retired Pool",
+          active: false,
+          managerClosure: { state: "CLOSED", closesAt: null },
+        },
+      ],
+    });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    expect(await screen.findByText("Retired — withdrawals available")).toBeTruthy();
+    const notices = screen.getAllByText(/^The account managing this pool/);
+    expect(notices).toHaveLength(1);
+    expect(notices[0]?.textContent).toMatch(
+      /scheduled to close on December 1[45], 2026\. This pool remains active\.$/,
+    );
+  });
+
   it("keeps retirement requests off the wallet page", async () => {
     mockNoTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);

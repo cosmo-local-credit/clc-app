@@ -24,6 +24,7 @@ import { clearIdentitySecrets } from "#/features/auth/api/identity-reset";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { useIdentityTransitionTeardown } from "#/features/auth/hooks/use-identity-transition";
 import { AppUpdateBanner } from "#/features/app-updates/ui/app-update-banner";
+import { AccountLifecycleGate } from "#/features/account-retirement/ui/account-lifecycle-gate";
 import { SafePendingSheet } from "#/features/safe/ui/safe-pending-sheet";
 import { authSessionQueryKey, useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useNotificationSession } from "#/features/notifications/realtime/use-notification-session";
@@ -315,7 +316,9 @@ function AppInner() {
         <AuthGateSlotProvider value={layout === "desktop" ? DESKTOP_AUTH_GATE : null}>
           <RootDiscoveryLocation>
             <DesktopBoundary>
-              <Outlet />
+              <AccountLifecycleGate>
+                <Outlet />
+              </AccountLifecycleGate>
             </DesktopBoundary>
           </RootDiscoveryLocation>
         </AuthGateSlotProvider>

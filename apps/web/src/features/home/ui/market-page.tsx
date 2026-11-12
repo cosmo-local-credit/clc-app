@@ -28,9 +28,12 @@ export function MarketPage({
     realFix,
     userLocation,
     locations,
-    clusters,
     isFetching,
     tagFacets,
+    postVoucherFacets,
+    postPoolFacets,
+    postTiming,
+    includesPosts,
     selectedLocationId,
     filter,
     mapResources,
@@ -67,7 +70,6 @@ export function MarketPage({
         >
           <MarketMap
             locations={locations}
-            clusters={clusters}
             selectedLocationId={selectedLocationId}
             camera={camera}
             fitBounds={null}
@@ -106,6 +108,17 @@ export function MarketPage({
           <MarketFilterSheet
             filter={filter}
             facets={tagFacets}
+            postFilters={
+              includesPosts
+                ? {
+                    timing: postTiming.timing,
+                    onTimingChange: postTiming.setTiming,
+                    voucherFacets: postVoucherFacets,
+                    poolFacets: postPoolFacets,
+                    postsOnly: mapResources.selected.length === 1,
+                  }
+                : undefined
+            }
             open={filtersOpen}
             onOpenChange={(next) => {
               if (next) setFiltersEverOpened(true);

@@ -25,6 +25,7 @@ import {
   safeCallName,
   safeOwnerChange,
   safeSignerChangeProblem,
+  safeWithdrawals,
   type SafeCall,
 } from "./logic";
 
@@ -389,6 +390,74 @@ describe("describeSafeCall", () => {
   });
   it("has nothing to say about other calls", () => {
     expect(describeSafeCall({ to: token, value: "0", data: "0x12345678" }, safe)).toBeNull();
+  });
+});
+
+describe("safeWithdrawals", () => {
+  const pool = A(0x9001);
+  const token = A(0x7007);
+  const steward = A(0x5555);
+  const feeAddress = A(0x6666);
+  const poolAbi = parseAbi([
+    "function withdrawLiquidity(address token, address to, uint256 amount)",
+    "function withdraw(address outToken)",
+    "function withdraw(address outToken, uint256 value)",
+    "function setFeeAddress(address feeAddress)",
+  ]);
+  const onPool = (data: Hex): SafeCall => ({ to: pool, value: "0", data });
+
+  it("reads a liquidity withdrawal's recipient and amount", () => {
+    const data = encodeFunctionData({
+      abi: poolAbi,
+      functionName: "withdrawLiquidity",
+      args: [token, steward, 2_500_000n],
+    });
+    expect(safeWithdrawals([onPool(data)], safe)).toEqual([
+      { kind: "liquidity", pool, token, recipient: steward, amountRaw: "2500000" },
+    ]);
+  });
+
+  it("pays a fee collection to the fee address the batch set before it", () => {
+    const calls = [
+      onPool(encodeFunctionData({ abi: poolAbi, functionName: "setFeeAddress", args: [steward] })),
+      onPool(encodeFunctionData({ abi: poolAbi, functionName: "withdraw", args: [token] })),
+      onPool(
+        encodeFunctionData({ abi: poolAbi, functionName: "setFeeAddress", args: [feeAddress] }),
+      ),
+    ];
+    expect(safeWithdrawals(calls, safe)).toEqual([
+      { kind: "fees", pool, token, recipient: steward, amountRaw: null },
+    ]);
+  });
+
+  it("leaves a plain collection's recipient and an all-fees amount to the chain", () => {
+    const all = encodeFunctionData({ abi: poolAbi, functionName: "withdraw", args: [token] });
+    const exact = encodeFunctionData({
+      abi: poolAbi,
+      functionName: "withdraw",
+      args: [token, 40n],
+    });
+    expect(safeWithdrawals([onPool(all), onPool(exact)], safe)).toEqual([
+      { kind: "fees", pool, token, recipient: null, amountRaw: null },
+      { kind: "fees", pool, token, recipient: null, amountRaw: "40" },
+    ]);
+  });
+
+  it("ignores other calls and a fee address set on another pool", () => {
+    const otherPool = A(0x9002);
+    const calls: SafeCall[] = [
+      {
+        to: otherPool,
+        value: "0",
+        data: encodeFunctionData({ abi: poolAbi, functionName: "setFeeAddress", args: [steward] }),
+      },
+      callA,
+      onPool(encodeFunctionData({ abi: poolAbi, functionName: "withdraw", args: [token] })),
+    ];
+    expect(safeWithdrawals(calls, safe)).toEqual([
+      { kind: "fees", pool, token, recipient: null, amountRaw: null },
+    ]);
+    expect(safeWithdrawals(null, safe)).toEqual([]);
   });
 });
 

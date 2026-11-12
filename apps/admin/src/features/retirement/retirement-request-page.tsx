@@ -12,7 +12,7 @@ import { formatDateTime } from "#/lib/format";
 import { BalanceSummary } from "./balance-summary";
 import { RetirementDecisionForm } from "./retirement-decision-form";
 import { RetirementEvents } from "./retirement-events";
-import { RetirementStatus } from "./retirement-status";
+import { retirementSourceLabel, RetirementStatus } from "./retirement-status";
 
 export function RetirementRequestPage({ requestId }: { requestId: string }) {
   const id = Number(requestId);
@@ -88,6 +88,10 @@ export function RetirementRequestPage({ requestId }: { requestId: string }) {
           <div>
             <dt className="text-muted-foreground">Requested</dt>
             <dd>{formatDateTime(request.requestedAt)}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Source</dt>
+            <dd>{retirementSourceLabel(request.source)}</dd>
           </div>
           <div>
             <dt className="text-muted-foreground">Requester</dt>

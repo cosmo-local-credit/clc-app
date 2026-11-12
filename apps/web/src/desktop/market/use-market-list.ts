@@ -62,7 +62,7 @@ export function useMarketList({
     tags: parsed.tags,
     tagMatch: parsed.tagMatch,
     facets: true,
-    nearby: nearby?.nearby === true,
+    sort: "nearest" as const,
     scope: nearby?.scope,
     bounds: nearby?.bounds,
     // Credit's pools, narrowed to the requested output's when the link has one.
@@ -114,7 +114,10 @@ export function useMarketList({
     rows,
     offerings,
     facets,
-    count: scope === "offers" ? offerings.length : rows.length,
+    count:
+      scope === "offers" ? offerings.length : (marketplace.data?.pages[0]?.total ?? rows.length),
+    loadedCount: scope === "offers" ? offerings.length : rows.length,
+    sortedToMap: Boolean(nearby?.bounds?.length) && nearby?.nearby !== true,
     /** The rows are the previous search's, kept until this one's arrive. */
     retained: hasData && (active.isPlaceholderData || filter.isDebouncing),
     /** A request other than the next page is running behind rows already shown. */

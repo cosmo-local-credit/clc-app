@@ -177,6 +177,14 @@ describe("the Posts feed", () => {
     expect(search.getAttribute("placeholder")).toBe("Search posts");
     expect(screen.queryByPlaceholderText(/by title or description/i)).toBeNull();
   });
+
+  it("keeps one timing control in the facet column", () => {
+    render(<PostsDesk />);
+
+    expect(screen.getAllByRole("group", { name: "Time" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Future" })).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: "Time" })).toBeTruthy();
+  });
 });
 
 describe("the Posts filters", () => {

@@ -7,6 +7,7 @@ import { PageState } from "#/components/admin/page-state";
 import { clcApi } from "#/lib/api";
 import { errorMessage } from "#/lib/data-state";
 import { useDataState } from "#/lib/use-data-state";
+import { AccountHistoryPanel } from "./ui/account-history-panel";
 import { AccountBalancesCard } from "./ui/account-balances-card";
 import { AccountHeader } from "./ui/account-header";
 import { AccountProfileCard } from "./ui/account-profile-card";
@@ -82,6 +83,8 @@ export function UserDetailPage({ address, search }: { address: string; search: U
 
         <AccountBalancesCard tokens={tokens} state={tokensState} />
       </div>
+
+      {account ? <AccountHistoryPanel address={address} /> : null}
 
       <AccountRecordTabs address={address} search={search} />
 

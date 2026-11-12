@@ -3,11 +3,10 @@ import { retirementPreviewQueryOptions } from "@clc/api/features/retirement/quer
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
-import { Checkbox } from "#/components/ui/checkbox";
 import { Textarea } from "#/components/ui/textarea";
 import { clcApi } from "#/lib/api";
 import { errorMessage } from "#/lib/data-state";
-import { BalanceSummary } from "./balance-summary";
+import { BalanceAcknowledgement, BalanceCheck } from "./balance-check";
 import { useRetirementInvalidation } from "./use-retirement";
 
 export function RetirementDecisionForm({ request }: { request: RetirementRequest }) {
@@ -69,18 +68,7 @@ export function RetirementDecisionForm({ request }: { request: RetirementRequest
           Refresh balances
         </Button>
       </div>
-      {preview.isPending ? (
-        <p role="status" className="text-sm">
-          Checking current balances…
-        </p>
-      ) : null}
-      {preview.isError ? (
-        <p role="alert" className="text-destructive text-sm">
-          Could not check balances. {errorMessage(preview.error)}
-        </p>
-      ) : current ? (
-        <BalanceSummary preview={current} />
-      ) : null}
+      <BalanceCheck preview={preview} />
       {ownerChanged ? (
         <p role="alert" className="text-destructive text-sm">
           Ownership has changed. This request cannot be approved. The current owner must submit a
@@ -93,17 +81,13 @@ export function RetirementDecisionForm({ request }: { request: RetirementRequest
         </p>
       ) : null}
       {current?.hasPositiveBalances ? (
-        <label className="flex items-start gap-3 text-sm" htmlFor="acknowledge-balances">
-          <Checkbox
-            id="acknowledge-balances"
-            checked={acknowledgedBlock === current.blockNumber}
-            disabled={decision.isPending || preview.isFetching || preview.isError}
-            onCheckedChange={(checked) =>
-              setAcknowledgedBlock(checked ? current.blockNumber : null)
-            }
-          />
-          <span>I understand that balances remain and approve retirement with these balances.</span>
-        </label>
+        <BalanceAcknowledgement
+          current={current}
+          acknowledgedBlock={acknowledgedBlock}
+          disabled={decision.isPending || preview.isFetching || preview.isError}
+          label="I understand that balances remain and approve retirement with these balances."
+          onChange={setAcknowledgedBlock}
+        />
       ) : null}
       <p className="text-muted-foreground text-sm">
         Retirement does not delete the blockchain contract, balances or transaction history.

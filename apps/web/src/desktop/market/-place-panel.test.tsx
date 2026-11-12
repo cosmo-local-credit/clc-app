@@ -6,10 +6,11 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const ADDRESS = "0xd524d0ed7bc970185ed9c6c9a65a8a02e8897363";
+const detailOverrides = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
 
 vi.mock("wagmi", () => ({ useConnection: () => ({ address: undefined }) }));
 vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
@@ -29,6 +30,8 @@ vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
       lat: null,
       lng: null,
       chainId: 100,
+      active: true,
+      ...detailOverrides.current,
     },
     isError: false,
     isFetching: false,
@@ -89,7 +92,33 @@ function renderPanel() {
   render(<RouterProvider router={router} />);
 }
 
+afterEach(() => {
+  detailOverrides.current = {};
+});
+
 describe("MarketPlacePanel voucher card", () => {
+  it("tells the viewer when the voucher's managing account has closed", async () => {
+    detailOverrides.current = { managerClosure: { state: "CLOSED", closesAt: null } };
+    renderPanel();
+    expect((await screen.findByRole("status")).textContent).toBe(
+      "The account managing this voucher has closed. This voucher remains active.",
+    );
+  });
+
+  it("shows no closure notice for an open or retired voucher", async () => {
+    renderPanel();
+    await screen.findByRole("heading", { level: 2, name: /Bakery voucher/ });
+    expect(screen.queryByRole("status")).toBeNull();
+    cleanup();
+    detailOverrides.current = {
+      active: false,
+      managerClosure: { state: "CLOSED", closesAt: null },
+    };
+    renderPanel();
+    await screen.findByRole("heading", { level: 2, name: /Bakery voucher/ });
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
   it("titles the voucher at the 16px section role, not a larger heading of its own", async () => {
     renderPanel();
     const heading = await screen.findByRole("heading", { level: 2, name: /Bakery voucher/ });

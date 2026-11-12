@@ -1,7 +1,9 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import type { ReportPoolFacet, ReportVoucherFacet } from "@clc/api/features/reports/client";
 import { CATALOG_MAX_TAGS } from "@clc/core/features/catalog/logic";
+import type { PostTiming } from "@clc/core/features/reports/logic";
 import { RiCheckLine, RiCloseLine, RiFilter3Line } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
@@ -25,24 +27,22 @@ import { cn } from "#/lib/utils";
 import { MapLayersChip, type MapLayers } from "#/desktop/market/market-layers";
 import { MarketSearchField } from "#/desktop/market/market-search-field";
 import { DeskChip, DeskSegment, DeskSegmentItem } from "#/desktop/ui/segment";
-import { DeskTab, DeskTabs } from "#/desktop/ui/tabs";
+import { PostFacets } from "#/desktop/posts/post-facets";
 
-const SCOPES: { id: MarketListScope; label: ReactNode }[] = [
-  { id: "all", label: <Trans>All</Trans> },
-  { id: "offers", label: <Trans>Offers</Trans> },
-  { id: "wants", label: <Trans>Wants</Trans> },
-  { id: "vouchers", label: <Trans>Vouchers</Trans> },
-  { id: "pools", label: <Trans>Pools</Trans> },
-  { id: "catalogs", label: <Trans>Catalogs</Trans> },
-];
+type MarketPostFilters = {
+  timing: PostTiming;
+  onTimingChange: (next: PostTiming) => void;
+  voucherFacets: ReportVoucherFacet[];
+  poolFacets: ReportPoolFacet[];
+  postsOnly: boolean;
+};
 
 type Credit = ReturnType<typeof useCreditableBrowse>;
 
 /**
  * Search, Filters, Credit, the requested output, the result count and
- * Map | List over the scope tabs. `column` is the map's 400px results column;
- * `page` is the list. The scope tabs are route links to a marketplace category
- * and keep the current view; Map | List is the one place that changes it.
+ * Map | List. `column` is the map's 400px results column; `page` is one full
+ * resource list. Resource navigation lives in the desktop sidebar.
  */
 export function MarketDeskToolbar({
   layout,
@@ -58,6 +58,7 @@ export function MarketDeskToolbar({
   layers,
   count,
   refreshing = false,
+  postFilters,
 }: {
   layout: "column" | "page";
   scope: MarketListScope;
@@ -75,6 +76,7 @@ export function MarketDeskToolbar({
   count?: number;
   /** The list is refreshing behind the rows it still shows. */
   refreshing?: boolean;
+  postFilters?: MarketPostFilters;
 }) {
   const { t } = useLingui();
   const view = layout === "column" ? "map" : "list";
@@ -89,6 +91,7 @@ export function MarketDeskToolbar({
         facets={facets}
         open={filtersOpen}
         onOpenChange={onFiltersOpenChange}
+        postFilters={postFilters}
       />
       <CreditChip credit={credit} onCredit={onCredit} />
       {layers ? <MapLayersChip layers={layers} /> : null}
@@ -109,25 +112,6 @@ export function MarketDeskToolbar({
       </DeskSegmentItem>
     </DeskSegment>
   );
-  const tabs = (
-    <DeskTabs
-      label={t`Marketplace`}
-      tight={layout === "column"}
-      // The column carries no rail at all: the result count sits right under
-      // the tabs, and a hairline there boxes it in against the list's own rows.
-      rule={layout !== "column"}
-      className={layout === "column" ? "-mx-3.5 px-1" : undefined}
-    >
-      {SCOPES.map((entry) => (
-        <DeskTab key={entry.id} active={entry.id === scope}>
-          <MarketLink scope={entry.id} view={view}>
-            {entry.label}
-          </MarketLink>
-        </DeskTab>
-      ))}
-    </DeskTabs>
-  );
-
   if (layout === "column") {
     return (
       <div className="grid shrink-0 gap-2.5 px-3.5 pt-3.5">
@@ -136,12 +120,11 @@ export function MarketDeskToolbar({
           {chips}
           {segment}
         </div>
-        {tabs}
       </div>
     );
   }
   return (
-    <div className="grid min-w-0 gap-6">
+    <div className="grid min-w-0 gap-3">
       <div className="flex min-w-0 flex-wrap items-center gap-2">
         <div className="w-[420px] max-w-full min-w-0 shrink">{search}</div>
         {chips}
@@ -161,7 +144,6 @@ export function MarketDeskToolbar({
         ) : null}
         {segment}
       </div>
-      {tabs}
     </div>
   );
 }
@@ -201,12 +183,14 @@ function FiltersChip({
   facets,
   open,
   onOpenChange,
+  postFilters,
 }: {
   scope: MarketListScope;
   filter: MarketFilterControls;
   facets: { tag: string; count: number }[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  postFilters?: MarketPostFilters;
 }) {
   const { t } = useLingui();
   const draft = useCatalogFilterDraft({
@@ -239,101 +223,117 @@ function FiltersChip({
         </PopoverTrigger>
       </DeskChip>
       <PopoverContent align="start" className="grid w-96 gap-4 p-0">
-        <div className="flex h-12 items-center justify-between gap-3 border-border border-b px-4">
-          <PopoverTitle className="font-heading text-base font-semibold">
-            {scope === "offers" ? (
-              <Trans>Filter offers</Trans>
-            ) : scope === "wants" ? (
-              <Trans>Filter Wants</Trans>
-            ) : scope === "vouchers" ? (
-              <Trans>Filter vouchers</Trans>
-            ) : scope === "pools" ? (
-              <Trans>Filter pools</Trans>
-            ) : scope === "catalogs" ? (
-              <Trans>Filter catalogs</Trans>
-            ) : (
-              <Trans>Filter marketplace</Trans>
-            )}
-          </PopoverTitle>
-          <span className="text-xs text-muted-foreground">
-            <Trans>
-              {draft.draftTags.length} of {CATALOG_MAX_TAGS}
-            </Trans>
-          </span>
-        </div>
-        <section className="grid gap-3 px-4" aria-label={t`Filter by tag`}>
-          <SectionHeading variant="group" as="h3">
-            {scope === "vouchers" ? <Trans>What they offer</Trans> : <Trans>Tags</Trans>}
-          </SectionHeading>
-          {facets.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              <Trans>No category filters are available.</Trans>
-            </p>
-          ) : draft.hasSelectableFacet ? (
-            <div className="flex max-h-64 flex-wrap gap-2 overflow-y-auto" role="group">
-              {facets.map((facet) => {
-                const selected = draft.draftTags.includes(facet.tag);
-                return (
-                  <SelectableTagBadge
-                    key={facet.tag}
-                    tag={facet.tag}
-                    selected={selected}
-                    count={draft.showCounts ? facet.count : undefined}
-                    disabled={!selected && (facet.count === 0 || draft.atTagLimit)}
-                    onClick={() => draft.toggleDraftTag(facet.tag)}
-                  />
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex items-center justify-between gap-3">
-              <p className="min-w-0 text-sm text-muted-foreground">
-                {searchTerm !== "" ? (
-                  <Trans>Nothing matching “{searchTerm}” carries a category.</Trans>
+        {postFilters ? (
+          <div className="max-h-[70vh] overflow-y-auto p-4">
+            <PostFacets
+              filter={filter}
+              tagFacets={facets}
+              voucherFacets={postFilters.voucherFacets}
+              poolFacets={postFilters.poolFacets}
+              timing={postFilters.timing}
+              onTimingChange={postFilters.onTimingChange}
+              ariaLabel={postFilters.postsOnly ? t`Filter posts` : t`Filter marketplace`}
+            />
+          </div>
+        ) : (
+          <>
+            <div className="flex h-12 items-center justify-between gap-3 border-border border-b px-4">
+              <PopoverTitle className="font-heading text-base font-semibold">
+                {scope === "offers" ? (
+                  <Trans>Filter offers</Trans>
+                ) : scope === "wants" ? (
+                  <Trans>Filter Wants</Trans>
+                ) : scope === "vouchers" ? (
+                  <Trans>Filter vouchers</Trans>
+                ) : scope === "pools" ? (
+                  <Trans>Filter pools</Trans>
+                ) : scope === "catalogs" ? (
+                  <Trans>Filter catalogs</Trans>
                 ) : (
-                  <Trans>No categories are available for the current results.</Trans>
+                  <Trans>Filter marketplace</Trans>
                 )}
-              </p>
-              {draft.searchTerm !== "" ? (
-                <Button variant="outline" onClick={filter.clearTerm}>
-                  <Trans>Clear search</Trans>
-                </Button>
-              ) : null}
+              </PopoverTitle>
+              <span className="text-xs text-muted-foreground">
+                <Trans>
+                  {draft.draftTags.length} of {CATALOG_MAX_TAGS}
+                </Trans>
+              </span>
             </div>
-          )}
-        </section>
-        {draft.draftTags.length > 1 ? (
-          <section className="grid gap-3 px-4">
-            <SectionHeading variant="group" as="h3">
-              <Trans>How should categories match?</Trans>
-            </SectionHeading>
-            <div className="grid grid-cols-2 gap-2" role="group" aria-label={t`Match`}>
-              {(["any", "all"] as const).map((match) => (
-                <Toggle
-                  key={match}
-                  variant="outline"
-                  pressed={draft.draftTagMatch === match}
-                  onPressedChange={(pressed) => {
-                    if (pressed) draft.setDraftTagMatch(match);
-                  }}
-                  className="data-[pressed]:border-primary data-[pressed]:bg-primary data-[pressed]:text-primary-foreground"
-                >
-                  {draft.draftTagMatch === match ? <RiCheckLine aria-hidden="true" /> : null}
-                  {match === "any" ? t`Any selected` : t`All selected`}
-                </Toggle>
-              ))}
+            <section className="grid gap-3 px-4" aria-label={t`Filter by tag`}>
+              <SectionHeading variant="group" as="h3">
+                {scope === "vouchers" ? <Trans>What they offer</Trans> : <Trans>Tags</Trans>}
+              </SectionHeading>
+              {facets.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  <Trans>No category filters are available.</Trans>
+                </p>
+              ) : draft.hasSelectableFacet ? (
+                <div className="flex max-h-64 flex-wrap gap-2 overflow-y-auto" role="group">
+                  {facets.map((facet) => {
+                    const selected = draft.draftTags.includes(facet.tag);
+                    return (
+                      <SelectableTagBadge
+                        key={facet.tag}
+                        tag={facet.tag}
+                        selected={selected}
+                        count={draft.showCounts ? facet.count : undefined}
+                        disabled={!selected && (facet.count === 0 || draft.atTagLimit)}
+                        onClick={() => draft.toggleDraftTag(facet.tag)}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-3">
+                  <p className="min-w-0 text-sm text-muted-foreground">
+                    {searchTerm !== "" ? (
+                      <Trans>Nothing matching “{searchTerm}” carries a category.</Trans>
+                    ) : (
+                      <Trans>No categories are available for the current results.</Trans>
+                    )}
+                  </p>
+                  {draft.searchTerm !== "" ? (
+                    <Button variant="outline" onClick={filter.clearTerm}>
+                      <Trans>Clear search</Trans>
+                    </Button>
+                  ) : null}
+                </div>
+              )}
+            </section>
+            {draft.draftTags.length > 1 ? (
+              <section className="grid gap-3 px-4">
+                <SectionHeading variant="group" as="h3">
+                  <Trans>How should categories match?</Trans>
+                </SectionHeading>
+                <div className="grid grid-cols-2 gap-2" role="group" aria-label={t`Match`}>
+                  {(["any", "all"] as const).map((match) => (
+                    <Toggle
+                      key={match}
+                      variant="outline"
+                      pressed={draft.draftTagMatch === match}
+                      onPressedChange={(pressed) => {
+                        if (pressed) draft.setDraftTagMatch(match);
+                      }}
+                      className="data-[pressed]:border-primary data-[pressed]:bg-primary data-[pressed]:text-primary-foreground"
+                    >
+                      {draft.draftTagMatch === match ? <RiCheckLine aria-hidden="true" /> : null}
+                      {match === "any" ? t`Any selected` : t`All selected`}
+                    </Toggle>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+            <div className="flex justify-end gap-2 border-border border-t px-4 py-3">
+              <Button variant="outline" disabled={!draft.canReset} onClick={draft.reset}>
+                <Trans>Reset</Trans>
+              </Button>
+              <Button onClick={draft.apply}>
+                <RiCheckLine aria-hidden="true" />
+                <Trans>Apply filters</Trans>
+              </Button>
             </div>
-          </section>
-        ) : null}
-        <div className="flex justify-end gap-2 border-border border-t px-4 py-3">
-          <Button variant="outline" disabled={!draft.canReset} onClick={draft.reset}>
-            <Trans>Reset</Trans>
-          </Button>
-          <Button onClick={draft.apply}>
-            <RiCheckLine aria-hidden="true" />
-            <Trans>Apply filters</Trans>
-          </Button>
-        </div>
+          </>
+        )}
       </PopoverContent>
     </PopoverRoot>
   );
@@ -395,9 +395,8 @@ function OutputChip({ output, onClear }: { output: OutputVoucherBrowse; onClear:
 }
 
 /**
- * One scope in one view. All on the map is the home map; every other pairing
- * lives on /market. The requested output belongs to the pools scope, so it
- * travels between Map and List there and nowhere else.
+ * The map is unified; List opens the current full-page resource scope (All
+ * from the map). Compatible filters travel in both directions.
  */
 function MarketLink({
   scope,
@@ -410,7 +409,7 @@ function MarketLink({
   children: ReactNode;
   className?: string;
 }) {
-  const home = view === "map" && scope === "all";
+  const home = view === "map";
   return (
     <Link
       {...props}

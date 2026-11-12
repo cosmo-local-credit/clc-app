@@ -3,6 +3,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Suspense, useState, type ReactNode } from "react";
 import { RiCloseLine } from "react-icons/ri";
 
+import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Button } from "#/components/ui/button";
 import {
   MapSheet,
@@ -264,6 +265,15 @@ function VoucherCard({
             </>
           }
         />
+        {detail?.managerClosure ? (
+          <div className="mt-3">
+            <ManagerClosureNotice
+              closure={detail.managerClosure}
+              resource="voucher"
+              active={detail.active}
+            />
+          </div>
+        ) : null}
       </MapSheetPeek>
 
       {reachedHalf ? (

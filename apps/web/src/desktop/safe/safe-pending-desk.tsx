@@ -22,6 +22,8 @@ import {
   proposalRecipients,
   proposalTitle,
   signerChangeRows,
+  WithdrawalAmount,
+  WithdrawalRecipient,
 } from "#/features/safe/ui/safe-proposal-labels";
 import { SAFE_APP_PREFIX } from "#/lib/safe-config";
 
@@ -119,7 +121,7 @@ function Proposal({
 }) {
   const { i18n } = useLingui();
   const { transaction, calls, action } = proposal;
-  const { mints, newOwners, signerChanges } = proposalRecipients(calls, safe);
+  const { mints, withdrawals, newOwners, signerChanges } = proposalRecipients(calls, safe);
   const confirmed = new Set(transaction.confirmations.map((c) => c.owner.toLowerCase()));
   // Every signer with their state when the Safe's signers are known; otherwise
   // only the ones that have confirmed.
@@ -144,6 +146,13 @@ function Proposal({
       <Trans>Amount</Trans>,
       <MintAmount token={mint.token} amountRaw={mint.amountRaw} />,
     ]);
+  }
+  for (const withdrawal of withdrawals) {
+    rows.push([
+      <Trans>Recipient</Trans>,
+      <WithdrawalRecipient withdrawal={withdrawal} className="items-start text-start" />,
+    ]);
+    rows.push([<Trans>Amount</Trans>, <WithdrawalAmount withdrawal={withdrawal} />]);
   }
   for (const owner of newOwners) {
     rows.push([

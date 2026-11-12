@@ -4,12 +4,17 @@ import {
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
 import {
+  DEFAULT_POST_TIMING,
+  type PostTiming,
+  type PostedWithin,
   type ReportAttachmentKind,
   type ReportMarkerIcon,
   type ReportStatus,
   type ReportWrite,
   isReportStatus,
   reportWriteSchema,
+  serializePostTiming,
+  serializePostedWithin,
 } from "@clc/core/features/reports/logic";
 import {
   isMarkerColor,
@@ -93,6 +98,7 @@ export type ReportSummary = {
   locationName: string | null;
   lat: number | null;
   lng: number | null;
+  distanceMeters?: number | null;
   periodFrom: string | null;
   periodTo: string | null;
   createdAt: string | null;
@@ -132,6 +138,8 @@ export type ManagedReportDetail = ReportDetail & {
 export type ReportCursor = {
   updatedAt: string;
   id: string;
+  distance?: number;
+  origin?: string;
 };
 
 export type ReportPage = {
@@ -200,6 +208,7 @@ export type ReportFilter = CatalogFilter;
 
 export type FilteredReportsParams = {
   nearby?: boolean;
+  sort?: "nearest";
   bounds?: readonly MarketBoundingBox[];
   perPage: number;
   cursor?: ReportCursor;
@@ -207,6 +216,10 @@ export type FilteredReportsParams = {
   facets?: boolean;
   /** Posts directly linked to these pools or to vouchers they accept. */
   creditablePools?: readonly VoucherRef[];
+  /** Created-at window. Omitted is 1 month; `all` is every approved post. */
+  posted?: PostedWithin;
+  /** Schedule timing. New clients send this explicitly; it cannot accompany `posted`. */
+  timing?: PostTiming;
 };
 
 export type FilteredReportPage = ReportPage & {
@@ -285,6 +298,7 @@ type BackendReport = Partial<{
   locationName: string | null;
   geoLat: string | number | null;
   geoLng: string | number | null;
+  distanceMeters: string | number | null;
   periodFrom: string | null;
   periodTo: string | null;
   authorAddress: string | null;
@@ -305,7 +319,12 @@ type BackendReport = Partial<{
 
 type BackendReportPage = {
   reports?: BackendReport[] | null;
-  next?: Partial<{ updatedAt: string | null; id: string | number }> | null;
+  next?: Partial<{
+    updatedAt: string | null;
+    id: string | number;
+    distance: string | number;
+    origin: string;
+  }> | null;
 };
 
 type BackendManagedReportPage = {
@@ -364,12 +383,15 @@ export function createReportsClient(http: HttpClient) {
         cursor?: ReportCursor;
         nearby?: boolean;
         bounds?: readonly MarketBoundingBox[];
+        posted?: PostedWithin;
+        timing?: PostTiming;
       },
       signal?: AbortSignal,
     ): Promise<ReportPage> {
       const query = new URLSearchParams({ perPage: String(params.perPage) });
       if (params.nearby) query.set("nearby", "true");
       appendMarketBounds(query, params.bounds);
+      appendReportTiming(query, params.timing, params.posted);
       if (params.cursor) {
         query.set("cursorUpdatedAt", params.cursor.updatedAt);
         query.set("cursorId", params.cursor.id);
@@ -388,17 +410,32 @@ export function createReportsClient(http: HttpClient) {
     },
 
     async getFilteredReports(
-      { filter, facets, perPage, cursor, nearby, bounds, creditablePools }: FilteredReportsParams,
+      {
+        filter,
+        facets,
+        perPage,
+        cursor,
+        nearby,
+        sort,
+        bounds,
+        creditablePools,
+        posted,
+        timing,
+      }: FilteredReportsParams,
       signal?: AbortSignal,
     ): Promise<FilteredReportPage> {
       const query = new URLSearchParams({ perPage: String(perPage) });
       if (cursor) {
         query.set("cursorUpdatedAt", cursor.updatedAt);
         query.set("cursorId", cursor.id);
+        if (cursor.distance !== undefined) query.set("cursorDistance", String(cursor.distance));
+        if (cursor.origin) query.set("cursorOrigin", cursor.origin);
       }
       appendCatalogFilter(query, filter);
+      appendReportTiming(query, timing, posted);
       if (facets) query.set("facets", "true");
       if (nearby) query.set("nearby", "true");
+      if (sort) query.set("sort", sort);
       appendMarketBounds(query, bounds);
       if (creditablePools?.length) {
         query.set("creditablePools", creditablePools.map(serializeVoucherRef).join(","));
@@ -409,6 +446,7 @@ export function createReportsClient(http: HttpClient) {
         {
           method: "GET",
           cache: "no-store",
+          credentials: nearby || sort ? "include" : "omit",
           signal,
         },
       );
@@ -515,6 +553,27 @@ export function createReportsClient(http: HttpClient) {
       return normalizeID(result.id) ?? id;
     },
   };
+}
+
+function appendPostedWithin(query: URLSearchParams, posted: PostedWithin | undefined): void {
+  const value = serializePostedWithin(posted ?? "1m");
+  if (value) query.set("posted", value);
+}
+
+function appendReportTiming(
+  query: URLSearchParams,
+  timing: PostTiming | undefined,
+  posted: PostedWithin | undefined,
+): void {
+  if (timing !== undefined) {
+    query.set("timing", timing);
+    return;
+  }
+  if (posted !== undefined) {
+    appendPostedWithin(query, posted);
+    return;
+  }
+  query.set("timing", serializePostTiming(DEFAULT_POST_TIMING) ?? DEFAULT_POST_TIMING);
 }
 
 function appendCatalogFilter(query: URLSearchParams, filter: CatalogFilter): void {
@@ -637,11 +696,25 @@ function normalizeReportTagFacet(facet: { tag?: unknown; count?: unknown }): Rep
 }
 
 function normalizeCursor(
-  cursor: Partial<{ updatedAt: string | null; id: string | number }> | null | undefined,
+  cursor:
+    | Partial<{
+        updatedAt: string | null;
+        id: string | number;
+        distance: string | number;
+        origin: string;
+      }>
+    | null
+    | undefined,
 ): ReportCursor | null {
   const updatedAt = normalizeText(cursor?.updatedAt);
   if (!updatedAt || cursor?.id === undefined || cursor.id === null) return null;
-  return { updatedAt, id: String(cursor.id) };
+  const distance = normalizeNumber(cursor.distance);
+  const origin = normalizeText(cursor.origin);
+  return {
+    updatedAt,
+    id: String(cursor.id),
+    ...(distance !== null && origin ? { distance, origin } : {}),
+  };
 }
 
 function normalizeReportSummary(report: BackendReport): ReportSummary | null {
@@ -659,6 +732,7 @@ function normalizeReportSummary(report: BackendReport): ReportSummary | null {
     locationName: normalizeText(report.locationName),
     lat: hasLocation ? lat : null,
     lng: hasLocation ? lng : null,
+    distanceMeters: normalizeNumber(report.distanceMeters),
     periodFrom: normalizeText(report.periodFrom),
     periodTo: normalizeText(report.periodTo),
     createdAt: normalizeText(report.createdAt),

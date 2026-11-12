@@ -18,6 +18,7 @@ import { useReportsInfinite } from "#/features/home/hooks/use-reports";
 import { useReportFilterNotice } from "#/features/home/hooks/use-report-filter-notice";
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
+import { usePostTiming } from "#/lib/navigation/use-post-timing";
 import { formatReportDate } from "#/lib/report-display";
 import { cn } from "#/lib/utils";
 
@@ -33,14 +34,16 @@ const POST_GRID = "grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4";
 
 export function PostsDesk() {
   const { t, i18n } = useLingui();
-  const filter = usePersistedCatalogFilter(
-    CATALOG_FILTER_PREFERENCE_NAMES.posts,
-    useStorageOwner(),
-    { voucherRelationships: true, poolRelationships: true },
-  );
+  const owner = useStorageOwner();
+  const { timing, setTiming } = usePostTiming(owner);
+  const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_NAMES.posts, owner, {
+    voucherRelationships: true,
+    poolRelationships: true,
+  });
   const reportsQuery = useReportsInfinite(
     undefined,
     !filter.isFiltered && !filter.isRestoringPreference,
+    timing,
   );
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   // Below 56rem of canvas the facets leave the page and open from the toolbar,
@@ -62,6 +65,7 @@ export function PostsDesk() {
       isFetchingNextPage: reportsQuery.isFetchingNextPage,
     },
     true,
+    timing,
   );
   const notice = useReportFilterNotice({
     filter,
@@ -158,6 +162,8 @@ export function PostsDesk() {
           tagFacets={feed.tagFacets}
           voucherFacets={feed.voucherFacets}
           poolFacets={feed.poolFacets}
+          timing={timing}
+          onTimingChange={setTiming}
         />
       </div>
 
@@ -181,7 +187,6 @@ export function PostsDesk() {
           </div>
         ) : null}
         <MarketViewportSearchNotice query={filter.result.ok ? filter.result.filter.term : ""} />
-
         {feed.status === "loading" ? (
           <div aria-busy="true" aria-label={t`Loading posts…`} className={POST_GRID}>
             {[0, 1, 2].map((index) => (
@@ -204,7 +209,13 @@ export function PostsDesk() {
                 </>
               ) : (
                 <p className="text-sm">
-                  <Trans>No posts yet.</Trans>
+                  {timing === "all" ? (
+                    <Trans>No posts yet.</Trans>
+                  ) : timing === "past" ? (
+                    <Trans>No past posts.</Trans>
+                  ) : (
+                    <Trans>No future posts.</Trans>
+                  )}
                 </p>
               )}
             </div>

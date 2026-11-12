@@ -7,6 +7,10 @@
  * identical across features.
  */
 
+import {
+  type ManagerClosure,
+  managerClosureSchema,
+} from "@clc/core/features/account-retirement/logic";
 import type { HexAddress } from "@clc/core/features/catalog/logic";
 
 export type { HexAddress };
@@ -22,6 +26,16 @@ export function formatCursorQuery(params: CursorParams): string {
   if (params.cursor !== undefined) search.set("cursor", params.cursor.toString());
   if (params.next !== undefined) search.set("next", params.next ? "true" : "false");
   return `?${search.toString()}`;
+}
+
+/**
+ * The manager-closure notice on a public voucher or pool. Anything that is not
+ * the documented shape reads as no notice: a warning that cannot be trusted is
+ * worse than none, and the resource itself stays usable either way.
+ */
+export function normalizeManagerClosure(value: unknown): ManagerClosure {
+  const parsed = managerClosureSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
 }
 
 export function normalizeText(value: unknown): string | null {

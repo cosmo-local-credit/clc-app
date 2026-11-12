@@ -31,6 +31,7 @@ import { PoolOffersChart } from "./ui/pool-offers-chart";
 import { PoolProfileCard } from "./ui/pool-profile-card";
 import { PoolSummaryMetrics } from "./ui/pool-summary-metrics";
 import { type SettlingVoucher, settlingVoucher, usePoolVouchers } from "./use-pool-vouchers";
+import { RetireResourceSheet } from "#/features/retirement/retire-resource-sheet";
 import { RestoreResourceSheet } from "#/features/retirement/restore-resource-sheet";
 import { RetirementResourceHistory } from "#/features/retirement/retirement-resource-history";
 
@@ -56,6 +57,7 @@ const ACTIVITY_PAGE_SIZE = 100;
 export function PoolDetailPage({ address, search }: { address: string; search: PoolDetailSearch }) {
   const poolQuery = useQuery(adminPoolQueryOptions(clcApi.admin, address));
   const [restoring, setRestoring] = useState(false);
+  const [retiring, setRetiring] = useState(false);
 
   // Set when a voucher has been signed for but not yet projected into the
   // catalog; it makes the voucher read poll until the row lands. See
@@ -115,6 +117,7 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
         onEditProfile={() => setEditingProfile(true)}
         onControls={() => setControlsOpen(true)}
         onRestore={() => setRestoring(true)}
+        onRetire={() => setRetiring(true)}
       />
 
       <PoolAdvisories advisories={poolAdvisories(pool, composition, { vouchersAvailable })} />
@@ -133,6 +136,14 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
         name={pool.name}
         open={restoring}
         onClose={() => setRestoring(false)}
+      />
+
+      <RetireResourceSheet
+        type="pool"
+        address={address}
+        name={pool.name}
+        open={retiring}
+        onClose={() => setRetiring(false)}
       />
 
       {/* Two columns, split by how each half is read. The left is the record —

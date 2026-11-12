@@ -1,5 +1,6 @@
-import { encodeFunctionData, isAddress, parseAbi, zeroAddress } from "viem";
+import { encodeFunctionData, getAddress, isAddress, parseAbi, zeroAddress } from "viem";
 import { z } from "zod";
+import { buildCollectPoolFeesCalls } from "../pool-swaps/logic";
 import { formatTokenAmount, parseTokenAmount } from "../wallet/logic";
 import type { CaliburCall } from "../webauthn/index";
 
@@ -93,6 +94,9 @@ export const swapPoolSetFeeAddressAbi = parseAbi(["function setFeeAddress(addres
  * exists, and it is also where a later `setFeeAddress` lands.
  */
 export const swapPoolFeeAddressAbi = parseAbi(["function feeAddress() view returns (address)"]);
+export const swapPoolIsSealedAbi = parseAbi(["function isSealed(uint8 state) view returns (bool)"]);
+/** SwapPool's `FEEADDRESS_STATE` seal bit: once set, `setFeeAddress` reverts `Sealed`. */
+export const POOL_FEE_ADDRESS_SEAL_STATE = 2;
 
 export const feePolicyDefaultFeeAbi = parseAbi(["function getDefaultFee() view returns (uint256)"]);
 export const feePolicySetDefaultFeeAbi = parseAbi(["function setDefaultFee(uint256 defaultFee)"]);
@@ -276,7 +280,7 @@ export function buildWithdrawPoolLiquidityCalls(input: {
 }): CaliburCall[] {
   assertContractAddress(input.poolAddress, "pool");
   assertContractAddress(input.tokenAddress, "voucher");
-  assertContractAddress(input.recipientAddress, "recipient");
+  assertPayoutRecipient(input.poolAddress, input.recipientAddress);
   return [
     {
       to: input.poolAddress,
@@ -288,6 +292,52 @@ export function buildWithdrawPoolLiquidityCalls(input: {
       }),
     },
   ];
+}
+
+/**
+ * Collects every fee accrued in one voucher and pays it to the chosen recipient.
+ *
+ * `withdraw(token)` takes no recipient: SwapPool pays its own `feeAddress`. A
+ * different recipient is reached by pointing `feeAddress` at it for this one
+ * collection and restoring it in the same batch, so the pool's configured
+ * recipient is unchanged afterwards and a partial run is impossible. An unset
+ * recipient is restored as the zero address, which is the unset state.
+ *
+ * A pool whose fee address is sealed reverts `setFeeAddress`, so its caller may
+ * only offer the current recipient, which needs the single call.
+ */
+export function buildWithdrawPoolFeesCalls(input: {
+  poolAddress: `0x${string}`;
+  tokenAddress: `0x${string}`;
+  recipientAddress: `0x${string}`;
+  /**
+   * The pool's `feeAddress`, null when unset. Read it from the chain just before
+   * building: the batch writes it back, so a stale value overwrites whatever
+   * replaced it.
+   */
+  currentFeeAddress: `0x${string}` | null;
+}): CaliburCall[] {
+  assertContractAddress(input.poolAddress, "pool");
+  assertContractAddress(input.tokenAddress, "voucher");
+  assertPayoutRecipient(input.poolAddress, input.recipientAddress);
+  const collect = buildCollectPoolFeesCalls({
+    poolAddress: input.poolAddress,
+    tokenOut: input.tokenAddress,
+  });
+  const recipient = getAddress(input.recipientAddress);
+  const current = input.currentFeeAddress ? getAddress(input.currentFeeAddress) : null;
+  if (recipient === current) return collect;
+
+  const setFeeAddress = (feeAddress: `0x${string}`): CaliburCall => ({
+    to: input.poolAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: swapPoolSetFeeAddressAbi,
+      functionName: "setFeeAddress",
+      args: [feeAddress],
+    }),
+  });
+  return [setFeeAddress(recipient), ...collect, setFeeAddress(current ?? zeroAddress)];
 }
 
 /**
@@ -458,6 +508,14 @@ function assertTokenDecimals(decimals: number): void {
 function assertContractAddress(address: `0x${string}`, label: string): void {
   if (!isAddress(address) || address.toLowerCase() === zeroAddress) {
     throw new Error(`Pool ${label} must be a non-zero address.`);
+  }
+}
+
+/** A payout must reach someone: the pool paying itself leaves the tokens where they were. */
+function assertPayoutRecipient(poolAddress: `0x${string}`, recipientAddress: `0x${string}`): void {
+  assertContractAddress(recipientAddress, "recipient");
+  if (getAddress(recipientAddress) === getAddress(poolAddress)) {
+    throw new Error("Pool recipient cannot be the pool itself.");
   }
 }
 

@@ -25,6 +25,7 @@
  * the user/token mutations. Transaction pages live under `/admin/transactions`.
  */
 
+import type { AccountLifecycle } from "@clc/core/features/account-retirement/logic";
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { isUserRole, type UserRole } from "@clc/core/features/users/roles";
 import { getAddress } from "viem";
@@ -69,6 +70,10 @@ export type AdminUser = {
   country: string;
   role: UserRole;
   status: string;
+  /** The account's retirement state; ACTIVE when it has none. */
+  lifecycle?: AccountLifecycle;
+  /** When a retiring account closes. */
+  closesAt?: string | null;
   maxPools: number;
   maxTokens: number;
   maxCatalogs: number;
@@ -175,6 +180,8 @@ export type AdminUserParams = {
   status?: AdminUserStatus;
   /** Any selected roles. Omitted means every role. */
   roles?: readonly UserRole[];
+  /** `retired` narrows to accounts with an open retirement. */
+  lifecycle?: "retired";
 };
 
 export type AdminUserPage = {
@@ -538,8 +545,10 @@ export type AdminClient = {
   getPoolByAddress(address: string, signal?: AbortSignal): Promise<UserPool>;
   /** One cursor page of the account directory, newest first. */
   listUsers(params: AdminUserParams, signal?: AbortSignal): Promise<AdminUserPage>;
-  approveUser(address: string): Promise<AdminUser>;
-  rejectUser(address: string): Promise<AdminUser>;
+  /** Unban, or approve a pending account. A reason is optional and kept in the history. */
+  approveUser(address: string, reason?: string): Promise<AdminUser>;
+  /** Ban. A reason is optional and kept in the history. */
+  rejectUser(address: string, reason?: string): Promise<AdminUser>;
   updateUserRole(address: string, role: "ADMIN" | "USER"): Promise<AdminUser>;
   /**
    * SUPERADMIN only: moves the account at `address` to a new sign-in card that
@@ -773,7 +782,7 @@ export function createAdminClient(http: HttpClient): AdminClient {
    */
   async function mutateUser(
     path: string,
-    body?: AdminUserLimits | AdminUserProfile | { role: "ADMIN" | "USER" },
+    body?: AdminUserLimits | AdminUserProfile | { role: "ADMIN" | "USER" } | { reason: string },
   ): Promise<AdminUser> {
     const result = await http.request<{ user: BackendAdminUser }>(path, {
       method: "PUT",
@@ -792,6 +801,7 @@ export function createAdminClient(http: HttpClient): AdminClient {
       if (params.q) query.set("q", params.q);
       if (params.status) query.set("status", params.status);
       if (params.roles?.length) query.set("roles", params.roles.join(","));
+      if (params.lifecycle) query.set("lifecycle", params.lifecycle);
 
       const result = await http.request<{
         users?: Array<BackendAdminUser> | null;
@@ -813,12 +823,18 @@ export function createAdminClient(http: HttpClient): AdminClient {
 
     // The address goes into the path, so it must be encoded even though a valid
     // hex address needs no escaping — a malformed one must not alter the route.
-    approveUser(address) {
-      return mutateUser(`/api/v2/admin/users/${encodeURIComponent(address)}/approve`);
+    approveUser(address, reason) {
+      return mutateUser(
+        `/api/v2/admin/users/${encodeURIComponent(address)}/approve`,
+        reason?.trim() ? { reason: reason.trim() } : undefined,
+      );
     },
 
-    rejectUser(address) {
-      return mutateUser(`/api/v2/admin/users/${encodeURIComponent(address)}/reject`);
+    rejectUser(address, reason) {
+      return mutateUser(
+        `/api/v2/admin/users/${encodeURIComponent(address)}/reject`,
+        reason?.trim() ? { reason: reason.trim() } : undefined,
+      );
     },
 
     updateUserRole(address, role) {

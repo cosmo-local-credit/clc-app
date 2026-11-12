@@ -108,6 +108,7 @@ export type OfferingDiscoveryParams = {
   tagMatch?: "any" | "all";
   facets?: boolean;
   nearby?: boolean;
+  sort?: "nearest";
   bounds?: readonly MarketBoundingBox[];
   pools?: readonly { chainId: number; address: string }[];
 };
@@ -233,10 +234,10 @@ export function createOfferingsClient(
       const query = formatOfferingDiscoveryQuery(params);
       const result = await http.request<BackendOfferingPage>(`/api/v2/offerings?${query}`, {
         method: "GET",
-        credentials: params.nearby ? "include" : "omit",
+        credentials: params.nearby || params.sort ? "include" : "omit",
         signal,
         ...cachePolicy,
-        ...(params.nearby ? { cache: "no-store" as const } : {}),
+        ...(params.nearby || params.sort ? { cache: "no-store" as const } : {}),
       });
       const received = result.offerings ?? [];
       return {
@@ -437,6 +438,7 @@ function formatOfferingDiscoveryQuery(params: OfferingDiscoveryParams): string {
   if (params.tagMatch === "all" && (params.tags?.length ?? 0) > 1) query.set("tagMatch", "all");
   if (params.facets) query.set("facets", "true");
   if (params.nearby) query.set("nearby", "true");
+  if (params.sort) query.set("sort", params.sort);
   appendMarketBounds(query, params.bounds);
   if (params.pools && params.pools.length > 0) {
     query.set(

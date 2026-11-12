@@ -1,3 +1,7 @@
+import type {
+  AccountLifecycle,
+  SessionCapabilities,
+} from "@clc/core/features/account-retirement/logic";
 import { isTerminalOtxFailure } from "@clc/core/lib/otx";
 
 import { BackendApiError } from "../../client/errors";
@@ -55,6 +59,15 @@ export type SessionResult = {
    * administrator is the worse failure.
    */
   role?: string;
+  /**
+   * The account's retirement state. Absent from a backend older than account
+   * retirement, which a client reads as `ACTIVE`.
+   */
+  accountLifecycle?: AccountLifecycle;
+  /** When a retiring account closes. Null for an active one. */
+  closesAt?: string | null;
+  /** What this session may do. Render these instead of inferring from a status. */
+  capabilities?: SessionCapabilities;
 };
 
 /**

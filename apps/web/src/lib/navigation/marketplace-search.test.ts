@@ -100,6 +100,15 @@ describe("marketplace route search", () => {
     ).toEqual({ q: "bike", tags: "Repair", tagMatch: "all", creditable: true });
   });
 
+  it("carries non-default Post timing to the map", () => {
+    expect(
+      mapSearchFrom({
+        timing: "all",
+        q: "bike",
+      }),
+    ).toMatchObject({ timing: "all", q: "bike" });
+  });
+
   it("canonicalizes the shared state used when toggling between map and list", () => {
     expect(
       marketplaceSharedSearch({

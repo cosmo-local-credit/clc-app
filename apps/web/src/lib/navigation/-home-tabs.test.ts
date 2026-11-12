@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
-import { isAtHomeTabRoot, isPrivateHomeTab, parseHomeTab, parseMarketView } from "./home-tabs";
+import {
+  isAtHomeTabRoot,
+  isPrivateHomeTab,
+  parseHomeSearch,
+  parseHomeTab,
+  parseMarketView,
+} from "./home-tabs";
 
 describe("parseHomeTab", () => {
   it("returns each valid tab unchanged", () => {
@@ -37,6 +43,15 @@ describe("parseHomeTab", () => {
     expect(parseMarketView("map")).toBe("map");
     expect(parseMarketView("list")).toBe("list");
     expect(parseMarketView("grid")).toBe("map");
+  });
+});
+
+describe("parseHomeSearch Post timing", () => {
+  it("omits the default and keeps explicit or legacy timing", () => {
+    expect(parseHomeSearch({ tab: "posts" }).timing).toBeUndefined();
+    expect(parseHomeSearch({ tab: "posts", timing: "past" }).timing).toBe("past");
+    expect(parseHomeSearch({ tab: "posts", posted: "all" }).timing).toBe("all");
+    expect(parseHomeSearch({ tab: "posts", posted: "3m" }).timing).toBe("future");
   });
 });
 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RiArrowRightSLine } from "react-icons/ri";
 
+import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Button } from "#/components/ui/button";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { PoolLogo } from "#/components/wallet";
@@ -400,6 +401,12 @@ function PoolRow({
       <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={42} />
       <div className="min-w-0 flex-1 overflow-hidden">
         <p className="truncate font-semibold text-sm">{pool.name}</p>
+        <ManagerClosureNotice
+          closure={pool.managerClosure}
+          resource="pool"
+          active={pool.active}
+          compact
+        />
         <p className="mt-1 text-primary text-xs font-semibold">
           {pool.voucherCount === 1 ? (
             <Trans>1 voucher</Trans>

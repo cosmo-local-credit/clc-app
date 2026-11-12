@@ -16,7 +16,9 @@ import { RetirementControl } from "#/components/retirement/retirement-control";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
+import { RecipientOwnerNotice } from "#/components/safe/recipient-owner-notice";
 import { RecipientAddressInput } from "#/components/wallet/recipient-address-input";
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import {
   SheetBackdrop,
   SheetContent,
@@ -29,6 +31,7 @@ import {
 import { useSafeSheet } from "#/features/safe/state/safe-sheet";
 import type { PoolFeeSettings } from "#/features/pools/hooks/use-pool-fee-settings";
 import {
+  type PayoutRecipient,
   usePoolCollectFeesForm,
   usePoolControls,
   usePoolFeeSettingsForm,
@@ -151,42 +154,12 @@ export function PoolControlsPanel({
         onClose={() => setSheet(null)}
       />
 
-      <ControlSheetShell
-        open={sheet === "liquidity"}
-        title={t`Withdraw liquidity`}
+      <PoolWithdrawalSheets
+        pool={pool}
+        controls={{ indexed, withdrawalVouchers, treasury, fee }}
+        sheet={sheet === "liquidity" || sheet === "fees" ? sheet : null}
         onClose={() => setSheet(null)}
-      >
-        <WithdrawalInventoryNotice
-          pending={indexed.isPending}
-          error={indexed.isError}
-          retry={() => void indexed.refetch()}
-        />
-        <WithdrawLiquidityForm
-          pool={pool}
-          vouchers={withdrawalVouchers}
-          treasury={treasury.data}
-          onDone={() => setSheet(null)}
-        />
-      </ControlSheetShell>
-
-      <ControlSheetShell
-        open={sheet === "fees"}
-        title={t`Withdraw fees`}
-        onClose={() => setSheet(null)}
-      >
-        <WithdrawalInventoryNotice
-          pending={indexed.isPending}
-          error={indexed.isError}
-          retry={() => void indexed.refetch()}
-        />
-        <CollectFeesForm
-          pool={pool}
-          vouchers={withdrawalVouchers}
-          treasury={treasury.data}
-          feeAddress={fee?.feeAddress ?? null}
-          onDone={() => setSheet(null)}
-        />
-      </ControlSheetShell>
+      />
 
       <ControlSheetShell
         open={sheet === "ownership"}
@@ -203,6 +176,105 @@ export function PoolControlsPanel({
       >
         <FeeSettingsForm pool={pool} settings={fee} onDone={() => setSheet(null)} />
       </ControlSheetShell>
+    </>
+  );
+}
+
+type WithdrawalSheet = "liquidity" | "fees";
+
+/** The slice of `usePoolControls` the two withdrawal sheets read. */
+type WithdrawalControls = Pick<
+  ReturnType<typeof usePoolControls>,
+  "indexed" | "withdrawalVouchers" | "treasury" | "fee"
+>;
+
+function PoolWithdrawalSheets({
+  pool,
+  controls: { indexed, withdrawalVouchers, treasury, fee },
+  sheet,
+  onClose,
+}: {
+  pool: UserPool;
+  controls: WithdrawalControls;
+  sheet: WithdrawalSheet | null;
+  onClose: () => void;
+}) {
+  const { t } = useLingui();
+  return (
+    <>
+      <ControlSheetShell
+        open={sheet === "liquidity"}
+        title={t`Withdraw liquidity`}
+        onClose={onClose}
+      >
+        <WithdrawalInventoryNotice
+          pending={indexed.isPending}
+          error={indexed.isError}
+          retry={() => void indexed.refetch()}
+        />
+        <WithdrawLiquidityForm
+          pool={pool}
+          vouchers={withdrawalVouchers}
+          treasury={treasury.data}
+          onDone={onClose}
+        />
+      </ControlSheetShell>
+
+      <ControlSheetShell open={sheet === "fees"} title={t`Withdraw fees`} onClose={onClose}>
+        <WithdrawalInventoryNotice
+          pending={indexed.isPending}
+          error={indexed.isError}
+          retry={() => void indexed.refetch()}
+        />
+        <CollectFeesForm
+          pool={pool}
+          vouchers={withdrawalVouchers}
+          treasury={treasury.data}
+          settings={fee}
+          onDone={onClose}
+        />
+      </ControlSheetShell>
+    </>
+  );
+}
+
+/** Reads the pool's holdings only once a withdrawal sheet is opened. */
+function PoolWithdrawalSheetsLoaded({
+  pool,
+  sheet,
+  onClose,
+}: {
+  pool: UserPool;
+  sheet: WithdrawalSheet;
+  onClose: () => void;
+}) {
+  const controls = usePoolControls(pool, [], true);
+  return <PoolWithdrawalSheets pool={pool} controls={controls} sheet={sheet} onClose={onClose} />;
+}
+
+/**
+ * Withdraw liquidity and fees for a pool the signed-in wallet owns, without the
+ * rest of the pool controls. The recovery shell uses it: withdrawing is how a
+ * retiring account gets its funds out, and it needs no other pool screen.
+ */
+export function PoolWithdrawActions({ pool }: { pool: UserPool }) {
+  const { t } = useLingui();
+  const [sheet, setSheet] = useState<WithdrawalSheet | null>(null);
+  return (
+    <>
+      <ActionRow
+        icon={<RiSafe2Line className="size-4" aria-hidden="true" />}
+        label={t`Withdraw liquidity`}
+        onClick={() => setSheet("liquidity")}
+      />
+      <ActionRow
+        icon={<RiHandCoinLine className="size-4" aria-hidden="true" />}
+        label={t`Withdraw fees`}
+        onClick={() => setSheet("fees")}
+      />
+      {sheet ? (
+        <PoolWithdrawalSheetsLoaded pool={pool} sheet={sheet} onClose={() => setSheet(null)} />
+      ) : null}
     </>
   );
 }
@@ -265,7 +337,44 @@ function ControlSheetShell({
   );
 }
 
-/** Sends pool liquidity to the owner's own wallet; see `usePoolWithdrawLiquidityForm`. */
+/** Where a withdrawal is paid, starting from the signed-in wallet; see `usePayoutRecipient`. */
+function PayoutRecipientField({
+  id,
+  payout,
+  hint,
+}: {
+  id: string;
+  payout: PayoutRecipient;
+  hint?: string;
+}) {
+  const { t } = useLingui();
+  return (
+    <Field
+      label={t`Recipient`}
+      htmlFor={id}
+      hint={hint}
+      error={
+        payout.problem === "invalid"
+          ? t`Enter a valid wallet address`
+          : payout.problem === "pool"
+            ? t`The pool can't pay itself.`
+            : null
+      }
+    >
+      <RecipientAddressInput
+        id={id}
+        defaultValue={payout.recipient}
+        onValueChange={payout.setRecipient}
+        onRecipientChange={(next) => payout.setResolved(next?.address ?? null)}
+        ariaLabel={t`Recipient`}
+        ariaInvalid={payout.problem !== null}
+      />
+      <RecipientOwnerNotice address={payout.payable ?? ""} />
+    </Field>
+  );
+}
+
+/** Sends pool liquidity to the chosen recipient; see `usePoolWithdrawLiquidityForm`. */
 function WithdrawLiquidityForm({
   pool,
   vouchers,
@@ -323,6 +432,8 @@ function WithdrawLiquidityForm({
             </div>
           </Field>
         ) : null}
+
+        <PayoutRecipientField id="pool-withdraw-recipient" payout={form.payout} />
       </div>
 
       <SheetFooter>
@@ -346,37 +457,51 @@ function CollectFeesForm({
   pool,
   vouchers,
   treasury,
-  feeAddress,
+  settings,
   onDone,
 }: {
   pool: UserPool;
   vouchers: PoolVoucher[];
   treasury: Map<string, { feesRaw: string }> | undefined;
   /** Read from the pool, not the catalog — see `usePoolFeeSettings`. */
-  feeAddress: `0x${string}` | null;
+  settings: PoolFeeSettings | undefined;
   onDone: () => void;
 }) {
-  const form = usePoolCollectFeesForm({ pool, vouchers, treasury, onDone });
+  const { t } = useLingui();
+  const form = usePoolCollectFeesForm({ pool, vouchers, treasury, settings, onDone });
 
   return (
     <>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-2">
-        {feeAddress ? (
-          <p className="text-muted-foreground text-xs">
-            <Trans>Fees are paid to {formatVoucherAddress(feeAddress)}.</Trans>
-          </p>
-        ) : (
-          <p role="alert" className="border border-border bg-card p-4 text-destructive text-sm">
-            <Trans>Set a fee recipient before collecting, or the pool has nowhere to pay.</Trans>
-          </p>
-        )}
-
         <TokenChooser
           vouchers={vouchers}
           selectedAddress={form.tokenAddress}
           onSelect={form.selectToken}
           amountFor={form.amountFor}
         />
+
+        {!settings ? (
+          <p className="text-muted-foreground text-xs">
+            <Trans>Reading this pool's fee…</Trans>
+          </p>
+        ) : form.locked && settings.feeAddress ? (
+          <div className="flex items-start justify-between gap-3">
+            <span className="shrink-0 font-medium text-sm">
+              <Trans>Recipient</Trans>
+            </span>
+            <RecipientIdentityLabel address={settings.feeAddress} showAddress />
+          </div>
+        ) : (
+          <PayoutRecipientField
+            id="pool-fees-recipient"
+            payout={form.payout}
+            hint={
+              settings.feeAddress
+                ? t`Pool fee recipient: ${formatVoucherAddress(settings.feeAddress)}`
+                : undefined
+            }
+          />
+        )}
       </div>
 
       <SheetFooter>
@@ -384,7 +509,7 @@ function CollectFeesForm({
           type="button"
           tap
           className="w-full"
-          disabled={!form.selected || !feeAddress}
+          disabled={!form.canSubmit}
           pending={form.inFlight}
           onClick={() => void form.submit()}
         >

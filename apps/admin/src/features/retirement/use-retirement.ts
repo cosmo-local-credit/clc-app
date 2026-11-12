@@ -39,3 +39,13 @@ export function useRestoreResource(type: RetirementResourceType, address: string
     onSuccess: invalidate,
   });
 }
+
+/** Retires a voucher or pool as an operator, with or without an owner's request. */
+export function useRetireResource(type: RetirementResourceType, address: string) {
+  const invalidate = useRetirementInvalidation();
+  return useMutation({
+    mutationFn: (body: { acknowledgeBalances: boolean; reason?: string }) =>
+      clcApi.retirement.adminRetire(type, address, body),
+    onSuccess: invalidate,
+  });
+}

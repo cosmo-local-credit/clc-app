@@ -12,19 +12,22 @@ import { useReportsInfinite } from "#/features/home/hooks/use-reports";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
+import { usePostTiming } from "#/lib/navigation/use-post-timing";
 import { ReportFilterFeedback, ReportFilterSheet } from "./report-filter-ui";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 export function PostsPage() {
   const { t, i18n } = useLingui();
-  const filter = usePersistedCatalogFilter(
-    CATALOG_FILTER_PREFERENCE_NAMES.posts,
-    useStorageOwner(),
-    { voucherRelationships: true, poolRelationships: true },
-  );
+  const owner = useStorageOwner();
+  const { timing, setTiming } = usePostTiming(owner);
+  const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_NAMES.posts, owner, {
+    voucherRelationships: true,
+    poolRelationships: true,
+  });
   const reportsQuery = useReportsInfinite(
     undefined,
     !filter.isFiltered && !filter.isRestoringPreference,
+    timing,
   );
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -45,6 +48,7 @@ export function PostsPage() {
       isFetchingNextPage: reportsQuery.isFetchingNextPage,
     },
     filtersEverOpened,
+    timing,
   );
   const reports = feed.reports;
   const resultCountLabel = i18n._("{count, plural, one {# post} other {# posts}}", {
@@ -87,6 +91,8 @@ export function PostsPage() {
             facets={feed.tagFacets}
             voucherFacets={feed.voucherFacets}
             poolFacets={feed.poolFacets}
+            timing={timing}
+            onTimingChange={setTiming}
             open={filtersOpen}
             onOpenChange={(next) => {
               if (next) setFiltersEverOpened(true);
@@ -132,8 +138,12 @@ export function PostsPage() {
               <p className="text-muted-foreground text-sm">
                 {filter.isFiltered ? (
                   <Trans>No posts match this search.</Trans>
-                ) : (
+                ) : timing === "all" ? (
                   <Trans>No posts yet.</Trans>
+                ) : timing === "past" ? (
+                  <Trans>No past posts.</Trans>
+                ) : (
+                  <Trans>No future posts.</Trans>
                 )}
               </p>
               {filter.isFiltered ? (

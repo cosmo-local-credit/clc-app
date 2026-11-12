@@ -1,4 +1,5 @@
-import type { MarketMapCluster, MarketMapMarker } from "@clc/core/features/market-map/logic";
+import type { MarketMapPoint } from "@clc/core/features/market-map/logic";
+import type { MarketplaceResult } from "@clc/core/features/marketplace/logic";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   createMemoryHistory,
@@ -21,6 +22,19 @@ const MEMBER = "0x1111111111111111111111111111111111111111" as const;
 
 const mocks = vi.hoisted(() => ({
   mapList: vi.fn(),
+  mapFacets: vi.fn(),
+  viewport: {
+    rows: [] as MarketplaceResult[],
+    total: 0,
+    hasData: true,
+    blocked: false,
+    loading: false,
+    retained: false,
+    refreshing: false,
+    error: null as Error | null,
+    retry: vi.fn(),
+    next: { hasMore: false, loading: false, failed: false, load: vi.fn() },
+  },
   auth: {
     state: "guest" as "guest" | "authenticated",
     isAuthenticated: false,
@@ -46,7 +60,12 @@ const mocks = vi.hoisted(() => ({
   voucher: vi.fn(),
 }));
 
-vi.mock("#/lib/api/market-map", () => ({ marketMapClient: { list: mocks.mapList } }));
+vi.mock("#/lib/api/market-map", () => ({
+  marketMapClient: { points: mocks.mapList, facets: mocks.mapFacets },
+}));
+vi.mock("#/desktop/market/use-market-viewport-list", () => ({
+  useMarketViewportList: () => mocks.viewport,
+}));
 vi.mock("#/lib/api/market", () => ({
   marketClient: { getMarketVoucher: (...args: unknown[]) => mocks.voucher(...args) },
 }));
@@ -95,10 +114,8 @@ vi.mock("#/desktop/market/place-panel", () => ({ MarketPlacePanel: () => null })
 
 import { MarketMapDesk } from "./market-map-desk";
 
-function marker(kind: MarketMapMarker["kind"], id: string, name: string): MarketMapMarker {
+function marker(kind: MarketMapPoint["kind"], id: string, name: string): MarketMapPoint {
   return {
-    type: "marker",
-    id: `${kind}:${id}`,
     kind,
     resourceId: id,
     name,
@@ -109,16 +126,22 @@ function marker(kind: MarketMapMarker["kind"], id: string, name: string): Market
   };
 }
 
-function cluster(count: number): MarketMapCluster {
+function viewportRow(
+  kind: "voucher" | "want" | "pool" | "catalog" | "post",
+  id: string,
+  name: string,
+): MarketplaceResult {
   return {
-    type: "cluster",
-    id: "cluster:1",
-    lat: -4,
-    lng: 39,
-    count,
-    kinds: { voucher: count },
-    expansionZoom: 8,
-  };
+    kind,
+    id,
+    name,
+    chainId: 100,
+    address: kind === "voucher" || kind === "pool" ? id : null,
+    voucherKind: kind === "voucher" ? "voucher" : undefined,
+    tags: [],
+    geoLat: -4.05,
+    geoLng: 39.67,
+  } as unknown as MarketplaceResult;
 }
 
 function renderMap(
@@ -151,6 +174,8 @@ function renderMap(
       stub("/onboarding"),
       stub("/pools/$poolAddress"),
       stub("/pools/$poolAddress/swap"),
+      stub("/catalogs/$catalogId"),
+      stub("/posts/$reportId"),
     ]),
     history: createMemoryHistory({ initialEntries: [url] }),
   });
@@ -169,6 +194,21 @@ beforeEach(() => {
   window.localStorage.clear();
   window.scrollTo = vi.fn();
   mocks.mapList.mockReset();
+  mocks.mapFacets.mockReset();
+  mocks.mapFacets.mockResolvedValue({ tagFacets: [], postVoucherFacets: [], postPoolFacets: [] });
+  mocks.viewport.rows = [];
+  mocks.viewport.total = 0;
+  mocks.viewport.hasData = true;
+  mocks.viewport.blocked = false;
+  mocks.viewport.loading = false;
+  mocks.viewport.retained = false;
+  mocks.viewport.refreshing = false;
+  mocks.viewport.error = null;
+  mocks.viewport.retry.mockReset();
+  mocks.viewport.next.hasMore = false;
+  mocks.viewport.next.loading = false;
+  mocks.viewport.next.failed = false;
+  mocks.viewport.next.load.mockReset();
   mocks.voucher.mockReset();
   mocks.voucher.mockResolvedValue({ address: VOUCHER, symbol: "BAKE", name: "Bakery" });
   mocks.auth.state = "guest";
@@ -187,91 +227,169 @@ function signIn() {
   mocks.auth.address = MEMBER;
 }
 
+function rememberResources(owner: string, kinds: string[]) {
+  window.localStorage.setItem(
+    ownerScopedKey(owner, "market-map-resources.v1"),
+    JSON.stringify(kinds),
+  );
+}
+
 describe("MarketMapDesk result count", () => {
   it("says it is loading, not zero, before any result set exists", async () => {
     mocks.mapList.mockImplementation(() => new Promise(() => {}));
+    mocks.viewport.hasData = false;
+    mocks.viewport.loading = true;
     renderMap("/market?view=map");
     expect(await screen.findByText("Loading marketplace…")).toBeTruthy();
-    expect(screen.queryByText(/^\d+ results$/)).toBeNull();
-    expect(screen.queryByText("0 results")).toBeNull();
+    expect(screen.queryByText(/Showing \d+ of \d+/)).toBeNull();
   });
 
-  it("counts a result set, including a response that is only clusters", async () => {
-    mocks.mapList.mockResolvedValue({ features: [cluster(42)] });
+  it("uses the exact viewport total, not the number of points the map holds", async () => {
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
+    mocks.viewport.total = 42;
     renderMap("/market?view=map");
-    expect(await screen.findByText("42 results")).toBeTruthy();
-    expect(screen.getByText("Zoom in to see individual results.")).toBeTruthy();
-    expect(screen.queryByText("0 results")).toBeNull();
+    expect(await screen.findByText("Showing 0 of 42 in this area")).toBeTruthy();
   });
 
-  it("counts markers and clusters together and lists the markers", async () => {
+  it("lists the area's resources and reports loaded versus total", async () => {
     mocks.mapList.mockResolvedValue({
-      features: [marker("voucher", VOUCHER, "Bakery voucher"), cluster(9)],
+      points: [marker("voucher", VOUCHER, "Bakery voucher")],
+      truncated: false,
     });
+    mocks.viewport.rows = [viewportRow("voucher", VOUCHER, "Bakery voucher")];
+    mocks.viewport.total = 10;
     renderMap("/market?view=map");
-    expect(await screen.findByText("10 results")).toBeTruthy();
+    expect(await screen.findByText("Showing 1 of 10 in this area")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Bakery voucher/ })).toBeTruthy();
     expect(screen.queryByText("Zoom in to see individual results.")).toBeNull();
   });
 
-  it("calls a genuinely empty result set zero", async () => {
-    mocks.mapList.mockResolvedValue({ features: [] });
+  it("calls a genuinely empty exact viewport zero", async () => {
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
     renderMap("/market?view=map");
-    expect(await screen.findByText("0 results")).toBeTruthy();
+    expect(await screen.findByText("Showing 0 of 0 in this area")).toBeTruthy();
   });
 
-  it("says Results unavailable, with Retry, when the first load fails, never 0 results", async () => {
-    mocks.mapList
-      .mockRejectedValueOnce(new Error("down"))
-      .mockResolvedValueOnce({ features: [marker("voucher", VOUCHER, "Bakery voucher")] });
+  it("keeps the exact-result recovery independent from retained map markers", async () => {
+    mocks.mapList.mockResolvedValue({
+      points: [marker("voucher", VOUCHER, "Bakery voucher")],
+      truncated: false,
+    });
+    mocks.viewport.rows = [viewportRow("voucher", VOUCHER, "Bakery voucher")];
+    mocks.viewport.total = 1;
+    mocks.viewport.error = new Error("down");
     renderMap("/market?view=map");
 
-    expect(await screen.findByText("Results unavailable")).toBeTruthy();
-    expect(screen.queryByText("0 results")).toBeNull();
-    const alert = await screen.findByRole("alert");
-    fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
-
-    expect(await screen.findByText("1 results")).toBeTruthy();
-    expect(screen.queryByText("Results unavailable")).toBeNull();
+    expect(await screen.findByText("Showing 1 of 1 in this area")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Bakery voucher/ })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.viewport.retry).toHaveBeenCalledOnce();
   });
 });
 
 describe("MarketMapDesk retained results", () => {
-  it("keeps the last good rows and count when a refinement fails, and says so with Retry", async () => {
-    mocks.mapList
-      .mockResolvedValueOnce({ features: [marker("voucher", VOUCHER, "Bakery voucher")] })
-      .mockRejectedValueOnce(new Error("down"))
-      .mockResolvedValueOnce({ features: [marker("post", "p1", "Bread post")] });
+  it("keeps exact viewport rows visible while their replacement refreshes", async () => {
+    mocks.mapList.mockResolvedValue({
+      points: [marker("voucher", VOUCHER, "Bakery voucher")],
+      truncated: false,
+    });
+    mocks.viewport.rows = [viewportRow("voucher", VOUCHER, "Bakery voucher")];
+    mocks.viewport.total = 7;
+    mocks.viewport.retained = true;
+    mocks.viewport.refreshing = true;
     renderMap("/market?view=map");
-    expect(await screen.findByText("1 results")).toBeTruthy();
-
-    // A different selection is a new request; it fails.
-    fireEvent.click(screen.getByRole("button", { name: /Layers/ }));
-    fireEvent.click(
-      within(await screen.findByRole("group", { name: "Types on the map" })).getByRole("button", {
-        name: "Posts",
-      }),
-    );
-    const alert = await screen.findByRole("alert");
-    expect(alert.textContent).toContain("Couldn't load complete marketplace results.");
-    // The last good set is still what the column and the count show.
-    expect(screen.getByText("1 results")).toBeTruthy();
+    expect(await screen.findByText("Showing 1 of 7 in this area")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Bakery voucher/ })).toBeTruthy();
-    expect(screen.queryByText("Results unavailable")).toBeNull();
+    expect(screen.getByLabelText("Loading marketplace…")).toBeTruthy();
+  });
+});
 
-    fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
-    expect(await screen.findByRole("button", { name: /Bread post/ })).toBeTruthy();
+describe("MarketMapDesk exact-result interactions", () => {
+  it("automatically requests the next exact page when its scroll sentinel becomes visible", async () => {
+    let callback: IntersectionObserverCallback = () => undefined;
+    const observe = vi.fn();
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(next: IntersectionObserverCallback) {
+          callback = next;
+        }
+        observe = observe;
+        disconnect = vi.fn();
+      },
+    );
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
+    mocks.viewport.next.hasMore = true;
+    renderMap("/market?view=map");
+    await screen.findByText("Showing 0 of 0 in this area");
+    expect(observe).toHaveBeenCalledOnce();
+
+    callback([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+    expect(mocks.viewport.next.load).toHaveBeenCalledOnce();
+  });
+
+  it("opens Voucher and Want rows while keeping marker hover selection interactive", async () => {
+    mocks.mapList.mockResolvedValue({
+      truncated: false,
+      points: [
+        marker("voucher", VOUCHER, "Bakery voucher"),
+        marker("want", "12", "Need a bicycle"),
+      ],
+    });
+    mocks.viewport.rows = [
+      viewportRow("voucher", VOUCHER, "Bakery voucher"),
+      viewportRow("want", "12", "Need a bicycle"),
+    ];
+    mocks.viewport.total = 2;
+    const router = renderMap("/market?view=map");
+
+    const voucher = await screen.findByRole("button", { name: /Bakery voucher/ });
+    fireEvent.mouseEnter(voucher);
+    fireEvent.mouseLeave(voucher);
+    fireEvent.click(voucher);
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ voucher: VOUCHER }));
+
+    fireEvent.click(screen.getByRole("button", { name: /Need a bicycle/ }));
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ want: "12" }));
+  });
+
+  it("opens a Catalog row on its detail route", async () => {
+    rememberResources("guest", ["catalog"]);
+    mocks.mapList.mockResolvedValue({
+      truncated: false,
+      points: [marker("catalog", "23", "Coastal directory")],
+    });
+    mocks.viewport.rows = [viewportRow("catalog", "23", "Coastal directory")];
+    mocks.viewport.total = 1;
+    const router = renderMap("/market?view=map");
+
+    fireEvent.click(await screen.findByRole("button", { name: /Coastal directory/ }));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/catalogs/23"));
+  });
+
+  it("opens a Post row on its detail route", async () => {
+    rememberResources("guest", ["post"]);
+    mocks.mapList.mockResolvedValue({
+      points: [marker("post", "34", "Market report")],
+      truncated: false,
+    });
+    mocks.viewport.rows = [viewportRow("post", "34", "Market report")];
+    mocks.viewport.total = 1;
+    const router = renderMap("/market?view=map");
+
+    fireEvent.click(await screen.findByRole("button", { name: /Market report/ }));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/posts/34"));
   });
 });
 
 describe("MarketMapDesk layers (the saved resource selection)", () => {
   it("exposes the five types, Posts included, and a toggle changes what the map requests", async () => {
-    mocks.mapList.mockResolvedValue({ features: [] });
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
     renderMap("/market?view=map");
     await waitFor(() => expect(lastKinds()).toEqual(["voucher", "want"]));
 
-    fireEvent.click(screen.getByRole("button", { name: /Layers/ }));
-    const group = await screen.findByRole("group", { name: "Types on the map" });
+    fireEvent.click(screen.getByRole("button", { name: /Resources/ }));
+    const group = await screen.findByRole("group", { name: "Resources on the map" });
     const toggles = within(group).getAllByRole("button");
     expect(toggles.map((toggle) => toggle.textContent)).toEqual([
       "Vouchers",
@@ -295,12 +413,12 @@ describe("MarketMapDesk layers (the saved resource selection)", () => {
   });
 
   it("fixes an empty selection from the toolbar and from the notice", async () => {
-    mocks.mapList.mockResolvedValue({ features: [] });
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
     renderMap("/market?view=map");
     await waitFor(() => expect(lastKinds()).toEqual(["voucher", "want"]));
 
-    fireEvent.click(screen.getByRole("button", { name: /Layers/ }));
-    const group = await screen.findByRole("group", { name: "Types on the map" });
+    fireEvent.click(screen.getByRole("button", { name: /Resources/ }));
+    const group = await screen.findByRole("group", { name: "Resources on the map" });
     fireEvent.click(within(group).getByRole("button", { name: "Vouchers" }));
     fireEvent.click(within(group).getByRole("button", { name: "Wants" }));
 
@@ -309,31 +427,40 @@ describe("MarketMapDesk layers (the saved resource selection)", () => {
     expect(
       await screen.findAllByText("Choose a resource type to show it on the map."),
     ).toBeTruthy();
-    expect(screen.getByText("Results unavailable")).toBeTruthy();
+    expect(screen.queryByText("Loading marketplace…")).toBeNull();
     expect(mocks.mapList.mock.calls.length).toBe(calls);
 
-    // The notice's own action resets to the defaults.
-    fireEvent.click(screen.getAllByRole("button", { name: "Reset layers" })[0]!);
-    await waitFor(() => expect(lastKinds()).toEqual(["voucher", "want"]));
+    // The notice's own action resets to the defaults, whose points are still
+    // fresh in the cache: they come back without another request.
+    const beforeReset = mocks.mapList.mock.calls.length;
+    fireEvent.click(screen.getAllByRole("button", { name: "Reset resources" })[0]!);
+    await waitFor(() =>
+      expect(screen.queryByText("Choose a resource type to show it on the map.")).toBeNull(),
+    );
+    expect(mocks.mapList.mock.calls.length).toBe(beforeReset);
   });
 
-  it("has no layers for a category scope, which draws only its own resource", async () => {
-    mocks.mapList.mockResolvedValue({ features: [] });
+  it("ignores a legacy category scope and keeps the unified resource selector", async () => {
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
     renderMap("/market?scope=wants&view=map", { scope: "wants" });
-    await waitFor(() => expect(lastKinds()).toEqual(["want"]));
-    expect(screen.queryByRole("button", { name: /Layers/ })).toBeNull();
+    await waitFor(() => expect(lastKinds()).toEqual(["voucher", "want"]));
+    expect(screen.getByRole("button", { name: /Resources/ })).toBeTruthy();
   });
 
-  it("draws the same voucher markers for Offers and Vouchers: the map has no offering layer", async () => {
-    mocks.mapList.mockResolvedValue({ features: [] });
+  it("does not let a legacy Offers scope replace the remembered resource selection", async () => {
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
     renderMap("/market?scope=offers&view=map", { scope: "offers" });
-    await waitFor(() => expect(lastKinds()).toEqual(["voucher"]));
+    await waitFor(() => expect(lastKinds()).toEqual(["voucher", "want"]));
   });
 });
 
 describe("MarketMapDesk requested output (Get a voucher)", () => {
   it("restricts the pools map to the pools that can pay the voucher and shows the Get chip", async () => {
-    mocks.mapList.mockResolvedValue({ features: [marker("pool", POOL_A, "Mombasa Bakers")] });
+    rememberResources("guest", ["pool"]);
+    mocks.mapList.mockResolvedValue({
+      points: [marker("pool", POOL_A, "Mombasa Bakers")],
+      truncated: false,
+    });
     renderMap(`/market?scope=pools&view=map&out_voucher=${VOUCHER}`, { scope: "pools" });
 
     expect(await screen.findByRole("button", { name: "Remove filter: Get BAKE" })).toBeTruthy();
@@ -347,7 +474,13 @@ describe("MarketMapDesk requested output (Get a voucher)", () => {
 
   it("sends a selected pool to its swap with the voucher on the receiving side, for a member", async () => {
     signIn();
-    mocks.mapList.mockResolvedValue({ features: [marker("pool", POOL_A, "Mombasa Bakers")] });
+    rememberResources(MEMBER, ["pool"]);
+    mocks.mapList.mockResolvedValue({
+      points: [marker("pool", POOL_A, "Mombasa Bakers")],
+      truncated: false,
+    });
+    mocks.viewport.rows = [viewportRow("pool", POOL_A, "Mombasa Bakers")];
+    mocks.viewport.total = 1;
     const router = renderMap(`/market?scope=pools&view=map&out_voucher=${VOUCHER}`, {
       scope: "pools",
     });
@@ -358,17 +491,25 @@ describe("MarketMapDesk requested output (Get a voucher)", () => {
 
   it("opens the plain pool page when nothing was asked for", async () => {
     signIn();
-    mocks.mapList.mockResolvedValue({ features: [marker("pool", POOL_A, "Mombasa Bakers")] });
+    rememberResources(MEMBER, ["pool"]);
+    mocks.mapList.mockResolvedValue({
+      points: [marker("pool", POOL_A, "Mombasa Bakers")],
+      truncated: false,
+    });
+    mocks.viewport.rows = [viewportRow("pool", POOL_A, "Mombasa Bakers")];
+    mocks.viewport.total = 1;
     const router = renderMap("/market?scope=pools&view=map", { scope: "pools" });
     fireEvent.click(await screen.findByRole("button", { name: /Mombasa Bakers/ }));
     await waitFor(() => expect(router.state.location.pathname).toBe(`/pools/${POOL_A}`));
   });
 
   it("gives an invalid output its own recovery and requests nothing", async () => {
+    mocks.viewport.hasData = false;
+    mocks.viewport.blocked = true;
     const router = renderMap("/market?scope=pools&view=map&out_voucher=nope", { scope: "pools" });
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toContain("This link contains an invalid output voucher.");
-    expect(screen.getByText("Results unavailable")).toBeTruthy();
+    expect(screen.queryByText(/Showing \d+ of \d+/)).toBeNull();
     expect(mocks.mapList).not.toHaveBeenCalled();
 
     fireEvent.click(within(alert).getByRole("button", { name: "Clear filter" }));
@@ -401,16 +542,16 @@ describe("MarketMapDesk requested output (Get a voucher)", () => {
   // The map chrome has no top bar, so a guest's way in sits over the map
   // itself rather than among the toolbar's chips.
   it("puts a guest's Sign in over the map, not in the results toolbar", async () => {
-    mocks.mapList.mockResolvedValue({ features: [] });
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
     renderMap("/market?view=map");
     const link = await screen.findByRole("link", { name: "Sign in" });
     expect(link.getAttribute("href")).toBe("/onboarding?step=welcome");
-    expect(screen.getByRole("navigation", { name: "Marketplace" }).contains(link)).toBe(false);
+    expect(screen.getByRole("group", { name: "View" }).contains(link)).toBe(false);
   });
 
   it("shows a member no Sign in over the map", async () => {
     signIn();
-    mocks.mapList.mockResolvedValue({ features: [] });
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
     renderMap("/market?view=map");
     expect(await screen.findByRole("button", { name: "Filters" })).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
@@ -423,39 +564,23 @@ function hrefOf(link: HTMLElement) {
 }
 
 describe("MarketMapDesk navigation keeps the person's view", () => {
-  it("keeps the Map view across scope tabs, with All being the home map", async () => {
-    mocks.mapList.mockResolvedValue({ features: [] });
+  it("removes duplicate scope tabs from the unified map", async () => {
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
     renderMap("/market?scope=wants&view=map&q=bake", { scope: "wants" });
-    await screen.findByText("0 results");
-
-    const tabs = screen.getByRole("navigation", { name: "Marketplace" });
-    const all = hrefOf(within(tabs).getByRole("link", { name: "All" }));
-    expect(all.path).toBe("/");
-    expect(all.search).toMatchObject({ tab: "market", view: "map", q: "bake" });
-    for (const [name, scope] of [
-      ["Offers", "offers"],
-      ["Vouchers", "vouchers"],
-      ["Pools", "pools"],
-      ["Catalogs", "catalogs"],
-    ] as const) {
-      const target = hrefOf(within(tabs).getByRole("link", { name }));
-      expect(target.path).toBe("/market");
-      expect(target.search).toMatchObject({ scope, view: "map", q: "bake" });
-    }
+    await screen.findByText("Showing 0 of 0 in this area");
+    expect(screen.queryByRole("navigation", { name: "Marketplace" })).toBeNull();
   });
 
-  it("links List to the same scope and keeps the requested output on Pools", async () => {
-    mocks.mapList.mockResolvedValue({ features: [] });
+  it("links List to All from the unified map and drops Pool-only output narrowing", async () => {
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
     renderMap(`/market?scope=pools&view=map&out_voucher=${VOUCHER}`, { scope: "pools" });
-    await screen.findByText(/results$|Results unavailable/);
+    await screen.findByText(/Showing \d+ of \d+|Results unavailable/);
     const view = screen.getByRole("group", { name: "View" });
     expect(within(view).getByRole("link", { name: "Map" }).getAttribute("aria-current")).toBe(
       "page",
     );
-    expect(hrefOf(within(view).getByRole("link", { name: "List" })).search).toMatchObject({
-      scope: "pools",
-      view: "list",
-      out_voucher: VOUCHER,
-    });
+    const list = hrefOf(within(view).getByRole("link", { name: "List" }));
+    expect(list.search).toMatchObject({ scope: "all", view: "list" });
+    expect(list.search.out_voucher).toBeUndefined();
   });
 });

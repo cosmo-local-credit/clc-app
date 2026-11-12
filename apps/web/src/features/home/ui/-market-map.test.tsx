@@ -1,7 +1,7 @@
 import { act, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => {
+const { mapInstances, markerInstances, MockMap, MockMarker, MockLngLatBounds } = vi.hoisted(() => {
   type MapHandler = (event?: {
     features?: Array<{
       properties?: Record<string, unknown>;
@@ -15,6 +15,7 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     style: string;
     center: [number, number];
     zoom: number;
+    minZoom?: number;
     maxZoom?: number;
     bearing?: number;
     pitch?: number;
@@ -32,6 +33,7 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     cluster?: boolean;
     clusterMaxZoom?: number;
     clusterRadius?: number;
+    clusterProperties?: Record<string, unknown>;
     maxzoom?: number;
   };
 
@@ -40,8 +42,14 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     setData = vi.fn((data: unknown) => {
       this.spec.data = data;
     });
-    getClusterExpansionZoom = vi.fn(async () => this.expansionZoom);
+    getClusterExpansionZoom = vi.fn(async (_clusterId: number) => this.expansionZoom);
     expansionZoom = 22;
+    leaves: Array<{ type: "Feature"; geometry: { type: "Point"; coordinates: [number, number] } }> =
+      [];
+    getClusterLeaves = vi.fn(
+      async (_clusterId: number, _limit: number, _offset: number) => this.leaves,
+    );
+    setClusterOptions = vi.fn();
 
     constructor(spec: MockSourceSpec) {
       this.spec = spec;
@@ -57,7 +65,13 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     images = new Set<string>();
     flyTo = vi.fn();
     easeTo = vi.fn();
+    stop = vi.fn();
     fitBounds = vi.fn();
+    fitCamera: { center: { lng: number; lat: number }; zoom: number } | undefined = {
+      center: { lng: 36.82, lat: -1.28 },
+      zoom: 10.4,
+    };
+    cameraForBounds = vi.fn((_bounds: unknown, _options: unknown) => this.fitCamera);
     jumpTo = vi.fn();
     setStyle = vi.fn((style: string) => {
       this.options.style = style;
@@ -90,8 +104,10 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     hasImage = vi.fn((id: string) => this.images.has(id));
     remove = vi.fn();
     removeImage = vi.fn((id: string) => this.images.delete(id));
-    getCanvas = vi.fn(() => ({ clientWidth: 360, clientHeight: 640 }));
+    canvas = { clientWidth: 360, clientHeight: 640 };
+    getCanvas = vi.fn(() => this.canvas);
     isMoving = vi.fn(() => false);
+    minZoom = 0;
     zoom = 12;
     maxZoom = 21;
     bounds = { west: 36.6, south: -1.5, east: 37.1, north: -1.1 };
@@ -99,6 +115,7 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
 
     constructor(options: MockMapOptions) {
       this.options = options;
+      this.minZoom = options.minZoom ?? 0;
       this.maxZoom = options.maxZoom ?? 21;
       mapInstances.push(this);
     }
@@ -160,6 +177,15 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
       return this.maxZoom;
     }
 
+    getMinZoom() {
+      return this.minZoom;
+    }
+
+    setMinZoom = vi.fn((zoom: number) => {
+      this.minZoom = zoom;
+      return this;
+    });
+
     getBounds = () => {
       const { west, south, east, north } = this.bounds;
       const view = {
@@ -207,6 +233,25 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     }
   }
 
+  class HoistedMockLngLatBounds {
+    points: Array<[number, number]> = [];
+    extend(point: [number, number]) {
+      this.points.push(point);
+      return this;
+    }
+    isEmpty() {
+      return this.points.length === 0;
+    }
+    getCenter() {
+      const lngs = this.points.map((point) => point[0]);
+      const lats = this.points.map((point) => point[1]);
+      return {
+        lng: (Math.min(...lngs) + Math.max(...lngs)) / 2,
+        lat: (Math.min(...lats) + Math.max(...lats)) / 2,
+      };
+    }
+  }
+
   const mapInstances: HoistedMockMap[] = [];
   const markerInstances: HoistedMockMarker[] = [];
 
@@ -215,6 +260,7 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     markerInstances,
     MockMap: HoistedMockMap,
     MockMarker: HoistedMockMarker,
+    MockLngLatBounds: HoistedMockLngLatBounds,
   };
 });
 
@@ -222,13 +268,13 @@ vi.mock("maplibre-gl", () => ({
   default: {
     Map: MockMap,
     Marker: MockMarker,
+    LngLatBounds: MockLngLatBounds,
     AttributionControl: class MockAttributionControl {},
   },
 }));
 
 import { installCanvasStub, installPath2DStub } from "./-market-canvas-stub";
-import { type MarketLocation, MARKET_SOURCE_ID } from "./market-data";
-import type { MarketMapCluster } from "@clc/core/features/market-map/logic";
+import { marketMinimumZoom, type MarketLocation, MARKET_SOURCE_ID } from "./market-data";
 import { EXPLICIT_CAMERA_RANK } from "#/features/home/logic/market-camera";
 import { useThemeStore } from "#/providers/theme";
 import { type MarketCamera, MarketMap } from "./market-map";
@@ -301,6 +347,29 @@ beforeEach(() => {
   vi.stubGlobal("CSS", { supports: () => true });
 });
 
+describe("marketMinimumZoom", () => {
+  it.each([
+    [360, 0],
+    [512, 0],
+    [1024, 1],
+    [1440, Math.log2(1440 / 512)],
+    [2560, Math.log2(2560 / 512)],
+    [4096, 3],
+  ])("keeps a single projected world across a %ipx viewport", (width, expected) => {
+    const minZoom = marketMinimumZoom(width);
+
+    expect(minZoom).toBeCloseTo(expected);
+    expect(512 * 2 ** minZoom).toBeGreaterThanOrEqual(width);
+  });
+
+  it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+    "falls back safely for an unusable width %s",
+    (width) => {
+      expect(marketMinimumZoom(width)).toBe(0);
+    },
+  );
+});
+
 function clickFeature(
   map: ReturnType<typeof loadedMap>,
   layerId: string,
@@ -324,6 +393,31 @@ function clickEmptyMap(map: ReturnType<typeof loadedMap>) {
 }
 
 describe("MarketMap lifecycle", () => {
+  it("sets the responsive minimum zoom during construction", () => {
+    const clientWidth = vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(2048);
+    try {
+      renderWithCamera(null);
+
+      expect(firstMap().options.minZoom).toBeCloseTo(2);
+    } finally {
+      clientWidth.mockRestore();
+    }
+  });
+
+  it("updates the minimum zoom after the canvas resizes without rebuilding the map", () => {
+    renderWithCamera(null);
+    const map = firstMap();
+    map.canvas.clientWidth = 2560;
+
+    act(() => map.trigger("resize"));
+
+    expect(map.setMinZoom).toHaveBeenCalledWith(marketMinimumZoom(2560));
+    expect(mapInstances).toHaveLength(1);
+
+    act(() => map.trigger("resize"));
+    expect(map.setMinZoom).toHaveBeenCalledOnce();
+  });
+
   it("switches Standard themes in place and restores theme-aware overlays", () => {
     render(
       <MarketMap
@@ -1055,23 +1149,19 @@ function renderMap(locations: MarketLocation[], extra = {}) {
 }
 
 describe("MarketMap clustering scope", () => {
-  it("renders the server cluster without reclustering it in MapLibre", () => {
-    const cluster: MarketMapCluster = {
-      type: "cluster",
-      id: "cluster:8:1:2",
-      lat: -1.29,
-      lng: 36.82,
-      count: 3,
-      kinds: { voucher: 2, want: 1 },
-      expansionZoom: 10,
-    };
-    renderMap(LOCATIONS, { clusters: [cluster] });
+  it("clusters every point in MapLibre, summing stack sizes into the badge count", () => {
+    renderMap([...LOCATIONS, ...KILIFI_STACK]);
     const map = loadedMap();
     const spec = map.getSource(MARKET_SOURCE_ID)?.spec;
     const data = spec?.data as { features: Array<{ properties: Record<string, unknown> }> };
 
-    expect(spec?.cluster).toBeUndefined();
-    expect(data.features.some((feature) => feature.properties.serverCluster === true)).toBe(true);
+    expect(spec).toMatchObject({
+      cluster: true,
+      clusterRadius: 50,
+      clusterMaxZoom: 13,
+      clusterProperties: { markerCount: ["+", ["get", "count"]] },
+    });
+    expect(data.features.every((feature) => !("point_count" in feature.properties))).toBe(true);
     expect(map.options.maxZoom).toBeGreaterThanOrEqual(18);
   });
 
@@ -1107,6 +1197,213 @@ describe("MarketMap clustering scope", () => {
       ["!", ["has", "point_count"]],
       [">", ["get", "count"], 1],
     ]);
+  });
+});
+
+function leavesAt(...coordinates: Array<[number, number]>) {
+  return coordinates.map((point) => ({
+    type: "Feature" as const,
+    geometry: { type: "Point" as const, coordinates: point },
+  }));
+}
+
+describe("MarketMap cluster click", () => {
+  const NAIROBI: Array<[number, number]> = [
+    [36.81, -1.3],
+    [36.83, -1.27],
+    [36.9, -1.32],
+  ];
+
+  async function clickCluster(
+    map: ReturnType<typeof loadedMap>,
+    properties: { cluster_id: number; point_count: number; markerCount: number },
+  ) {
+    clickFeature(map, "market-clusters", properties);
+    await vi.waitFor(() => expect(map.easeTo).toHaveBeenCalled());
+  }
+
+  it("requests every leaf, fits the camera to them and draws them all", async () => {
+    renderMap(LOCATIONS, { bottomInset: 120 });
+    const map = loadedMap();
+    map.zoom = 5.5;
+    const source = map.getSource(MARKET_SOURCE_ID)!;
+    source.leaves = leavesAt(...NAIROBI);
+
+    await clickCluster(map, { cluster_id: 42, point_count: 3, markerCount: 300 });
+
+    expect(source.getClusterLeaves).toHaveBeenCalledWith(42, 3, 0);
+    const [bounds, options] = map.cameraForBounds.mock.calls[0]!;
+    expect((bounds as InstanceType<typeof MockLngLatBounds>).points).toEqual(NAIROBI);
+    expect(options).toEqual({
+      padding: { top: 96, bottom: 40, left: 48, right: 48 },
+      maxZoom: 20,
+    });
+    expect(source.setClusterOptions).toHaveBeenCalledWith({ cluster: true, clusterMaxZoom: 9 });
+    expect(map.stop.mock.invocationCallOrder[0]).toBeLessThan(
+      source.setClusterOptions.mock.invocationCallOrder[0]!,
+    );
+    expect(map.easeTo).toHaveBeenLastCalledWith({
+      center: { lng: 36.82, lat: -1.28 },
+      zoom: 10.4,
+    });
+  });
+
+  it("fits a huge, far-out cluster without exploding it", async () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    map.zoom = 5.5;
+    map.fitCamera = { center: { lng: 39.6, lat: -4 }, zoom: 6.2 };
+    const source = map.getSource(MARKET_SOURCE_ID)!;
+    source.leaves = leavesAt(...NAIROBI);
+
+    await clickCluster(map, { cluster_id: 1, point_count: 900, markerCount: 1_175 });
+
+    expect(source.setClusterOptions).not.toHaveBeenCalled();
+    expect(map.easeTo).toHaveBeenLastCalledWith({ center: { lng: 39.6, lat: -4 }, zoom: 6.2 });
+  });
+
+  it("goes to the first split when fitting cannot zoom in", async () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    map.zoom = 7;
+    map.fitCamera = { center: { lng: 36.85, lat: -1.3 }, zoom: 6.5 };
+    const source = map.getSource(MARKET_SOURCE_ID)!;
+    source.leaves = leavesAt(...NAIROBI);
+    source.expansionZoom = 8;
+
+    await clickCluster(map, { cluster_id: 5, point_count: 3, markerCount: 40 });
+
+    expect(source.getClusterExpansionZoom).toHaveBeenCalledWith(5);
+    expect(source.setClusterOptions).toHaveBeenCalledWith({ cluster: true, clusterMaxZoom: 7 });
+    expect(map.easeTo).toHaveBeenLastCalledWith({
+      center: { lng: 36.855000000000004, lat: -1.295 },
+      zoom: 8,
+    });
+  });
+
+  it("needs no option change for a fit at zoom 14 or deeper", async () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    map.fitCamera = { center: { lng: 36.82, lat: -1.28 }, zoom: 15.3 };
+    const source = map.getSource(MARKET_SOURCE_ID)!;
+    source.leaves = leavesAt(...NAIROBI);
+
+    await clickCluster(map, { cluster_id: 3, point_count: 3, markerCount: 3 });
+
+    expect(source.setClusterOptions).not.toHaveBeenCalled();
+    expect(map.easeTo).toHaveBeenLastCalledWith({
+      center: { lng: 36.82, lat: -1.28 },
+      zoom: 15.3,
+    });
+  });
+
+  it("restores normal clustering once the viewer zooms out below the fitted level", async () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    map.zoom = 5.5;
+    const source = map.getSource(MARKET_SOURCE_ID)!;
+    source.leaves = leavesAt(...NAIROBI);
+    await clickCluster(map, { cluster_id: 42, point_count: 3, markerCount: 300 });
+    source.setClusterOptions.mockClear();
+
+    map.zoom = 10.4;
+    act(() => map.trigger("zoomend"));
+    expect(source.setClusterOptions).not.toHaveBeenCalled();
+
+    map.zoom = 9.9;
+    act(() => map.trigger("zoomend"));
+    expect(source.setClusterOptions).toHaveBeenCalledExactlyOnceWith({
+      cluster: true,
+      clusterMaxZoom: 13,
+    });
+
+    map.zoom = 6;
+    act(() => map.trigger("zoomend"));
+    expect(source.setClusterOptions).toHaveBeenCalledOnce();
+  });
+
+  it("restores normal clustering before new points are set", async () => {
+    const view = renderMap(LOCATIONS);
+    const map = loadedMap();
+    map.zoom = 5.5;
+    const source = map.getSource(MARKET_SOURCE_ID)!;
+    source.leaves = leavesAt(...NAIROBI);
+    await clickCluster(map, { cluster_id: 42, point_count: 3, markerCount: 300 });
+    source.setClusterOptions.mockClear();
+    source.setData.mockClear();
+
+    view.rerender(
+      <MarketMap
+        locations={LOCATIONS.slice(0, 2)}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(source.setClusterOptions).toHaveBeenCalledExactlyOnceWith({
+      cluster: true,
+      clusterMaxZoom: 13,
+    });
+    expect(source.setData).toHaveBeenCalledOnce();
+    expect(source.setClusterOptions.mock.invocationCallOrder[0]).toBeLessThan(
+      source.setData.mock.invocationCallOrder[0]!,
+    );
+  });
+
+  it("leaves a data change alone when nothing is exploded", () => {
+    const view = renderMap(LOCATIONS);
+    const map = loadedMap();
+    const source = map.getSource(MARKET_SOURCE_ID)!;
+
+    view.rerender(
+      <MarketMap
+        locations={LOCATIONS.slice(0, 2)}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(source.setData).toHaveBeenCalled();
+    expect(source.setClusterOptions).not.toHaveBeenCalled();
+  });
+
+  it("starts a reloaded style at the normal levels and forgets the explosion", async () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    map.zoom = 5.5;
+    map.getSource(MARKET_SOURCE_ID)!.leaves = leavesAt(...NAIROBI);
+    await clickCluster(map, { cluster_id: 42, point_count: 3, markerCount: 300 });
+
+    act(() => useThemeStore.setState({ theme: "dark" }));
+    act(() => map.trigger("style.load"));
+    const reloaded = map.getSource(MARKET_SOURCE_ID)!;
+    expect(reloaded.spec).toMatchObject({ cluster: true, clusterMaxZoom: 13 });
+
+    map.zoom = 4;
+    act(() => map.trigger("zoomend"));
+    expect(reloaded.setClusterOptions).not.toHaveBeenCalled();
+  });
+
+  it("ignores a cluster click that resolves after unmount", async () => {
+    const view = renderMap(LOCATIONS);
+    const map = loadedMap();
+    const source = map.getSource(MARKET_SOURCE_ID)!;
+    let release!: (leaves: typeof source.leaves) => void;
+    source.getClusterLeaves.mockReturnValueOnce(
+      new Promise((resolve) => {
+        release = resolve;
+      }),
+    );
+    clickFeature(map, "market-clusters", { cluster_id: 9, point_count: 3, markerCount: 3 });
+    view.unmount();
+    await act(async () => release(leavesAt(...NAIROBI)));
+
+    expect(map.cameraForBounds).not.toHaveBeenCalled();
+    expect(map.easeTo).not.toHaveBeenCalled();
   });
 });
 
@@ -1445,19 +1742,16 @@ describe("MarketMap click wiring", () => {
     expect(onDeselect).toHaveBeenCalledTimes(1);
   });
 
-  it("does not deselect when a cluster is tapped", () => {
+  it("does not deselect when a cluster is tapped", async () => {
     const onDeselect = vi.fn();
     renderMap(LOCATIONS, { onDeselect });
     const map = loadedMap();
+    map.getSource(MARKET_SOURCE_ID)!.leaves = leavesAt([36.81, -1.3], [36.83, -1.27]);
 
-    clickFeature(map, "market-clusters", {
-      serverCluster: true,
-      point_count: 3,
-      expansionZoom: 12,
-    });
+    clickFeature(map, "market-clusters", { cluster_id: 7, point_count: 2, markerCount: 3 });
 
     expect(onDeselect).not.toHaveBeenCalled();
-    expect(map.easeTo).toHaveBeenCalledWith({ center: [36.82, -1.28], zoom: 12 });
+    await vi.waitFor(() => expect(map.easeTo).toHaveBeenCalled());
   });
 
   it("opens the fan on a single real click without immediately closing it", () => {
@@ -1633,28 +1927,16 @@ describe("MarketMap badge counts", () => {
     locationName: null,
   }));
 
-  it("uses the backend-provided total without rendering resource initials", () => {
-    renderMap([...CBD_STACK, ...LOCATIONS], {
-      clusters: [
-        {
-          type: "cluster",
-          id: "cluster:7:1:1",
-          lat: -1.28,
-          lng: 36.82,
-          count: 65,
-          kinds: { voucher: 63, want: 2 },
-          expansionZoom: 9,
-        },
-      ],
-    });
+  it("counts resources, not stacks, without rendering resource initials", () => {
+    renderMap([...CBD_STACK, ...LOCATIONS]);
     const map = loadedMap();
-    const data = map.getSource(MARKET_SOURCE_ID)?.spec.data as {
-      features: Array<{ properties: Record<string, unknown> }>;
-    };
-    const cluster = data.features.find((feature) => feature.properties.serverCluster === true);
+    const spec = map.getSource(MARKET_SOURCE_ID)?.spec;
+    const data = spec?.data as { features: Array<{ properties: Record<string, unknown> }> };
+    const stack = data.features.find((feature) => feature.properties.count === 63);
 
-    expect(cluster?.properties.markerCount).toBe(65);
-    expect(cluster?.properties).not.toHaveProperty("badgeLabel");
+    expect(spec?.clusterProperties).toEqual({ markerCount: ["+", ["get", "count"]] });
+    expect(stack).toBeDefined();
+    expect(stack?.properties).not.toHaveProperty("badgeLabel");
   });
 
   it("draws clusters and coincident stacks as theme-aware network badges", () => {
@@ -1697,27 +1979,9 @@ describe("MarketMap badge counts", () => {
     expect(JSON.stringify(layer.layout?.["text-field"])).toContain('"count"');
   });
 
-  it("abbreviates server cluster counts that cannot fit inside the badge", () => {
-    renderMap(CBD_STACK, {
-      clusters: [
-        {
-          type: "cluster",
-          id: "cluster:2:1:1",
-          lat: 0,
-          lng: 0,
-          count: 1_234,
-          kinds: { voucher: 1_234 },
-          expansionZoom: 4,
-        },
-      ],
-    });
+  it("abbreviates cluster counts that cannot fit inside the badge", () => {
+    renderMap(CBD_STACK);
     const map = loadedMap();
-    const data = map.getSource(MARKET_SOURCE_ID)?.spec.data as {
-      features: Array<{ properties: Record<string, unknown> }>;
-    };
-    const cluster = data.features.find((feature) => feature.properties.serverCluster === true);
-
-    expect(cluster?.properties.markerCount).toBe(1_234);
     const layout = map.getLayer("market-cluster-count")?.layout as Record<string, unknown>;
     expect(layout["text-field"]).toEqual([
       "step",

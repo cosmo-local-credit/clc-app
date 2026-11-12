@@ -1,6 +1,11 @@
 import type { TagMatch, VoucherRef } from "@clc/core/features/catalog/logic";
 import { parseCatalogFilter, serializeVoucherRef } from "@clc/core/features/catalog/logic";
 import {
+  DEFAULT_POST_TIMING,
+  type PostTiming,
+  isPostTiming,
+} from "@clc/core/features/reports/logic";
+import {
   readOwnerScoped,
   removeOwnerScoped,
   writeOwnerScoped,
@@ -40,6 +45,9 @@ export const CATALOG_FILTER_PREFERENCE_NAMES = {
   pools: "pools.filter-preferences.v1",
   posts: "posts.filter-preferences.v1",
 } as const;
+
+const POSTED_WITHIN_PREFERENCE_NAME = "posts.posted-within.v1";
+const POST_TIMING_PREFERENCE_NAME = "posts.timing.v1";
 
 export type CatalogFilterPreference = {
   tags: readonly string[];
@@ -164,4 +172,24 @@ export function writeCatalogFilterPreference(
 
 export function clearCatalogFilterPreference(owner: StorageOwner, name: string): void {
   removeOwnerScoped(owner, name);
+}
+
+export function readPostTimingPreference(owner: StorageOwner): PostTiming | null {
+  const raw = readOwnerScoped(owner, POST_TIMING_PREFERENCE_NAME);
+  if (isPostTiming(raw)) return raw === DEFAULT_POST_TIMING ? null : raw;
+
+  // Migrate the one legacy value whose meaning remains exact. Creation-age
+  // windows cannot safely be reinterpreted as schedule state.
+  const legacy = readOwnerScoped(owner, POSTED_WITHIN_PREFERENCE_NAME);
+  removeOwnerScoped(owner, POSTED_WITHIN_PREFERENCE_NAME);
+  return legacy === "all" ? "all" : null;
+}
+
+export function writePostTimingPreference(owner: StorageOwner, timing: PostTiming): void {
+  removeOwnerScoped(owner, POSTED_WITHIN_PREFERENCE_NAME);
+  if (timing === DEFAULT_POST_TIMING) {
+    removeOwnerScoped(owner, POST_TIMING_PREFERENCE_NAME);
+    return;
+  }
+  writeOwnerScoped(owner, POST_TIMING_PREFERENCE_NAME, timing);
 }

@@ -10,28 +10,14 @@ const MARKET_MAP_KINDS = ["voucher", "want", "pool", "catalog", "post"] as const
 const marketMapKindSchema = z.enum(MARKET_MAP_KINDS);
 export type MarketMapKind = z.infer<typeof marketMapKindSchema>;
 
-const MARKET_MAP_ZOOM_STEP = 0.25;
-
-/**
- * Shares useful cluster responses without evaluating a nearly-complete zoom
- * level at the previous integer scale. Flooring keeps clustering conservative:
- * a pin is never separated using a scale the user has not reached yet.
- */
-export function canonicalMarketMapZoom(zoom: number): number {
-  if (!Number.isFinite(zoom)) return 0;
-  const clamped = Math.max(0, Math.min(22, zoom));
-  return Math.floor((clamped + Number.EPSILON) / MARKET_MAP_ZOOM_STEP) * MARKET_MAP_ZOOM_STEP;
-}
-
 const mapMarkerIconSchema = z.union([
   markerIconSchema,
   wantMarkerIconSchema,
   reportMarkerIconSchema,
 ]);
 
-const marketMapMarkerSchema = z.object({
-  type: z.literal("marker"),
-  id: z.string().min(1),
+/** One mappable resource. The client clusters these; the server never does. */
+const marketMapPointSchema = z.object({
   kind: marketMapKindSchema,
   resourceId: z.string().min(1),
   name: z.string(),
@@ -47,34 +33,26 @@ const marketMapMarkerSchema = z.object({
     .transform((value) => value ?? null),
 });
 
-const marketMapClusterSchema = z.object({
-  type: z.literal("cluster"),
-  id: z.string().min(1),
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
-  count: z.number().int().positive(),
-  kinds: z.object({
-    voucher: z.number().int().nonnegative().optional(),
-    want: z.number().int().nonnegative().optional(),
-    pool: z.number().int().nonnegative().optional(),
-    catalog: z.number().int().nonnegative().optional(),
-    post: z.number().int().nonnegative().optional(),
-  }),
-  expansionZoom: z.number().min(0).max(22),
+const marketMapRelationshipFacetSchema = z.object({
+  id: z.number().int().positive(),
+  chainId: z.number().int().positive(),
+  address: z.string().min(1),
+  name: z.string().min(1),
+  symbol: z.string().min(1),
+  count: z.number().int().nonnegative(),
 });
 
-const marketMapFeatureSchema = z.discriminatedUnion("type", [
-  marketMapMarkerSchema,
-  marketMapClusterSchema,
-]);
-
-export const marketMapResponseSchema = z.object({
-  features: z.array(marketMapFeatureSchema),
-  tagFacets: z
-    .array(z.object({ tag: z.string(), count: z.number().int().nonnegative() }))
-    .optional(),
+export const marketMapPointsResponseSchema = z.object({
+  points: z.array(marketMapPointSchema),
+  truncated: z.boolean(),
 });
 
-export type MarketMapMarker = z.infer<typeof marketMapMarkerSchema>;
-export type MarketMapCluster = z.infer<typeof marketMapClusterSchema>;
-export type MarketMapResponse = z.infer<typeof marketMapResponseSchema>;
+export const marketMapFacetsResponseSchema = z.object({
+  tagFacets: z.array(z.object({ tag: z.string(), count: z.number().int().nonnegative() })),
+  postVoucherFacets: z.array(marketMapRelationshipFacetSchema),
+  postPoolFacets: z.array(marketMapRelationshipFacetSchema),
+});
+
+export type MarketMapPoint = z.infer<typeof marketMapPointSchema>;
+export type MarketMapPointsResponse = z.infer<typeof marketMapPointsResponseSchema>;
+export type MarketMapFacetsResponse = z.infer<typeof marketMapFacetsResponseSchema>;

@@ -18,7 +18,7 @@ import { filterSearch } from "#/lib/table-search";
 import { useDataState } from "#/lib/use-data-state";
 import { usePagedTable } from "#/lib/use-paged-table";
 import { RETIREMENT_STATUSES, type RetirementSearch } from "./retirement-search";
-import { RetirementStatus } from "./retirement-status";
+import { RetirementSource, RetirementStatus } from "./retirement-status";
 import { RETIREMENT_POLL_MS } from "./use-retirement";
 
 const columns: ColumnDef<RetirementRequest>[] = [
@@ -44,6 +44,11 @@ const columns: ColumnDef<RetirementRequest>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => <RetirementStatus status={row.original.status} />,
+  },
+  {
+    accessorKey: "source",
+    header: "Source",
+    cell: ({ row }) => <RetirementSource source={row.original.source} />,
   },
   {
     accessorKey: "reason",

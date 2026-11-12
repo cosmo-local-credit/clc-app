@@ -4,24 +4,26 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { AdminUser, AdminUserPage } from "@clc/api/features/admin/client";
+import { accountRetirementKeys } from "@clc/api/features/account-retirement/queries";
 import { adminKeys } from "@clc/api/features/admin/queries";
 
 const approveUser = vi.fn();
+const rejectUser = vi.fn();
 const updateUserRole = vi.fn();
 
 vi.mock("#/lib/api", () => ({
   clcApi: {
     admin: {
-      approveUser: (address: string) => approveUser(address),
+      approveUser: (address: string, reason?: string) => approveUser(address, reason),
       updateUserRole: (address: string, role: string) => updateUserRole(address, role),
-      rejectUser: vi.fn(),
+      rejectUser: (address: string, reason?: string) => rejectUser(address, reason),
       updateUserLimits: vi.fn(),
       listUsers: vi.fn(),
     },
   },
 }));
 
-const { useApproveUser, useUpdateUserRole } = await import("./use-admin-users");
+const { useApproveUser, useRejectUser, useUpdateUserRole } = await import("./use-admin-users");
 
 const PENDING_ADDRESS = "0x33a573149db22e759fB9A38Bcc461C12855c2645";
 const OTHER_ADDRESS = "0x4D478F0e1c1b0b3d0F5b8d2cbde4581dB6369abc";
@@ -108,7 +110,7 @@ describe("useApproveUser cache writes", () => {
     approveUser.mockResolvedValue(user(PENDING_ADDRESS, "APPROVED", { name: "Renamed" }));
 
     const { result } = renderHook(() => useApproveUser(), { wrapper });
-    result.current.mutate(PENDING_ADDRESS);
+    result.current.mutate({ address: PENDING_ADDRESS });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -129,7 +131,7 @@ describe("useApproveUser cache writes", () => {
     approveUser.mockResolvedValue(user(PENDING_ADDRESS, "APPROVED"));
 
     const { result } = renderHook(() => useApproveUser(), { wrapper });
-    result.current.mutate(PENDING_ADDRESS);
+    result.current.mutate({ address: PENDING_ADDRESS });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -144,7 +146,7 @@ describe("useApproveUser cache writes", () => {
     approveUser.mockResolvedValue(user(PENDING_ADDRESS, "APPROVED"));
 
     const { result } = renderHook(() => useApproveUser(), { wrapper });
-    result.current.mutate(PENDING_ADDRESS);
+    result.current.mutate({ address: PENDING_ADDRESS });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -160,7 +162,7 @@ describe("useApproveUser cache writes", () => {
     approveUser.mockResolvedValue(user(PENDING_ADDRESS, "APPROVED"));
 
     const { result } = renderHook(() => useApproveUser(), { wrapper });
-    result.current.mutate(PENDING_ADDRESS);
+    result.current.mutate({ address: PENDING_ADDRESS });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -173,7 +175,7 @@ describe("useApproveUser cache writes", () => {
     approveUser.mockResolvedValue(user(PENDING_ADDRESS, "APPROVED"));
 
     const { result } = renderHook(() => useApproveUser(), { wrapper });
-    result.current.mutate(PENDING_ADDRESS);
+    result.current.mutate({ address: PENDING_ADDRESS });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -188,7 +190,7 @@ describe("useApproveUser cache writes", () => {
     approveUser.mockResolvedValue(user(PENDING_ADDRESS, "APPROVED"));
 
     const { result } = renderHook(() => useApproveUser(), { wrapper });
-    result.current.mutate(PENDING_ADDRESS);
+    result.current.mutate({ address: PENDING_ADDRESS });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -204,10 +206,44 @@ describe("useApproveUser cache writes", () => {
     approveUser.mockResolvedValue(user(PENDING_ADDRESS, "APPROVED"));
 
     const { result } = renderHook(() => useApproveUser(), { wrapper });
-    result.current.mutate(PENDING_ADDRESS);
+    result.current.mutate({ address: PENDING_ADDRESS });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(queryClient.getQueryState(adminKeys.users(FIRST_PAGE))?.isInvalidated).toBe(true);
+  });
+});
+
+describe("moderation reasons", () => {
+  it("passes an unban reason through and refreshes the moderation history", async () => {
+    queryClient.setQueryData(accountRetirementKeys.moderation(PENDING_ADDRESS), []);
+    approveUser.mockResolvedValue(user(PENDING_ADDRESS, "APPROVED"));
+
+    const { result } = renderHook(() => useApproveUser(), { wrapper });
+    result.current.mutate({ address: PENDING_ADDRESS, reason: "Appeal accepted" });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(approveUser).toHaveBeenCalledWith(PENDING_ADDRESS, "Appeal accepted");
+    expect(
+      queryClient.getQueryState(accountRetirementKeys.moderation(PENDING_ADDRESS))?.isInvalidated,
+    ).toBe(true);
+  });
+
+  it("passes a ban reason through, writes the row and refreshes the history", async () => {
+    queryClient.setQueryData(adminKeys.users(FIRST_PAGE), page(user(PENDING_ADDRESS, "APPROVED")));
+    queryClient.setQueryData(accountRetirementKeys.moderation(PENDING_ADDRESS), []);
+    rejectUser.mockResolvedValue(user(PENDING_ADDRESS, "REJECTED"));
+
+    const { result } = renderHook(() => useRejectUser(), { wrapper });
+    result.current.mutate({ address: PENDING_ADDRESS, reason: "Spam" });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(rejectUser).toHaveBeenCalledWith(PENDING_ADDRESS, "Spam");
+    expect(
+      queryClient.getQueryData<AdminUserPage>(adminKeys.users(FIRST_PAGE))?.users[0]?.status,
+    ).toBe("REJECTED");
+    expect(
+      queryClient.getQueryState(accountRetirementKeys.moderation(PENDING_ADDRESS))?.isInvalidated,
+    ).toBe(true);
   });
 });

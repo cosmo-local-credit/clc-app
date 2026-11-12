@@ -14,10 +14,12 @@ import type { ReactNode } from "react";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { ReviewSummaryContent } from "#/components/reviews/review-summary";
 import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
+import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { PoolLogo } from "#/components/wallet";
 import { PoolInfoDesk } from "#/desktop/pools/detail/pool-info-desk";
+import { PoolPostsDesk } from "#/desktop/pools/detail/pool-posts";
 import { PoolManageMenu } from "#/desktop/pools/detail/pool-manage-desk";
 import { PoolReceivePopover } from "#/desktop/pools/detail/pool-receive-popover";
 import type { PoolSide } from "#/desktop/pools/detail/pool-side-panel";
@@ -270,6 +272,8 @@ export function PoolMain({
         </div>
       ) : null}
 
+      <ManagerClosureNotice closure={pool.managerClosure} resource="pool" active={pool.active} />
+
       {auth.isAuthenticated ? (
         <PoolStats
           pool={pool}
@@ -354,6 +358,7 @@ export function PoolMain({
       </div>
 
       <VoucherReviewsDesk key={pool.address} kind="pool" address={pool.address} layout="page" />
+      <PoolPostsDesk key={`posts:${pool.address}`} pool={pool} />
     </div>
   );
 }

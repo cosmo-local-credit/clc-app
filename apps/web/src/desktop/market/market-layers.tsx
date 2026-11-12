@@ -25,9 +25,8 @@ export type MapLayers = {
 /**
  * The resource types the All map draws, as a popover under a chip: the phone
  * map's five toggles (Vouchers, Wants, Pools, Catalogs, Posts) with a way back
- * to the defaults. It decides what is on the map only. The scope tabs beside it
- * choose which marketplace category the results are about, so the two stay
- * apart: a category scope draws its own resource and has no layers to pick.
+ * to the defaults. It decides what the unified map and its exact result column
+ * contain; resource-list navigation lives in the sidebar.
  */
 export function MapLayersChip({ layers }: { layers: MapLayers }) {
   const { t } = useLingui();
@@ -47,7 +46,7 @@ export function MapLayersChip({ layers }: { layers: MapLayers }) {
       <DeskChip on={open}>
         <PopoverTrigger>
           <RiStackLine aria-hidden="true" />
-          <Trans>Layers</Trans>
+          <Trans>Resources</Trans>
           <span
             aria-hidden="true"
             className={cn(
@@ -62,7 +61,7 @@ export function MapLayersChip({ layers }: { layers: MapLayers }) {
       <PopoverContent align="start" className="grid w-80 gap-4 p-0">
         <div className="flex h-12 items-center justify-between gap-3 border-border border-b px-4">
           <PopoverTitle className="font-heading text-base font-semibold">
-            <Trans>Show on map</Trans>
+            <Trans>Resources on the map</Trans>
           </PopoverTitle>
           <span className="text-xs text-muted-foreground">
             <Trans>
@@ -70,7 +69,11 @@ export function MapLayersChip({ layers }: { layers: MapLayers }) {
             </Trans>
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-2 px-4" role="group" aria-label={t`Types on the map`}>
+        <div
+          className="grid grid-cols-2 gap-2 px-4"
+          role="group"
+          aria-label={t`Resources on the map`}
+        >
           {MARKET_MAP_RESOURCE_KINDS.map((kind) => {
             const pressed = layers.selected.includes(kind);
             return (

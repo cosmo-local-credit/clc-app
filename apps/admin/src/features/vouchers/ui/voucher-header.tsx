@@ -2,6 +2,7 @@ import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { Link } from "@tanstack/react-router";
 import {
   HiOutlineAdjustments,
+  HiOutlineArchive,
   HiOutlineArrowCircleUp,
   HiOutlineExternalLink,
   HiOutlinePencil,
@@ -42,12 +43,14 @@ export function VoucherHeader({
   voucher,
   onEdit,
   onRestore,
+  onRetire,
   onContract,
   restoring,
 }: {
   voucher: MarketVoucherDetail;
   onEdit: () => void;
   onRestore: () => void;
+  onRetire: () => void;
   onContract: () => void;
   restoring: boolean;
 }) {
@@ -111,7 +114,12 @@ export function VoucherHeader({
               <HiOutlineArrowCircleUp />
               {restoring ? "Restoring…" : "Restore"}
             </Button>
-          ) : null}
+          ) : (
+            <Button size="sm" variant="destructive" onClick={onRetire}>
+              <HiOutlineArchive />
+              Retire voucher
+            </Button>
+          )}
           <a
             href={addressUrl(voucher.address)}
             target="_blank"

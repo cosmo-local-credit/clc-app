@@ -2,6 +2,8 @@ import { lazy, type ReactNode, Suspense } from "react";
 import { useRouterState } from "@tanstack/react-router";
 
 import { readLayout, useLayout } from "#/desktop/layout";
+import { isRecoverySession } from "#/features/account-retirement/logic/lifecycle";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 
 const BARE = new Set(["/onboarding"]);
 
@@ -14,11 +16,16 @@ const loadShell = () => import("#/desktop/shell/desktop-shell");
 const DesktopShell = lazy(() => loadShell().then((module) => ({ default: module.DesktopShell })));
 if (readLayout() === "desktop") void loadShell();
 
-/** The shell wraps every desktop route except onboarding, which owns the viewport. */
+/**
+ * The shell wraps every desktop route except onboarding, which owns the
+ * viewport, and a retiring account's recovery screens: the sidebar and palette
+ * lead to the marketplace and creation flows that account no longer has.
+ */
 export function DesktopBoundary({ children }: { children: ReactNode }) {
   const layout = useLayout();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  if (layout !== "desktop" || BARE.has(pathname)) return children;
+  const recovering = isRecoverySession(useAuthStatus());
+  if (layout !== "desktop" || BARE.has(pathname) || recovering) return children;
   // Nothing of the route renders until the shell can hold it: mounting it
   // outside and then moving it in would mount it twice, and a view draft is
   // claimed by the first mount and dropped by its unmount.

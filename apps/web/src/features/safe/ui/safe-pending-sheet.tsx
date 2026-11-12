@@ -26,6 +26,8 @@ import {
   proposalRecipients,
   proposalTitle,
   signerChangeRows,
+  WithdrawalAmount,
+  WithdrawalRecipient,
 } from "./safe-proposal-labels";
 
 /**
@@ -108,8 +110,8 @@ function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => vo
 }
 
 /**
- * Each mint's recipient and amount, the new owner of a handover, and who signs
- * for the multisig afterwards.
+ * Each mint's and withdrawal's recipient and amount, the new owner of a
+ * handover, and who signs for the multisig afterwards.
  */
 function ProposalDetails({
   calls,
@@ -119,8 +121,15 @@ function ProposalDetails({
   safe: `0x${string}`;
 }) {
   const { i18n } = useLingui();
-  const { mints, newOwners, signerChanges } = proposalRecipients(calls, safe);
-  if (mints.length === 0 && newOwners.length === 0 && signerChanges.length === 0) return null;
+  const { mints, withdrawals, newOwners, signerChanges } = proposalRecipients(calls, safe);
+  if (
+    mints.length === 0 &&
+    withdrawals.length === 0 &&
+    newOwners.length === 0 &&
+    signerChanges.length === 0
+  ) {
+    return null;
+  }
   return (
     <dl className="space-y-1.5">
       {signerChanges.flatMap((change, index) =>
@@ -137,6 +146,16 @@ function ProposalDetails({
           </DetailRow>
           <DetailRow label={<Trans>Amount</Trans>}>
             <MintAmount token={mint.token} amountRaw={mint.amountRaw} />
+          </DetailRow>
+        </Fragment>
+      ))}
+      {withdrawals.map((withdrawal, index) => (
+        <Fragment key={`withdrawal-${index}`}>
+          <DetailRow label={<Trans>Recipient</Trans>}>
+            <WithdrawalRecipient withdrawal={withdrawal} />
+          </DetailRow>
+          <DetailRow label={<Trans>Amount</Trans>}>
+            <WithdrawalAmount withdrawal={withdrawal} />
           </DetailRow>
         </Fragment>
       ))}

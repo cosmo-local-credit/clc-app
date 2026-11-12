@@ -24,6 +24,7 @@ import { createReportsClient } from "../features/reports/client";
 import { createReviewsClient } from "../features/reviews/client";
 import { createSafeClient } from "../features/safe/client";
 import { createRetirementClient } from "../features/retirement/client";
+import { createAccountRetirementClient } from "../features/account-retirement/client";
 import { createSymbolsClient } from "../features/symbols/client";
 import { createVoucherDeployClient } from "../features/vouchers/deploy-client";
 import { createVocabularyClient } from "../features/vocabulary/client";
@@ -57,6 +58,7 @@ export function createClcApi({
   return {
     accounts: createAccountsClient(http),
     catalogs: createCatalogsClient(http),
+    accountRetirement: createAccountRetirementClient(http),
     admin: createAdminClient(http),
     auth: createAuthClient(http),
     deployments: createDeploymentsClient(http),
