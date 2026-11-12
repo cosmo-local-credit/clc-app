@@ -35,6 +35,13 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
 }));
 
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
+  useAllAccountTokens: () => ({
+    tokens: [],
+    isPending: false,
+    isError: false,
+    isFetching: false,
+    refetch: vi.fn(),
+  }),
   useAccountTokensInfinite: () => ({
     data: { pages: [{ tokens: [] }] },
     isPending: false,
@@ -91,10 +98,6 @@ vi.mock("#/features/pools/hooks/use-pool-vouchers", () => ({
     isError: false,
     refetch: vi.fn(),
   }),
-}));
-
-vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({
-  usePoolVoucherTokens: () => [],
 }));
 
 vi.mock("#/features/pools/hooks/use-creditable-pools", () => ({
@@ -174,7 +177,7 @@ function createTestRouter(initialEntry: string) {
     path: "/pools/$poolAddress",
     component: () => {
       const { poolAddress } = poolDetailRoute.useParams();
-      return <PoolDetailPage poolAddress={poolAddress} activeTab="vouchers" />;
+      return <PoolDetailPage poolAddress={poolAddress} activeTab="holdings" />;
     },
   });
   // Stubbed: this asserts where Deposit goes and that Back comes home, not what

@@ -51,14 +51,6 @@ vi.mock("#/components/reports/report-list", () => ({
 
 const mocks = vi.hoisted(() => ({
   search: {} as Record<string, unknown>,
-  quoterKind: "unknown" as string,
-  rateReadEnabled: vi.fn(),
-  feedStatuses: null as Map<
-    string,
-    | { kind: "none" }
-    | { kind: "verified"; label: string }
-    | { kind: "unverified"; address: `0x${string}` }
-  > | null,
   auth: {
     isAuthenticated: true,
     isLoading: false,
@@ -141,10 +133,6 @@ vi.mock("#/features/home/hooks/use-reports", () => ({
   usePoolReportsInfinite: () => mocks.poolReportsResult,
 }));
 
-vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({
-  usePoolVoucherTokens: () => [],
-}));
-
 vi.mock("#/features/pools/hooks/use-update-pool-profile", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   useUpdatePoolProfile: () => ({ mutateAsync: mocks.updateProfile, isPending: false }),
@@ -184,12 +172,8 @@ vi.mock("./pool-offerings-panel", () => ({
 // The on-chain steward surface has its own tests; here it only needs to stay out
 // of the way of the catalog editor, and its chain reads out of this render.
 vi.mock("#/features/pools/hooks/use-pool-quoter", () => ({
-  usePoolVoucherRates: (_pool: unknown, _vouchers: unknown, enabled: boolean) => {
-    mocks.rateReadEnabled(enabled);
-    return { data: enabled ? new Map([[OTHER.toLowerCase(), 1_000_000n]]) : undefined };
-  },
-  usePoolQuoterKind: () => ({ kind: mocks.quoterKind, isPending: false }),
-  usePoolVoucherFeedStatuses: (pool: unknown) => (pool ? mocks.feedStatuses : null),
+  usePoolQuoterKind: () => ({ kind: "unknown", isPending: false }),
+  usePoolVoucherFeedStatuses: () => null,
 }));
 
 // The controls panel renders for real — it owns the catalog editor now, so a
@@ -335,9 +319,6 @@ const savedProfile = {
 beforeEach(() => {
   queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   mocks.search = {};
-  mocks.quoterKind = "unknown";
-  mocks.rateReadEnabled.mockReset();
-  mocks.feedStatuses = null;
   mocks.vouchersResult.vouchers = [];
   mocks.vouchersResult.isPending = false;
   mocks.vouchersResult.isError = false;
@@ -450,13 +431,13 @@ describe("PoolDetailPage pool details editor", () => {
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
       "Offerings",
       "Wants",
-      "Vouchers",
+      "Holdings",
       "Info",
     ]);
     expect(screen.queryByRole("link", { name: "Swap" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Deposit" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Receive" })).toBeNull();
-    expect(screen.queryByRole("tab", { name: "Holdings" })).toBeNull();
+    expect(screen.getByRole("tab", { name: "Holdings" })).toBeTruthy();
     expect(screen.queryByRole("tab", { name: "Credit" })).toBeNull();
     expect(screen.queryByRole("tab", { name: "Activity" })).toBeNull();
   });
@@ -733,7 +714,7 @@ describe("PoolDetailPage on-chain management", () => {
   });
 
   it("offers the steward controls to the pool's owner", () => {
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="holdings" />);
     expect(screen.getByRole("button", { name: "Withdraw liquidity" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Approve voucher" })).toBeTruthy();
   });
@@ -742,7 +723,7 @@ describe("PoolDetailPage on-chain management", () => {
     // Every call behind these is `onlyOwner`, so a superadmin pressing them
     // would only be signing a revert. They keep the catalog editor.
     mocks.auth.session = { address: OTHER, chainId: 100, role: "SUPERADMIN" };
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="holdings" />);
     expect(screen.queryByRole("button", { name: "Withdraw liquidity" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Approve voucher" })).toBeNull();
     expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
@@ -750,13 +731,13 @@ describe("PoolDetailPage on-chain management", () => {
 
   it("opens the approve sheet with its seeds from a steward-approve link", () => {
     mocks.search = {
-      tab: "vouchers",
+      tab: "holdings",
       tool: "approve",
       candidate: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
       exchangeRate: "1",
       creditLimit: "500",
     };
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="holdings" />);
 
     expect(JSON.parse(screen.getByTestId("approve-sheet").textContent ?? "null")).toEqual({
       candidate: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
@@ -766,68 +747,16 @@ describe("PoolDetailPage on-chain management", () => {
   });
 
   it("leaves the page unchanged for a non-steward opening the same link", () => {
-    mocks.search = { tab: "vouchers", tool: "approve", candidate: OTHER };
+    mocks.search = { tab: "holdings", tool: "approve", candidate: OTHER };
     mocks.auth.session = { address: OTHER, chainId: 100 };
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="holdings" />);
 
     expect(screen.queryByTestId("approve-sheet")).toBeNull();
   });
 
-  it("names each voucher's feed on an oracle pool instead of reading a rate", () => {
-    const UNREGISTERED = "0x26C31ac71010aF62E6B486D1132E266D6298857D" as const;
-    const vouchers = [
-      { id: "1", tokenAddress: OTHER, name: "Kilifi Maize", symbol: "MAIZE" },
-      {
-        id: "2",
-        tokenAddress: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
-        name: "Kilifi Fish",
-        symbol: "FISH",
-      },
-      {
-        id: "3",
-        tokenAddress: "0x2211000000000000000000000000000000000909",
-        name: "Kilifi Rice",
-        symbol: "RICE",
-      },
-    ].map((voucher) => ({ ...voucher, active: true }) as PoolVoucher);
-    mocks.vouchersResult.vouchers = vouchers;
-    mocks.quoterKind = "oracle";
-    mocks.poolResult.data = pool({ quoterType: "oracle" });
-    mocks.feedStatuses = new Map([
-      [vouchers[0]!.tokenAddress.toLowerCase(), { kind: "verified" as const, label: "EUR / USD" }],
-      [vouchers[1]!.tokenAddress.toLowerCase(), { kind: "none" as const }],
-      [
-        vouchers[2]!.tokenAddress.toLowerCase(),
-        { kind: "unverified" as const, address: UNREGISTERED },
-      ],
-    ]);
-
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
-
-    // `priceIndex` reverts on an OracleQuoter; the parity fallback is never read.
-    expect(mocks.rateReadEnabled).toHaveBeenCalled();
-    expect(mocks.rateReadEnabled.mock.calls.every(([enabled]) => enabled === false)).toBe(true);
-    expect(screen.queryByText(/1 MAIZE =/)).toBeNull();
-    expect(screen.getByText("EUR / USD")).toBeTruthy();
-    expect(screen.getByText("No feed")).toBeTruthy();
-    expect(screen.getByText("Unverified")).toBeTruthy();
-  });
-
-  it("still reads and prints the rate on a relative pool", () => {
-    mocks.vouchersResult.vouchers = [
-      { id: "1", tokenAddress: OTHER, name: "Kilifi Maize", symbol: "MAIZE", active: true },
-    ] as unknown as PoolVoucher[];
-    mocks.quoterKind = "relative";
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
-
-    expect(mocks.rateReadEnabled).toHaveBeenLastCalledWith(true);
-    expect(screen.getByText(/1 MAIZE =/)).toBeTruthy();
-    expect(screen.queryByText("No feed")).toBeNull();
-  });
-
   it("withholds them from anyone else", () => {
     mocks.auth.session = { address: OTHER, chainId: 100 };
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="holdings" />);
     expect(screen.queryByRole("button", { name: "Withdraw liquidity" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Approve voucher" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Edit details" })).toBeNull();
@@ -835,15 +764,6 @@ describe("PoolDetailPage on-chain management", () => {
 });
 
 describe("PoolDetailPage manager closure", () => {
-  const closedVoucher: Partial<PoolVoucher> = {
-    id: "9",
-    tokenAddress: OTHER,
-    name: "Kilifi Maize",
-    symbol: "MAIZE",
-    active: true,
-    managerClosure: { state: "CLOSED", closesAt: null },
-  };
-
   it("tells everyone when the pool's managing account is scheduled to close", () => {
     mocks.auth.session = { address: OTHER, chainId: 100 };
     mocks.poolResult.data = pool({
@@ -866,18 +786,6 @@ describe("PoolDetailPage manager closure", () => {
 
     expect(screen.getByText("Retired pool")).toBeTruthy();
     expect(screen.queryByText(/This pool remains active/)).toBeNull();
-  });
-
-  it("marks a pool voucher whose manager has closed, without opening a box in the row", () => {
-    mocks.vouchersResult.vouchers = [closedVoucher as PoolVoucher];
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
-
-    expect(
-      screen.getByText(
-        "The account managing this voucher has closed. This voucher remains active.",
-      ),
-    ).toBeTruthy();
-    expect(screen.queryByRole("status")).toBeNull();
   });
 
   it("shows nothing for a pool without a closure", () => {

@@ -39,7 +39,15 @@ export const Route = createFileRoute("/_nav/pools/$poolAddress/")({
       throw redirect({
         to: "/pools/$poolAddress",
         params: { poolAddress: params.poolAddress },
-        search: { tab: search.tab },
+        search: { tab: search.tab === "vouchers" ? "holdings" : search.tab },
+        replace: true,
+      });
+    }
+    if (search.tab === "vouchers") {
+      throw redirect({
+        to: "/pools/$poolAddress",
+        params: { poolAddress: params.poolAddress },
+        search: { ...search, tab: "holdings", voucher: undefined },
         replace: true,
       });
     }
@@ -52,12 +60,14 @@ function PoolDetailRoute() {
   const { tab, wantId } = Route.useSearch();
   const navigate = Route.useNavigate();
   const auth = useAuthStatus();
-  const requested = tab ?? "offerings";
+  // `tab=vouchers` remains parseable only so old links can be canonicalized by
+  // `beforeLoad`; Holdings is its complete replacement.
+  const requested = tab === "vouchers" ? "holdings" : (tab ?? "offerings");
   const activeTab =
     auth.isAuthenticated ||
     requested === "offerings" ||
     requested === "wants" ||
-    requested === "vouchers" ||
+    requested === "holdings" ||
     requested === "info"
       ? requested
       : "offerings";

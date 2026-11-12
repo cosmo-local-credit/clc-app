@@ -1,12 +1,13 @@
+import type { ManagerClosure } from "@clc/core/features/account-retirement/logic";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
-import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
-import { formatTokenAmount } from "@clc/core/features/wallet/logic";
-import { Trans } from "@lingui/react/macro";
+import { formatPoolRate } from "@clc/core/features/pool-admin/logic";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { TokenLogo } from "#/components/wallet";
 import type { PoolVoucherFeedStatus } from "#/features/pools/hooks/use-pool-quoter";
 import type { PoolHolding } from "#/features/pools/logic/pool-holdings";
@@ -137,7 +138,7 @@ export function PoolHoldingBar({
  * The line an oracle pool prints where a relative pool prints its rate: the
  * feed's pair, an unregistered aggregator, or no feed at all.
  */
-export function PoolVoucherFeedLine({ feed }: { feed: PoolVoucherFeedStatus }) {
+function PoolVoucherFeedLine({ feed }: { feed: PoolVoucherFeedStatus }) {
   if (feed.kind === "none") {
     return (
       <Badge variant="muted" size="sm" caps className="mt-0.5">
@@ -169,12 +170,21 @@ export function PoolHoldingIdentity({
   holding,
   unit,
   feed,
+  showPricing = true,
+  managerClosure,
+  active,
 }: {
   holding: PoolHolding;
   unit: string;
   /** The voucher's feed on an oracle pool, in place of the rate. */
   feed?: PoolVoucherFeedStatus;
+  /** Pending deposits have no approved Pool price to display. */
+  showPricing?: boolean;
+  /** Accepted members retain the public manager-closing warning from the former Vouchers tab. */
+  managerClosure?: ManagerClosure;
+  active?: boolean;
 }) {
+  const { i18n } = useLingui();
   // The logo and colour are derived from the address and symbol alone, so the
   // wallet's own mapper serves a pool's balance as well as a holder's.
   const token = accountTokenToWalletToken({
@@ -196,15 +206,14 @@ export function PoolHoldingIdentity({
           against the rate and the amount it denominates. */}
       <div className="min-w-0 flex-1 overflow-hidden">
         <p className="truncate font-semibold text-sm">{holding.name}</p>
-        {/* The same line the vouchers tab prints, so one voucher reads the
-            same way on every tab. Present only where the quoter publishes a
-            rate: on an oracle- or decimal-quoted pool nothing was read, and
-            parity is what the contract falls back to rather than what it was
-            told. */}
-        {feed ? <PoolVoucherFeedLine feed={feed} /> : null}
-        {holding.ratePpm === null ? null : (
+        <ManagerClosureNotice closure={managerClosure} resource="voucher" active={active} compact />
+        {/* Present a rate only where the quoter publishes one. On an oracle-
+            or decimal-quoted pool nothing was read, and parity is what the
+            contract falls back to rather than what it was told. */}
+        {showPricing && feed ? <PoolVoucherFeedLine feed={feed} /> : null}
+        {!showPricing || holding.ratePpm === null ? null : (
           <p className="truncate font-mono text-muted-foreground text-xs">
-            1 {holding.symbol} = {formatTokenAmount(holding.ratePpm, POOL_PRICE_INDEX_DECIMALS)}{" "}
+            1 {holding.symbol} = {formatPoolRate(holding.ratePpm, i18n.locales?.[0] ?? i18n.locale)}{" "}
             {unit}
           </p>
         )}

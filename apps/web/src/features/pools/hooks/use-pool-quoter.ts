@@ -91,33 +91,10 @@ export function usePoolQuoterKind(pool: UserPool | null | undefined) {
 }
 
 /**
- * Every pool voucher's rate, keyed by lowercased token address.
- *
- * One multicall rather than a read per row. An unpriced token reads back as
- * `0`, which the quoter itself treats as parity. Catalog lists tolerate an
- * individual reverted read as parity; configuration opts into strict failures
- * so it never writes a fallback over an unread current rate.
- */
-export function usePoolVoucherRates(
-  pool: UserPool | null | undefined,
-  vouchers: PoolVoucher[],
-  enabled: boolean,
-  options: { failOnReadError?: boolean } = {},
-) {
-  return usePoolVoucherRatesByAddress(
-    pool,
-    vouchers.map((voucher) => voucher.tokenAddress),
-    enabled,
-    options,
-  );
-}
-
-/**
  * Relative-quoter rates for arbitrary voucher addresses.
  *
- * The catalog wrapper above remains the normal list consumer. Approval needs
- * the address form because a voucher can have retained on-chain configuration
- * and pool deposits before the catalog projects it as a member.
+ * The address form supports vouchers with retained on-chain configuration and
+ * Pool deposits before the catalog projects them as members.
  */
 export function usePoolVoucherRatesByAddress(
   pool: UserPool | null | undefined,

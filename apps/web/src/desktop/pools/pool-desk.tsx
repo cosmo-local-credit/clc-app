@@ -161,6 +161,7 @@ export function PoolDeskFrame({
         const target = requestForSide(next);
         if (target) navigation.open(target);
       }}
+      onOpenApprove={navigation.openApprove}
       activity={activity}
       activityTypes={activityTypes}
     />

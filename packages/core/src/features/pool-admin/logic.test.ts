@@ -20,6 +20,7 @@ import {
   feePolicyPairFeeAbi,
   feePolicySetDefaultFeeAbi,
   findPoolVoucherFeed,
+  formatPoolRate,
   isOracleFeedStale,
   limiterSetLimitForAbi,
   oracleFeedPrice,
@@ -53,6 +54,19 @@ const QUOTER = "0xb91c000000000000000000000000000000007d20" as const;
 const AGGREGATOR = "0x0826000000000000000000000000000000005e9d" as const;
 const RECIPIENT = "0x9911000000000000000000000000000000002244" as const;
 const FEE_POLICY = "0x70c1000000000000000000000000000000003b55" as const;
+
+describe("formatPoolRate", () => {
+  it("keeps two decimal places without dropping significant precision", () => {
+    expect(formatPoolRate("1000000")).toBe("1.00");
+    expect(formatPoolRate("1200000")).toBe("1.20");
+    expect(formatPoolRate("1234567")).toBe("1.234567");
+    expect(formatPoolRate("1000")).toBe("0.001");
+  });
+
+  it("localizes exact digits and separators", () => {
+    expect(formatPoolRate("1234567", "de-DE")).toBe("1,234567");
+  });
+});
 
 function base() {
   return {

@@ -175,6 +175,23 @@ describe("legacy non-map voucher sheet links", () => {
     });
   });
 
+  it("redirects the removed Pool Vouchers tab to Holdings", () => {
+    const beforeLoad = PoolRoute.options.beforeLoad as unknown as BeforeLoad;
+    expect(
+      redirectOptions(() =>
+        beforeLoad({
+          params: { poolAddress: POOL },
+          search: { tab: "vouchers", wantId: "want-1" },
+        }),
+      ),
+    ).toMatchObject({
+      to: "/pools/$poolAddress",
+      params: { poolAddress: POOL },
+      search: { tab: "holdings", wantId: "want-1", voucher: undefined },
+      replace: true,
+    });
+  });
+
   it("removes malformed pool and Post voucher parameters without losing route state", () => {
     const poolBeforeLoad = PoolRoute.options.beforeLoad as unknown as BeforeLoad;
     expect(

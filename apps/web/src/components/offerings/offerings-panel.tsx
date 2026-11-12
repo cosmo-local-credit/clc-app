@@ -12,7 +12,6 @@ import {
   SheetClose,
   SheetContent,
   SheetFooter,
-  SheetHeader,
   SheetPortal,
   SheetRoot,
   SheetTitle,
@@ -74,6 +73,11 @@ export type OfferingVoucherRate = {
   unit: string | null;
 };
 
+type PoolOfferingSwapTarget = {
+  poolAddress: string;
+  voucherAddress: string;
+};
+
 export function OfferingsPanel({
   query,
   emptyState,
@@ -90,6 +94,7 @@ export function OfferingsPanel({
   directNavigation = false,
   showLocation = false,
   distanceOrigin,
+  poolSwapAddress,
   ...props
 }: ComponentProps<"div"> & {
   query: OfferingsQueryLike;
@@ -119,6 +124,8 @@ export function OfferingsPanel({
   directNavigation?: boolean;
   showLocation?: boolean;
   distanceOrigin?: { lat: number; lng: number } | null;
+  /** Adds a Pool-specific Swap action without changing generic Offer surfaces. */
+  poolSwapAddress?: string;
 }) {
   const { t } = useLingui();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -204,6 +211,11 @@ export function OfferingsPanel({
               directNavigation={directNavigation}
               showLocation={showLocation}
               distanceOrigin={distanceOrigin}
+              poolSwapTarget={
+                poolSwapAddress
+                  ? { poolAddress: poolSwapAddress, voucherAddress: offering.voucherAddress }
+                  : undefined
+              }
             />
           ))}
         </div>
@@ -260,6 +272,7 @@ function OfferingTile({
   directNavigation,
   showLocation,
   distanceOrigin,
+  poolSwapTarget,
 }: {
   offering: Offering;
   voucherSymbol: string;
@@ -271,6 +284,7 @@ function OfferingTile({
   directNavigation: boolean;
   showLocation: boolean;
   distanceOrigin?: { lat: number; lng: number } | null;
+  poolSwapTarget?: PoolOfferingSwapTarget;
 }) {
   const { i18n, t } = useLingui();
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -420,6 +434,7 @@ function OfferingTile({
           onImageError={() => setFailedImage(imageUrl)}
           voucherRate={voucherRate}
           openVoucherPageAction={openVoucherPageAction}
+          poolSwapTarget={poolSwapTarget}
         />
       )}
     </div>
@@ -471,6 +486,7 @@ function OfferingDetailsSheet({
   onImageError,
   voucherRate,
   openVoucherPageAction,
+  poolSwapTarget,
 }: {
   offering: Offering;
   imageUrl: string | null;
@@ -480,14 +496,8 @@ function OfferingDetailsSheet({
   onImageError: () => void;
   voucherRate: OfferingVoucherRate | null;
   openVoucherPageAction: "navigate" | "close";
+  poolSwapTarget?: PoolOfferingSwapTarget;
 }) {
-  const { i18n } = useLingui();
-  const price = resolveOfferingDisplayPrice(
-    offering,
-    voucherRate,
-    i18n.locales?.[0] ?? i18n.locale,
-  );
-  const hasFixedPrice = formatOfferingPrice(offering.pricePerUnit) !== null;
   return (
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
@@ -512,57 +522,121 @@ function OfferingDetailsSheet({
           </span>
 
           <div className="min-h-0 flex-1 overflow-y-auto">
-            <SheetHeader className="px-6 pt-4 pb-0">
-              <SheetTitle className="[overflow-wrap:anywhere]">{offering.name}</SheetTitle>
-              <p className="font-mono text-sm font-semibold text-primary">
-                {price ? (
-                  `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
-                ) : hasFixedPrice ? (
-                  <Trans>Price unavailable</Trans>
-                ) : (
-                  <Trans>Price on request</Trans>
-                )}
-              </p>
-            </SheetHeader>
-
-            {offering.description ? (
-              <div className="mx-6 mt-3 border border-border bg-card p-3">
-                <p dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed">
-                  {offering.description}
-                </p>
-              </div>
-            ) : null}
-
-            {offering.tags.length > 0 ? (
-              <div className="mt-3 flex flex-wrap gap-1.5 px-6">
-                {offering.tags.map((tag) => (
-                  <TagBadge key={tag} tag={tag} />
-                ))}
-              </div>
-            ) : null}
+            <OfferingDetailsText
+              offering={offering}
+              voucherRate={voucherRate}
+              title={<SheetTitle className="[overflow-wrap:anywhere]">{offering.name}</SheetTitle>}
+            />
           </div>
 
-          <SheetFooter className="px-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+          <SheetFooter className="grid grid-cols-2 gap-2 px-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             {openVoucherPageAction === "close" ? (
-              <Button tap className="w-full" onClick={() => onOpenChange(false)}>
+              <Button
+                tap
+                className={poolSwapTarget ? undefined : "col-span-2"}
+                onClick={() => onOpenChange(false)}
+              >
                 <Trans>Open voucher page</Trans>
               </Button>
             ) : (
-              <Button asChild tap className="w-full">
+              <Button
+                asChild
+                tap
+                variant={poolSwapTarget ? "outline" : "default"}
+                className={poolSwapTarget ? undefined : "col-span-2"}
+              >
                 <Link
                   to="/vouchers/$voucherAddress"
                   params={{ voucherAddress: offering.voucherAddress }}
-                  search={{}}
+                  search={
+                    poolSwapTarget
+                      ? { poolAddress: poolSwapTarget.poolAddress, tab: "offerings" }
+                      : {}
+                  }
                   onClick={() => onOpenChange(false)}
                 >
                   <Trans>Open voucher page</Trans>
                 </Link>
               </Button>
             )}
+            {poolSwapTarget ? (
+              <Button asChild tap>
+                <Link
+                  to="/pools/$poolAddress/swap"
+                  params={{ poolAddress: poolSwapTarget.poolAddress }}
+                  search={{ receive: poolSwapTarget.voucherAddress.toLowerCase() }}
+                  onClick={() => onOpenChange(false)}
+                >
+                  <Trans>Swap</Trans>
+                </Link>
+              </Button>
+            ) : null}
           </SheetFooter>
         </SheetContent>
       </SheetPortal>
     </SheetRoot>
+  );
+}
+
+/**
+ * Neutral Offer-detail copy shared by the phone sheet and desktop dialog.
+ * The caller supplies the correctly semantic title for its own modal surface.
+ */
+export function OfferingDetailsText({
+  offering,
+  voucherRate,
+  title,
+  compact = false,
+}: {
+  offering: Offering;
+  voucherRate: OfferingVoucherRate | null;
+  title: ReactNode;
+  compact?: boolean;
+}) {
+  const { i18n } = useLingui();
+  const price = resolveOfferingDisplayPrice(
+    offering,
+    voucherRate,
+    i18n.locales?.[0] ?? i18n.locale,
+  );
+  const hasFixedPrice = formatOfferingPrice(offering.pricePerUnit) !== null;
+  return (
+    <>
+      <div className={compact ? "grid gap-1" : "px-6 pt-4 pb-0"}>
+        {title}
+        <p className="font-mono text-sm font-semibold text-primary">
+          {price ? (
+            `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
+          ) : hasFixedPrice ? (
+            <Trans>Price unavailable</Trans>
+          ) : (
+            <Trans>Price on request</Trans>
+          )}
+        </p>
+      </div>
+
+      {offering.description ? (
+        <div
+          className={
+            compact
+              ? "border border-border bg-card p-3"
+              : "mx-6 mt-3 border border-border bg-card p-3"
+          }
+        >
+          <p dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed">
+            {offering.description}
+          </p>
+        </div>
+      ) : null}
+
+      {offering.tags.length > 0 ? (
+        <div className={compact ? "flex flex-wrap gap-1.5" : "mt-3 flex flex-wrap gap-1.5 px-6"}>
+          {offering.tags.map((tag) => (
+            <TagBadge key={tag} tag={tag} />
+          ))}
+        </div>
+      ) : null}
+    </>
   );
 }
 
