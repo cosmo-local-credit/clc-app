@@ -237,6 +237,8 @@ function mockPoolRequests({
                 voucherValue: "1",
                 tokenLimit: usdcTokenLimit,
                 iconUrl: "https://pool.example/usdc.png",
+                active: true,
+                managerClosure: { state: "CLOSED", closesAt: null },
               },
               {
                 id: 2,
@@ -562,15 +564,20 @@ afterEach(() => {
 });
 
 describe("pool voucher UI", () => {
-  it("renders wallet image logos for pool vouchers instead of text glyphs", async () => {
+  it("renders catalog image logos for accepted holdings instead of text glyphs", async () => {
     mockPoolRequests();
-    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="vouchers" />);
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="holdings" />);
 
     expect(await screen.findByText("USD Coin")).toBeTruthy();
     await waitFor(() => {
-      expect(document.querySelector('img[src="https://wallet.example/usdc.png"]')).toBeTruthy();
-      expect(document.querySelector('img[src="https://wallet.example/ttx.png"]')).toBeTruthy();
+      expect(document.querySelector('img[src="https://pool.example/usdc.png"]')).toBeTruthy();
+      expect(document.querySelector('img[src="https://pool.example/ttx.png"]')).toBeTruthy();
     });
+    expect(
+      screen.getByText(
+        "The account managing this voucher has closed. This voucher remains active.",
+      ),
+    ).toBeTruthy();
   });
 
   it("lists every pool offering and shows the voucher symbol each one is priced in", async () => {
@@ -618,7 +625,7 @@ describe("pool voucher UI", () => {
     );
   });
 
-  it("puts offerings first and links the vouchers tab without stacking history", async () => {
+  it("puts offerings first without a duplicate Vouchers tab", async () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="offerings" />);
 
@@ -626,7 +633,6 @@ describe("pool voucher UI", () => {
     expect(tabs.map((tab) => tab.textContent)).toEqual([
       "Offerings",
       "Wants",
-      "Vouchers",
       "Holdings",
       "Credit",
       "Activity",
@@ -636,7 +642,6 @@ describe("pool voucher UI", () => {
     expect(tabs.map((tab) => tab.getAttribute("aria-controls"))).toEqual([
       "pool-panel-offerings",
       "pool-panel-wants",
-      "pool-panel-vouchers",
       "pool-panel-holdings",
       "pool-panel-credit",
       "pool-panel-activity",
@@ -662,7 +667,7 @@ describe("pool voucher UI", () => {
     expect(within(panel).getByText("30 TTX")).toBeTruthy();
 
     // Rows are named, not tickered, with the pool's rate for the voucher under
-    // the name — the same line the vouchers tab prints.
+    // the name.
     expect(within(panel).getByText("USD Coin")).toBeTruthy();
     expect(within(panel).getByText("Trade Token")).toBeTruthy();
     expect(within(panel).getByText("1 USDC = 2.00 USD")).toBeTruthy();

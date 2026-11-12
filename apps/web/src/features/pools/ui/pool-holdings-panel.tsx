@@ -166,7 +166,13 @@ function AcceptedHoldingRow({
         className="min-w-0 flex-1 p-3 text-start"
       >
         <div className="flex items-center gap-3">
-          <PoolHoldingIdentity holding={holding} unit={unit} feed={feed} />
+          <PoolHoldingIdentity
+            holding={holding}
+            unit={unit}
+            feed={feed}
+            managerClosure={voucher.managerClosure}
+            active={voucher.active}
+          />
           <HoldingAmount holding={holding} unit={unit} />
         </div>
         {holding.percentOfLargest === null ? null : (

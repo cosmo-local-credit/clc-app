@@ -28,7 +28,6 @@ import {
   PoolCreditTable,
   PoolHoldingsTable,
   PoolOfferingsGrid,
-  PoolVouchersTable,
   PoolWantsTable,
 } from "#/desktop/pools/detail/pool-tab-bodies";
 import type { PoolActivityFeed } from "#/desktop/pools/pool-activity-feed";
@@ -46,15 +45,7 @@ import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouch
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { cn } from "#/lib/utils";
 
-const POOL_TABS = [
-  "offerings",
-  "wants",
-  "vouchers",
-  "holdings",
-  "credit",
-  "activity",
-  "info",
-] as const;
+const POOL_TABS = ["offerings", "wants", "holdings", "credit", "activity", "info"] as const;
 
 type PoolTab = (typeof POOL_TABS)[number];
 
@@ -164,7 +155,7 @@ export function PoolMain({
     : auth.isAuthenticated
       ? POOL_TABS
       : POOL_TABS.filter(
-          (tab) => tab === "offerings" || tab === "wants" || tab === "vouchers" || tab === "info",
+          (tab) => tab === "offerings" || tab === "wants" || tab === "holdings" || tab === "info",
         );
   // A tab this viewer cannot see falls back to the first they can.
   const selectedTab = visibleTabs.includes(requested) ? requested : (visibleTabs[0] ?? requested);
@@ -327,19 +318,6 @@ export function PoolMain({
           {!retired && selectedTab === "wants" ? (
             <PoolWantsTable poolAddress={poolAddress} />
           ) : null}
-          {!retired && selectedTab === "vouchers" ? (
-            <PoolVouchersTable
-              pool={pool}
-              figures={auth.isAuthenticated}
-              poolVouchers={poolVouchers}
-              vouchers={vouchers}
-              selectedKey={managedVoucher ?? receive}
-              onManage={
-                canManageOnChain ? (voucher) => onOpenSide({ kind: "voucher", voucher }) : undefined
-              }
-              onApprove={canManageOnChain ? () => onOpenApprove() : undefined}
-            />
-          ) : null}
           {selectedTab === "holdings" ? (
             <PoolHoldingsTable
               pool={pool}
@@ -377,8 +355,9 @@ export function PoolMain({
 
 /**
  * Vouchers, liquidity in the unit of account, the pool fee and recent swaps —
- * the figures the data has. Signed-in only: they are the Holdings and Activity
- * tabs summed, and those are behind sign-in.
+ * the figures the data has. Signed-in only even though Pool composition is
+ * public in Holdings: the header keeps account-oriented financial totals out
+ * of the guest summary.
  */
 function PoolStats({
   pool,
@@ -447,8 +426,6 @@ function tabLabel(tab: PoolTab): ReactNode {
       return <Trans>Offerings</Trans>;
     case "wants":
       return <Trans>Wants</Trans>;
-    case "vouchers":
-      return <Trans>Vouchers</Trans>;
     case "holdings":
       return <Trans context="Pool tab">Holdings</Trans>;
     case "credit":

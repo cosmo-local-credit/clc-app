@@ -49,16 +49,7 @@ vi.mock("#/features/pools/hooks/use-pool-holding-groups", () => ({
 vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
   usePoolOfferingsInfinite: (...args: unknown[]) => mocks.offerings(...args),
 }));
-vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({
-  usePoolVoucherTokens: (vouchers: unknown[]) => vouchers.map(() => undefined),
-}));
-
-import {
-  PoolActivityTable,
-  PoolHoldingsTable,
-  PoolOfferingsGrid,
-  PoolVouchersTable,
-} from "./pool-tab-bodies";
+import { PoolActivityTable, PoolHoldingsTable, PoolOfferingsGrid } from "./pool-tab-bodies";
 
 const POOL = "0x5c4e18f7329bb8b533e5be0d8b176ee1ed735aaa";
 const PARTY = "0x1111e18f7329bb8b533e5be0d8b176ee1ed71111";
@@ -204,90 +195,6 @@ describe("pool activity rows", () => {
     expect(within(rows[1]!).getByText("Pay Out")).toBeTruthy();
     expect(within(rows[1]!).queryByText("Failed")).toBeNull();
     expect(within(rows[2]!).getByText(/^Protocol fee/)).toBeTruthy();
-  });
-});
-
-describe("pool vouchers table", () => {
-  const pool = { address: POOL, name: "Kilifi Traders" } as unknown as UserPool;
-  const vouchers = [
-    { id: "1", name: "Kilifi Fish", symbol: "KFP", tokenAddress: PARTY, active: true },
-  ] as unknown as PoolVoucher[];
-
-  it("lists a guest the vouchers without the pool's holdings or limits", () => {
-    render(
-      <PoolVouchersTable
-        pool={pool}
-        figures={false}
-        poolVouchers={vouchers}
-        vouchers={vouchers}
-        selectedKey={undefined}
-      />,
-    );
-    expect(screen.getByText("Kilifi Fish")).toBeTruthy();
-    expect(screen.queryByRole("columnheader", { name: /In pool/ })).toBeNull();
-    expect(screen.queryByRole("columnheader", { name: /Limit/ })).toBeNull();
-    expect(mocks.holdings).not.toHaveBeenCalled();
-  });
-
-  it("opens each voucher's own page, as the phone's row does", () => {
-    render(
-      <PoolVouchersTable
-        pool={pool}
-        figures={false}
-        poolVouchers={vouchers}
-        vouchers={vouchers}
-        selectedKey={undefined}
-      />,
-    );
-    expect(screen.getByRole("link", { name: "Open voucher page" }).getAttribute("href")).toBe(
-      `/vouchers/${PARTY.toLowerCase()}?poolAddress=${POOL}`,
-    );
-  });
-
-  it("adds the figures once signed in", () => {
-    render(
-      <PoolVouchersTable
-        pool={pool}
-        figures
-        poolVouchers={vouchers}
-        vouchers={vouchers}
-        selectedKey={undefined}
-      />,
-    );
-    expect(screen.getByRole("columnheader", { name: /In pool/ })).toBeTruthy();
-    expect(screen.getByRole("columnheader", { name: /Rate/ })).toBeTruthy();
-    expect(mocks.holdings).toHaveBeenCalled();
-  });
-
-  it("names each voucher's feed in place of the rate on an oracle pool", () => {
-    const UNREGISTERED = "0x26C31ac71010aF62E6B486D1132E266D6298857D";
-    const oracleVouchers = [
-      ...vouchers,
-      { id: "2", name: "Kilifi Rice", symbol: "RICE", tokenAddress: POOL, active: true },
-    ] as unknown as PoolVoucher[];
-    mocks.holdings.mockReturnValue({
-      holdings: [],
-      unit: "KES",
-      isPending: false,
-      feeds: new Map([
-        [PARTY.toLowerCase(), { kind: "verified", label: "EUR / USD" }],
-        [POOL.toLowerCase(), { kind: "unverified", address: UNREGISTERED }],
-      ]),
-    });
-    render(
-      <PoolVouchersTable
-        pool={pool}
-        figures
-        poolVouchers={oracleVouchers}
-        vouchers={oracleVouchers}
-        selectedKey={undefined}
-      />,
-    );
-
-    expect(screen.getByRole("columnheader", { name: /Price feed/ })).toBeTruthy();
-    expect(screen.queryByRole("columnheader", { name: /^Rate/ })).toBeNull();
-    expect(screen.getByText("EUR / USD")).toBeTruthy();
-    expect(screen.getByText("Unverified")).toBeTruthy();
   });
 });
 

@@ -1,15 +1,8 @@
 import type { PoolVoucher } from "@clc/api/features/pools/client";
-import { formatPoolRate } from "@clc/core/features/pool-admin/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
-import {
-  RiAddLine,
-  RiArrowLeftRightLine,
-  RiArrowRightUpLine,
-  RiQrCodeLine,
-  RiSettings3Line,
-} from "react-icons/ri";
+import { RiArrowLeftRightLine, RiArrowRightUpLine, RiQrCodeLine } from "react-icons/ri";
 import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Badge } from "#/components/ui/badge";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
@@ -19,18 +12,11 @@ import { ReviewSummaryContent } from "#/components/reviews/review-summary";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
-import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
+import { BackChevron, PoolLogo } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { usePoolReportsInfinite } from "#/features/home/hooks/use-reports";
 import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
-import {
-  type PoolVoucherFeedStatus,
-  usePoolQuoterKind,
-  usePoolVoucherFeedStatuses,
-  usePoolVoucherRates,
-} from "#/features/pools/hooks/use-pool-quoter";
-import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
 import { useRefreshPoolOfferingsOnMembership } from "#/features/pools/hooks/use-pool-offerings-refresh";
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
@@ -39,7 +25,6 @@ import { isAdminRole } from "@clc/core/features/users/roles";
 import { PoolActivityPanel } from "./pool-activity-panel";
 import { PoolControlsPanel } from "./pool-controls-panel";
 import { PoolCreditPanel } from "./pool-credit-panel";
-import { PoolVoucherFeedLine } from "./pool-holding-list";
 import { PoolHoldingsPanel } from "./pool-holdings-panel";
 import { PoolInfoPanel } from "./pool-info-panel";
 import { PoolOfferingsPanel } from "./pool-offerings-panel";
@@ -47,31 +32,15 @@ import { PoolReceiveSheet } from "./pool-receive-sheet";
 import { PoolVoucherSheet } from "./pool-voucher-sheet";
 import { PoolWantsPanel } from "./pool-wants-panel";
 
-export type PoolDetailTab =
-  | "offerings"
-  | "wants"
-  | "vouchers"
-  | "holdings"
-  | "credit"
-  | "activity"
-  | "info";
+export type PoolDetailTab = "offerings" | "wants" | "holdings" | "credit" | "activity" | "info";
 
 // Holdings and credit sit side by side because they read the same rows two
 // ways: what the pool is made of, and how much more of each it will take.
-const POOL_TABS: PoolDetailTab[] = [
-  "offerings",
-  "wants",
-  "vouchers",
-  "holdings",
-  "credit",
-  "activity",
-  "info",
-];
+const POOL_TABS: PoolDetailTab[] = ["offerings", "wants", "holdings", "credit", "activity", "info"];
 
 const TAB_LABELS: Record<PoolDetailTab, ReactNode> = {
   offerings: <Trans>Offerings</Trans>,
   wants: <Trans>Wants</Trans>,
-  vouchers: <Trans>Vouchers</Trans>,
   // Its own message rather than the wallet's: a tab has a fifth of a 360px
   // row, and a translation that suits a section heading — Italian's
   // "Disponibilità" — does not fit one.
@@ -123,24 +92,17 @@ export function PoolDetailPage({
     !!pool && !poolVouchersQuery.isPending && !poolVouchersQuery.isError,
     vouchers,
   );
-  const voucherTokens = usePoolVoucherTokens(vouchers);
   const canEditDetails =
     auth.isAuthenticated && !!pool && (isAdminRole(auth.session?.role) || isPoolOwner);
   // On-chain management is narrower than editing the record. Every call behind
   // it is `onlyOwner` on a contract the pool's owner deployed, so an administrator —
   // who may correct the catalog for anyone — would only be signing a revert.
   const canManageOnChain = isPoolOwner;
-  // Only a RelativeQuoter answers `priceIndex`. Read on an oracle pool, every
-  // reverted read fell back to parity and printed `1 X = 1` beside a live feed.
-  const quoterKind = usePoolQuoterKind(pool).kind;
-  const rates = usePoolVoucherRates(pool, vouchers, canManageOnChain && quoterKind === "relative");
-  const feedStatuses = usePoolVoucherFeedStatuses(canManageOnChain ? pool : null, vouchers);
   const [managing, setManaging] = useState<PoolVoucher | null>(null);
   // The approve sheet lives in `tool=approve`, the param the desktop panel
   // uses, so one link opens either view and Back closes it.
   const side = usePoolSideNavigation();
   const approving = side.request?.kind === "tool" && side.request.tool === "approve";
-  const openApprove = () => side.openApprove();
   const [receiving, setReceiving] = useState(false);
   const selectedTab =
     pool?.active === false && activeTab !== "activity" && activeTab !== "info"
@@ -152,7 +114,7 @@ export function PoolDetailPage({
       : auth.isAuthenticated
         ? POOL_TABS
         : POOL_TABS.filter(
-            (tab) => tab === "offerings" || tab === "wants" || tab === "vouchers" || tab === "info",
+            (tab) => tab === "offerings" || tab === "wants" || tab === "holdings" || tab === "info",
           );
 
   if (poolQuery.isPending) {
@@ -349,44 +311,6 @@ export function PoolDetailPage({
         <PoolWantsPanel poolAddress={poolAddress} />
       ) : null}
 
-      {pool.active !== false && selectedTab === "vouchers" ? (
-        <div
-          id="pool-panel-vouchers"
-          role="tabpanel"
-          aria-labelledby="pool-tab-vouchers"
-          className="space-y-3"
-        >
-          {canManageOnChain ? (
-            <Button variant="outline" tap className="w-full" onClick={openApprove}>
-              <RiAddLine className="size-4" aria-hidden="true" />
-              <Trans>Approve voucher</Trans>
-            </Button>
-          ) : null}
-
-          {vouchers.length === 0 ? (
-            <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
-              <Trans>No vouchers in this pool yet.</Trans>
-            </div>
-          ) : (
-            <div className="border border-border bg-card">
-              {vouchers.map((voucher, index) => (
-                <VoucherRow
-                  key={voucher.id}
-                  poolAddress={poolAddress}
-                  voucher={voucher}
-                  token={voucherTokens[index]}
-                  isLast={index === vouchers.length - 1}
-                  unitSymbol={pool.unitOfAccount ?? pool.symbol}
-                  ratePpm={rates.data?.get(voucher.tokenAddress.toLowerCase())}
-                  feed={feedStatuses?.get(voucher.tokenAddress.toLowerCase())}
-                  onManage={canManageOnChain ? () => setManaging(voucher) : undefined}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      ) : null}
-
       {selectedTab === "holdings" ? (
         <PoolHoldingsPanel
           pool={pool}
@@ -575,86 +499,6 @@ function DetailShell({ message }: { message: string }) {
     <div className="space-y-3">
       <BackChevron label={t`Pools`} to="/market" search={{ scope: "pools" }} />
       <p className="border border-border bg-card p-3 text-muted-foreground text-sm">{message}</p>
-    </div>
-  );
-}
-
-function VoucherRow({
-  poolAddress,
-  voucher,
-  token,
-  isLast,
-  unitSymbol,
-  ratePpm,
-  feed,
-  onManage,
-}: {
-  poolAddress: string;
-  voucher: PoolVoucher;
-  token: WalletToken | undefined;
-  isLast: boolean;
-  unitSymbol: string;
-  /** The pool's rate for this voucher. Only read for owners, so usually absent. */
-  ratePpm: bigint | undefined;
-  /** The feed on an oracle pool, in place of the rate. Owners only, like the rate. */
-  feed: PoolVoucherFeedStatus | undefined;
-  /** Present only for the pool's owner; the row stays a plain link for everyone else. */
-  onManage?: () => void;
-}) {
-  const { i18n, t } = useLingui();
-  const voucherAddress = voucher.tokenAddress.toLowerCase();
-  return (
-    <div className={["flex items-center", isLast ? "" : "border-b border-border"].join(" ")}>
-      <Link
-        to="/vouchers/$voucherAddress"
-        params={{ voucherAddress }}
-        search={{ poolAddress }}
-        className="flex min-w-0 flex-1 items-center gap-3 p-3 text-start"
-      >
-        {token ? <TokenLogo token={token} size={36} /> : null}
-        <div className="min-w-0 flex-1 overflow-hidden">
-          <p className="truncate font-semibold text-sm">{voucher.name}</p>
-          <ManagerClosureNotice
-            closure={voucher.managerClosure}
-            resource="voucher"
-            active={voucher.active}
-            compact
-          />
-          {feed ? <PoolVoucherFeedLine feed={feed} /> : null}
-          {ratePpm === undefined ? null : (
-            <p className="truncate font-mono text-muted-foreground text-xs">
-              1 {voucher.symbol} ={" "}
-              {formatPoolRate(ratePpm.toString(), i18n.locales?.[0] ?? i18n.locale)} {unitSymbol}
-            </p>
-          )}
-        </div>
-      </Link>
-      {/* Getting this voucher out of the pool is one tap from its row: the
-          pool's swap opens with it already chosen under "You receive". A
-          sibling of the row link, not inside it — links do not nest. Filled in
-          the brand colour, like the pool's own Swap, so it does not read as
-          part of the white row. */}
-      <Button asChild tap className={onManage ? undefined : "me-3"}>
-        <Link
-          to="/pools/$poolAddress/swap"
-          params={{ poolAddress }}
-          search={{ receive: voucherAddress }}
-          aria-label={t`Swap for ${voucher.symbol}`}
-        >
-          <RiArrowLeftRightLine className="size-3.5" aria-hidden="true" />
-          <Trans>Swap</Trans>
-        </Link>
-      </Button>
-      {onManage ? (
-        <button
-          type="button"
-          aria-label={t`Manage ${voucher.symbol}`}
-          onClick={onManage}
-          className="flex size-11 shrink-0 items-center justify-center text-muted-foreground"
-        >
-          <RiSettings3Line className="size-4" aria-hidden="true" />
-        </button>
-      ) : null}
     </div>
   );
 }
