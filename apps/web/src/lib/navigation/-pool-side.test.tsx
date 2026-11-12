@@ -18,13 +18,16 @@ const TOKEN = "0x9d1e18f7329bb8b533e5be0d8b176ee1ed73bbbb";
 const CANDIDATE = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
 
 function Harness() {
-  const { request, approveSeed, open, close } = usePoolSideNavigation();
+  const { request, approveSeed, open, openApprove, close } = usePoolSideNavigation();
   return (
     <div>
       <p data-testid="request">{JSON.stringify(request)}</p>
       <p data-testid="seed">{JSON.stringify(approveSeed)}</p>
       <button type="button" onClick={() => open({ kind: "tool", tool: "approve" })}>
         approve
+      </button>
+      <button type="button" onClick={() => openApprove(CANDIDATE.toLowerCase())}>
+        approve candidate
       </button>
       <button type="button" onClick={() => open({ kind: "tool", tool: "liquidity" })}>
         liquidity
@@ -233,6 +236,19 @@ describe("usePoolSideNavigation", () => {
     history.back();
     await waitFor(() => expect(current()).toBeNull());
     expect(router.state.location.pathname).toBe(`/pools/${POOL}`);
+  });
+
+  it("opens approval with a canonical candidate seed", async () => {
+    const { router } = mount([`/pools/${POOL}?tab=holdings`]);
+
+    fireEvent.click(await screen.findByText("approve candidate"));
+
+    await waitFor(() => expect(seed()).toEqual({ candidate: CANDIDATE }));
+    expect(router.state.location.search).toMatchObject({
+      tab: "holdings",
+      tool: "approve",
+      candidate: CANDIDATE,
+    });
   });
 });
 

@@ -107,6 +107,7 @@ export function usePoolDeskModel(poolAddress: string) {
     pool,
     ownerInfo,
     poolVouchers,
+    poolVouchersQuery,
     vouchers: poolVouchers.filter((voucher) => voucher.active),
     canEditDetails,
     canManageOnChain: isPoolOwner,
@@ -131,6 +132,7 @@ export function PoolMain({
   model,
   side,
   onOpenSide,
+  onOpenApprove,
   activity,
   activityTypes,
 }: {
@@ -138,6 +140,7 @@ export function PoolMain({
   /** What the side column shows, so the row it describes reads as selected. */
   side: PoolSide | null;
   onOpenSide: (side: PoolSide) => void;
+  onOpenApprove: (candidate?: string) => void;
   activity: PoolActivityFeed;
   activityTypes: {
     types: readonly ActivityKind[];
@@ -146,7 +149,8 @@ export function PoolMain({
 }) {
   const { i18n, t } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
-  const { auth, pool, poolAddress, poolVouchers, vouchers, canManageOnChain } = model;
+  const { auth, pool, poolAddress, poolVouchers, poolVouchersQuery, vouchers, canManageOnChain } =
+    model;
   const requested = usePoolDeskRequestedTab() ?? "offerings";
   const receive = usePoolDeskReceive();
   const retired = pool.active === false;
@@ -333,11 +337,19 @@ export function PoolMain({
               onManage={
                 canManageOnChain ? (voucher) => onOpenSide({ kind: "voucher", voucher }) : undefined
               }
-              onApprove={canManageOnChain ? () => onOpenSide({ kind: "approve" }) : undefined}
+              onApprove={canManageOnChain ? () => onOpenApprove() : undefined}
             />
           ) : null}
           {selectedTab === "holdings" ? (
-            <PoolHoldingsTable pool={pool} vouchers={poolVouchers} />
+            <PoolHoldingsTable
+              pool={pool}
+              catalog={poolVouchersQuery}
+              selectedKey={managedVoucher ?? receive}
+              onManage={
+                canManageOnChain ? (voucher) => onOpenSide({ kind: "voucher", voucher }) : undefined
+              }
+              onApprove={canManageOnChain ? onOpenApprove : undefined}
+            />
           ) : null}
           {!retired && selectedTab === "credit" ? (
             <PoolCreditTable pool={pool} vouchers={vouchers} />

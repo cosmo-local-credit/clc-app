@@ -1,7 +1,6 @@
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
-import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
-import { formatTokenAmount } from "@clc/core/features/wallet/logic";
-import { Trans } from "@lingui/react/macro";
+import { formatPoolRate } from "@clc/core/features/pool-admin/logic";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
@@ -169,12 +168,16 @@ export function PoolHoldingIdentity({
   holding,
   unit,
   feed,
+  showPricing = true,
 }: {
   holding: PoolHolding;
   unit: string;
   /** The voucher's feed on an oracle pool, in place of the rate. */
   feed?: PoolVoucherFeedStatus;
+  /** Pending deposits have no approved Pool price to display. */
+  showPricing?: boolean;
 }) {
+  const { i18n } = useLingui();
   // The logo and colour are derived from the address and symbol alone, so the
   // wallet's own mapper serves a pool's balance as well as a holder's.
   const token = accountTokenToWalletToken({
@@ -201,10 +204,10 @@ export function PoolHoldingIdentity({
             rate: on an oracle- or decimal-quoted pool nothing was read, and
             parity is what the contract falls back to rather than what it was
             told. */}
-        {feed ? <PoolVoucherFeedLine feed={feed} /> : null}
-        {holding.ratePpm === null ? null : (
+        {showPricing && feed ? <PoolVoucherFeedLine feed={feed} /> : null}
+        {!showPricing || holding.ratePpm === null ? null : (
           <p className="truncate font-mono text-muted-foreground text-xs">
-            1 {holding.symbol} = {formatTokenAmount(holding.ratePpm, POOL_PRICE_INDEX_DECIMALS)}{" "}
+            1 {holding.symbol} = {formatPoolRate(holding.ratePpm, i18n.locales?.[0] ?? i18n.locale)}{" "}
             {unit}
           </p>
         )}

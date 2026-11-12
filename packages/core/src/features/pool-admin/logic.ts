@@ -121,6 +121,44 @@ export const POOL_PRICE_INDEX_DECIMALS = 6;
 const PRICE_INDEX_SCALE = 10n ** BigInt(POOL_PRICE_INDEX_DECIMALS);
 
 /**
+ * A RelativeQuoter rate with enough trailing precision to read as a rate.
+ *
+ * Two zeroes make parity unambiguous (`1.00`) while significant digits through
+ * the contract's six-place scale are retained, so a small rate never becomes
+ * the misleading `0.00`.
+ */
+export function formatPoolRate(rawRate: string, locale?: string): string {
+  const exact = formatTokenAmount(rawRate, POOL_PRICE_INDEX_DECIMALS, POOL_PRICE_INDEX_DECIMALS);
+  const [whole, significant = ""] = exact.split(".");
+  const fraction = significant.padEnd(2, "0");
+  if (!locale) return `${whole}.${fraction}`;
+
+  const wholeNumber = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 0,
+    useGrouping: true,
+  }).format(BigInt(whole));
+  const digitFormatter = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 0,
+    useGrouping: false,
+  });
+  const digits = Array.from({ length: 10 }, (_, digit) => digitFormatter.format(digit));
+  const localizedFraction = fraction.replace(
+    /\d/g,
+    (digit) => digits[digit.charCodeAt(0) - 48] ?? digit,
+  );
+  const decimalSeparator =
+    new Intl.NumberFormat(locale, {
+      maximumFractionDigits: 1,
+      minimumFractionDigits: 1,
+      useGrouping: false,
+    })
+      .formatToParts(1.1)
+      .find((part) => part.type === "decimal")?.value ?? ".";
+
+  return `${wholeNumber}${decimalSeparator}${localizedFraction}`;
+}
+
+/**
  * How the pool's quoter should price the voucher.
  *
  * One variant per quoter the protocol publishes, because the three take

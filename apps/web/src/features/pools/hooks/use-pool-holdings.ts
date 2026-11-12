@@ -7,7 +7,7 @@ import {
 } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolTreasury } from "#/features/pools/hooks/use-pool-treasury";
 import { buildPoolHoldings } from "#/features/pools/logic/pool-holdings";
-import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 
 /**
  * Every voucher the pool holds or lists, valued and capped, for the holdings
@@ -22,8 +22,8 @@ export function usePoolHoldings(pool: UserPool, vouchers: PoolVoucher[]) {
   // The account page discovers tokens the catalog has not projected. Feed the
   // union into the same-block treasury multicall so those rows do not fall back
   // to a gross balance that may include reserved fees.
-  const indexed = useAccountTokensInfinite(pool.address);
-  const indexedTokens = indexed.data?.pages.flatMap((page) => page.tokens);
+  const indexed = useAllAccountTokens(pool.address);
+  const indexedTokens = indexed.tokens;
   const treasury = usePoolTreasury(
     pool,
     [
@@ -67,7 +67,7 @@ export function usePoolHoldings(pool: UserPool, vouchers: PoolVoucher[]) {
     feeds,
     unit: pool.unitOfAccount ?? pool.symbol,
     isPending:
-      (treasury.isPending && indexed.isPending && holdings.length === 0) ||
+      ((treasury.isPending || indexed.isPending) && holdings.length === 0) ||
       (isRelative && rateAddresses.length > 0 && rates.isPending),
     /**
      * True until the chain has answered for every token the pool lists. Before
@@ -82,7 +82,10 @@ export function usePoolHoldings(pool: UserPool, vouchers: PoolVoucher[]) {
       indexed.isPending ||
       treasury.isLoading ||
       (isRelative && rateAddresses.length > 0 && rates.isPending),
-    isError: (treasury.isError && indexed.isError) || (isRelative && rates.isError),
+    // Either source failing can make the accepted/pending split incomplete:
+    // treasury supplies exact Pool balances and the indexer discovers deposits
+    // outside the accepted catalog. Keep verified rows, but disclose the gap.
+    isError: treasury.isError || indexed.isError || (isRelative && rates.isError),
     isFetching: treasury.isFetching || indexed.isFetching || (isRelative && rates.isFetching),
     refetch: () => {
       void treasury.refetch();

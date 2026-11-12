@@ -1,5 +1,5 @@
 import type { PoolVoucher } from "@clc/api/features/pools/client";
-import { formatTokenAmount } from "@clc/core/features/wallet/logic";
+import { formatPoolRate } from "@clc/core/features/pool-admin/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
@@ -35,7 +35,6 @@ import { useRefreshPoolOfferingsOnMembership } from "#/features/pools/hooks/use-
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { usePoolSideNavigation } from "#/lib/navigation/pool-side";
-import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
 import { isAdminRole } from "@clc/core/features/users/roles";
 import { PoolActivityPanel } from "./pool-activity-panel";
 import { PoolControlsPanel } from "./pool-controls-panel";
@@ -141,7 +140,7 @@ export function PoolDetailPage({
   // uses, so one link opens either view and Back closes it.
   const side = usePoolSideNavigation();
   const approving = side.request?.kind === "tool" && side.request.tool === "approve";
-  const openApprove = () => side.open({ kind: "tool", tool: "approve" });
+  const openApprove = () => side.openApprove();
   const [receiving, setReceiving] = useState(false);
   const selectedTab =
     pool?.active === false && activeTab !== "activity" && activeTab !== "info"
@@ -389,7 +388,13 @@ export function PoolDetailPage({
       ) : null}
 
       {selectedTab === "holdings" ? (
-        <PoolHoldingsPanel pool={pool} vouchers={poolVouchers} />
+        <PoolHoldingsPanel
+          pool={pool}
+          catalog={poolVouchersQuery}
+          canManageOnChain={canManageOnChain}
+          onManage={setManaging}
+          onApprove={side.openApprove}
+        />
       ) : null}
 
       {pool.active !== false && selectedTab === "credit" ? (
@@ -596,7 +601,7 @@ function VoucherRow({
   /** Present only for the pool's owner; the row stays a plain link for everyone else. */
   onManage?: () => void;
 }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   const voucherAddress = voucher.tokenAddress.toLowerCase();
   return (
     <div className={["flex items-center", isLast ? "" : "border-b border-border"].join(" ")}>
@@ -619,7 +624,7 @@ function VoucherRow({
           {ratePpm === undefined ? null : (
             <p className="truncate font-mono text-muted-foreground text-xs">
               1 {voucher.symbol} ={" "}
-              {formatTokenAmount(ratePpm.toString(), POOL_PRICE_INDEX_DECIMALS)} {unitSymbol}
+              {formatPoolRate(ratePpm.toString(), i18n.locales?.[0] ?? i18n.locale)} {unitSymbol}
             </p>
           )}
         </div>
