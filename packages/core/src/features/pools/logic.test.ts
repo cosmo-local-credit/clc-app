@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 import {
   CELO_MAINNET_CEUR_ADDRESS,
   CELO_MAINNET_CHAIN_ID,
+  CELO_MAINNET_CUSD_ADDRESS,
   CELO_MAINNET_CZAR_ADDRESS,
 } from "../../lib/constants/celo";
 import { GNOSIS_MAINNET_CHAIN_ID, GNOSIS_MAINNET_USDCE_ADDRESS } from "../../lib/constants/gnosis";
@@ -53,17 +54,24 @@ describe("chainHasPoolOracle", () => {
 });
 
 describe("getPoolOracleBaseCurrency", () => {
-  it("prices a Gnosis USD pool against USDC.e and offers no other Gnosis unit", () => {
-    expect(getPoolOracleBaseCurrency("USD", GNOSIS_MAINNET_CHAIN_ID)).toBe(
-      GNOSIS_MAINNET_USDCE_ADDRESS,
-    );
-    expect(getPoolOracleBaseCurrency("EUR", GNOSIS_MAINNET_CHAIN_ID)).toBeUndefined();
-    expect(getPoolOracleBaseCurrency("KES", GNOSIS_MAINNET_CHAIN_ID)).toBeUndefined();
+  it("records the chain's USD stable for any currency without a stable of its own", () => {
+    for (const unit of ["USD", "EUR", "KES", "TZS"]) {
+      expect(getPoolOracleBaseCurrency(unit, GNOSIS_MAINNET_CHAIN_ID)).toBe(
+        GNOSIS_MAINNET_USDCE_ADDRESS,
+      );
+    }
+    expect(getPoolOracleBaseCurrency("TZS", CELO_MAINNET_CHAIN_ID)).toBe(CELO_MAINNET_CUSD_ADDRESS);
   });
 
-  it("carries the Celo EUR and ZAR stables the console offered", () => {
+  it("keeps a currency's own Celo stable", () => {
     expect(getPoolOracleBaseCurrency("EUR", CELO_MAINNET_CHAIN_ID)).toBe(CELO_MAINNET_CEUR_ADDRESS);
     expect(getPoolOracleBaseCurrency("ZAR", CELO_MAINNET_CHAIN_ID)).toBe(CELO_MAINNET_CZAR_ADDRESS);
+  });
+
+  it("offers nothing for HOUR, a custom unit, or a chain without a stable", () => {
+    expect(getPoolOracleBaseCurrency("HOUR", GNOSIS_MAINNET_CHAIN_ID)).toBeUndefined();
+    expect(getPoolOracleBaseCurrency("Community Credits", GNOSIS_MAINNET_CHAIN_ID)).toBeUndefined();
+    expect(getPoolOracleBaseCurrency("USD", 1)).toBeUndefined();
   });
 });
 
@@ -102,15 +110,14 @@ describe("poolCreateSchema", () => {
     expect(otherSchema.safeParse({ ...validPool, pricing: "decimal" }).success).toBe(true);
   });
 
-  it("offers price-feed pricing on Gnosis for USD only", () => {
+  it("offers price-feed pricing on Gnosis for any currency, against USDC.e", () => {
     const gnosisSchema = poolCreateSchemaForChain(GNOSIS_MAINNET_CHAIN_ID);
 
-    expect(gnosisSchema.safeParse({ ...validPool, unitOfAccount: "USD" }).success).toBe(true);
-    expect(gnosisSchema.safeParse(validPool).success).toBe(false);
-    expect(
-      toPoolDeployPayload({ ...validPool, unitOfAccount: "USD" }, OWNER, GNOSIS_MAINNET_CHAIN_ID)
-        .baseCurrency,
-    ).toBe(GNOSIS_MAINNET_USDCE_ADDRESS);
+    expect(gnosisSchema.safeParse(validPool).success).toBe(true);
+    expect(gnosisSchema.safeParse({ ...validPool, unitOfAccount: "HOUR" }).success).toBe(false);
+    expect(toPoolDeployPayload(validPool, OWNER, GNOSIS_MAINNET_CHAIN_ID).baseCurrency).toBe(
+      GNOSIS_MAINNET_USDCE_ADDRESS,
+    );
   });
 
   it("allows HOUR for pool pricing that does not need a base currency", () => {

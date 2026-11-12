@@ -6,7 +6,12 @@ import {
   optionalTermsSchema,
   optionalWebsiteSchema,
 } from "../../lib/contact";
-import { isUnitOfAccount, normalizeUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
+import {
+  isIsoCurrency,
+  isUnitOfAccount,
+  normalizeUnitOfAccount,
+  type UnitOfAccount,
+} from "../../lib/currencies";
 import {
   CELO_MAINNET_CEUR_ADDRESS,
   CELO_MAINNET_CHAIN_ID,
@@ -118,35 +123,45 @@ export type PoolQuoterType = z.infer<typeof poolQuoterTypeSchema>;
 export const POOL_QUOTER_TYPES = poolQuoterTypeSchema.options;
 
 /**
- * The token an OracleQuoter prices a pool's unit against, per chain.
+ * The token an OracleQuoter records as its base currency, per chain.
  *
- * A unit is offered for oracle pricing only where the chain has a stable whose
- * feed the quoter can read. Celo has Mento's; Gnosis has bridged USDC. A chain
- * absent from this table has none, so oracle pricing is refused there rather
- * than deploying a quoter with a base currency that does not exist.
+ * `baseCurrency` is metadata on the quoter: every feed it reads is quoted in USD
+ * (`X / USD`) and it cross-rates through that, so the pool's unit of account
+ * does not have to match it. Any ISO currency can therefore be oracle-priced on
+ * a chain with a USD stable, which is the default recorded. A unit with a stable
+ * of its own records that instead (Celo's Mento tokens). A chain absent from
+ * this table has no stable to name, so oracle pricing is refused there.
  *
- * The one table both apps read: `baseCurrency` is metadata on the quoter, but a
- * second copy of this list is how the console drifted from it before.
+ * Custom units stay excluded, as clc-core refuses an oracle deploy for one, and
+ * so does HOUR: no feed prices time.
+ *
+ * The one table both apps read; a second copy is how the console drifted from
+ * it before.
  */
-const POOL_ORACLE_BASE_CURRENCY: Record<number, Partial<Record<PoolUnit, string>>> = {
+const POOL_ORACLE_BASE_CURRENCY: Record<
+  number,
+  { usd: string; units?: Partial<Record<PoolUnit, string>> }
+> = {
   [CELO_MAINNET_CHAIN_ID]: {
-    KES: CELO_MAINNET_CKES_ADDRESS,
-    USD: CELO_MAINNET_CUSD_ADDRESS,
-    EUR: CELO_MAINNET_CEUR_ADDRESS,
-    ZAR: CELO_MAINNET_CZAR_ADDRESS,
+    usd: CELO_MAINNET_CUSD_ADDRESS,
+    units: {
+      KES: CELO_MAINNET_CKES_ADDRESS,
+      EUR: CELO_MAINNET_CEUR_ADDRESS,
+      ZAR: CELO_MAINNET_CZAR_ADDRESS,
+    },
   },
-  [GNOSIS_MAINNET_CHAIN_ID]: {
-    USD: GNOSIS_MAINNET_USDCE_ADDRESS,
-  },
+  [GNOSIS_MAINNET_CHAIN_ID]: { usd: GNOSIS_MAINNET_USDCE_ADDRESS },
 };
 
 export function getPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): string | undefined {
-  return POOL_ORACLE_BASE_CURRENCY[chainId]?.[unit];
+  const chain = POOL_ORACLE_BASE_CURRENCY[chainId];
+  if (!chain || !isIsoCurrency(unit)) return undefined;
+  return chain.units?.[unit] ?? chain.usd;
 }
 
 /** Whether any unit at all can be oracle-priced on this chain. */
 export function chainHasPoolOracle(chainId: number): boolean {
-  return Object.keys(POOL_ORACLE_BASE_CURRENCY[chainId] ?? {}).length > 0;
+  return POOL_ORACLE_BASE_CURRENCY[chainId] !== undefined;
 }
 
 export function hasPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): boolean {

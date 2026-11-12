@@ -66,26 +66,23 @@ describe("parsePoolPrefill", () => {
 describe("poolPrefillForChain", () => {
   it("falls back from oracle to relative when the unit has no feed on the chain", () => {
     expect(
-      poolPrefillForChain({ pricing: "oracle", unitOfAccount: "KES" }, GNOSIS, DEFAULTS).pricing,
+      poolPrefillForChain({ pricing: "oracle", unitOfAccount: "HOUR" }, GNOSIS, DEFAULTS).pricing,
     ).toBe("relative");
-    expect(poolPrefillForChain({ pricing: "oracle" }, GNOSIS, DEFAULTS).pricing).toBe("relative");
+    expect(
+      poolPrefillForChain({ pricing: "oracle", unitOfAccount: "KES" }, 1, DEFAULTS).pricing,
+    ).toBe("relative");
     expect(
       poolPrefillForChain(
-        { pricing: "oracle", unitOfAccount: "KES" },
+        { pricing: "oracle", unitOfAccount: "EUR" },
         CELO_MAINNET_CHAIN_ID,
         DEFAULTS,
       ).pricing,
     ).toBe("oracle");
-    expect(
-      poolPrefillForChain(
-        { pricing: "oracle", unitOfAccount: "TZS" },
-        CELO_MAINNET_CHAIN_ID,
-        DEFAULTS,
-      ).pricing,
-    ).toBe("relative");
-    expect(
-      poolPrefillForChain({ pricing: "oracle", unitOfAccount: "USD" }, GNOSIS, DEFAULTS).pricing,
-    ).toBe("oracle");
+    for (const unit of ["KES", "USD", "TZS"]) {
+      expect(
+        poolPrefillForChain({ pricing: "oracle", unitOfAccount: unit }, GNOSIS, DEFAULTS).pricing,
+      ).toBe("oracle");
+    }
   });
 
   it("ignores feesDecoupled when the fee is zero", () => {

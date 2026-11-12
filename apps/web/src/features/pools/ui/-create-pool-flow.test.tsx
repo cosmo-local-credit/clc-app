@@ -422,30 +422,27 @@ describe("CreatePoolFlow", () => {
     );
   });
 
-  it("offers oracle pricing on Gnosis once the unit is USD", async () => {
+  it("offers oracle pricing on Gnosis for a currency, and re-checks it as the unit changes", async () => {
     wallet.chainId = 100;
     try {
       renderFlow(<CreatePoolFlow step="pool" />);
       fireEvent.click(screen.getByText("Advanced"));
+      const oracle = () => screen.getByRole("radio", { name: /Oracle pricing/ });
       const unit = screen.getByRole("combobox", { name: "Unit of Account" });
       fireEvent.click(unit);
       fireEvent.change(unit, { target: { value: "Kenyan" } });
       fireEvent.click(await screen.findByRole("option", { name: /^KES/ }));
-      await waitFor(() =>
-        expect(
-          screen.getByRole("radio", { name: /Oracle pricing/ }).hasAttribute("data-disabled"),
-        ).toBe(true),
-      );
+      await waitFor(() => expect(oracle().hasAttribute("data-disabled")).toBe(false));
 
       fireEvent.click(unit);
-      fireEvent.change(unit, { target: { value: "US Dollar" } });
-      fireEvent.click(await screen.findByRole("option", { name: /^USD/ }));
+      fireEvent.change(unit, { target: { value: "Hour" } });
+      fireEvent.click(await screen.findByRole("option", { name: /^HOUR/ }));
+      await waitFor(() => expect(oracle().hasAttribute("data-disabled")).toBe(true));
 
-      await waitFor(() =>
-        expect(
-          screen.getByRole("radio", { name: /Oracle pricing/ }).hasAttribute("data-disabled"),
-        ).toBe(false),
-      );
+      fireEvent.click(unit);
+      fireEvent.change(unit, { target: { value: "Tanzanian" } });
+      fireEvent.click(await screen.findByRole("option", { name: /^TZS/ }));
+      await waitFor(() => expect(oracle().hasAttribute("data-disabled")).toBe(false));
     } finally {
       wallet.chainId = 42220;
     }

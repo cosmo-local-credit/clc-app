@@ -8,6 +8,7 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { GNOSIS_MAINNET_USDCE_ADDRESS } from "@clc/core/lib/constants/gnosis";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -293,24 +294,23 @@ describe("PoolPublishPage", () => {
     expect(pricing.textContent).toContain("Relative pricing");
   });
 
-  it("publishes a Gnosis USD pool with oracle pricing against USDC.e", async () => {
+  it("publishes a Gnosis KES pool with oracle pricing against USDC.e", async () => {
+    // The base is the quoter's USD stable whatever the unit: every feed is quoted in USD.
     renderPage();
     expect(await screen.findByRole("heading", { name: "Publish pool" })).toBeTruthy();
     await fillRequiredFields();
-
-    const unit = screen.getByRole("combobox", { name: "Unit of account" });
-    fireEvent.click(unit);
-    fireEvent.change(unit, { target: { value: "USD" } });
-    fireEvent.click(await screen.findByRole("option", { name: /^USD - / }));
-    await waitFor(() => expect(screen.queryByText("No price feed for this unit.")).toBeNull());
+    expect(screen.queryByText("No price feed for this unit.")).toBeNull();
 
     fireEvent.click(screen.getByRole("combobox", { name: "Pricing" }));
     // Base UI commits an unhighlighted item only for a touch pointer; jsdom fires no hover.
     const oracle = await screen.findByRole("option", { name: "Oracle pricing" });
+    expect(oracle.getAttribute("aria-disabled")).not.toBe("true");
     fireEvent.pointerDown(oracle, { pointerType: "touch" });
     fireEvent.click(oracle);
     await waitFor(() =>
-      expect(screen.getByRole("definition", { name: "Oracle base" }).textContent).toBe("USD"),
+      expect(screen.getByRole("definition", { name: "Oracle base" }).textContent).toBe(
+        formatVoucherAddress(GNOSIS_MAINNET_USDCE_ADDRESS),
+      ),
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Publish pool" }));
@@ -318,15 +318,20 @@ describe("PoolPublishPage", () => {
     expect(deployPool).toHaveBeenCalledWith(
       expect.objectContaining({
         quoterType: "oracle",
-        unitOfAccount: "USD",
+        unitOfAccount: "KES",
         baseCurrency: GNOSIS_MAINNET_USDCE_ADDRESS,
       }),
     );
   });
 
-  it("does not offer oracle pricing for a unit with no Gnosis base", async () => {
+  it("does not offer oracle pricing for a custom unit", async () => {
     renderPage();
-    fireEvent.click(await screen.findByRole("combobox", { name: "Pricing" }));
+    const unit = await screen.findByRole("combobox", { name: "Unit of account" });
+    fireEvent.click(unit);
+    fireEvent.change(unit, { target: { value: "community credits" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add “Community Credits”" }));
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Pricing" }));
     const oracle = await screen.findByRole("option", { name: "Oracle pricing" });
     expect(oracle.getAttribute("aria-disabled")).toBe("true");
   });

@@ -601,7 +601,15 @@ export function PoolPublishPage() {
                     }
                   />
                   {values.pricing === "oracle" ? (
-                    <BoundRow label="Oracle base" value={values.unitOfAccount} />
+                    // The quoter's base token, which any unit's feeds are quoted
+                    // against, so it is not the unit of account itself.
+                    <BoundRow
+                      label="Oracle base"
+                      value={(() => {
+                        const base = oracleBaseAddress(values.unitOfAccount);
+                        return base ? formatVoucherAddress(base as `0x${string}`) : "";
+                      })()}
+                    />
                   ) : null}
                   <BoundRow label="Unit of account" value={values.unitOfAccount} />
                   <BoundRow label="Fee" value={`${values.feePolicyDefault}%`} />
