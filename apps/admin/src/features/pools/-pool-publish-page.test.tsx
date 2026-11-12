@@ -8,6 +8,7 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { GNOSIS_MAINNET_USDCE_ADDRESS } from "@clc/core/lib/constants/gnosis";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const OWNER = "0x33a573149db22e759fB9A38Bcc461C12855c2645";
@@ -287,11 +288,47 @@ describe("PoolPublishPage", () => {
     fireEvent.change(unit, { target: { value: "community credits" } });
     fireEvent.click(screen.getByRole("button", { name: "Add “Community Credits”" }));
 
-    expect(
-      screen.getByText("Custom units have no price feed. Relative pricing is used instead."),
-    ).toBeTruthy();
+    expect(screen.getByText("No price feed for this unit.")).toBeTruthy();
     const pricing = screen.getByRole("combobox", { name: "Pricing" });
     expect(pricing.textContent).toContain("Relative pricing");
+  });
+
+  it("publishes a Gnosis USD pool with oracle pricing against USDC.e", async () => {
+    renderPage();
+    expect(await screen.findByRole("heading", { name: "Publish pool" })).toBeTruthy();
+    await fillRequiredFields();
+
+    const unit = screen.getByRole("combobox", { name: "Unit of account" });
+    fireEvent.click(unit);
+    fireEvent.change(unit, { target: { value: "USD" } });
+    fireEvent.click(await screen.findByRole("option", { name: /^USD - / }));
+    await waitFor(() => expect(screen.queryByText("No price feed for this unit.")).toBeNull());
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Pricing" }));
+    // Base UI commits an unhighlighted item only for a touch pointer; jsdom fires no hover.
+    const oracle = await screen.findByRole("option", { name: "Oracle pricing" });
+    fireEvent.pointerDown(oracle, { pointerType: "touch" });
+    fireEvent.click(oracle);
+    await waitFor(() =>
+      expect(screen.getByRole("definition", { name: "Oracle base" }).textContent).toBe("USD"),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Publish pool" }));
+    await waitFor(() => expect(deployPool).toHaveBeenCalledTimes(1));
+    expect(deployPool).toHaveBeenCalledWith(
+      expect.objectContaining({
+        quoterType: "oracle",
+        unitOfAccount: "USD",
+        baseCurrency: GNOSIS_MAINNET_USDCE_ADDRESS,
+      }),
+    );
+  });
+
+  it("does not offer oracle pricing for a unit with no Gnosis base", async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole("combobox", { name: "Pricing" }));
+    const oracle = await screen.findByRole("option", { name: "Oracle pricing" });
+    expect(oracle.getAttribute("aria-disabled")).toBe("true");
   });
 
   it("accepts Markdown pool terms", async () => {

@@ -5,16 +5,22 @@ import {
 } from "@clc/api/features/market/queries";
 import type { MarketVoucher } from "@clc/api/features/market/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
+import type { OracleFeed } from "@clc/api/features/oracle-feeds/client";
+import { oracleFeedsQueryOptions } from "@clc/api/features/oracle-feeds/queries";
 import {
+  findPoolVoucherFeed,
   POOL_PRICE_INDEX_DECIMALS,
+  POOL_VOUCHER_CUSTOM_FEED,
   type PoolVoucherPricing,
+  resolvePoolVoucherFeedAddress,
 } from "@clc/core/features/pool-admin/logic";
 import type { PoolPricing } from "@clc/core/features/pools/logic";
 import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
-import { useQuery } from "@tanstack/react-query";
-import { type ReactNode, useState } from "react";
+import { type UseQueryResult, useQuery } from "@tanstack/react-query";
+import { type ReactNode, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { getAddress } from "viem";
 import { z } from "zod";
 
 import { LoadingBlock } from "#/components/admin/loading-block";
@@ -38,10 +44,12 @@ import {
   SheetTitle,
 } from "#/components/ui/sheet";
 import { clcApi } from "#/lib/api";
+import { CHAIN_ID } from "#/lib/chain";
 import { termFilter } from "#/lib/catalog-filter";
 import type { PoolVoucherEdit } from "./pool-holdings-panel";
 import type { SettlingVoucher } from "../use-pool-vouchers";
 import { useAddPoolVoucher } from "../use-add-pool-voucher";
+import { usePoolVoucherOracle } from "../use-pool-voucher-oracle";
 
 const CANDIDATE_PAGE_SIZE = 50;
 
@@ -50,11 +58,6 @@ const PRICING_LABELS: Record<PoolPricing, string> = {
   oracle: "Oracle feed",
   decimal: "Decimals only",
 };
-
-const addressField = z
-  .string()
-  .trim()
-  .refine((value) => /^0x[0-9a-fA-F]{40}$/.test(value), { message: "Enter a contract address" });
 
 const positiveDecimal = z
   .string()
@@ -80,6 +83,8 @@ const formSchema = z
     pricing: z.enum(["relative", "oracle", "decimal"]),
     exchangeRate: z.string(),
     depositCap: z.string(),
+    /** A registry feed's address, `POOL_VOUCHER_CUSTOM_FEED`, or empty before a choice. */
+    feed: z.string(),
     aggregatorAddress: z.string(),
     maxStaleness: z.string(),
     // Not edited: mirrored into the form so the schema can require a cap only
@@ -120,7 +125,14 @@ const formSchema = z
     }
 
     if (value.pricing === "oracle") {
-      if (!addressField.safeParse(value.aggregatorAddress).success) {
+      if (value.feed === "") {
+        ctx.addIssue({ code: "custom", path: ["feed"], message: "Choose a price feed" });
+      } else if (
+        resolvePoolVoucherFeedAddress({
+          feed: value.feed,
+          customAddress: value.aggregatorAddress,
+        }) === null
+      ) {
         ctx.addIssue({
           code: "custom",
           path: ["aggregatorAddress"],
@@ -199,6 +211,20 @@ export function AddPoolVoucherSheet({
   });
   const decimals = edit?.voucher.decimals ?? detailQuery.data?.decimals ?? null;
 
+  const feedsQuery = useQuery({
+    ...oracleFeedsQueryOptions(clcApi.oracleFeeds, pool.chainId ?? CHAIN_ID),
+    enabled: open && knownPricing !== "relative" && knownPricing !== "decimal",
+  });
+  const feeds = feedsQuery.data ?? [];
+  // The chain, not the catalog, is what an edit compares against: the indexer
+  // can lag a feed just set and never records the per-feed bound.
+  const onChain = usePoolVoucherOracle(
+    pool,
+    edit?.voucher.tokenAddress,
+    open && !!edit && knownPricing === "oracle",
+  );
+  const readingFeed = !!edit && knownPricing === "oracle" && onChain.isPending;
+
   const form = useForm({
     defaultValues: {
       // With no recorded quoter, oracle is the offered default because it is what
@@ -212,7 +238,8 @@ export function AddPoolVoucherSheet({
       exchangeRate: edit?.ratePpm
         ? formatTokenAmount(edit.ratePpm, POOL_PRICE_INDEX_DECIMALS, POOL_PRICE_INDEX_DECIMALS)
         : "",
-      aggregatorAddress: edit?.voucher.oracleAddress ?? "",
+      // The catalog's view until the chain read lands; see the effect below.
+      ...feedFields(edit?.voucher.oracleAddress ?? null, !!edit?.voucher.oracleFeedId),
       maxStaleness: "",
       hasLimiter,
       editing: !!edit,
@@ -243,15 +270,23 @@ export function AddPoolVoucherSheet({
             ? undefined
             : parsedCapRaw;
         const proposedPricing = toPricing(value);
+        const current = onChain.data;
+        const currentAggregator = current
+          ? current.aggregator
+          : (edit?.voucher.oracleAddress ?? null);
         const pricing =
           edit &&
           ((proposedPricing.kind === "relative" &&
             edit.ratePpm !== null &&
             BigInt(proposedPricing.exchangeRatePpm) === BigInt(edit.ratePpm)) ||
             (proposedPricing.kind === "oracle" &&
-              proposedPricing.aggregatorAddress.toLowerCase() ===
-                edit.voucher.oracleAddress?.toLowerCase() &&
-              proposedPricing.maxStalenessSeconds === undefined) ||
+              currentAggregator !== null &&
+              getAddress(proposedPricing.aggregatorAddress) === getAddress(currentAggregator) &&
+              // The two-argument overload resets the bound to the global one,
+              // so a blank field is a change only where a bound is set now.
+              (current
+                ? (proposedPricing.maxStalenessSeconds ?? "0") === current.maxStalenessSeconds
+                : proposedPricing.maxStalenessSeconds === undefined)) ||
             proposedPricing.kind === "decimal")
             ? undefined
             : proposedPricing;
@@ -286,6 +321,24 @@ export function AddPoolVoucherSheet({
       }
     },
   });
+
+  // Seeds the feed and its bound from the chain once both reads have settled,
+  // unless the operator has already started on them.
+  const [seeded, setSeeded] = useState(false);
+  const feedsSettled = !feedsQuery.isPending || feedsQuery.fetchStatus === "idle";
+  useEffect(() => {
+    if (seeded || !onChain.data || !feedsSettled) return;
+    setSeeded(true);
+    const touched = (["feed", "aggregatorAddress", "maxStaleness"] as const).some(
+      (name) => form.getFieldMeta(name)?.isDirty,
+    );
+    if (touched) return;
+    const { aggregator, maxStalenessSeconds } = onChain.data;
+    const fields = feedFields(aggregator, !!findPoolVoucherFeed(feedsQuery.data ?? [], aggregator));
+    form.setFieldValue("feed", fields.feed);
+    form.setFieldValue("aggregatorAddress", fields.aggregatorAddress);
+    form.setFieldValue("maxStaleness", maxStalenessSeconds === "0" ? "" : maxStalenessSeconds);
+  }, [seeded, onChain.data, feedsSettled, feedsQuery.data, form]);
 
   function close() {
     if (addVoucher.isPending) return;
@@ -419,23 +472,61 @@ export function AddPoolVoucherSheet({
                         </form.Field>
                       ) : pricing === "oracle" ? (
                         <>
-                          <form.Field name="aggregatorAddress">
+                          <form.Field name="feed">
                             {(field) => (
                               <Field
                                 htmlFor={field.name}
-                                label="Aggregator address"
+                                label="Price feed"
                                 error={getFieldError(field.state.meta.errors)}
                               >
-                                <Input
+                                <FeedSelect
                                   id={field.name}
                                   value={field.state.value}
-                                  onBlur={field.handleBlur}
-                                  onChange={(event) => field.handleChange(event.target.value)}
-                                  className="font-data"
+                                  feeds={feeds}
+                                  onChange={(next) => {
+                                    field.handleChange(next);
+                                    const registered = feeds.find((feed) => feed.address === next);
+                                    if (registered)
+                                      form.setFieldValue(
+                                        "maxStaleness",
+                                        registered.maxStalenessSeconds
+                                          ? String(registered.maxStalenessSeconds)
+                                          : "",
+                                      );
+                                  }}
+                                />
+                                <FeedsStatus
+                                  query={feedsQuery}
+                                  reading={readingFeed}
+                                  chainUnread={onChain.isError}
                                 />
                               </Field>
                             )}
                           </form.Field>
+
+                          <form.Subscribe selector={(state) => state.values.feed}>
+                            {(feed) =>
+                              feed === POOL_VOUCHER_CUSTOM_FEED ? (
+                                <form.Field name="aggregatorAddress">
+                                  {(field) => (
+                                    <Field
+                                      htmlFor={field.name}
+                                      label="Aggregator address"
+                                      error={getFieldError(field.state.meta.errors)}
+                                    >
+                                      <Input
+                                        id={field.name}
+                                        value={field.state.value}
+                                        onBlur={field.handleBlur}
+                                        onChange={(event) => field.handleChange(event.target.value)}
+                                        className="font-data"
+                                      />
+                                    </Field>
+                                  )}
+                                </form.Field>
+                              ) : null
+                            }
+                          </form.Subscribe>
 
                           <form.Field name="maxStaleness">
                             {(field) => (
@@ -480,7 +571,12 @@ export function AddPoolVoucherSheet({
                   submit is better than scaling by a guess. */}
               <Button
                 type="submit"
-                disabled={!selected || (!edit && detailQuery.isPending) || addVoucher.isPending}
+                disabled={
+                  !selected ||
+                  (!edit && detailQuery.isPending) ||
+                  readingFeed ||
+                  addVoucher.isPending
+                }
               >
                 {addVoucher.isPending ? "Waiting…" : edit ? "Sign and update" : "Sign and add"}
               </Button>
@@ -494,6 +590,7 @@ export function AddPoolVoucherSheet({
 
 function toPricing(value: {
   pricing: PoolPricing;
+  feed: string;
   aggregatorAddress: string;
   maxStaleness: string;
   exchangeRate: string;
@@ -504,12 +601,121 @@ function toPricing(value: {
       kind: "relative",
       exchangeRatePpm: parseTokenAmount(value.exchangeRate.trim(), POOL_PRICE_INDEX_DECIMALS),
     };
+  const aggregatorAddress = resolvePoolVoucherFeedAddress({
+    feed: value.feed,
+    customAddress: value.aggregatorAddress,
+  });
+  if (!aggregatorAddress) throw new Error("Choose a price feed.");
   const staleness = value.maxStaleness.trim();
   return {
     kind: "oracle",
-    aggregatorAddress: value.aggregatorAddress.trim() as `0x${string}`,
+    aggregatorAddress,
     ...(staleness ? { maxStalenessSeconds: staleness } : {}),
   };
+}
+
+/**
+ * The feed fields that name an aggregator: its registry entry when it has one,
+ * otherwise the custom address, so an unverified feed is shown and replaceable.
+ */
+function feedFields(
+  aggregator: string | null,
+  registered: boolean,
+): { feed: string; aggregatorAddress: string } {
+  if (!aggregator) return { feed: "", aggregatorAddress: "" };
+  if (registered) return { feed: getAddress(aggregator), aggregatorAddress: "" };
+  return { feed: POOL_VOUCHER_CUSTOM_FEED, aggregatorAddress: aggregator };
+}
+
+function feedLabel(feed: OracleFeed): string {
+  return feed.description ?? feed.name;
+}
+
+function FeedSelect({
+  id,
+  value,
+  feeds,
+  onChange,
+}: {
+  id: string;
+  value: string;
+  feeds: OracleFeed[];
+  onChange: (next: string) => void;
+}) {
+  return (
+    <Select value={value} onValueChange={(next) => onChange(String(next ?? ""))}>
+      <SelectTrigger id={id} className="w-full">
+        <SelectValue>
+          {(current: string) => {
+            if (current === POOL_VOUCHER_CUSTOM_FEED) return "Custom address";
+            if (!current) return <span className="text-muted-foreground">Choose a feed</span>;
+            const feed = feeds.find((entry) => entry.address === current);
+            return feed ? (
+              feedLabel(feed)
+            ) : (
+              <span className="font-data">{formatVoucherAddress(current as `0x${string}`)}</span>
+            );
+          }}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        {feeds.map((feed) => (
+          <SelectItem key={feed.id} value={feed.address}>
+            <span className="flex w-full items-center justify-between gap-3">
+              <span className="font-mono">{feedLabel(feed)}</span>
+              <span className="font-data text-muted-foreground text-xs">
+                {formatVoucherAddress(feed.address)}
+              </span>
+            </span>
+          </SelectItem>
+        ))}
+        <SelectItem value={POOL_VOUCHER_CUSTOM_FEED}>Custom address</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
+
+function FeedsStatus({
+  query,
+  reading,
+  chainUnread,
+}: {
+  query: UseQueryResult<OracleFeed[]>;
+  reading: boolean;
+  chainUnread: boolean;
+}) {
+  return (
+    <>
+      {reading ? <p className="text-muted-foreground text-xs">Reading the current feed…</p> : null}
+      {chainUnread ? (
+        <p role="status" className="text-muted-foreground text-xs">
+          Could not read the current feed on chain.
+        </p>
+      ) : null}
+      {query.isPending ? (
+        <p className="text-muted-foreground text-xs">Loading price feeds…</p>
+      ) : query.isError ? (
+        <div className="flex items-center justify-between gap-2">
+          <p role="alert" className="text-destructive text-xs">
+            Could not load price feeds.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={query.isFetching}
+            onClick={() => void query.refetch()}
+          >
+            Retry
+          </Button>
+        </div>
+      ) : query.data?.length === 0 ? (
+        <p role="status" className="text-muted-foreground text-xs">
+          No verified feeds on this chain.
+        </p>
+      ) : null}
+    </>
+  );
 }
 
 function SelectedVoucher({

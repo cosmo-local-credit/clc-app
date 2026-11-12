@@ -2,6 +2,8 @@ import { tokenTagsQueryOptions } from "@clc/api/features/deployments/queries";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import type { PoolDeployPayload } from "@clc/core/features/pools/logic";
 import {
+  chainHasPoolOracle,
+  getPoolOracleBaseCurrency,
   poolDescriptionSchema,
   poolNameSchema,
   poolSwapFeeSchema,
@@ -11,13 +13,6 @@ import { voucherUnitSchema } from "@clc/core/features/vouchers/logic";
 import { isHttpUrl, optionalTermsSchema } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { storedImageUrlSchema } from "@clc/core/lib/image-url";
-import {
-  CELO_MAINNET_CEUR_ADDRESS,
-  CELO_MAINNET_CHAIN_ID,
-  CELO_MAINNET_CKES_ADDRESS,
-  CELO_MAINNET_CUSD_ADDRESS,
-  CELO_MAINNET_CZAR_ADDRESS,
-} from "@clc/core/lib/constants/celo";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
@@ -52,29 +47,12 @@ import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 
 import { usePoolPublishDeployment } from "./use-pool-publish-deployment";
 
-const ORACLE_BASE_CODES = ["KES", "USD", "BAM", "BTN", "EUR", "INR", "ZAR"] as const;
+const CHAIN_HAS_ORACLE = chainHasPoolOracle(CHAIN_ID);
 
-type OracleBase = (typeof ORACLE_BASE_CODES)[number];
-
-/**
- * The token an OracleQuoter prices against, per chain and per currency.
- *
- * Celo's are Mento's. A chain absent from this table has no feed the quoter can
- * read, so oracle pricing is not offered there at all — the alternative is a
- * console that lists it, takes a full form, and refuses at the last field.
- */
-const ORACLE_BASES: Record<number, Partial<Record<OracleBase, string>>> = {
-  [CELO_MAINNET_CHAIN_ID]: {
-    KES: CELO_MAINNET_CKES_ADDRESS,
-    USD: CELO_MAINNET_CUSD_ADDRESS,
-    EUR: CELO_MAINNET_CEUR_ADDRESS,
-    ZAR: CELO_MAINNET_CZAR_ADDRESS,
-  },
-};
-
-const CHAIN_ORACLE_BASES = ORACLE_BASES[CHAIN_ID] ?? {};
-
-const HAS_ORACLE_BASES = Object.keys(CHAIN_ORACLE_BASES).length > 0;
+/** The token an OracleQuoter prices this unit against on this console's chain, if any. */
+function oracleBaseAddress(unit: string): string | undefined {
+  return getPoolOracleBaseCurrency(unit, CHAIN_ID);
+}
 
 /**
  * Relative pricing is the default: every pool starts with parity rates and its
@@ -84,16 +62,8 @@ const HAS_ORACLE_BASES = Object.keys(CHAIN_ORACLE_BASES).length > 0;
 const PRICING_OPTIONS = [
   { value: "relative" as const, label: "Relative pricing" },
   { value: "decimal" as const, label: "Equal value" },
-  ...(HAS_ORACLE_BASES ? [{ value: "oracle" as const, label: "Oracle pricing" }] : []),
+  ...(CHAIN_HAS_ORACLE ? [{ value: "oracle" as const, label: "Oracle pricing" }] : []),
 ];
-
-function isOracleBase(value: string): value is OracleBase {
-  return (ORACLE_BASE_CODES as readonly string[]).includes(value);
-}
-
-function oracleBaseAddress(code: OracleBase): string | undefined {
-  return CHAIN_ORACLE_BASES[code];
-}
 
 const requiredEmailSchema = z
   .string()
@@ -151,10 +121,7 @@ const poolPublishSchema = z
     bannerUrl: storedImageUrlSchema,
   })
   .superRefine((value, ctx) => {
-    if (
-      value.pricing === "oracle" &&
-      (!isOracleBase(value.unitOfAccount) || !oracleBaseAddress(value.unitOfAccount))
-    ) {
+    if (value.pricing === "oracle" && !oracleBaseAddress(value.unitOfAccount)) {
       ctx.addIssue({
         code: "custom",
         path: ["unitOfAccount"],
@@ -224,9 +191,7 @@ export function PoolPublishPage() {
       const latitude = value.latitude.trim();
       const longitude = value.longitude.trim();
       const baseCurrency =
-        value.pricing === "oracle" && isOracleBase(value.unitOfAccount)
-          ? oracleBaseAddress(value.unitOfAccount)
-          : undefined;
+        value.pricing === "oracle" ? oracleBaseAddress(value.unitOfAccount) : undefined;
       if (value.pricing === "oracle" && !baseCurrency) {
         toast.error("No token is configured for this oracle base currency.");
         return;
@@ -410,21 +375,21 @@ export function PoolPublishPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {PRICING_OPTIONS.map((option) => (
-                          <SelectItem
-                            key={option.value}
-                            value={option.value}
-                            disabled={
-                              option.value === "oracle" &&
-                              (!isOracleBase(form.getFieldValue("unitOfAccount")) ||
-                                !oracleBaseAddress(
-                                  form.getFieldValue("unitOfAccount") as OracleBase,
-                                ))
-                            }
-                          >
-                            {option.label}
-                          </SelectItem>
-                        ))}
+                        {/* Subscribed, not read: the items stay mounted, so a value
+                            read at render would keep the unit the page opened with. */}
+                        <form.Subscribe selector={(state) => state.values.unitOfAccount}>
+                          {(unit) =>
+                            PRICING_OPTIONS.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                                disabled={option.value === "oracle" && !oracleBaseAddress(unit)}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))
+                          }
+                        </form.Subscribe>
                       </SelectContent>
                     </Select>
                   </Field>
@@ -440,16 +405,14 @@ export function PoolPublishPage() {
                         field.handleChange(unit);
                         if (
                           form.getFieldValue("pricing") === "oracle" &&
-                          (!isOracleBase(unit) || !oracleBaseAddress(unit))
+                          !oracleBaseAddress(unit)
                         ) {
                           form.setFieldValue("pricing", "relative");
                         }
                       }}
                     />
-                    {!isOracleBase(field.state.value) ? (
-                      <p className="text-muted-foreground text-xs">
-                        Custom units have no price feed. Relative pricing is used instead.
-                      </p>
+                    {CHAIN_HAS_ORACLE && !oracleBaseAddress(field.state.value) ? (
+                      <p className="text-muted-foreground text-xs">No price feed for this unit.</p>
                     ) : null}
                   </Field>
                 )}

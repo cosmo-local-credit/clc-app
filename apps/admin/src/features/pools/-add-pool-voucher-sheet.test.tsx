@@ -12,6 +12,8 @@ const REGISTRY = "0x61a8000000000000000000000000000000007001";
 const LIMITER = "0x4d90000000000000000000000000000000000a1c";
 const QUOTER = "0xb91c000000000000000000000000000000007d20";
 const AGGREGATOR = "0x0826000000000000000000000000000000005e9d";
+const EUR_FEED = "0xab70BCB260073d036d1660201e9d5405F5829b7a";
+const UNVERIFIED = "0x9a48d9b0AF457eF040281A9Af3867bc65522Fecd";
 const RIBA = "0x3aa7000000000000000000000000000000000102";
 const MUMO = "0x925b000000000000000000000000000000000a81";
 
@@ -19,6 +21,13 @@ const relayOperatorBatch = vi.hoisted(() => vi.fn());
 const getFilteredMarketVouchers = vi.hoisted(() => vi.fn());
 const getMarketVoucher = vi.hoisted(() => vi.fn());
 const waitForTrackingCompletion = vi.hoisted(() => vi.fn());
+const listOracleFeeds = vi.hoisted(() => vi.fn());
+const voucherOracle = vi.hoisted(() => vi.fn());
+
+// The chain read, replaced so each test states what the quoter holds now.
+vi.mock("./use-pool-voucher-oracle", () => ({
+  usePoolVoucherOracle: (...args: unknown[]) => voucherOracle(...args),
+}));
 
 vi.mock("#/features/auth/relay-batch", () => ({
   relayOperatorBatch: (...args: unknown[]) => relayOperatorBatch(...args),
@@ -32,6 +41,9 @@ vi.mock("#/lib/api", () => ({
     },
     auth: {
       waitForTrackingCompletion: (...args: unknown[]) => waitForTrackingCompletion(...args),
+    },
+    oracleFeeds: {
+      listOracleFeeds: (...args: unknown[]) => listOracleFeeds(...args),
     },
   },
 }));
@@ -125,6 +137,26 @@ function renderSheet(
   );
 }
 
+/** Base UI commits an unhighlighted item only for a touch pointer; jsdom fires no hover. */
+async function chooseFeed(name: string | RegExp) {
+  fireEvent.click(screen.getByLabelText("Price feed"));
+  const option = await screen.findByRole("option", { name });
+  fireEvent.pointerDown(option, { pointerType: "touch" });
+  fireEvent.click(option);
+}
+
+function onChain(aggregator: string | null, maxStalenessSeconds = "0") {
+  voucherOracle.mockReturnValue({
+    isPending: false,
+    isError: false,
+    data: { aggregator, maxStalenessSeconds },
+  });
+}
+
+function quoterTarget(calls: Array<{ to: string; data: string }>) {
+  return calls.find((call) => call.to === QUOTER);
+}
+
 async function pickKiriba() {
   fireEvent.click(await waitFor(() => screen.getByRole("button", { name: /Kiriba/ })));
   // The decimals read gates submit, so wait for it the way an operator would see
@@ -139,6 +171,30 @@ beforeEach(() => {
   getFilteredMarketVouchers.mockReset();
   getMarketVoucher.mockReset();
   waitForTrackingCompletion.mockReset();
+  listOracleFeeds.mockReset();
+  voucherOracle.mockReset();
+
+  listOracleFeeds.mockResolvedValue([
+    {
+      id: "7",
+      chainId: 100,
+      name: "KES",
+      address: AGGREGATOR,
+      description: "KES / USD",
+      decimals: 8,
+      maxStalenessSeconds: null,
+    },
+    {
+      id: "8",
+      chainId: 100,
+      name: "EUR",
+      address: EUR_FEED,
+      description: "EUR / USD",
+      decimals: 8,
+      maxStalenessSeconds: 93_600,
+    },
+  ]);
+  voucherOracle.mockReturnValue({ isPending: false, isError: false, data: undefined });
 
   relayOperatorBatch.mockResolvedValue({ trackingId: "track-1", signatureType: "secp256k1" });
   waitForTrackingCompletion.mockResolvedValue({ txHash: `0x${"ab".repeat(32)}` });
@@ -168,7 +224,8 @@ describe("AddPoolVoucherSheet", () => {
 
     expect(screen.getByText("Oracle feed")).toBeTruthy();
     expect(screen.queryByLabelText("Quoter")).toBeNull();
-    expect(screen.getByLabelText("Aggregator address")).toBeTruthy();
+    expect(screen.getByLabelText("Price feed")).toBeTruthy();
+    expect(screen.queryByLabelText("Aggregator address")).toBeNull();
   });
 
   it("asks which quoter to configure when the catalog does not record one", async () => {
@@ -181,7 +238,7 @@ describe("AddPoolVoucherSheet", () => {
   it("requires an explicit relative rate and signs its PPM setter", async () => {
     renderSheet({ quoterType: "relative" });
     await pickKiriba();
-    expect(screen.queryByLabelText("Aggregator address")).toBeNull();
+    expect(screen.queryByLabelText("Price feed")).toBeNull();
     fireEvent.change(screen.getByLabelText(/Cap in RIBA/), { target: { value: "300" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
     await waitFor(() =>
@@ -203,7 +260,7 @@ describe("AddPoolVoucherSheet", () => {
     await pickKiriba();
 
     expect(screen.getByText("Decimals only")).toBeTruthy();
-    expect(screen.queryByLabelText("Aggregator address")).toBeNull();
+    expect(screen.queryByLabelText("Price feed")).toBeNull();
     expect(screen.queryByLabelText(/Rate \(PPM\)/)).toBeNull();
   });
 
@@ -263,18 +320,69 @@ describe("AddPoolVoucherSheet", () => {
     ]);
   });
 
-  it("does not rewrite an unchanged oracle or poll for it during a cap-only edit", async () => {
+  it("does not rewrite an unchanged oracle during a cap-only edit", async () => {
     const voucher = member(RIBA);
+    onChain(AGGREGATOR);
     renderSheet({}, [voucher], { voucher, ratePpm: null, capRaw: "300000000" });
+    await waitFor(() =>
+      expect(screen.getByLabelText("Price feed").textContent).toContain("KES / USD"),
+    );
     fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "600" } });
-    fireEvent.change(screen.getByLabelText("Aggregator address"), {
-      target: { value: `0x${AGGREGATOR.slice(2).toUpperCase()}` },
-    });
     fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
     await waitFor(() => expect(onUpdated).toHaveBeenCalledWith({ expectedCapRaw: "600000000" }));
     expect(relayOperatorBatch.mock.calls[0]![0].map((call: { to: string }) => call.to)).toEqual([
       LIMITER,
     ]);
+  });
+
+  it("seeds the feed and its bound from the chain, not the lagging catalog", async () => {
+    const voucher = member(RIBA);
+    onChain(EUR_FEED, "93600");
+    renderSheet({}, [voucher], { voucher, ratePpm: null, capRaw: "300000000" });
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Price feed").textContent).toContain("EUR / USD"),
+    );
+    expect((screen.getByLabelText(/Freshness bound/) as HTMLInputElement).value).toBe("93600");
+
+    // Unchanged against the chain, so nothing is written even though the
+    // catalog still names the old feed.
+    fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
+    await waitFor(() => expect(screen.queryByText("Waiting…")).toBeNull());
+    expect(relayOperatorBatch).not.toHaveBeenCalled();
+  });
+
+  it("shows an unregistered aggregator as a custom address and replaces it", async () => {
+    const voucher = member(RIBA);
+    onChain(UNVERIFIED);
+    renderSheet({}, [voucher], { voucher, ratePpm: null, capRaw: "300000000" });
+
+    await waitFor(() =>
+      expect((screen.getByLabelText("Aggregator address") as HTMLInputElement).value).toBe(
+        UNVERIFIED,
+      ),
+    );
+    expect(screen.getByLabelText("Price feed").textContent).toContain("Custom address");
+
+    await chooseFeed(/EUR \/ USD/);
+    expect((screen.getByLabelText(/Freshness bound/) as HTMLInputElement).value).toBe("93600");
+    fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
+    await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
+    const call = quoterTarget(relayOperatorBatch.mock.calls[0]![0]);
+    expect(call?.data).toContain(EUR_FEED.slice(2).toLowerCase());
+    expect(call?.data).toContain((93_600).toString(16));
+    expect(onUpdated).toHaveBeenCalledWith({ expectedOracleAddress: EUR_FEED });
+  });
+
+  it("holds submit while the current feed is read from the chain", async () => {
+    const voucher = member(RIBA);
+    voucherOracle.mockReturnValue({ isPending: true, isError: false, data: undefined });
+    renderSheet({}, [voucher], { voucher, ratePpm: null, capRaw: "300000000" });
+
+    expect(screen.getByText("Reading the current feed…")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Sign and update" }).hasAttribute("disabled")).toBe(
+      true,
+    );
   });
 
   it("does not ask for a signature when only amount formatting changed", async () => {
@@ -322,9 +430,7 @@ describe("AddPoolVoucherSheet", () => {
     await pickKiriba();
 
     fireEvent.change(screen.getByLabelText(/Cap in RIBA/), { target: { value: "300" } });
-    fireEvent.change(screen.getByLabelText("Aggregator address"), {
-      target: { value: AGGREGATOR },
-    });
+    await chooseFeed(/KES \/ USD/);
     fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
 
     await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
@@ -334,22 +440,77 @@ describe("AddPoolVoucherSheet", () => {
     expect(calls.map((call: { to: string }) => call.to)).toEqual([REGISTRY, LIMITER, QUOTER]);
     // 300 RIBA at six decimals reaches the limiter as raw base units.
     expect(calls[1].data).toContain((300_000_000).toString(16));
+    expect(calls[2].data).toContain(AGGREGATOR.slice(2).toLowerCase());
 
     // The catalog lags the chain, so the screen is told which row to wait for.
     await waitFor(() => expect(onAdded).toHaveBeenCalledWith(RIBA));
   });
 
-  it("does not sign until the pricing the quoter needs is filled in", async () => {
+  it("sends a registry feed's freshness bound with the three-argument setter", async () => {
+    renderSheet();
+    await pickKiriba();
+
+    fireEvent.change(screen.getByLabelText(/Cap in RIBA/), { target: { value: "300" } });
+    await chooseFeed(/EUR \/ USD/);
+    expect((screen.getByLabelText(/Freshness bound/) as HTMLInputElement).value).toBe("93600");
+    fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
+
+    await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
+    const call = quoterTarget(relayOperatorBatch.mock.calls[0]![0]);
+    expect(call?.data).toContain(EUR_FEED.slice(2).toLowerCase());
+    expect(call?.data).toContain((93_600).toString(16));
+  });
+
+  it("takes a custom aggregator address", async () => {
+    renderSheet();
+    await pickKiriba();
+
+    fireEvent.change(screen.getByLabelText(/Cap in RIBA/), { target: { value: "300" } });
+    await chooseFeed("Custom address");
+    fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
+    await waitFor(() =>
+      expect(screen.getByText("Enter the Chainlink aggregator address")).toBeTruthy(),
+    );
+    expect(relayOperatorBatch).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByLabelText("Aggregator address"), {
+      target: { value: UNVERIFIED },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
+    await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
+    expect(quoterTarget(relayOperatorBatch.mock.calls[0]![0])?.data).toContain(
+      UNVERIFIED.slice(2).toLowerCase(),
+    );
+  });
+
+  it("does not sign until a price feed is chosen", async () => {
     renderSheet();
     await pickKiriba();
 
     fireEvent.change(screen.getByLabelText(/Cap in RIBA/), { target: { value: "300" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
 
-    await waitFor(() =>
-      expect(screen.getByText("Enter the Chainlink aggregator address")).toBeTruthy(),
-    );
+    await waitFor(() => expect(screen.getByText("Choose a price feed")).toBeTruthy());
     expect(relayOperatorBatch).not.toHaveBeenCalled();
+  });
+
+  it("offers Retry when the feed registry cannot be loaded, and still takes a custom address", async () => {
+    listOracleFeeds.mockRejectedValueOnce(new Error("down"));
+    renderSheet();
+    await pickKiriba();
+
+    expect(await screen.findByText("Could not load price feeds.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await waitFor(() => expect(screen.queryByText("Could not load price feeds.")).toBeNull());
+    expect(listOracleFeeds).toHaveBeenCalledTimes(2);
+  });
+
+  it("says so when the chain has no verified feeds", async () => {
+    listOracleFeeds.mockResolvedValue([]);
+    renderSheet();
+    await pickKiriba();
+
+    expect(await screen.findByText("No verified feeds on this chain.")).toBeTruthy();
   });
 
   it("does not sign without a cap when the pool has a limiter", async () => {
@@ -358,9 +519,7 @@ describe("AddPoolVoucherSheet", () => {
     renderSheet();
     await pickKiriba();
 
-    fireEvent.change(screen.getByLabelText("Aggregator address"), {
-      target: { value: AGGREGATOR },
-    });
+    await chooseFeed(/KES \/ USD/);
     fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
 
     await waitFor(() => expect(screen.getByText("Enter an amount greater than zero")).toBeTruthy());
