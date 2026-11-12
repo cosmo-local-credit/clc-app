@@ -1,8 +1,8 @@
 import { viewportToBoundingBoxes } from "@clc/api/features/market/client";
 import { wantDetailQueryOptions } from "@clc/api/features/wants/queries";
-import { canonicalMarketBounds, type MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { canonicalMarketBounds } from "@clc/core/features/catalog/nearby";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
-import { canonicalMarketMapZoom, type MarketMapKind } from "@clc/core/features/market-map/logic";
+import type { MarketMapKind } from "@clc/core/features/market-map/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -23,6 +23,8 @@ import {
 } from "#/features/home/hooks/use-market-camera";
 import { useMarketPostFilter } from "#/features/home/hooks/use-market-post-filter";
 import { useMarketMap } from "#/features/home/hooks/use-market-map";
+import { useMarketMapFacets } from "#/features/home/hooks/use-market-map-facets";
+import { countPointsInBoxes } from "#/features/home/logic/market-map-clusters";
 import { useMarketMapResourceSelection } from "#/features/home/hooks/use-market-map-resource-selection";
 import type { OutputVoucherBrowse } from "#/features/home/hooks/use-output-voucher-browse";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
@@ -89,19 +91,11 @@ export function useMarketScreen({
     isResolvingInitialCamera,
   } = useMarketCamera(locationOwner);
   const { area, setArea, clearArea } = useMarketDiscoveryArea();
-  const [fetchBounds, setFetchBounds] = useState<readonly MarketBoundingBox[]>(() =>
-    bufferedTileBounds(area?.boxes ?? [], area?.zoom ?? 2),
-  );
-  const [fetchZoom, setFetchZoom] = useState(() => canonicalMarketMapZoom(area?.zoom ?? 2));
   const [hasSettledViewport, setHasSettledViewport] = useState(() => Boolean(area));
-  const fetchZoomRef = useRef(fetchZoom);
   const areaOwnerRef = useRef(locationOwner);
   useEffect(() => {
     if (areaOwnerRef.current === locationOwner) return;
     areaOwnerRef.current = locationOwner;
-    setFetchBounds(bufferedTileBounds(area?.boxes ?? [], area?.zoom ?? 2));
-    setFetchZoom(canonicalMarketMapZoom(area?.zoom ?? 2));
-    fetchZoomRef.current = canonicalMarketMapZoom(area?.zoom ?? 2);
     setHasSettledViewport(Boolean(area));
   }, [area, locationOwner]);
   const voucherSelection = useVoucherSheetSelection();
@@ -175,7 +169,6 @@ export function useMarketScreen({
     !savedCamera &&
     !automaticCamera &&
     isResolvingInitialCamera;
-  const mapDiscoveryReady = fetchBounds.length > 0 || (!camera && !cameraBootstrapPending);
 
   // A link that names an output voucher is explicit: a remembered tag set must not join it.
   const storageOwner = useStorageOwner();
@@ -188,10 +181,8 @@ export function useMarketScreen({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filtersEverOpened, setFiltersEverOpened] = useState(false);
   const parsedFilter = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
-  const marketMap = useMarketMap({
+  const mapFilters = {
     filter: parsedFilter,
-    bounds: fetchBounds,
-    zoom: fetchZoom,
     kinds: activeKinds,
     postTiming: postTiming.timing,
     postVouchers: includesPosts ? parsedFilter.vouchers : [],
@@ -200,20 +191,27 @@ export function useMarketScreen({
     postPoolMatch: parsedFilter.poolMatch,
     // Credit's pools, narrowed to the requested output's when the link has one.
     creditablePools: output ? output.poolRefs : credit.enabled ? credit.poolRefs : undefined,
-    enabled:
-      mapDiscoveryReady &&
-      activeKinds.length > 0 &&
-      !filter.isRestoringPreference &&
-      filter.result.ok &&
-      !credit.blocksResults &&
-      !output?.blocksResults &&
-      !(credit.enabled && credit.poolRefs?.length === 0),
-    facets: filtersEverOpened,
+  };
+  const discoveryEnabled =
+    activeKinds.length > 0 &&
+    !filter.isRestoringPreference &&
+    filter.result.ok &&
+    !credit.blocksResults &&
+    !output?.blocksResults &&
+    !(credit.enabled && credit.poolRefs?.length === 0);
+  // The points do not depend on the viewport, so they need not wait for one.
+  const marketMap = useMarketMap({ ...mapFilters, enabled: discoveryEnabled });
+  const visibleBoxes = area?.boxes ?? [];
+  const { tagFacets, postVoucherFacets, postPoolFacets } = useMarketMapFacets({
+    ...mapFilters,
+    bounds: visibleBoxes,
+    enabled: discoveryEnabled && filtersEverOpened,
   });
   const locations = marketMap.locations;
-  const tagFacets = marketMap.tagFacets;
-  const postVoucherFacets = marketMap.postVoucherFacets;
-  const postPoolFacets = marketMap.postPoolFacets;
+  const visibleCount = useMemo(
+    () => countPointsInBoxes(locations, visibleBoxes),
+    [locations, visibleBoxes],
+  );
 
   const isCardOpen = voucherSelection.voucher !== null || wantSelection.want !== null;
   const [snap, setSnap] = useVoucherSheetSnap(isCardOpen);
@@ -319,24 +317,11 @@ export function useMarketScreen({
       if (!area && !settled.userInitiated && !camera) return;
 
       const boxes = canonicalMarketBounds(viewportToBoundingBoxes(settled));
-      const zoom = canonicalMarketMapZoom(settled.zoom);
-      const zoomChanged = fetchZoomRef.current !== zoom;
-      fetchZoomRef.current = zoom;
       if (boxes.length === 0) {
-        if (Math.abs(settled.east - settled.west) >= 360) {
-          clearArea();
-          setFetchBounds([]);
-          setFetchZoom(zoom);
-        }
+        if (Math.abs(settled.east - settled.west) >= 360) clearArea();
         return;
       }
       setArea({ center: settled.center, zoom: settled.zoom, boxes });
-      setFetchZoom(zoom);
-      setFetchBounds((current) =>
-        !zoomChanged && boundsContain(current, boxes)
-          ? current
-          : bufferedTileBounds(boxes, settled.zoom),
-      );
     },
     [area, camera?.rank, clearArea, setArea],
   );
@@ -347,12 +332,13 @@ export function useMarketScreen({
     postTiming.setTiming("future");
     alsoClear?.();
   }, [alsoClear, filterClear, postTiming.setTiming]);
+  const incomplete = t`Couldn't load complete marketplace results.`;
   const notice = useMarketFilterNotice(
     { ...filter, clear: clearFilters },
     marketMap.error,
     marketMap.retry,
     marketMap.retrying,
-    t`Couldn't load complete marketplace results.`,
+    incomplete,
   );
 
   const locationButton = (
@@ -368,11 +354,7 @@ export function useMarketScreen({
   );
 
   const isEmpty =
-    activeKinds.length > 0 &&
-    locations.length === 0 &&
-    marketMap.clusters.length === 0 &&
-    filter.result.ok &&
-    marketMap.isSettled;
+    activeKinds.length > 0 && visibleCount === 0 && filter.result.ok && marketMap.isSettled;
 
   const changeCredit = (checked: boolean) =>
     void navigate({
@@ -392,7 +374,6 @@ export function useMarketScreen({
           : { ...previous, tab: "market", view: "map", creditable: false },
     });
 
-  const clusterTotal = marketMap.clusters.reduce((sum, cluster) => sum + cluster.count, 0);
   // What the result count may claim. A zero is only a count once a result set
   // has arrived; a failed or blocked request has no count, and one that has not
   // started yet is still on its way.
@@ -417,12 +398,15 @@ export function useMarketScreen({
           ? { kind: "credit-empty" }
           : notice
             ? { kind: "notice", notice }
-            : isEmpty
-              ? {
-                  kind: "empty",
-                  filtered: filter.isFiltered || (includesPosts && postTiming.timing !== "future"),
-                }
-              : null;
+            : marketMap.truncated
+              ? { kind: "notice", notice: { message: incomplete } }
+              : isEmpty
+                ? {
+                    kind: "empty",
+                    filtered:
+                      filter.isFiltered || (includesPosts && postTiming.timing !== "future"),
+                  }
+                : null;
 
   const mapNotice: ReactNode =
     mapStatus?.kind === "no-kinds" ? (
@@ -485,7 +469,6 @@ export function useMarketScreen({
     exactBounds: area?.boxes ?? [],
     viewportCenter: area?.center ?? null,
     hasSettledViewport,
-    clusters: marketMap.clusters,
     isFetching: marketMap.isFetching,
     tagFacets,
     postVoucherFacets,
@@ -498,10 +481,8 @@ export function useMarketScreen({
     credit,
     results: {
       state: resultsState,
-      /** Markers in the response, plus everything its clusters stand for. */
-      total: locations.length + clusterTotal,
-      /** Only clusters came back: the area holds results too many to list at this zoom. */
-      clusteredOnly: locations.length === 0 && clusterTotal > 0,
+      /** Points inside the visible viewport, or every point before one has settled. */
+      total: visibleCount,
     },
     filtersOpen,
     setFiltersOpen,
@@ -525,71 +506,6 @@ export function useMarketScreen({
     clearCredit,
     clearFilters,
   };
-}
-
-const FETCH_PADDING_RATIO = 0.2;
-
-function bufferedTileBounds(
-  boxes: readonly MarketBoundingBox[],
-  zoom: number,
-): readonly MarketBoundingBox[] {
-  const expanded = boxes.map((box) => {
-    const lngPadding = (box.maxLng - box.minLng) * FETCH_PADDING_RATIO;
-    const latPadding = (box.maxLat - box.minLat) * FETCH_PADDING_RATIO;
-    return snapBoxToTiles(
-      {
-        minLng: Math.max(-180, box.minLng - lngPadding),
-        minLat: Math.max(-90, box.minLat - latPadding),
-        maxLng: Math.min(180, box.maxLng + lngPadding),
-        maxLat: Math.min(90, box.maxLat + latPadding),
-      },
-      zoom,
-    );
-  });
-  return canonicalMarketBounds(expanded);
-}
-
-function snapBoxToTiles(box: MarketBoundingBox, zoom: number): MarketBoundingBox {
-  const tileZoom = Math.max(0, Math.min(16, Math.floor(zoom)));
-  const tiles = 2 ** tileZoom;
-  const minX = Math.floor(((box.minLng + 180) / 360) * tiles);
-  const maxX = Math.ceil(((box.maxLng + 180) / 360) * tiles);
-  const minY = Math.floor(latitudeToTileY(box.maxLat, tiles));
-  const maxY = Math.ceil(latitudeToTileY(box.minLat, tiles));
-  return {
-    minLng: Math.max(-180, (minX / tiles) * 360 - 180),
-    maxLng: Math.min(180, (maxX / tiles) * 360 - 180),
-    minLat: tileYToLatitude(maxY, tiles),
-    maxLat: tileYToLatitude(minY, tiles),
-  };
-}
-
-function latitudeToTileY(latitude: number, tiles: number): number {
-  const clamped = Math.max(-85.05112878, Math.min(85.05112878, latitude));
-  const radians = (clamped * Math.PI) / 180;
-  return ((1 - Math.asinh(Math.tan(radians)) / Math.PI) / 2) * tiles;
-}
-
-function tileYToLatitude(y: number, tiles: number): number {
-  return (Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / tiles))) * 180) / Math.PI;
-}
-
-function boundsContain(
-  envelope: readonly MarketBoundingBox[],
-  visible: readonly MarketBoundingBox[],
-): boolean {
-  return (
-    envelope.length > 0 &&
-    visible.every((box) =>
-      envelope.some(
-        (outer) =>
-          outer.minLng <= box.minLng &&
-          outer.minLat <= box.minLat &&
-          outer.maxLng >= box.maxLng &&
-          outer.maxLat >= box.maxLat,
-      ),
-    )
-  );
 }
 
 function profileCoordinates(

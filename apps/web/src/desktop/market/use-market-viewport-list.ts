@@ -22,8 +22,8 @@ const MARKETPLACE_KIND: Record<MarketMapKind, MarketplaceKind> = {
 
 /**
  * The exact-viewport result chain beside the clustered map. It is deliberately
- * separate from the buffered marker request: clusters stay bounded while this
- * cursor exposes every underlying resource represented in the visible area.
+ * separate from the map's points: the map draws every point, while this cursor
+ * pages the full rows of the resources in the visible area.
  */
 export function useMarketViewportList({
   filter,

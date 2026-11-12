@@ -269,7 +269,6 @@ export function MarketMapDesk({
           <Suspense fallback={<div className="absolute inset-0 bg-card" />}>
             <MarketMap
               locations={screen.locations}
-              clusters={screen.clusters}
               selectedLocationId={pinId}
               camera={screen.camera}
               fitBounds={null}

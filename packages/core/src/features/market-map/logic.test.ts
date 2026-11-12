@@ -1,69 +1,61 @@
 import { describe, expect, it } from "vite-plus/test";
-import { canonicalMarketMapZoom, marketMapResponseSchema } from "./logic";
+import { marketMapFacetsResponseSchema, marketMapPointsResponseSchema } from "./logic";
 
-describe("market map zoom", () => {
-  it.each([
-    [5.8, 5.75],
-    [14.74, 14.5],
-    [14.75, 14.75],
-    [20.99, 20.75],
-  ])("canonicalizes %s to the quarter bucket %s", (input, expected) => {
-    expect(canonicalMarketMapZoom(input)).toBe(expected);
-  });
-
-  it("clamps invalid and out-of-range values", () => {
-    expect(canonicalMarketMapZoom(Number.NaN)).toBe(0);
-    expect(canonicalMarketMapZoom(-1)).toBe(0);
-    expect(canonicalMarketMapZoom(30)).toBe(22);
-  });
-});
-
-describe("market map response schema", () => {
-  it("accepts lightweight markers and server clusters", () => {
-    const parsed = marketMapResponseSchema.parse({
-      features: [
+describe("market map points schema", () => {
+  it("accepts every kind with fractional coordinates and default markers", () => {
+    const parsed = marketMapPointsResponseSchema.parse({
+      points: [
         {
-          type: "marker",
-          id: "marker:voucher:0xabc",
           kind: "voucher",
           resourceId: "0xabc",
           name: "Market voucher",
-          lat: -3.63,
-          lng: 39.85,
+          lat: -3.6884991293904363,
+          lng: 39.830381973540625,
           markerIcon: null,
           markerColor: null,
         },
-        {
-          type: "cluster",
-          id: "cluster:4:1:2",
-          lat: 0,
-          lng: 20,
-          count: 12,
-          kinds: { voucher: 8, want: 4 },
-          expansionZoom: 6,
-        },
+        { kind: "want", resourceId: "7", name: "", lat: 1.5, lng: -2.25 },
       ],
-      tagFacets: [{ tag: "Food", count: 4 }],
+      truncated: false,
     });
 
-    expect(parsed.features[0]?.type).toBe("marker");
-    expect(parsed.features[1]?.type).toBe("cluster");
+    expect(parsed.points[0]?.lat).toBe(-3.6884991293904363);
+    expect(parsed.points[1]).toMatchObject({ markerIcon: null, markerColor: null });
   });
 
-  it("rejects out-of-range locations and unknown resource kinds", () => {
+  it("rejects out-of-range locations, unknown kinds and a missing truncation flag", () => {
+    const point = { kind: "voucher", resourceId: "1", name: "A", lat: 0, lng: 0 };
     expect(() =>
-      marketMapResponseSchema.parse({
-        features: [
-          {
-            type: "marker",
-            id: "bad",
-            kind: "offering",
-            resourceId: "7",
-            name: "Bad",
-            lat: 91,
-            lng: 0,
-          },
-        ],
+      marketMapPointsResponseSchema.parse({ points: [{ ...point, lat: 91 }], truncated: false }),
+    ).toThrow();
+    expect(() =>
+      marketMapPointsResponseSchema.parse({
+        points: [{ ...point, kind: "offering" }],
+        truncated: false,
+      }),
+    ).toThrow();
+    expect(() => marketMapPointsResponseSchema.parse({ points: [point] })).toThrow();
+  });
+});
+
+describe("market map facets schema", () => {
+  it("accepts tag and Post relationship facets", () => {
+    const parsed = marketMapFacetsResponseSchema.parse({
+      tagFacets: [{ tag: "Food", count: 4 }],
+      postVoucherFacets: [
+        { id: 1, chainId: 100, address: "0xabc", name: "Voucher", symbol: "VCH", count: 2 },
+      ],
+      postPoolFacets: [],
+    });
+    expect(parsed.tagFacets).toEqual([{ tag: "Food", count: 4 }]);
+  });
+
+  it("rejects a null facet list", () => {
+    expect(() =>
+      marketMapFacetsResponseSchema.parse({
+        tagFacets: [],
+        postVoucherFacets: null,
+        postPoolFacets: [],
       }),
     ).toThrow();
   });

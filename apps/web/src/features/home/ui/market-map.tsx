@@ -2,7 +2,6 @@ import { EXPLICIT_CAMERA_RANK, type MarketCamera } from "#/features/home/logic/m
 export type { MarketCamera } from "#/features/home/logic/market-camera";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Trans } from "@lingui/react/macro";
-import type { MarketMapCluster } from "@clc/core/features/market-map/logic";
 import MapLibreGL, {
   type DataDrivenPropertyValueSpecification,
   type FilterSpecification,
@@ -19,6 +18,12 @@ import {
   satelliteMapStyleUrl,
   standardMapStyleUrl,
 } from "#/lib/map-appearance";
+import {
+  CLUSTER_MAX_ZOOM,
+  CLUSTER_RADIUS,
+  DEFAULT_CLUSTER_OPTIONS,
+  clusterExplosion,
+} from "#/features/home/logic/market-map-clusters";
 import { cn } from "#/lib/utils";
 import { useHydratedTheme } from "#/providers/theme";
 import {
@@ -138,12 +143,19 @@ const FILTER_FIT_MAX_ZOOM = 14;
 
 const FILTER_FIT_PADDING = { top: 96, bottom: 160, left: 48, right: 48 };
 
+/** Added to the camera's own padding, which already clears the sheet. */
+function fitPadding(bottomInset: number) {
+  return {
+    ...FILTER_FIT_PADDING,
+    bottom: Math.max(0, FILTER_FIT_PADDING.bottom - bottomInset),
+  };
+}
+
 /** How far above a sheet's edge a selected pin's tip must sit to count as visible. */
 const REVEAL_MARGIN = 24;
 
 type MarketMapProps = {
   locations: MarketLocation[];
-  clusters?: MarketMapCluster[];
   mode?: MarketMapMode;
   selectedLocationId: string | null;
   camera: MarketCamera | null;
@@ -175,18 +187,6 @@ type StackFeature = {
     id: string;
     name: string;
   } & PinProperties;
-  geometry: { type: "Point"; coordinates: [number, number] };
-};
-
-type ServerClusterFeature = {
-  type: "Feature";
-  properties: {
-    id: string;
-    point_count: number;
-    markerCount: number;
-    serverCluster: true;
-    expansionZoom: number;
-  };
   geometry: { type: "Point"; coordinates: [number, number] };
 };
 
@@ -229,47 +229,39 @@ function pinProperties(location: MarketLocation | undefined): PinProperties {
   return { pin: art.image, label: art.label };
 }
 
-function createMapCollection(
-  stacks: MarketStack[],
-  clusters: MarketMapCluster[],
-): FeatureCollection<StackFeature | ServerClusterFeature> {
+function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFeature> {
   return {
     type: "FeatureCollection",
-    features: [
-      ...stacks.map((stack) => {
-        const first = stack.members[0];
-        const single = stack.members.length === 1 && first ? first : null;
-        return {
-          type: "Feature" as const,
-          properties: {
-            key: stack.key,
-            count: stack.members.length,
-            id: single ? single.id : "",
-            name: single?.name ?? "",
-            ...pinProperties(first),
-          },
-          geometry: {
-            type: "Point" as const,
-            coordinates: [stack.lng, stack.lat] as [number, number],
-          },
-        };
-      }),
-      ...clusters.map((cluster) => ({
+    features: stacks.map((stack) => {
+      const first = stack.members[0];
+      const single = stack.members.length === 1 && first ? first : null;
+      return {
         type: "Feature" as const,
         properties: {
-          id: cluster.id,
-          point_count: cluster.count,
-          markerCount: cluster.count,
-          serverCluster: true as const,
-          expansionZoom: cluster.expansionZoom,
+          key: stack.key,
+          count: stack.members.length,
+          id: single ? single.id : "",
+          name: single?.name ?? "",
+          ...pinProperties(first),
         },
         geometry: {
           type: "Point" as const,
-          coordinates: [cluster.lng, cluster.lat] as [number, number],
+          coordinates: [stack.lng, stack.lat] as [number, number],
         },
-      })),
-    ],
+      };
+    }),
   };
+}
+
+/**
+ * Puts back the source's normal cluster levels after a cluster click exploded
+ * it. A no-op when nothing is exploded.
+ */
+function restoreClustering(map: MapLibreGL.Map, explodedAt: { current: number | null }): void {
+  if (explodedAt.current === null) return;
+  explodedAt.current = null;
+  const source = map.getSource(MARKET_SOURCE_ID) as GeoJSONSource | undefined;
+  source?.setClusterOptions(DEFAULT_CLUSTER_OPTIONS);
 }
 
 function createUserMarker(): HTMLDivElement {
@@ -404,16 +396,22 @@ function addMarketLayers(
   map: MapLibreGL.Map,
   locations: MarketLocation[],
   stacks: MarketStack[],
-  clusters: MarketMapCluster[],
   selectedLocationId: string | null,
   theme: "light" | "dark",
 ) {
   addMarketMarkerImages(map, locations);
   addMarketNetworkBadgeImage(map, theme);
 
+  // MapLibre clusters every point in its worker, hierarchically and
+  // independent of the viewport, so a badge's count never changes as the map
+  // pans. `markerCount` sums stack sizes: a badge counts resources, not stacks.
   map.addSource(MARKET_SOURCE_ID, {
     type: "geojson",
-    data: createMapCollection(stacks, clusters),
+    data: createStackCollection(stacks),
+    cluster: true,
+    clusterRadius: CLUSTER_RADIUS,
+    clusterMaxZoom: CLUSTER_MAX_ZOOM,
+    clusterProperties: { markerCount: ["+", ["get", "count"]] },
   });
   map.addSource(SPIDER_SOURCE_ID, { type: "geojson", data: emptyCollection<SpiderFeature>() });
 
@@ -577,7 +575,6 @@ function addMarketLayers(
 
 export function MarketMap({
   locations,
-  clusters = [],
   mode = "standard",
   selectedLocationId,
   camera,
@@ -617,8 +614,11 @@ export function MarketMap({
 
   const stacksRef = useRef(stacks);
   stacksRef.current = stacks;
-  const clustersRef = useRef(clusters);
-  clustersRef.current = clusters;
+  /**
+   * The integer zoom a cluster click exploded the source at, or null when the
+   * source has its normal levels. Zooming out below it restores them.
+   */
+  const explodedAtRef = useRef<number | null>(null);
   const locationsRef = useRef(locations);
   locationsRef.current = locations;
   const selectedLocationIdRef = useRef(selectedLocationId);
@@ -763,8 +763,8 @@ export function MarketMap({
         return;
       }
 
-      if (feature.properties?.serverCluster === true) {
-        expandServerCluster(feature);
+      if (typeof feature.properties?.cluster_id === "number") {
+        void expandCluster(feature);
         return;
       }
 
@@ -789,14 +789,63 @@ export function MarketMap({
       if (typeof id === "string" && id) onSelectRef.current(id);
     }
 
-    function expandServerCluster(feature: MapLibreGL.MapGeoJSONFeature) {
-      const expansionZoom = Number(feature.properties?.expansionZoom);
+    /**
+     * Fits the camera to every resource under a cluster and, when the fit is
+     * close enough or the cluster small enough, draws each of them as a pin.
+     * The camera aims at the leaves: a rendered cluster's own point is
+     * quantized to its tile.
+     */
+    async function expandCluster(feature: MapLibreGL.MapGeoJSONFeature) {
       userHasInteractedRef.current = true;
-      if (feature.geometry.type !== "Point" || !Number.isFinite(expansionZoom)) return;
-      map.easeTo({
-        center: feature.geometry.coordinates as [number, number],
-        zoom: Math.min(expansionZoom, map.getMaxZoom()),
+      const source = map.getSource(MARKET_SOURCE_ID) as GeoJSONSource | undefined;
+      const clusterId = Number(feature.properties?.cluster_id);
+      const pointCount = Number(feature.properties?.point_count);
+      const markerCount = Number(feature.properties?.markerCount);
+      if (!source || !(pointCount > 0)) return;
+
+      let leaves: GeoJSON.Feature[];
+      try {
+        // The limit defaults to 10; every leaf is needed to frame them all.
+        leaves = await source.getClusterLeaves(clusterId, pointCount, 0);
+      } catch {
+        return;
+      }
+      if (mapRef.current !== map) return;
+      const bounds = new MapLibreGL.LngLatBounds();
+      for (const leaf of leaves) {
+        if (leaf.geometry.type === "Point") {
+          bounds.extend(leaf.geometry.coordinates as [number, number]);
+        }
+      }
+      if (bounds.isEmpty()) return;
+
+      const fit = map.cameraForBounds(bounds, {
+        padding: fitPadding(bottomInsetRef.current),
+        maxZoom: MAP_MAX_ZOOM,
       });
+      let zoom = fit?.zoom;
+      let center = fit?.center ?? bounds.getCenter();
+      if (zoom === undefined || zoom <= map.getZoom()) {
+        // The leaves already span the view: fitting cannot zoom in, so go to
+        // where the cluster first splits instead.
+        try {
+          zoom = await source.getClusterExpansionZoom(clusterId);
+        } catch {
+          return;
+        }
+        if (mapRef.current !== map) return;
+        center = bounds.getCenter();
+      }
+
+      // Ending an animation in flight fires its zoomend, which must not undo
+      // the options set for this one.
+      map.stop();
+      const explosion = clusterExplosion(zoom, markerCount);
+      if (explosion) {
+        explodedAtRef.current = explosion.explodedAt;
+        source.setClusterOptions(explosion.options);
+      }
+      map.easeTo({ center, zoom });
     }
 
     function handleUserInteraction(event: { originalEvent?: unknown }) {
@@ -810,6 +859,11 @@ export function MarketMap({
 
     function handleZoomStart() {
       setSpider(null);
+    }
+
+    function handleZoomEnd() {
+      const explodedAt = explodedAtRef.current;
+      if (explodedAt !== null && map.getZoom() < explodedAt) restoreClustering(map, explodedAtRef);
     }
 
     function handleMoveEnd() {
@@ -831,11 +885,12 @@ export function MarketMap({
 
     function restoreStyle() {
       if (map.getSource(MARKET_SOURCE_ID)) return;
+      // A new style recreates the source with the normal cluster levels.
+      explodedAtRef.current = null;
       addMarketLayers(
         map,
         locationsRef.current,
         stacksRef.current,
-        clustersRef.current,
         selectedLocationIdRef.current,
         themeRef.current,
       );
@@ -875,6 +930,7 @@ export function MarketMap({
     map.on("dragstart", handleDragStart);
     map.on("zoomstart", handleUserInteraction);
     map.on("zoomstart", handleZoomStart);
+    map.on("zoomend", handleZoomEnd);
     map.on("moveend", handleMoveEnd);
     map.on("movestart", handleMoveStart);
     map.on("resize", handleResize);
@@ -900,6 +956,7 @@ export function MarketMap({
       map.off("dragstart", handleDragStart);
       map.off("zoomstart", handleUserInteraction);
       map.off("zoomstart", handleZoomStart);
+      map.off("zoomend", handleZoomEnd);
       map.off("moveend", handleMoveEnd);
       map.off("movestart", handleMoveStart);
       map.off("resize", handleResize);
@@ -910,6 +967,7 @@ export function MarketMap({
       appliedCameraRef.current = null;
       appliedFitKeyRef.current = null;
       appliedInsetRef.current = 0;
+      explodedAtRef.current = null;
       userHasInteractedRef.current = false;
       loadedRef.current = false;
       lastReportedViewportRef.current = null;
@@ -948,8 +1006,11 @@ export function MarketMap({
     if (!source) return;
     // Every member, not only lone pins: a fanned stack draws its members' pins.
     addMarketMarkerImages(map, locationsRef.current);
-    source.setData(createMapCollection(stacks, clusters));
-  }, [clusters, loaded, stacks, styleRevision]);
+    // New points cluster at the normal levels. In MapLibre 5.24 the data load
+    // carries the current cluster options, so restoring first is enough.
+    restoreClustering(map, explodedAtRef);
+    source.setData(createStackCollection(stacks));
+  }, [loaded, stacks, styleRevision]);
 
   useEffect(() => {
     if (spider && !stacksByKey.has(spider.key)) setSpider(null);
@@ -1092,11 +1153,7 @@ export function MarketMap({
       ],
       {
         maxZoom: FILTER_FIT_MAX_ZOOM,
-        // Added to the camera's own padding, which already clears the sheet.
-        padding: {
-          ...FILTER_FIT_PADDING,
-          bottom: Math.max(0, FILTER_FIT_PADDING.bottom - bottomInsetRef.current),
-        },
+        padding: fitPadding(bottomInsetRef.current),
       },
     );
   }, [fitBounds, loaded]);
