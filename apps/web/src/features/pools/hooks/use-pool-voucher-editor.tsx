@@ -90,6 +90,10 @@ export type PoolVoucherPricingSeed =
       values: PoolVoucherFeedInput;
       /** The aggregator `oracles(token)` returns now; null when none is set. */
       currentAggregator: `0x${string}` | null;
+      /** The bound the quoter applies to that mapping: its own, or the global one. */
+      currentMaxStalenessSeconds: number;
+      /** The quoter's global bound, which a feed sent without one falls back to. */
+      globalMaxStalenessSeconds: number;
       feeds: readonly OracleFeed[];
     };
 
@@ -309,6 +313,10 @@ export function usePoolVoucherEditor({
             decimals: selected.decimals,
           }),
           currentAggregator: currentOracle.aggregatorAddress,
+          currentMaxStalenessSeconds: Number(
+            currentOracle.maxStalenessSeconds || currentOracle.globalMaxStalenessSeconds,
+          ),
+          globalMaxStalenessSeconds: Number(currentOracle.globalMaxStalenessSeconds),
           feeds: feedList,
         }
       : null
@@ -391,8 +399,8 @@ export function usePoolVoucherConfiguration({
   pool,
   voucher,
   selected,
-  pricingSeed,
-  seedCapRaw,
+  pricingSeed: openingPricingSeed,
+  seedCapRaw: openingCapRaw,
   hasLimiter,
   register,
   registrationUnknown,
@@ -413,6 +421,14 @@ export function usePoolVoucherConfiguration({
   // Any batch for this pool, including one the other view started before a
   // phone/desktop swap: a second press would relay beside it.
   const inFlight = useIsMutating({ mutationKey: poolAdminRelayMutationKey(pool.address) }) > 0;
+  // What the form was seeded with, held for the life of the form. The chain
+  // reads behind the seed can refresh after it opens; comparing the steward's
+  // untouched fields against a newer value would read them as edits and write
+  // the older value back over it. Only a field the steward changed is written.
+  const [{ pricingSeed, seedCapRaw }] = useState(() => ({
+    pricingSeed: openingPricingSeed,
+    seedCapRaw: openingCapRaw,
+  }));
   const [confirmingRemoval, setConfirmingRemoval] = useState(false);
   // Save and Remove share one relay; this says which of the two is waiting.
   const [removing, setRemoving] = useState(false);
@@ -709,19 +725,29 @@ export type PoolVoucherFeedChoice = {
  * which is what the batch will send for it.
  */
 export function usePoolVoucherFeedChoices(
-  feeds: readonly OracleFeed[],
+  seed: Pick<
+    Extract<PoolVoucherPricingSeed, { kind: "oracle" }>,
+    "feeds" | "currentAggregator" | "currentMaxStalenessSeconds" | "globalMaxStalenessSeconds"
+  >,
   values: Pick<PoolVoucherFeedInput, "feed" | "customAddress">,
 ) {
+  const { feeds } = seed;
   const custom = values.feed === POOL_VOUCHER_CUSTOM_FEED;
   const customAddress = custom ? resolvePoolVoucherFeedAddress(values) : null;
   const unverified = customAddress !== null && !findPoolVoucherFeed(feeds, customAddress);
+  // Stale by the bound the quoter would apply once this is saved. The current
+  // feed is left alone by an unchanged save, so it keeps its own bound; any other
+  // is sent with its registry bound, or none, which defers to the global one.
+  const boundFor = (address: `0x${string}`) =>
+    address === seed.currentAggregator
+      ? seed.currentMaxStalenessSeconds
+      : (findPoolVoucherFeed(feeds, address)?.maxStalenessSeconds ??
+        seed.globalMaxStalenessSeconds);
   const rounds = useOracleFeedRounds(
     [
-      ...feeds,
-      ...(customAddress && unverified
-        ? [{ address: customAddress, maxStalenessSeconds: null }]
-        : []),
-    ],
+      ...feeds.map((feed) => feed.address),
+      ...(customAddress && unverified ? [customAddress] : []),
+    ].map((address) => ({ address, maxStalenessSeconds: boundFor(address) })),
     true,
   );
   const choices: PoolVoucherFeedChoice[] = feeds.map((feed) => ({

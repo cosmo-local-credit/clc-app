@@ -18,7 +18,7 @@ import type { PoolPricing } from "@clc/core/features/pools/logic";
 import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { getAddress } from "viem";
 import { z } from "zod";
@@ -223,7 +223,18 @@ export function AddPoolVoucherSheet({
     edit?.voucher.tokenAddress,
     open && !!edit && knownPricing === "oracle",
   );
-  const readingFeed = !!edit && knownPricing === "oracle" && onChain.isPending;
+  // Held until a fresh read has seeded the form: cached data from an earlier
+  // visit may already be out of date while its refresh is in flight.
+  const readingFeed =
+    !!edit && knownPricing === "oracle" && (onChain.isPending || onChain.isFetching);
+  // The feed fields as the chain seeded them. A later refresh does not move
+  // this, so an untouched feed is never compared against a newer chain value
+  // and written back over it.
+  const feedBaseline = useRef<{
+    feed: string;
+    aggregatorAddress: string;
+    maxStaleness: string;
+  } | null>(null);
 
   const form = useForm({
     defaultValues: {
@@ -270,6 +281,12 @@ export function AddPoolVoucherSheet({
             ? undefined
             : parsedCapRaw;
         const proposedPricing = toPricing(value);
+        const baseline = feedBaseline.current;
+        const feedUntouched =
+          baseline !== null &&
+          value.feed === baseline.feed &&
+          value.aggregatorAddress === baseline.aggregatorAddress &&
+          value.maxStaleness === baseline.maxStaleness;
         const current = onChain.data;
         const currentAggregator = current
           ? current.aggregator
@@ -279,6 +296,7 @@ export function AddPoolVoucherSheet({
           ((proposedPricing.kind === "relative" &&
             edit.ratePpm !== null &&
             BigInt(proposedPricing.exchangeRatePpm) === BigInt(edit.ratePpm)) ||
+            (proposedPricing.kind === "oracle" && feedUntouched) ||
             (proposedPricing.kind === "oracle" &&
               currentAggregator !== null &&
               getAddress(proposedPricing.aggregatorAddress) === getAddress(currentAggregator) &&
@@ -327,7 +345,7 @@ export function AddPoolVoucherSheet({
   const [seeded, setSeeded] = useState(false);
   const feedsSettled = !feedsQuery.isPending || feedsQuery.fetchStatus === "idle";
   useEffect(() => {
-    if (seeded || !onChain.data || !feedsSettled) return;
+    if (seeded || !onChain.data || onChain.isFetching || !feedsSettled) return;
     setSeeded(true);
     const touched = (["feed", "aggregatorAddress", "maxStaleness"] as const).some(
       (name) => form.getFieldMeta(name)?.isDirty,
@@ -335,10 +353,12 @@ export function AddPoolVoucherSheet({
     if (touched) return;
     const { aggregator, maxStalenessSeconds } = onChain.data;
     const fields = feedFields(aggregator, !!findPoolVoucherFeed(feedsQuery.data ?? [], aggregator));
+    const maxStaleness = maxStalenessSeconds === "0" ? "" : maxStalenessSeconds;
     form.setFieldValue("feed", fields.feed);
     form.setFieldValue("aggregatorAddress", fields.aggregatorAddress);
-    form.setFieldValue("maxStaleness", maxStalenessSeconds === "0" ? "" : maxStalenessSeconds);
-  }, [seeded, onChain.data, feedsSettled, feedsQuery.data, form]);
+    form.setFieldValue("maxStaleness", maxStaleness);
+    feedBaseline.current = { ...fields, maxStaleness };
+  }, [seeded, onChain.data, onChain.isFetching, feedsSettled, feedsQuery.data, form]);
 
   function close() {
     if (addVoucher.isPending) return;

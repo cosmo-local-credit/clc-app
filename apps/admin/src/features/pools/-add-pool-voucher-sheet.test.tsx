@@ -1,4 +1,5 @@
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
+import { poolKeys } from "@clc/api/features/pools/queries";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
@@ -23,10 +24,22 @@ const getMarketVoucher = vi.hoisted(() => vi.fn());
 const waitForTrackingCompletion = vi.hoisted(() => vi.fn());
 const listOracleFeeds = vi.hoisted(() => vi.fn());
 const voucherOracle = vi.hoisted(() => vi.fn());
+const chain = vi.hoisted(() => ({ real: false, multicall: vi.fn() }));
 
-// The chain read, replaced so each test states what the quoter holds now.
-vi.mock("./use-pool-voucher-oracle", () => ({
-  usePoolVoucherOracle: (...args: unknown[]) => voucherOracle(...args),
+// The chain read, replaced so each test states what the quoter holds now. A
+// test about the read's lifecycle runs the real hook on its QueryClient, with
+// only the RPC call faked.
+vi.mock("./use-pool-voucher-oracle", async (importOriginal) => {
+  const actual = await importOriginal<Record<string, (...args: unknown[]) => unknown>>();
+  return {
+    usePoolVoucherOracle: (...args: unknown[]) =>
+      chain.real ? actual.usePoolVoucherOracle?.(...args) : voucherOracle(...args),
+  };
+});
+
+vi.mock("viem/actions", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  multicall: (_client: unknown, args: unknown) => chain.multicall(args),
 }));
 
 vi.mock("#/features/auth/relay-batch", () => ({
@@ -113,6 +126,11 @@ function member(address: string): PoolVoucher {
   };
 }
 
+/** The real read's cache key, for the pool and voucher these tests edit. */
+function oracleKey() {
+  return [...poolKeys.all, "voucher-oracle", 42220, QUOTER, RIBA];
+}
+
 const onAdded = vi.fn();
 const onUpdated = vi.fn();
 
@@ -120,8 +138,8 @@ function renderSheet(
   overrides: Partial<UserPool> = {},
   members: PoolVoucher[] = [],
   edit?: PoolVoucherEdit,
+  queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
 ) {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={queryClient}>
       <AddPoolVoucherSheet
@@ -173,6 +191,8 @@ beforeEach(() => {
   waitForTrackingCompletion.mockReset();
   listOracleFeeds.mockReset();
   voucherOracle.mockReset();
+  chain.real = false;
+  chain.multicall.mockReset();
 
   listOracleFeeds.mockResolvedValue([
     {
@@ -372,6 +392,61 @@ describe("AddPoolVoucherSheet", () => {
     expect(call?.data).toContain(EUR_FEED.slice(2).toLowerCase());
     expect(call?.data).toContain((93_600).toString(16));
     expect(onUpdated).toHaveBeenCalledWith({ expectedOracleAddress: EUR_FEED });
+  });
+
+  it("seeds from the refreshed chain read, not a cached one, before a cap-only save", async () => {
+    // A cached mapping from an earlier visit is out of date: the chain now has
+    // EUR. The form must not seed KES from cache and then write it back.
+    chain.real = true;
+    const voucher = member(RIBA);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(oracleKey(), { aggregator: AGGREGATOR, maxStalenessSeconds: "0" });
+    let answer: (value: unknown) => void = () => {};
+    chain.multicall.mockReturnValue(new Promise((resolve) => (answer = resolve)));
+    renderSheet({}, [voucher], { voucher, ratePpm: null, capRaw: "300000000" }, client);
+
+    await waitFor(() => expect(chain.multicall).toHaveBeenCalledTimes(1));
+    expect(screen.getByRole("button", { name: "Sign and update" }).hasAttribute("disabled")).toBe(
+      true,
+    );
+    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "600" } });
+    answer([EUR_FEED, 0n]);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Price feed").textContent).toContain("EUR / USD"),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
+    await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
+    expect(relayOperatorBatch.mock.calls[0]![0].map((call: { to: string }) => call.to)).toEqual([
+      LIMITER,
+    ]);
+  });
+
+  it("does not write back a feed the chain replaced after the form was seeded", async () => {
+    chain.real = true;
+    const voucher = member(RIBA);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    chain.multicall.mockResolvedValueOnce([AGGREGATOR, 0n]);
+    renderSheet({}, [voucher], { voucher, ratePpm: null, capRaw: "300000000" }, client);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Price feed").textContent).toContain("KES / USD"),
+    );
+
+    // Someone else moves the voucher to EUR; the steward only edits the cap.
+    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "600" } });
+    chain.multicall.mockResolvedValueOnce([EUR_FEED, 0n]);
+    await client.refetchQueries({ queryKey: oracleKey() });
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Sign and update" }).hasAttribute("disabled")).toBe(
+        false,
+      ),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
+    await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
+    expect(relayOperatorBatch.mock.calls[0]![0].map((call: { to: string }) => call.to)).toEqual([
+      LIMITER,
+    ]);
   });
 
   it("holds submit while the current feed is read from the chain", async () => {

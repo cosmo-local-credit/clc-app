@@ -1,4 +1,3 @@
-import type { OracleFeed } from "@clc/api/features/oracle-feeds/client";
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import {
@@ -281,7 +280,7 @@ function ConfigurationSide({
             <form.Field name="customAddress">
               {(customField) => (
                 <FeedRow
-                  feeds={pricingSeed.feeds}
+                  seed={pricingSeed}
                   feed={feedField.state.value}
                   customAddress={customField.state.value}
                   onFeedChange={feedField.handleChange}
@@ -470,7 +469,7 @@ function RateRow({
 
 /** The price feed: a verified feed from the registry, or a typed address. */
 function FeedRow({
-  feeds,
+  seed,
   feed,
   customAddress,
   onFeedChange,
@@ -479,7 +478,7 @@ function FeedRow({
   feedError,
   customAddressError,
 }: {
-  feeds: readonly OracleFeed[];
+  seed: Extract<PoolVoucherPricingSeed, { kind: "oracle" }>;
   feed: string;
   customAddress: string;
   onFeedChange: (next: string) => void;
@@ -488,7 +487,7 @@ function FeedRow({
   feedError: string | null;
   customAddressError: string | null;
 }) {
-  const { choices, custom, unverified, selected, customRound } = usePoolVoucherFeedChoices(feeds, {
+  const { choices, custom, unverified, selected, customRound } = usePoolVoucherFeedChoices(seed, {
     feed,
     customAddress,
   });

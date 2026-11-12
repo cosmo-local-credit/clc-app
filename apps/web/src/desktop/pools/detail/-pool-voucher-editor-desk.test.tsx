@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import type { CaliburCall } from "@clc/core/features/webauthn/index";
 import type { OracleFeed } from "@clc/api/features/oracle-feeds/client";
+import type { PoolVoucherOracle } from "#/features/pools/hooks/use-pool-quoter";
 import {
   limiterSetLimitForAbi,
   oracleQuoterSetOracleWithStalenessAbi,
@@ -80,12 +81,7 @@ const mocks = vi.hoisted(() => ({
     refetch: vi.fn(),
   },
   oracles: {
-    data: new Map<
-      string,
-      { aggregatorAddress: `0x${string}` | null; maxStalenessSeconds: bigint }
-    >() as
-      | Map<string, { aggregatorAddress: `0x${string}` | null; maxStalenessSeconds: bigint }>
-      | undefined,
+    data: new Map<string, PoolVoucherOracle>() as Map<string, PoolVoucherOracle> | undefined,
     isPending: false,
     isError: false,
     isFetching: false,
@@ -100,6 +96,9 @@ const mocks = vi.hoisted(() => ({
     fetchStatus: "idle",
   },
   listFeeds: vi.fn(),
+  realOracleRead: false,
+  multicall: vi.fn(),
+  roundFeeds: vi.fn(),
   treasury: {
     data: new Map<
       string,
@@ -120,12 +119,30 @@ vi.mock("#/features/pools/hooks/use-pool-admin", async (importOriginal) => ({
 
 // The feed registry runs through the real query lifecycle; only its client is
 // faked. The chain reads stay mocked.
-vi.mock("#/features/pools/hooks/use-pool-quoter", async (importOriginal) => ({
+vi.mock("#/features/pools/hooks/use-pool-quoter", async (importOriginal) => {
+  const actual = await importOriginal<Record<string, (...args: unknown[]) => unknown>>();
+  return {
+    ...actual,
+    usePoolQuoterKind: () => mocks.quoterKind,
+    usePoolVoucherRatesByAddress: () => mocks.rates,
+    // The real read, on the test's QueryClient, where a case needs its lifecycle.
+    usePoolVoucherOracles: (...args: unknown[]) =>
+      mocks.realOracleRead ? actual.usePoolVoucherOracles?.(...args) : mocks.oracles,
+    useOracleFeedRounds: (feeds: unknown) => {
+      mocks.roundFeeds(feeds);
+      return mocks.rounds;
+    },
+  };
+});
+
+vi.mock("wagmi", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  usePoolQuoterKind: () => mocks.quoterKind,
-  usePoolVoucherRatesByAddress: () => mocks.rates,
-  usePoolVoucherOracles: () => mocks.oracles,
-  useOracleFeedRounds: () => mocks.rounds,
+  useClient: () => ({ uid: "test-client" }),
+}));
+
+vi.mock("viem/actions", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  multicall: (_client: unknown, args: unknown) => mocks.multicall(args),
 }));
 
 vi.mock("#/lib/api/oracle-feeds", () => ({
@@ -253,8 +270,22 @@ async function chooseFeed(name: string | RegExp) {
   fireEvent.click(option);
 }
 
-function onChainFeed(token: string, aggregatorAddress: `0x${string}` | null) {
-  mocks.oracles.data?.set(token.toLowerCase(), { aggregatorAddress, maxStalenessSeconds: 0n });
+const noFeed = {
+  aggregatorAddress: null,
+  maxStalenessSeconds: 0n,
+  globalMaxStalenessSeconds: 86_400n,
+};
+
+function onChainFeed(
+  token: string,
+  aggregatorAddress: `0x${string}` | null,
+  maxStalenessSeconds = 0n,
+) {
+  mocks.oracles.data?.set(token.toLowerCase(), {
+    ...noFeed,
+    aggregatorAddress,
+    maxStalenessSeconds,
+  });
 }
 
 /** Search results stay hidden until the field has a real term. */
@@ -305,8 +336,8 @@ beforeEach(() => {
   };
   mocks.oracles = {
     data: new Map([
-      [TOKEN.toLowerCase(), { aggregatorAddress: null, maxStalenessSeconds: 0n }],
-      [CANDIDATE.toLowerCase(), { aggregatorAddress: null, maxStalenessSeconds: 0n }],
+      [TOKEN.toLowerCase(), noFeed],
+      [CANDIDATE.toLowerCase(), noFeed],
     ]),
     isPending: false,
     isError: false,
@@ -319,6 +350,9 @@ beforeEach(() => {
     fetchStatus: "idle",
   };
   mocks.listFeeds.mockReset();
+  mocks.realOracleRead = false;
+  mocks.multicall.mockReset();
+  mocks.roundFeeds.mockReset();
   mocks.listFeeds.mockResolvedValue([EUR]);
   mocks.searchResults = [];
   mocks.suggestions = {

@@ -177,6 +177,7 @@ describe("usePoolQuoterKind", () => {
 describe("usePoolVoucherOracles", () => {
   it("reads each voucher's aggregator and bound, checksummed, with zero as no feed", async () => {
     multicallMock.mockResolvedValue([
+      { status: "success", result: 86_400n },
       { status: "success", result: "0xab70bcb260073d036d1660201e9d5405f5829b7a" },
       { status: "success", result: 93_600n },
       { status: "success", result: "0x0000000000000000000000000000000000000000" },
@@ -189,9 +190,10 @@ describe("usePoolVoucherOracles", () => {
 
     await waitFor(() => expect(result.current.data).toBeTruthy());
     const [[{ contracts }]] = multicallMock.mock.calls as Array<
-      [{ contracts: Array<{ functionName: string; args: unknown[] }> }]
+      [{ contracts: Array<{ functionName: string; args?: unknown[] }> }]
     >;
-    expect(contracts.map((contract) => [contract.functionName, contract.args[0]])).toEqual([
+    expect(contracts.map((contract) => [contract.functionName, contract.args?.[0]])).toEqual([
+      ["maxStaleness", undefined],
       ["oracles", FIRST],
       ["oracleMaxStaleness", FIRST],
       ["oracles", SECOND],
@@ -204,15 +206,20 @@ describe("usePoolVoucherOracles", () => {
           {
             aggregatorAddress: "0xab70BCB260073d036d1660201e9d5405F5829b7a",
             maxStalenessSeconds: 93_600n,
+            globalMaxStalenessSeconds: 86_400n,
           },
         ],
-        [SECOND, { aggregatorAddress: null, maxStalenessSeconds: 0n }],
+        [
+          SECOND,
+          { aggregatorAddress: null, maxStalenessSeconds: 0n, globalMaxStalenessSeconds: 86_400n },
+        ],
       ]),
     );
   });
 
   it("fails rather than reading an unread mapping as no feed", async () => {
     multicallMock.mockResolvedValue([
+      { status: "success", result: 86_400n },
       { status: "failure", error: new Error("reverted") },
       { status: "success", result: 0n },
     ]);

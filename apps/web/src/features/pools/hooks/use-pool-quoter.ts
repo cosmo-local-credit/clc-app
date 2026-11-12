@@ -12,7 +12,7 @@ import {
 } from "@clc/core/features/pool-admin/logic";
 import type { PoolQuoterType } from "@clc/core/features/pools/logic";
 import { useQuery } from "@tanstack/react-query";
-import { getAddress, isAddress, zeroAddress } from "viem";
+import { type ContractFunctionParameters, getAddress, isAddress, zeroAddress } from "viem";
 import { multicall, readContract } from "viem/actions";
 import { useClient } from "wagmi";
 
@@ -171,6 +171,8 @@ export type PoolVoucherOracle = {
   aggregatorAddress: `0x${string}` | null;
   /** Zero is the quoter's "use the global bound". */
   maxStalenessSeconds: bigint;
+  /** The quoter's global `maxStaleness()`, which a zero per-token bound defers to. */
+  globalMaxStalenessSeconds: bigint;
 };
 
 /**
@@ -200,36 +202,45 @@ export function usePoolVoucherOracles(
     queryKey: poolQuoterQueryKeys.oracles(quoterAddress ?? "none", tokenAddresses),
     queryFn: async () => {
       if (!client || !quoterAddress) throw new Error("The feed read is missing a client.");
-      const results = await multicall(client, {
-        allowFailure: true,
-        contracts: tokenAddresses.flatMap((address) => [
+      // The global bound first, then each token's mapping and own bound. Typed
+      // as one ABI's calls: the mixed list would otherwise narrow to the first.
+      const contracts: ContractFunctionParameters<typeof oracleQuoterPolicyAbi>[] = [
+        { address: quoterAddress, abi: oracleQuoterPolicyAbi, functionName: "maxStaleness" },
+        ...tokenAddresses.flatMap((address) => [
           {
             address: quoterAddress,
             abi: oracleQuoterPolicyAbi,
             functionName: "oracles" as const,
-            args: [address as `0x${string}`],
+            args: [address as `0x${string}`] as const,
           },
           {
             address: quoterAddress,
             abi: oracleQuoterPolicyAbi,
             functionName: "oracleMaxStaleness" as const,
-            args: [address as `0x${string}`],
+            args: [address as `0x${string}`] as const,
           },
         ]),
-      });
+      ];
+      const results = await multicall(client, { allowFailure: true, contracts });
+      const [global, ...perToken] = results;
+      if (global?.status !== "success")
+        throw new Error("The quoter's freshness bound read failed.");
       return new Map(
         tokenAddresses.map((address, index): [string, PoolVoucherOracle] => {
-          const oracle = results[index * 2];
-          const staleness = results[index * 2 + 1];
+          const oracle = perToken[index * 2];
+          const staleness = perToken[index * 2 + 1];
           if (oracle?.status !== "success" || staleness?.status !== "success") {
             throw new Error(`The feed read failed for ${address}.`);
           }
-          const aggregator = oracle.result as `0x${string}`;
+          const aggregator = oracle.result;
+          if (typeof aggregator !== "string")
+            throw new Error(`The feed read failed for ${address}.`);
           return [
             address,
             {
               aggregatorAddress: aggregator === zeroAddress ? null : getAddress(aggregator),
               maxStalenessSeconds: staleness.result as bigint,
+              globalMaxStalenessSeconds: global.result as bigint,
             },
           ];
         }),
