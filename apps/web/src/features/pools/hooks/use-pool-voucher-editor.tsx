@@ -98,7 +98,7 @@ export type PoolVoucherPricingSeed =
     };
 
 /** Both field groups in one form: each quoter validates and writes only its own. */
-export type PoolVoucherFormValues = PoolVoucherRateInput & PoolVoucherFeedInput;
+type PoolVoucherFormValues = PoolVoucherRateInput & PoolVoucherFeedInput;
 
 const poolVoucherFormShape = z.object({
   exchangeRate: z.string(),
@@ -710,7 +710,7 @@ export function usePoolVoucherFigures(
 }
 
 /** One entry in the feed select: a verified feed and its latest round. */
-export type PoolVoucherFeedChoice = {
+type PoolVoucherFeedChoice = {
   address: `0x${string}`;
   /** The pair as the feed describes it (`EUR / USD`), or the registry name. */
   label: string;

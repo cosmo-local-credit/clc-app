@@ -688,7 +688,7 @@ export const chainlinkAggregatorAbi = parseAbi([
 ]);
 
 /** `OracleQuoter.maxStaleness` as deployed, used when a feed carries no bound of its own. */
-export const ORACLE_DEFAULT_MAX_STALENESS_SECONDS = 86_400;
+const ORACLE_DEFAULT_MAX_STALENESS_SECONDS = 86_400;
 
 /** The parts of a registry feed the oracle form layer reads. */
 export type PoolVoucherFeedOption = {
