@@ -12,10 +12,13 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { getAddress } from "viem";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const mocks = vi.hoisted(() => ({ getAccountActivity: vi.fn() }));
+const mocks = vi.hoisted(() => ({ getAccountActivity: vi.fn(), routedSwaps: vi.fn() }));
 
 vi.mock("#/lib/api/accounts", () => ({
   accountsClient: { getAccountActivity: mocks.getAccountActivity },
+}));
+vi.mock("#/lib/api/credit-router", () => ({
+  creditRouterClient: { routedSwaps: mocks.routedSwaps },
 }));
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
   useReverseRecipientResolution: () => ({ data: undefined }),
@@ -98,6 +101,7 @@ function amountCells() {
 
 beforeEach(() => {
   mocks.getAccountActivity.mockReset().mockResolvedValue({ activity: ROWS, last: undefined });
+  mocks.routedSwaps.mockReset().mockResolvedValue({ items: [], cursor: null });
   vi.spyOn(window, "scrollTo").mockImplementation(() => {});
 });
 
@@ -246,5 +250,50 @@ describe("Activity inspector identifiers", () => {
 
     fireEvent.click(within(panel).getByRole("button", { name: "Copy transaction hash" }));
     expect(writeText).toHaveBeenCalledWith(hash);
+  });
+});
+
+describe("Activity routed exchanges", () => {
+  it("links a routed swap's inspector to its grouped receipt", async () => {
+    const swap: AccountActivityItem = {
+      kind: "swapped",
+      id: 9,
+      txHash: `0x${"99".repeat(32)}`,
+      dateBlock: "2026-10-27T09:00:00Z",
+      success: true,
+      sent: leg(KFP, "KFP", 6, "1000000"),
+      received: leg(VCH, "VCH", 0, "3"),
+      poolAddresses: [PEER, USDC],
+    };
+    mocks.getAccountActivity.mockResolvedValue({ activity: [swap, ...ROWS], last: undefined });
+    mocks.routedSwaps.mockResolvedValue({
+      items: [
+        {
+          swap: {
+            trackingId: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+            chainId: 100,
+            wallet: ACCOUNT,
+            recipient: ACCOUNT,
+            tokenIn: KFP,
+            tokenOut: VCH,
+            amountIn: "1000000",
+            minAmountOut: "3",
+            hopCount: 2,
+            bounded: true,
+            deadline: 1794567890,
+            createdAt: "2026-10-27T08:59:58Z",
+            txHash: swap.txHash,
+            status: "SUCCESS",
+            hops: [],
+          },
+          settled: true,
+          bridgeRemainder: [],
+        },
+      ],
+      cursor: null,
+    });
+    renderDesk(`/?tab=activity&tx=${encodeURIComponent(activityRowKey(swap))}`);
+    const route = await screen.findByRole("link", { name: "2 hops" });
+    expect(route.getAttribute("href")).toBe("/routed-swaps/f47ac10b-58cc-4372-a567-0e02b2c3d479");
   });
 });
