@@ -304,7 +304,7 @@ describe("CreditGetPage", () => {
     expect(sheet.textContent).toContain("Effective fee0.04%");
     expect(sheet.textContent).toContain("Hop 1 · Kilifi Pool");
     expect(sheet.textContent).toContain("Hop 2 · Mombasa Pool");
-    expect(sheet.textContent).toContain("Protocol fee0.00 BBB");
+    expect(sheet.textContent).toContain("Protocol fee<0.01 BBB");
 
     fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
     await waitFor(() => expect(mocks.relay).toHaveBeenCalledOnce());
@@ -318,6 +318,29 @@ describe("CreditGetPage", () => {
         params: { trackingId: "f47ac10b-58cc-4372-a567-0e02b2c3d479" },
       }),
     );
+  });
+
+  it("asks again for an expired quote instead of signing it", async () => {
+    const now = Math.floor(Date.now() / 1000);
+    const expired = creditQuoteFixture({ wallet: WALLET, nowSeconds: now - 400 });
+    const fresh = creditQuoteFixture({ wallet: WALLET, nowSeconds: now });
+    mocks.quote.mockResolvedValueOnce(expired.quote).mockResolvedValueOnce(fresh.quote);
+    fireEvent.click(await chooseTwoHopForFiveCcc());
+    const sheet = await screen.findByRole("dialog");
+    fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
+
+    expect(
+      await within(sheet).findByText(
+        "The quote changed. Review the updated amounts before confirming.",
+      ),
+    ).toBeTruthy();
+    expect(mocks.quote).toHaveBeenCalledTimes(2);
+    expect(mocks.quote.mock.calls[1]![0]).toEqual(mocks.quote.mock.calls[0]![0]);
+    expect(mocks.relay).not.toHaveBeenCalled();
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledOnce());
+    expect(mocks.relay.mock.calls[0]![0].signedBatch.deadline).toBe(fresh.quote.batch.deadline);
   });
 
   it("refuses to sign a quote whose batch pays someone else", async () => {
@@ -340,6 +363,9 @@ describe("CreditGetPage", () => {
     ).toBeTruthy();
     expect(mocks.relay).not.toHaveBeenCalled();
     expect(mocks.navigate).not.toHaveBeenCalled();
+    expect(within(sheet).getByRole("button", { name: "Confirm" }).hasAttribute("disabled")).toBe(
+      true,
+    );
   });
 
   it.each([

@@ -17,6 +17,7 @@ import { creditRouterClient } from "#/lib/api/credit-router";
 import { poolsClient } from "#/lib/api/pools";
 import { CHAIN_INFO } from "#/lib/chain";
 import { RELAYER_URL } from "#/lib/relayer-config";
+import { formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
 import { cn } from "#/lib/utils";
 import { CreditFailureNotice } from "./credit-failure-notice";
 
@@ -50,6 +51,12 @@ export function RoutedSwapReceiptPage({ trackingId }: { trackingId: string }) {
     const label = labels.get(address.toLowerCase());
     if (raw === null || label?.decimals === null || label?.decimals === undefined) return "—";
     return `${formatTokenAmountFixed(raw, label.decimals, 2, locale)} ${label.symbol}`;
+  };
+
+  const fee = (address: string, raw: string | null) => {
+    const label = labels.get(address.toLowerCase());
+    if (raw === null || label?.decimals === null || label?.decimals === undefined) return "—";
+    return `${formatPoolSwapFee(raw, label.decimals, locale)} ${label.symbol}`;
   };
 
   const outcome = tracking.outcome;
@@ -142,10 +149,10 @@ export function RoutedSwapReceiptPage({ trackingId }: { trackingId: string }) {
                 {amount(hop.tokenIn, hop.settledAmountIn ?? hop.amountIn)}
               </ReceiptRow>
               <ReceiptRow label={<Trans>Pool fee</Trans>}>
-                {amount(hop.tokenOut, hop.poolFee)}
+                {fee(hop.tokenOut, hop.poolFee)}
               </ReceiptRow>
               <ReceiptRow label={<Trans>Protocol fee</Trans>}>
-                {amount(hop.tokenOut, hop.protocolFee)}
+                {fee(hop.tokenOut, hop.protocolFee)}
               </ReceiptRow>
               <ReceiptRow label={<Trans>Received</Trans>} last>
                 {hop.settledAt ? amount(hop.tokenOut, hop.amountOut) : <Trans>Settling…</Trans>}

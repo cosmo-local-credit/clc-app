@@ -1,4 +1,5 @@
 import { creditRouterFailure } from "@clc/api/features/credit-router/client";
+import { RelayerError } from "@clc/api/features/relayer/client";
 import { Trans } from "@lingui/react/macro";
 
 import { Button } from "#/components/ui/button";
@@ -59,6 +60,7 @@ function CreditFailureMessage({ error }: { error: unknown }) {
     case "route_unavailable":
       return <RouteRefusal reason={failure.reason} />;
     default:
+      if (error instanceof RelayerError) return <>{error.description}</>;
       return error instanceof Error && error.message ? (
         <>{error.message}</>
       ) : (

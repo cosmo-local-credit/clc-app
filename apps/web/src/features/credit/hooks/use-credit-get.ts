@@ -50,6 +50,8 @@ const relayerClient = createRelayerClient(RELAYER_URL);
 /** Two hops: the product's launch scope. Depth 2 lists one-hop routes too. */
 const ROUTE_DEPTH = CREDIT_ROUTER_MAX_HOPS;
 const AMOUNT_DEBOUNCE_MS = 400;
+/** A quote this close to its deadline is asked again rather than signed. */
+const QUOTE_EXPIRY_MARGIN_S = 15;
 
 /**
  * Every credit-route relay, whichever view started it, so a remounted view
@@ -83,6 +85,7 @@ export function useCreditGet(targetAddress: `0x${string}`) {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [review, setReview] = useState<Review | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  const [requoted, setRequoted] = useState(false);
 
   const listingParams = { to: targetAddress, depth: ROUTE_DEPTH } as const;
   const listing = useInfiniteQuery(
@@ -225,11 +228,24 @@ export function useCreditGet(targetAddress: `0x${string}`) {
       keyHash: signer.keyHash,
     };
     const quote = await quoteMutation.mutateAsync(request).catch(() => null);
-    if (quote) setReview({ request, quote, signer, route: selected });
+    if (quote) {
+      setRequoted(false);
+      setReview({ request, quote, signer, route: selected });
+    }
   };
 
   const confirm = async () => {
     if (!review || relaying) return;
+    // An expired quote is asked again for the same request, never signed: its
+    // deadline would fail the checks, and the terms may have moved.
+    if (review.quote.expiresAt <= Math.floor(Date.now() / 1000) + QUOTE_EXPIRY_MARGIN_S) {
+      relayMutation.reset();
+      const fresh = await quoteMutation.mutateAsync(review.request).catch(() => null);
+      setReview(fresh ? { ...review, quote: fresh } : null);
+      setRequoted(fresh !== null);
+      return;
+    }
+    setRequoted(false);
     const result = await relayMutation.mutateAsync(review).catch(() => null);
     if (!result) return;
     setReview(null);
@@ -294,6 +310,8 @@ export function useCreditGet(targetAddress: `0x${string}`) {
     problem,
 
     review,
+    /** The review was refreshed because its quote expired; the amounts may differ. */
+    requoted,
     closeReview: () => {
       if (!relaying) setReview(null);
     },

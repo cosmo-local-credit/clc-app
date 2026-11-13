@@ -5,10 +5,11 @@ import type {
 } from "@clc/api/features/credit-router/client";
 import { formatCreditRate, formatFeePpm } from "@clc/core/features/credit-router/logic";
 import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
-import { Plural, Trans, useLingui } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { RiArrowRightLine } from "react-icons/ri";
 
+import { RoutedSwapHops } from "#/components/activity/routed-swap-activity";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
@@ -24,9 +25,11 @@ import {
 import { Toggle } from "#/components/ui/toggle";
 import { WalletAmountInput } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
+import { CreditQuoteRefusedError } from "#/features/credit/api/relay-credit-quote";
 import { type CreditGet, useCreditGet } from "#/features/credit/hooks/use-credit-get";
 import { type VoucherLabel, useVoucherLabels } from "#/features/credit/hooks/use-voucher-labels";
 import { creditRouteKey, creditRouteVouchers } from "#/features/credit/logic/credit-routes";
+import { formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
 import { cn } from "#/lib/utils";
 import { CreditFailureNotice } from "./credit-failure-notice";
 
@@ -213,7 +216,7 @@ export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}
           {get.problem}
         </p>
       ) : null}
-      {get.quoteError ? (
+      {get.quoteError && !get.review ? (
         <div className="mt-3">
           <CreditFailureNotice error={get.quoteError} onRetry={() => void get.requestQuote()} />
         </div>
@@ -293,7 +296,7 @@ function CreditRouteRow({
           ))}
         </span>
         <Badge size="sm" variant="muted">
-          <Plural value={hops} one="# hop" other="# hops" />
+          <RoutedSwapHops count={hops} />
         </Badge>
       </div>
       <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -475,6 +478,16 @@ function CreditReviewSheet({
               locale={locale}
             />
           ) : null}
+          {get.requoted ? (
+            <p role="status" className="px-6 pb-2 text-xs text-muted-foreground">
+              <Trans>The quote changed. Review the updated amounts before confirming.</Trans>
+            </p>
+          ) : null}
+          {get.quoteError && get.review ? (
+            <div className="px-6 pb-2">
+              <CreditFailureNotice error={get.quoteError} />
+            </div>
+          ) : null}
           {get.relayError ? (
             <div className="px-6 pb-2">
               <CreditFailureNotice error={get.relayError} />
@@ -485,6 +498,7 @@ function CreditReviewSheet({
               tap
               className="w-full"
               pending={get.relaying}
+              disabled={get.relayError instanceof CreditQuoteRefusedError}
               onClick={() => void get.confirm()}
             >
               {get.relaying ? <Trans>Signing…</Trans> : <Trans>Confirm</Trans>}
@@ -520,6 +534,12 @@ function CreditReviewBody({
   const output = quote.hops.at(-1)!.tokenOut;
   const amount = (address: string, raw: string) =>
     `${amountOf(labels, address, raw, locale) ?? "—"} ${symbolOf(labels, address)}`;
+  // A fee too small for two places reads "<0.01", never a zero beside a short amount.
+  const fee = (address: string, raw: string) => {
+    const decimals = labels.get(address.toLowerCase())?.decimals;
+    if (decimals === null || decimals === undefined) return "—";
+    return `${formatPoolSwapFee(raw, decimals, locale)} ${symbolOf(labels, address)}`;
+  };
   const outputSurplus = BigInt(quote.surplus.output) > 0n;
   const bridgeSurplus = quote.surplus.bridge.filter((entry) => BigInt(entry.amount) > 0n);
   const expires = new Date(quote.expiresAt * 1000).toLocaleTimeString(locale, {
@@ -566,9 +586,9 @@ function CreditReviewBody({
             </span>
           </div>
           <ReviewRow label={<Trans>Sent</Trans>}>{amount(hop.tokenIn, hop.amountIn)}</ReviewRow>
-          <ReviewRow label={<Trans>Pool fee</Trans>}>{amount(hop.tokenOut, hop.poolFee)}</ReviewRow>
+          <ReviewRow label={<Trans>Pool fee</Trans>}>{fee(hop.tokenOut, hop.poolFee)}</ReviewRow>
           <ReviewRow label={<Trans>Protocol fee</Trans>}>
-            {amount(hop.tokenOut, hop.protocolFee)}
+            {fee(hop.tokenOut, hop.protocolFee)}
           </ReviewRow>
           <ReviewRow label={<Trans>Received</Trans>} last>
             {amount(hop.tokenOut, hop.netOut)}
