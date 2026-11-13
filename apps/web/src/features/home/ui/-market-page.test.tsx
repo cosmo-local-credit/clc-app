@@ -7,6 +7,7 @@ import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { MarketLocation } from "./market-data";
 import type { MarketCamera } from "./market-map";
+import type { MarketMapZoomControls } from "./market-map";
 
 type MarketPoolLocation = MarketLocation & { kind: "pool"; address: `0x${string}` };
 
@@ -36,6 +37,7 @@ type MapProps = {
     zoom: number;
     userInitiated: boolean;
   }) => void;
+  onZoomControlsChange?: (controls: MarketMapZoomControls | null) => void;
 };
 
 const {
@@ -597,14 +599,45 @@ beforeEach(() => {
 });
 
 describe("MarketPage location button", () => {
-  it("shows only the location control and ignores a legacy Satellite preference", () => {
+  it("shows the location and zoom controls in order and ignores a legacy Satellite preference", () => {
     window.localStorage.setItem("clc.market-map-mode", "satellite");
     renderPage();
 
     expect(screen.queryByRole("button", { name: "Satellite view" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Use current location" })).toBeTruthy();
+    const location = screen.getByRole("button", { name: "Use current location" });
+    const zoomIn = screen.getByRole("button", { name: "Zoom in" });
+    const zoomOut = screen.getByRole("button", { name: "Zoom out" });
+    expect(
+      location.compareDocumentPosition(zoomIn) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(zoomIn.compareDocumentPosition(zoomOut) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect((zoomIn as HTMLButtonElement).disabled).toBe(true);
+    expect((zoomOut as HTMLButtonElement).disabled).toBe(true);
     expect(lastMapProps.current?.mode).toBeUndefined();
     expect(window.localStorage.getItem("clc.market-map-mode")).toBe("satellite");
+  });
+
+  it("uses the current map controller and reflects its zoom boundaries", () => {
+    const zoomInAction = vi.fn();
+    const zoomOutAction = vi.fn();
+    renderPage();
+
+    act(() => {
+      lastMapProps.current?.onZoomControlsChange?.({
+        zoomIn: zoomInAction,
+        zoomOut: zoomOutAction,
+        canZoomIn: true,
+        canZoomOut: false,
+      });
+    });
+
+    const zoomIn = screen.getByRole("button", { name: "Zoom in" }) as HTMLButtonElement;
+    const zoomOut = screen.getByRole("button", { name: "Zoom out" }) as HTMLButtonElement;
+    expect(zoomIn.disabled).toBe(false);
+    expect(zoomOut.disabled).toBe(true);
+    fireEvent.click(zoomIn);
+    expect(zoomInAction).toHaveBeenCalledOnce();
+    expect(zoomOutAction).not.toHaveBeenCalled();
   });
 
   it("writes and clears Credit without leaving the canonical map route", () => {
@@ -1121,7 +1154,11 @@ describe("MarketPage voucher card", () => {
     fireEvent.click(screen.getByTestId("marker-1"));
 
     const location = screen.getByRole("button", { name: "Use current location" });
+    const zoomIn = screen.getByRole("button", { name: "Zoom in" });
+    const zoomOut = screen.getByRole("button", { name: "Zoom out" });
     expect(screen.getByRole("dialog").contains(location)).toBe(true);
+    expect(screen.getByRole("dialog").contains(zoomIn)).toBe(true);
+    expect(screen.getByRole("dialog").contains(zoomOut)).toBe(true);
     expect(screen.queryByRole("button", { name: "Satellite view" })).toBeNull();
   });
 

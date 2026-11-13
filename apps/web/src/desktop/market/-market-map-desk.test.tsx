@@ -235,6 +235,19 @@ function rememberResources(owner: string, kinds: string[]) {
 }
 
 describe("MarketMapDesk result count", () => {
+  it("places zoom controls beneath the location control", async () => {
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
+    renderMap("/market?view=map");
+
+    const location = await screen.findByRole("button", { name: "Use current location" });
+    const zoomIn = screen.getByRole("button", { name: "Zoom in" });
+    const zoomOut = screen.getByRole("button", { name: "Zoom out" });
+    expect(
+      location.compareDocumentPosition(zoomIn) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(zoomIn.compareDocumentPosition(zoomOut) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("says it is loading, not zero, before any result set exists", async () => {
     mocks.mapList.mockImplementation(() => new Promise(() => {}));
     mocks.viewport.hasData = false;

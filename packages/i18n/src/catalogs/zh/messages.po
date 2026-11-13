@@ -497,6 +497,7 @@ msgstr "凭证代表发行者提供商品或服务的承诺。请确认它可用
 
 #: apps/web/src/components/app-menu.tsx:64
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:82
+#: apps/web/src/desktop/shell/sidebar.tsx:114
 msgid "About"
 msgstr "关于"
 
@@ -607,7 +608,7 @@ msgstr "启用"
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:969
 #: apps/web/src/desktop/pools/pool-main.tsx:434
 #: apps/web/src/desktop/shell/crumbs.tsx:16
-#: apps/web/src/desktop/shell/sidebar.tsx:97
+#: apps/web/src/desktop/shell/sidebar.tsx:106
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:167
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:200
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
@@ -630,7 +631,7 @@ msgstr "未找到活动。"
 msgid "Activity sections"
 msgstr "活动分区"
 
-#: apps/web/src/desktop/shell/sidebar.tsx:100
+#: apps/web/src/desktop/shell/sidebar.tsx:109
 msgid "Activity, {unreadActivity, plural, one {# new} other {# new}}"
 msgstr "活动，{unreadActivity, plural, other {# 条新}}"
 
@@ -1032,6 +1033,11 @@ msgstr "应用程序安装"
 #: apps/web/src/components/app-menu.tsx:52
 msgid "App menu"
 msgstr "应用程序菜单"
+
+#: apps/web/src/desktop/shell/sidebar.tsx:271
+#: apps/web/src/desktop/shell/sidebar.tsx:308
+msgid "App preferences"
+msgstr "应用偏好设置"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:135
 #: apps/web/src/features/home/ui/settings-page.tsx:101
@@ -1447,7 +1453,7 @@ msgstr "目录已保存，但无法添加项目。请重试。"
 #: apps/web/src/components/resource-usage.tsx:116
 #: apps/web/src/desktop/market/market-layers.tsx:37
 #: apps/web/src/desktop/shell/crumbs.tsx:30
-#: apps/web/src/desktop/shell/sidebar.tsx:185
+#: apps/web/src/desktop/shell/sidebar.tsx:198
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:32
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:33
 msgid "Catalogs"
@@ -1943,8 +1949,8 @@ msgid "Collaboration"
 msgstr "协作"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:149
-#: apps/web/src/desktop/shell/sidebar.tsx:153
+#: apps/web/src/desktop/shell/sidebar.tsx:162
+#: apps/web/src/desktop/shell/sidebar.tsx:166
 msgid "Collapse"
 msgstr "收起"
 
@@ -2766,7 +2772,7 @@ msgstr "无法导入图片"
 msgid "Couldn't load activity."
 msgstr "无法加载活动。"
 
-#: apps/web/src/desktop/market/market-map-desk.tsx:215
+#: apps/web/src/desktop/market/market-map-desk.tsx:218
 msgid "Couldn't load all results in this area."
 msgstr "无法加载此区域中的所有结果。"
 
@@ -3848,7 +3854,7 @@ msgstr "编辑帖子"
 #: apps/web/src/desktop/account/profile-desk.tsx:120
 #: apps/web/src/desktop/account/settings-desk.tsx:236
 #: apps/web/src/desktop/shell/crumbs.tsx:56
-#: apps/web/src/desktop/shell/sidebar.tsx:104
+#: apps/web/src/desktop/shell/sidebar.tsx:113
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:33
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:80
 msgid "Edit profile"
@@ -4162,8 +4168,8 @@ msgid "Existing fee recipient"
 msgstr "当前费用接收方"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:257
-#: apps/web/src/desktop/shell/sidebar.tsx:258
+#: apps/web/src/desktop/shell/sidebar.tsx:343
+#: apps/web/src/desktop/shell/sidebar.tsx:344
 msgid "Expand"
 msgstr "展开"
 
@@ -4917,15 +4923,16 @@ msgid "Kilogram"
 msgstr "公斤"
 
 #: apps/web/src/components/app-menu.tsx:73
-#: apps/web/src/components/language-selector.tsx:40
-#: apps/web/src/components/language-selector.tsx:111
-#: apps/web/src/components/language-selector.tsx:121
-#: apps/web/src/components/language-selector.tsx:132
-#: apps/web/src/components/language-selector.tsx:164
+#: apps/web/src/components/language-selector.tsx:50
+#: apps/web/src/components/language-selector.tsx:129
+#: apps/web/src/components/language-selector.tsx:139
+#: apps/web/src/components/language-selector.tsx:150
+#: apps/web/src/components/language-selector.tsx:182
 #: apps/web/src/desktop/account/settings-desk.tsx:270
 #: apps/web/src/desktop/account/settings-desk.tsx:290
 #: apps/web/src/desktop/auth/onboarding-header.tsx:71
 #: apps/web/src/desktop/auth/onboarding-header.tsx:85
+#: apps/web/src/desktop/shell/sidebar.tsx:115
 msgid "Language"
 msgstr "语言"
 
@@ -5180,7 +5187,7 @@ msgstr "加载更早的消息"
 #: apps/web/src/desktop/activity/transactions-desk.tsx:557
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:267
 #: apps/web/src/desktop/market/market-list-states.tsx:100
-#: apps/web/src/desktop/market/market-map-desk.tsx:250
+#: apps/web/src/desktop/market/market-map-desk.tsx:253
 #: apps/web/src/desktop/market/market-search-field.tsx:450
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:95
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:128
@@ -5279,10 +5286,10 @@ msgid "Loading location map"
 msgstr "加载位置图"
 
 #: apps/web/src/desktop/market/market-list-desk.tsx:291
-#: apps/web/src/desktop/market/market-map-desk.tsx:171
-#: apps/web/src/desktop/market/market-map-desk.tsx:186
+#: apps/web/src/desktop/market/market-map-desk.tsx:174
+#: apps/web/src/desktop/market/market-map-desk.tsx:189
 #: apps/web/src/features/home/ui/market-list-page.tsx:201
-#: apps/web/src/features/home/ui/market-page.tsx:182
+#: apps/web/src/features/home/ui/market-page.tsx:187
 #: apps/web/src/features/home/ui/marketplace-page.tsx:175
 msgid "Loading marketplace…"
 msgstr "正在加载市场…"
@@ -5620,11 +5627,11 @@ msgstr "地图标记"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:62
 #: apps/web/src/desktop/market/market-list-desk.tsx:158
-#: apps/web/src/desktop/market/market-map-desk.tsx:264
+#: apps/web/src/desktop/market/market-map-desk.tsx:267
 #: apps/web/src/desktop/onboarding/onboarding-desk.tsx:115
 #: apps/web/src/desktop/shell/crumbs.tsx:12
-#: apps/web/src/desktop/shell/sidebar.tsx:95
-#: apps/web/src/features/home/ui/market-page.tsx:63
+#: apps/web/src/desktop/shell/sidebar.tsx:104
+#: apps/web/src/features/home/ui/market-page.tsx:67
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:69
 #: apps/web/src/lib/category-label.ts:18
@@ -6790,7 +6797,7 @@ msgstr "商品或服务项目"
 #: apps/web/src/components/market-bar.tsx:265
 #: apps/web/src/components/resource-usage.tsx:117
 #: apps/web/src/desktop/shell/crumbs.tsx:22
-#: apps/web/src/desktop/shell/sidebar.tsx:178
+#: apps/web/src/desktop/shell/sidebar.tsx:191
 #: apps/web/src/features/home/ui/offers-page.tsx:93
 msgid "Offers"
 msgstr "商品或服务项目"
@@ -7599,7 +7606,7 @@ msgstr "资金池跟踪详细信息丢失。"
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:75
 #: apps/web/src/desktop/posts/post-facets.tsx:208
 #: apps/web/src/desktop/shell/crumbs.tsx:28
-#: apps/web/src/desktop/shell/sidebar.tsx:184
+#: apps/web/src/desktop/shell/sidebar.tsx:197
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:220
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:29
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:171
@@ -7684,7 +7691,7 @@ msgstr "帖子已更新。"
 #: apps/web/src/desktop/posts/posts-desk.tsx:104
 #: apps/web/src/desktop/posts/posts-desk.tsx:224
 #: apps/web/src/desktop/shell/crumbs.tsx:18
-#: apps/web/src/desktop/shell/sidebar.tsx:102
+#: apps/web/src/desktop/shell/sidebar.tsx:111
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:184
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/features/home/ui/posts-page.tsx:77
@@ -7900,7 +7907,7 @@ msgid "Pricing"
 msgstr "定价"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:40
-#: apps/web/src/desktop/shell/sidebar.tsx:162
+#: apps/web/src/desktop/shell/sidebar.tsx:175
 msgid "Primary navigation"
 msgstr "主要导航"
 
@@ -8635,7 +8642,7 @@ msgstr "正在恢复…"
 msgid "Results"
 msgstr "结果"
 
-#: apps/web/src/desktop/market/market-map-desk.tsx:182
+#: apps/web/src/desktop/market/market-map-desk.tsx:185
 msgid "Results unavailable"
 msgstr "无法获取结果"
 
@@ -8741,8 +8748,8 @@ msgstr "静修"
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:226
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:274
 #: apps/web/src/desktop/market/market-list-states.tsx:91
-#: apps/web/src/desktop/market/market-map-desk.tsx:217
-#: apps/web/src/desktop/market/market-map-desk.tsx:250
+#: apps/web/src/desktop/market/market-map-desk.tsx:220
+#: apps/web/src/desktop/market/market-map-desk.tsx:253
 #: apps/web/src/desktop/market/market-notices.tsx:120
 #: apps/web/src/desktop/market/market-notices.tsx:175
 #: apps/web/src/desktop/market/place-panel.tsx:140
@@ -8792,7 +8799,7 @@ msgstr "静修"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:145
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:53
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:69
-#: apps/web/src/features/home/ui/market-map.tsx:1199
+#: apps/web/src/features/home/ui/market-map.tsx:1232
 #: apps/web/src/features/home/ui/marketplace-page.tsx:187
 #: apps/web/src/features/home/ui/marketplace-page.tsx:248
 #: apps/web/src/features/home/ui/report-page.tsx:59
@@ -9185,7 +9192,7 @@ msgstr "搜索标签"
 #: apps/web/src/desktop/shell/command-palette.tsx:280
 #: apps/web/src/desktop/shell/command-palette.tsx:298
 #: apps/web/src/desktop/shell/command-palette.tsx:299
-#: apps/web/src/features/home/ui/market-page.tsx:98
+#: apps/web/src/features/home/ui/market-page.tsx:103
 #: apps/web/src/features/home/ui/marketplace-page.tsx:108
 msgid "Search the marketplace"
 msgstr "搜索市场"
@@ -9266,7 +9273,7 @@ msgstr "正在搜索资金池…"
 msgid "Searching recipients…"
 msgstr "正在搜索接收方…"
 
-#: apps/web/src/desktop/market/market-map-desk.tsx:296
+#: apps/web/src/desktop/market/market-map-desk.tsx:300
 msgid "Searching this area"
 msgstr "正在搜索此区域"
 
@@ -9519,7 +9526,7 @@ msgstr "正在设置您的钱包…"
 #: apps/web/src/desktop/account/settings-desk.tsx:68
 #: apps/web/src/desktop/shell/command-palette.tsx:145
 #: apps/web/src/desktop/shell/crumbs.tsx:20
-#: apps/web/src/desktop/shell/sidebar.tsx:103
+#: apps/web/src/desktop/shell/sidebar.tsx:112
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:30
 #: apps/web/src/features/home/ui/settings-page.tsx:54
 #: apps/web/src/features/install/ui/install-page.tsx:64
@@ -9634,7 +9641,7 @@ msgstr "显示这些快捷键"
 
 #. placeholder {0}: viewportList.rows.length
 #. placeholder {1}: viewportList.total
-#: apps/web/src/desktop/market/market-map-desk.tsx:178
+#: apps/web/src/desktop/market/market-map-desk.tsx:181
 msgid "Showing {0} of {1} in this area"
 msgstr "此区域显示 {0}/{1}"
 
@@ -9880,7 +9887,7 @@ msgstr "无法检查某些资金池。显示经过验证的结果。"
 #~ msgstr "某些代金券无法加载。"
 
 #: apps/web/src/desktop/market/market-list-desk.tsx:176
-#: apps/web/src/desktop/market/market-map-desk.tsx:191
+#: apps/web/src/desktop/market/market-map-desk.tsx:194
 msgid "Sorted nearest to the map view"
 msgstr "按距地图视图中心的远近排序"
 
@@ -10335,6 +10342,7 @@ msgid "Terms and Conditions"
 msgstr "条款和条件"
 
 #: apps/web/src/components/app-menu.tsx:95
+#: apps/web/src/desktop/shell/sidebar.tsx:117
 msgid "Terms of Service"
 msgstr "服务条款"
 
@@ -10493,11 +10501,11 @@ msgstr "精确位置将公开显示。请选择安全的公共会面地点，而
 msgid "The last move is still settling. Check again in a minute."
 msgstr "上一次转移仍在确认中。请一分钟后再查看。"
 
-#: apps/web/src/features/home/ui/market-map.tsx:1192
+#: apps/web/src/features/home/ui/market-map.tsx:1225
 msgid "The map could not be loaded."
 msgstr "无法加载地图。"
 
-#: apps/web/src/features/home/ui/market-map.tsx:1194
+#: apps/web/src/features/home/ui/market-map.tsx:1227
 msgid "The map is not supported on this device."
 msgstr "此设备不支持该地图。"
 
@@ -10603,9 +10611,10 @@ msgid "The voucher could not be published."
 msgstr "代金券无法发布。"
 
 #: apps/web/src/components/app-menu.tsx:79
-#: apps/web/src/components/theme-selector.tsx:46
+#: apps/web/src/components/theme-selector.tsx:47
 #: apps/web/src/desktop/account/settings-desk.tsx:327
 #: apps/web/src/desktop/account/settings-desk.tsx:329
+#: apps/web/src/desktop/shell/sidebar.tsx:116
 msgid "Theme"
 msgstr "主题"
 
@@ -11223,8 +11232,8 @@ msgstr "请至少输入两个字符。"
 #~ msgid "Types on the map"
 #~ msgstr "地图上的类型"
 
-#: apps/web/src/components/language-selector.tsx:59
-#: apps/web/src/components/language-selector.tsx:134
+#: apps/web/src/components/language-selector.tsx:77
+#: apps/web/src/components/language-selector.tsx:152
 #: apps/web/src/desktop/account/settings-desk.tsx:286
 #: apps/web/src/desktop/auth/onboarding-header.tsx:81
 msgid "Unable to load language. Reverted to English."
@@ -11853,7 +11862,7 @@ msgstr "代金券：任意"
 #: apps/web/src/desktop/pools/pool-main.tsx:395
 #: apps/web/src/desktop/posts/post-facets.tsx:115
 #: apps/web/src/desktop/shell/crumbs.tsx:26
-#: apps/web/src/desktop/shell/sidebar.tsx:182
+#: apps/web/src/desktop/shell/sidebar.tsx:195
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:122
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:262
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:400
@@ -11942,7 +11951,7 @@ msgstr "正在等待对方接受您的请求。"
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1063
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1064
 #: apps/web/src/desktop/shell/crumbs.tsx:14
-#: apps/web/src/desktop/shell/sidebar.tsx:96
+#: apps/web/src/desktop/shell/sidebar.tsx:105
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:187
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:293
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:21
@@ -12010,7 +12019,7 @@ msgstr "需求图片"
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:433
 #: apps/web/src/desktop/pools/pool-main.tsx:428
 #: apps/web/src/desktop/shell/crumbs.tsx:24
-#: apps/web/src/desktop/shell/sidebar.tsx:180
+#: apps/web/src/desktop/shell/sidebar.tsx:193
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:43
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:28
 #: apps/web/src/features/wants/ui/wants-page.tsx:57
@@ -12605,6 +12614,14 @@ msgstr "青年"
 msgid "Zoom"
 msgstr "缩放"
 
+#: apps/web/src/features/home/ui/market-map-controls.tsx:16
+msgid "Zoom in"
+msgstr "放大"
+
 #: apps/web/src/desktop/market/market-map-desk.tsx:158
 #~ msgid "Zoom in to see individual results."
 #~ msgstr "放大以查看单个结果。"
+
+#: apps/web/src/features/home/ui/market-map-controls.tsx:17
+msgid "Zoom out"
+msgstr "缩小"

@@ -79,6 +79,12 @@ const { mapInstances, markerInstances, MockMap, MockMarker, MockLngLatBounds } =
       this.layers = [];
       this.images.clear();
     });
+    zoomIn = vi.fn(() => {
+      this.zoom = Math.min(this.maxZoom, this.zoom + 1);
+    });
+    zoomOut = vi.fn(() => {
+      this.zoom = Math.max(this.minZoom, this.zoom - 1);
+    });
     setMaxPitch = vi.fn();
     setPitch = vi.fn();
     setBearing = vi.fn();
@@ -416,6 +422,34 @@ describe("MarketMap lifecycle", () => {
 
     act(() => map.trigger("resize"));
     expect(map.setMinZoom).toHaveBeenCalledOnce();
+  });
+
+  it("publishes bounded zoom controls and clears them on teardown", () => {
+    const onZoomControlsChange = vi.fn();
+    const { unmount } = renderWithCamera(null, { onZoomControlsChange });
+    const map = firstMap();
+
+    expect(onZoomControlsChange).not.toHaveBeenCalled();
+    act(() => map.triggerLoad());
+
+    const controls = onZoomControlsChange.mock.lastCall?.[0];
+    expect(controls).toMatchObject({ canZoomIn: true, canZoomOut: true });
+
+    act(() => void controls.zoomIn());
+    expect(map.zoomIn).toHaveBeenCalledOnce();
+    act(() => void controls.zoomOut());
+    expect(map.zoomOut).toHaveBeenCalledOnce();
+
+    map.zoom = map.maxZoom;
+    act(() => map.trigger("zoomend"));
+    expect(onZoomControlsChange.mock.lastCall?.[0]).toMatchObject({ canZoomIn: false });
+
+    map.zoom = map.minZoom;
+    act(() => map.trigger("zoomend"));
+    expect(onZoomControlsChange.mock.lastCall?.[0]).toMatchObject({ canZoomOut: false });
+
+    unmount();
+    expect(onZoomControlsChange.mock.lastCall?.[0]).toBeNull();
   });
 
   it("switches Standard themes in place and restores theme-aware overlays", () => {

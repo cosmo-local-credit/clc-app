@@ -520,6 +520,7 @@ msgstr "Ваучер представља обећање издаваоца да
 
 #: apps/web/src/components/app-menu.tsx:64
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:82
+#: apps/web/src/desktop/shell/sidebar.tsx:114
 msgid "About"
 msgstr "О апликацији"
 
@@ -630,7 +631,7 @@ msgstr "Активно"
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:969
 #: apps/web/src/desktop/pools/pool-main.tsx:434
 #: apps/web/src/desktop/shell/crumbs.tsx:16
-#: apps/web/src/desktop/shell/sidebar.tsx:97
+#: apps/web/src/desktop/shell/sidebar.tsx:106
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:167
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:200
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
@@ -653,7 +654,7 @@ msgstr "Активност није пронађена."
 msgid "Activity sections"
 msgstr "Одјељци активности"
 
-#: apps/web/src/desktop/shell/sidebar.tsx:100
+#: apps/web/src/desktop/shell/sidebar.tsx:109
 msgid "Activity, {unreadActivity, plural, one {# new} other {# new}}"
 msgstr "Активност, {unreadActivity, plural, one {# ново} few {# нова} other {# "
 "нових}}"
@@ -1062,6 +1063,11 @@ msgstr "Инсталација апликације"
 #: apps/web/src/components/app-menu.tsx:52
 msgid "App menu"
 msgstr "Мени апликације"
+
+#: apps/web/src/desktop/shell/sidebar.tsx:271
+#: apps/web/src/desktop/shell/sidebar.tsx:308
+msgid "App preferences"
+msgstr "Подешавања апликације"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:135
 #: apps/web/src/features/home/ui/settings-page.tsx:101
@@ -1480,7 +1486,7 @@ msgstr "Каталог је сачуван. Ставка није могла б�
 #: apps/web/src/components/resource-usage.tsx:116
 #: apps/web/src/desktop/market/market-layers.tsx:37
 #: apps/web/src/desktop/shell/crumbs.tsx:30
-#: apps/web/src/desktop/shell/sidebar.tsx:185
+#: apps/web/src/desktop/shell/sidebar.tsx:198
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:32
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:33
 msgid "Catalogs"
@@ -1979,8 +1985,8 @@ msgid "Collaboration"
 msgstr "Сарадња"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:149
-#: apps/web/src/desktop/shell/sidebar.tsx:153
+#: apps/web/src/desktop/shell/sidebar.tsx:162
+#: apps/web/src/desktop/shell/sidebar.tsx:166
 msgid "Collapse"
 msgstr "Скупи"
 
@@ -2811,7 +2817,7 @@ msgstr "Слика није могла да се увезе"
 msgid "Couldn't load activity."
 msgstr "Активност није могуће учитати."
 
-#: apps/web/src/desktop/market/market-map-desk.tsx:215
+#: apps/web/src/desktop/market/market-map-desk.tsx:218
 msgid "Couldn't load all results in this area."
 msgstr "Није могуће учитати све резултате у овој области."
 
@@ -3903,7 +3909,7 @@ msgstr "Уреди објаву"
 #: apps/web/src/desktop/account/profile-desk.tsx:120
 #: apps/web/src/desktop/account/settings-desk.tsx:236
 #: apps/web/src/desktop/shell/crumbs.tsx:56
-#: apps/web/src/desktop/shell/sidebar.tsx:104
+#: apps/web/src/desktop/shell/sidebar.tsx:113
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:33
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:80
 msgid "Edit profile"
@@ -4220,8 +4226,8 @@ msgid "Existing fee recipient"
 msgstr "Тренутни прималац накнаде"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:257
-#: apps/web/src/desktop/shell/sidebar.tsx:258
+#: apps/web/src/desktop/shell/sidebar.tsx:343
+#: apps/web/src/desktop/shell/sidebar.tsx:344
 msgid "Expand"
 msgstr "Прошири"
 
@@ -4981,15 +4987,16 @@ msgid "Kilogram"
 msgstr "Килограм"
 
 #: apps/web/src/components/app-menu.tsx:73
-#: apps/web/src/components/language-selector.tsx:40
-#: apps/web/src/components/language-selector.tsx:111
-#: apps/web/src/components/language-selector.tsx:121
-#: apps/web/src/components/language-selector.tsx:132
-#: apps/web/src/components/language-selector.tsx:164
+#: apps/web/src/components/language-selector.tsx:50
+#: apps/web/src/components/language-selector.tsx:129
+#: apps/web/src/components/language-selector.tsx:139
+#: apps/web/src/components/language-selector.tsx:150
+#: apps/web/src/components/language-selector.tsx:182
 #: apps/web/src/desktop/account/settings-desk.tsx:270
 #: apps/web/src/desktop/account/settings-desk.tsx:290
 #: apps/web/src/desktop/auth/onboarding-header.tsx:71
 #: apps/web/src/desktop/auth/onboarding-header.tsx:85
+#: apps/web/src/desktop/shell/sidebar.tsx:115
 msgid "Language"
 msgstr "Језик"
 
@@ -5252,7 +5259,7 @@ msgstr "Учитај раније поруке"
 #: apps/web/src/desktop/activity/transactions-desk.tsx:557
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:267
 #: apps/web/src/desktop/market/market-list-states.tsx:100
-#: apps/web/src/desktop/market/market-map-desk.tsx:250
+#: apps/web/src/desktop/market/market-map-desk.tsx:253
 #: apps/web/src/desktop/market/market-search-field.tsx:450
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:95
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:128
@@ -5351,10 +5358,10 @@ msgid "Loading location map"
 msgstr "Учитавање мапе локације"
 
 #: apps/web/src/desktop/market/market-list-desk.tsx:291
-#: apps/web/src/desktop/market/market-map-desk.tsx:171
-#: apps/web/src/desktop/market/market-map-desk.tsx:186
+#: apps/web/src/desktop/market/market-map-desk.tsx:174
+#: apps/web/src/desktop/market/market-map-desk.tsx:189
 #: apps/web/src/features/home/ui/market-list-page.tsx:201
-#: apps/web/src/features/home/ui/market-page.tsx:182
+#: apps/web/src/features/home/ui/market-page.tsx:187
 #: apps/web/src/features/home/ui/marketplace-page.tsx:175
 msgid "Loading marketplace…"
 msgstr "Тржиште се учитава…"
@@ -5693,11 +5700,11 @@ msgstr "Ознака на мапи"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:62
 #: apps/web/src/desktop/market/market-list-desk.tsx:158
-#: apps/web/src/desktop/market/market-map-desk.tsx:264
+#: apps/web/src/desktop/market/market-map-desk.tsx:267
 #: apps/web/src/desktop/onboarding/onboarding-desk.tsx:115
 #: apps/web/src/desktop/shell/crumbs.tsx:12
-#: apps/web/src/desktop/shell/sidebar.tsx:95
-#: apps/web/src/features/home/ui/market-page.tsx:63
+#: apps/web/src/desktop/shell/sidebar.tsx:104
+#: apps/web/src/features/home/ui/market-page.tsx:67
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:69
 #: apps/web/src/lib/category-label.ts:18
@@ -6876,7 +6883,7 @@ msgstr "Понуде"
 #: apps/web/src/components/market-bar.tsx:265
 #: apps/web/src/components/resource-usage.tsx:117
 #: apps/web/src/desktop/shell/crumbs.tsx:22
-#: apps/web/src/desktop/shell/sidebar.tsx:178
+#: apps/web/src/desktop/shell/sidebar.tsx:191
 #: apps/web/src/features/home/ui/offers-page.tsx:93
 msgid "Offers"
 msgstr "Понуде"
@@ -7698,7 +7705,7 @@ msgstr "Недостају подаци за праћење тржнице."
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:75
 #: apps/web/src/desktop/posts/post-facets.tsx:208
 #: apps/web/src/desktop/shell/crumbs.tsx:28
-#: apps/web/src/desktop/shell/sidebar.tsx:184
+#: apps/web/src/desktop/shell/sidebar.tsx:197
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:220
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:29
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:171
@@ -7783,7 +7790,7 @@ msgstr "Објава је ажурирана."
 #: apps/web/src/desktop/posts/posts-desk.tsx:104
 #: apps/web/src/desktop/posts/posts-desk.tsx:224
 #: apps/web/src/desktop/shell/crumbs.tsx:18
-#: apps/web/src/desktop/shell/sidebar.tsx:102
+#: apps/web/src/desktop/shell/sidebar.tsx:111
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:184
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/features/home/ui/posts-page.tsx:77
@@ -7999,7 +8006,7 @@ msgid "Pricing"
 msgstr "Одређивање цена"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:40
-#: apps/web/src/desktop/shell/sidebar.tsx:162
+#: apps/web/src/desktop/shell/sidebar.tsx:175
 msgid "Primary navigation"
 msgstr "Главна навигација"
 
@@ -8741,7 +8748,7 @@ msgstr "Враћање…"
 msgid "Results"
 msgstr "Резултати"
 
-#: apps/web/src/desktop/market/market-map-desk.tsx:182
+#: apps/web/src/desktop/market/market-map-desk.tsx:185
 msgid "Results unavailable"
 msgstr "Резултати нису доступни"
 
@@ -8849,8 +8856,8 @@ msgstr "Повлачење и одмор"
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:226
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:274
 #: apps/web/src/desktop/market/market-list-states.tsx:91
-#: apps/web/src/desktop/market/market-map-desk.tsx:217
-#: apps/web/src/desktop/market/market-map-desk.tsx:250
+#: apps/web/src/desktop/market/market-map-desk.tsx:220
+#: apps/web/src/desktop/market/market-map-desk.tsx:253
 #: apps/web/src/desktop/market/market-notices.tsx:120
 #: apps/web/src/desktop/market/market-notices.tsx:175
 #: apps/web/src/desktop/market/place-panel.tsx:140
@@ -8900,7 +8907,7 @@ msgstr "Повлачење и одмор"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:145
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:53
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:69
-#: apps/web/src/features/home/ui/market-map.tsx:1199
+#: apps/web/src/features/home/ui/market-map.tsx:1232
 #: apps/web/src/features/home/ui/marketplace-page.tsx:187
 #: apps/web/src/features/home/ui/marketplace-page.tsx:248
 #: apps/web/src/features/home/ui/report-page.tsx:59
@@ -9296,7 +9303,7 @@ msgstr "Претражи ознаке"
 #: apps/web/src/desktop/shell/command-palette.tsx:280
 #: apps/web/src/desktop/shell/command-palette.tsx:298
 #: apps/web/src/desktop/shell/command-palette.tsx:299
-#: apps/web/src/features/home/ui/market-page.tsx:98
+#: apps/web/src/features/home/ui/market-page.tsx:103
 #: apps/web/src/features/home/ui/marketplace-page.tsx:108
 msgid "Search the marketplace"
 msgstr "Претражи тржиште"
@@ -9377,7 +9384,7 @@ msgstr "Претрага пулова…"
 msgid "Searching recipients…"
 msgstr "Тражимо примаоце…"
 
-#: apps/web/src/desktop/market/market-map-desk.tsx:296
+#: apps/web/src/desktop/market/market-map-desk.tsx:300
 msgid "Searching this area"
 msgstr "Pretraga ove oblasti"
 
@@ -9632,7 +9639,7 @@ msgstr "Подешавање вашег новчаника…"
 #: apps/web/src/desktop/account/settings-desk.tsx:68
 #: apps/web/src/desktop/shell/command-palette.tsx:145
 #: apps/web/src/desktop/shell/crumbs.tsx:20
-#: apps/web/src/desktop/shell/sidebar.tsx:103
+#: apps/web/src/desktop/shell/sidebar.tsx:112
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:30
 #: apps/web/src/features/home/ui/settings-page.tsx:54
 #: apps/web/src/features/install/ui/install-page.tsx:64
@@ -9747,7 +9754,7 @@ msgstr "Прикажи ове пречице"
 
 #. placeholder {0}: viewportList.rows.length
 #. placeholder {1}: viewportList.total
-#: apps/web/src/desktop/market/market-map-desk.tsx:178
+#: apps/web/src/desktop/market/market-map-desk.tsx:181
 msgid "Showing {0} of {1} in this area"
 msgstr "Приказано је {0} од {1} у овој области"
 
@@ -10000,7 +10007,7 @@ msgstr "Неке тржнице није могуће провјерити. Пр
 #~ msgstr "Неке ваучере није могуће учитати."
 
 #: apps/web/src/desktop/market/market-list-desk.tsx:176
-#: apps/web/src/desktop/market/market-map-desk.tsx:191
+#: apps/web/src/desktop/market/market-map-desk.tsx:194
 msgid "Sorted nearest to the map view"
 msgstr "Поређано према близини приказа мапе"
 
@@ -10457,6 +10464,7 @@ msgid "Terms and Conditions"
 msgstr "Услови и одредбе"
 
 #: apps/web/src/components/app-menu.tsx:95
+#: apps/web/src/desktop/shell/sidebar.tsx:117
 msgid "Terms of Service"
 msgstr "Услови коришћења"
 
@@ -10623,11 +10631,11 @@ msgstr "Тачна локација ће бити јавна. Изаберите
 msgid "The last move is still settling. Check again in a minute."
 msgstr "Посљедњи пренос се још обрађује. Провјерите поново за минут."
 
-#: apps/web/src/features/home/ui/market-map.tsx:1192
+#: apps/web/src/features/home/ui/market-map.tsx:1225
 msgid "The map could not be loaded."
 msgstr "Mapa nije mogla da se učita."
 
-#: apps/web/src/features/home/ui/market-map.tsx:1194
+#: apps/web/src/features/home/ui/market-map.tsx:1227
 msgid "The map is not supported on this device."
 msgstr "Mapa nije podržana na ovom uređaju."
 
@@ -10737,9 +10745,10 @@ msgid "The voucher could not be published."
 msgstr "Ваучер није могао бити објављен."
 
 #: apps/web/src/components/app-menu.tsx:79
-#: apps/web/src/components/theme-selector.tsx:46
+#: apps/web/src/components/theme-selector.tsx:47
 #: apps/web/src/desktop/account/settings-desk.tsx:327
 #: apps/web/src/desktop/account/settings-desk.tsx:329
+#: apps/web/src/desktop/shell/sidebar.tsx:116
 msgid "Theme"
 msgstr "Тема"
 
@@ -11379,8 +11388,8 @@ msgstr "Унесите најмање два знака."
 #~ msgid "Types on the map"
 #~ msgstr "Врсте на мапи"
 
-#: apps/web/src/components/language-selector.tsx:59
-#: apps/web/src/components/language-selector.tsx:134
+#: apps/web/src/components/language-selector.tsx:77
+#: apps/web/src/components/language-selector.tsx:152
 #: apps/web/src/desktop/account/settings-desk.tsx:286
 #: apps/web/src/desktop/auth/onboarding-header.tsx:81
 msgid "Unable to load language. Reverted to English."
@@ -12012,7 +12021,7 @@ msgstr "Vaučer: bilo koji"
 #: apps/web/src/desktop/pools/pool-main.tsx:395
 #: apps/web/src/desktop/posts/post-facets.tsx:115
 #: apps/web/src/desktop/shell/crumbs.tsx:26
-#: apps/web/src/desktop/shell/sidebar.tsx:182
+#: apps/web/src/desktop/shell/sidebar.tsx:195
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:122
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:262
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:400
@@ -12101,7 +12110,7 @@ msgstr "Чека се да прихвате ваш захтјев."
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1063
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1064
 #: apps/web/src/desktop/shell/crumbs.tsx:14
-#: apps/web/src/desktop/shell/sidebar.tsx:96
+#: apps/web/src/desktop/shell/sidebar.tsx:105
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:187
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:293
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:21
@@ -12170,7 +12179,7 @@ msgstr "Слика потребе"
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:433
 #: apps/web/src/desktop/pools/pool-main.tsx:428
 #: apps/web/src/desktop/shell/crumbs.tsx:24
-#: apps/web/src/desktop/shell/sidebar.tsx:180
+#: apps/web/src/desktop/shell/sidebar.tsx:193
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:43
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:28
 #: apps/web/src/features/wants/ui/wants-page.tsx:57
@@ -12790,6 +12799,14 @@ msgstr "Млади"
 msgid "Zoom"
 msgstr "Увећање"
 
+#: apps/web/src/features/home/ui/market-map-controls.tsx:16
+msgid "Zoom in"
+msgstr "Увећај"
+
 #: apps/web/src/desktop/market/market-map-desk.tsx:158
 #~ msgid "Zoom in to see individual results."
 #~ msgstr "Увећајте приказ да бисте видели појединачне резултате."
+
+#: apps/web/src/features/home/ui/market-map-controls.tsx:17
+msgid "Zoom out"
+msgstr "Умањи"

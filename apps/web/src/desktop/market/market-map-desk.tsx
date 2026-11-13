@@ -14,6 +14,8 @@ import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse
 import { useMarketScreen } from "#/features/home/hooks/use-market-screen";
 import { useOutputVoucherBrowse } from "#/features/home/hooks/use-output-voucher-browse";
 import { MarketMap } from "#/features/home/ui/market-map.lazy";
+import type { MarketMapZoomControls } from "#/features/home/ui/market-map";
+import { MarketMapControls } from "#/features/home/ui/market-map-controls";
 import type { MarketListScope } from "#/lib/navigation/marketplace-search";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
@@ -73,6 +75,7 @@ export function MarketMapDesk({
   });
   const narrowed = screen.filter.isFiltered || screen.credit.enabled || output.active;
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [zoomControls, setZoomControls] = useState<MarketMapZoomControls | null>(null);
   const hoverFromMap = useRef(false);
   const listRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -281,6 +284,7 @@ export function MarketMapDesk({
               }}
               onDeselect={screen.closeSelection}
               onViewportSettled={screen.handleViewportSettled}
+              onZoomControlsChange={setZoomControls}
               bottomInset={0}
               className="absolute inset-0 h-full w-full"
             />
@@ -301,7 +305,9 @@ export function MarketMapDesk({
           <DeskSignInAction />
         </div>
         {screen.isCardOpen ? null : (
-          <div className="pointer-events-none absolute end-4 bottom-4">{screen.locationButton}</div>
+          <div className="pointer-events-none absolute end-4 bottom-4">
+            <MarketMapControls location={screen.locationButton} zoom={zoomControls} />
+          </div>
         )}
       </div>
     </div>
