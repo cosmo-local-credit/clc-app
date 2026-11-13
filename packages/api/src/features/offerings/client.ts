@@ -4,6 +4,7 @@ import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
+import type { CreditScope } from "../credit-router/client";
 import {
   type CursorParams,
   type HexAddress,
@@ -111,6 +112,12 @@ export type OfferingDiscoveryParams = {
   sort?: "nearest";
   bounds?: readonly MarketBoundingBox[];
   pools?: readonly { chainId: number; address: string }[];
+  /**
+   * The server-resolved Credit filter (`creditDepth`): resources related to the
+   * pools the session wallet reaches. Needs the session, so the request carries
+   * credentials and is never cached; it cannot be combined with `pools`.
+   */
+  credit?: CreditScope;
 };
 
 export type OfferingDiscoveryPage = {
@@ -234,10 +241,10 @@ export function createOfferingsClient(
       const query = formatOfferingDiscoveryQuery(params);
       const result = await http.request<BackendOfferingPage>(`/api/v2/offerings?${query}`, {
         method: "GET",
-        credentials: params.nearby || params.sort ? "include" : "omit",
+        credentials: params.nearby || params.sort || params.credit ? "include" : "omit",
         signal,
         ...cachePolicy,
-        ...(params.nearby || params.sort ? { cache: "no-store" as const } : {}),
+        ...(params.nearby || params.sort || params.credit ? { cache: "no-store" as const } : {}),
       });
       const received = result.offerings ?? [];
       return {
@@ -431,6 +438,9 @@ function normalizeOffering(offering: BackendOffering): Offering | null {
 }
 
 function formatOfferingDiscoveryQuery(params: OfferingDiscoveryParams): string {
+  if (params.credit && params.pools && params.pools.length > 0) {
+    throw new Error("creditDepth cannot be combined with pools; send one or the other.");
+  }
   const query = new URLSearchParams({ perPage: String(params.perPage ?? 20) });
   if (params.cursor) query.set("cursor", params.cursor);
   if (params.q?.trim()) query.set("q", params.q.trim());
@@ -446,6 +456,7 @@ function formatOfferingDiscoveryQuery(params: OfferingDiscoveryParams): string {
       params.pools.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`).join(","),
     );
   }
+  if (params.credit) query.set("creditDepth", String(params.credit.depth));
   return query.toString();
 }
 
