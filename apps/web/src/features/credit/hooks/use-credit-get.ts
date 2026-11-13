@@ -10,7 +10,10 @@ import {
 } from "@clc/api/features/credit-router/queries";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { relayerHealthQueryOptions } from "@clc/api/features/relayer/queries";
-import type { CreditQuoteMode } from "@clc/core/features/credit-router/logic";
+import {
+  CREDIT_ROUTER_MAX_HOPS,
+  type CreditQuoteMode,
+} from "@clc/core/features/credit-router/logic";
 import { parseTokenAmount } from "@clc/core/features/wallet/logic";
 import {
   keepPreviousData,
@@ -45,14 +48,14 @@ import { useVoucherLabels } from "./use-voucher-labels";
 const relayerClient = createRelayerClient(RELAYER_URL);
 
 /** Two hops: the product's launch scope. Depth 2 lists one-hop routes too. */
-const ROUTE_DEPTH = 2;
+const ROUTE_DEPTH = CREDIT_ROUTER_MAX_HOPS;
 const AMOUNT_DEBOUNCE_MS = 400;
 
 /**
  * Every credit-route relay, whichever view started it, so a remounted view
  * holds its own Confirm back while one is in flight.
  */
-export const creditRelayMutationKey = ["credit-router", "relay"] as const;
+const creditRelayMutationKey = ["credit-router", "relay"] as const;
 
 type Review = {
   request: CreditQuoteRequest;

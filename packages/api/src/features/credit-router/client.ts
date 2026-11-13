@@ -184,7 +184,6 @@ const receiptHopSchema = z.object({
   protocolFee: nullableRaw,
   settledAt: z.string().nullable(),
 });
-export type RoutedSwapHop = z.infer<typeof receiptHopSchema>;
 
 const receiptSchema = z.object({
   swap: z.object({
@@ -239,7 +238,7 @@ export type CreditQuoteRequest = {
 };
 
 /** A refused route's constraint, from API.md §14.13. Unknown values pass through. */
-export type CreditRouteRefusal =
+type CreditRouteRefusal =
   | "not_allowed_in"
   | "not_allowed_out"
   | "deposit_cap"

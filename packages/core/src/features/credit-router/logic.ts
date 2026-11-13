@@ -14,14 +14,14 @@ import { type CaliburCall, computeEIP712Digest, type SignedBatch } from "../weba
 type Address = `0x${string}`;
 
 /** The most hops the product offers (the router engine is depth-generic). */
-export const CREDIT_ROUTER_MAX_HOPS = 2;
+export const CREDIT_ROUTER_MAX_HOPS = 2 as const;
 
 /**
  * How far ahead a signed route may expire. The router quotes now + 300 s and
  * the relay accepts up to an hour; anything past this horizon is refused, so a
  * signature cannot be held back and relayed long after the user saw the terms.
  */
-export const CREDIT_QUOTE_DEADLINE_HORIZON_SECONDS = 900;
+const CREDIT_QUOTE_DEADLINE_HORIZON_SECONDS = 900;
 
 export type CreditQuoteMode = "exactInput" | "exactOutput";
 
