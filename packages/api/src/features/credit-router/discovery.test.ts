@@ -67,17 +67,20 @@ const endpoints = [
 ];
 
 describe.each(endpoints)("$name Credit depth", ({ path, body, call }) => {
-  it("sends creditDepth with the session cookie, uncached, and no pool list", async () => {
-    const fetcher = respond(body);
-    await call({ credit: ALICE });
-    const [url, init] = fetcher.mock.calls[0]!;
-    const parsed = new URL(String(url));
-    expect(parsed.pathname).toBe(path);
-    expect(parsed.searchParams.get("creditDepth")).toBe("2");
-    expect(parsed.searchParams.has("pools")).toBe(false);
-    expect(parsed.search).not.toContain(ALICE.wallet.slice(2));
-    expect(init).toMatchObject({ credentials: "include", cache: "no-store" });
-  });
+  it.each([1, 2] as const)(
+    "sends creditDepth=%i with the session cookie, uncached, and no pool list",
+    async (depth) => {
+      const fetcher = respond(body);
+      await call({ credit: { ...ALICE, depth } });
+      const [url, init] = fetcher.mock.calls[0]!;
+      const parsed = new URL(String(url));
+      expect(parsed.pathname).toBe(path);
+      expect(parsed.searchParams.get("creditDepth")).toBe(String(depth));
+      expect(parsed.searchParams.has("pools")).toBe(false);
+      expect(parsed.search).not.toContain(ALICE.wallet.slice(2));
+      expect(init).toMatchObject({ credentials: "include", cache: "no-store" });
+    },
+  );
 
   it("refuses creditDepth together with pools before any request", async () => {
     const fetcher = respond(body);
