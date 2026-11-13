@@ -170,7 +170,7 @@ describe("BottomNavigation", () => {
   it("opens All from a filtered map while retaining only canonical shared filters", async () => {
     const address = `0x${"a".repeat(40)}`;
     const { history } = await renderNavigation({
-      initialEntry: `/?tab=market&view=map&q=bike&tags=Repair&creditable=true&out_voucher=${address}&voucher=${address}`,
+      initialEntry: `/?tab=market&view=map&q=bike&tags=Repair&creditDepth=1&out_voucher=${address}&voucher=${address}`,
     });
     expect(screen.getByRole("link", { name: "Market" }).getAttribute("aria-current")).toBe("true");
 
@@ -180,7 +180,7 @@ describe("BottomNavigation", () => {
     expect(Object.fromEntries(new URLSearchParams(history.location.search))).toEqual({
       q: "bike",
       tags: "Repair",
-      creditable: "true",
+      creditDepth: "1",
       scope: "all",
     });
     expect(history.length).toBe(2);
@@ -202,7 +202,7 @@ describe("BottomNavigation", () => {
 
   it("returns a list to the map with shared filters, and Back reopens the list", async () => {
     const { history } = await renderNavigation({
-      initialEntry: `/market?scope=pools&q=food&tags=Repair&creditable=true&out_voucher=0x${"a".repeat(40)}`,
+      initialEntry: `/market?scope=pools&q=food&tags=Repair&creditDepth=1&out_voucher=0x${"a".repeat(40)}`,
       activeTab: "market",
       atActiveTabRoot: false,
     });
@@ -214,7 +214,7 @@ describe("BottomNavigation", () => {
     expect(Object.fromEntries(new URLSearchParams(history.location.search))).toEqual({
       q: "food",
       tags: "Repair",
-      creditable: "true",
+      creditDepth: "1",
       tab: "market",
       view: "map",
     });
@@ -228,7 +228,7 @@ describe("BottomNavigation", () => {
       scope: "pools",
       q: "food",
       tags: "Repair",
-      creditable: "true",
+      creditDepth: "1",
       out_voucher: `0x${"a".repeat(40)}`,
     });
   });

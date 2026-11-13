@@ -15,7 +15,11 @@ import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { CHAIN_ID } from "#/lib/chain";
-import { parsePoolCreditable, parsePoolOutputVoucher } from "#/lib/navigation/pool-search";
+import {
+  parseCreditDepth,
+  parsePoolOutputVoucher,
+  withCreditDepth,
+} from "#/lib/navigation/pool-search";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { MarketBar } from "#/components/market-bar";
@@ -32,10 +36,10 @@ import { ListSkeleton } from "#/components/ui/list-skeleton";
 const POOL_ROW_TAG_LIMIT = 3;
 
 export function PoolsPage({
-  creditableSearch,
+  creditDepthSearch,
   outputVoucherSearch,
 }: {
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditDepthSearch?: number | string | readonly (number | string)[];
   outputVoucherSearch?: string | readonly string[];
 }) {
   const { t, i18n } = useLingui();
@@ -47,13 +51,13 @@ export function PoolsPage({
   const outputVoucherAddress = outputVoucherResult.ok ? outputVoucherResult.address : null;
   const outputFilterActive = outputVoucherAddress !== null;
   const outputFilterInvalid = !outputVoucherResult.ok;
-  const credit = useCreditableBrowse(creditableSearch);
-  const creditableResult = parsePoolCreditable(creditableSearch);
+  const credit = useCreditableBrowse(creditDepthSearch);
+  const creditableResult = parseCreditDepth(creditDepthSearch);
   const creditFilterInvalid = !creditableResult.ok;
   const specialFilterInvalid = outputFilterInvalid || creditFilterInvalid;
   const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_NAMES.pools, storageOwner, {
     voucherRelationships: false,
-    externalFilterActive: outputVoucherSearch !== undefined || creditableSearch !== undefined,
+    externalFilterActive: outputVoucherSearch !== undefined || creditDepthSearch !== undefined,
   });
   const poolsQuery = useUserPoolsInfinite(
     undefined,
@@ -177,17 +181,17 @@ export function PoolsPage({
           <CreditableBrowseControl
             part="control"
             state={credit}
-            onChange={(checked) =>
+            onChange={(depth) =>
               void navigate({
                 to: "/market",
-                search: (previous) => ({ ...previous, creditable: checked }),
+                search: (previous) => ({ ...previous, ...withCreditDepth(depth) }),
               })
             }
             onClear={() =>
               void navigate({
                 to: "/market",
                 replace: true,
-                search: (previous) => ({ ...previous, creditable: undefined }),
+                search: (previous) => ({ ...previous, ...withCreditDepth(undefined) }),
               })
             }
           />
@@ -207,17 +211,17 @@ export function PoolsPage({
       <CreditableBrowseControl
         part="feedback"
         state={credit}
-        onChange={(checked) =>
+        onChange={(depth) =>
           void navigate({
             to: "/market",
-            search: (previous) => ({ ...previous, creditable: checked }),
+            search: (previous) => ({ ...previous, ...withCreditDepth(depth) }),
           })
         }
         onClear={() =>
           void navigate({
             to: "/market",
             replace: true,
-            search: (previous) => ({ ...previous, creditable: undefined }),
+            search: (previous) => ({ ...previous, ...withCreditDepth(undefined) }),
           })
         }
       />

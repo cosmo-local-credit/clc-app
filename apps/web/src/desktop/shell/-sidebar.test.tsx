@@ -216,10 +216,7 @@ describe("top-level marketplace destinations", () => {
   });
 
   it("keeps the shared search while it changes the list", async () => {
-    const { link } = await scopeLink(
-      "/market?scope=offers&view=list&q=tea&creditable=true",
-      "Wants",
-    );
+    const { link } = await scopeLink("/market?scope=offers&view=list&q=tea&creditDepth=1", "Wants");
     const href = new URL(link.getAttribute("href") ?? "", "http://x");
     expect(Object.fromEntries(href.searchParams)).toMatchObject({
       scope: "wants",

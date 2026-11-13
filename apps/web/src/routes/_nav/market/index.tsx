@@ -143,7 +143,7 @@ function MarketListRoute() {
         scope={scope}
         urlView={search.view}
         isAuthenticated={auth.isAuthenticated}
-        creditableSearch={search.creditable}
+        creditDepthSearch={search.creditDepth}
         outputVoucherSearch={search.out_voucher}
         locationOwner={owner}
       />
@@ -182,27 +182,27 @@ function MarketMobile({
     return <Navigate to="/wants/$wantId" params={{ wantId }} search={{ from: "market" }} replace />;
   }
   if (scope === "catalogs") {
-    return <CatalogsPage creditableSearch={search.creditable} />;
+    return <CatalogsPage creditDepthSearch={search.creditDepth} />;
   }
   if (scope === "wants") {
     return (
       <NearbyCatalog>
-        <WantsPage creditableSearch={search.creditable} />
+        <WantsPage creditDepthSearch={search.creditDepth} />
       </NearbyCatalog>
     );
   }
   return (
     <NearbyCatalog>
       {scope === "offers" ? (
-        <OffersPage creditableSearch={search.creditable} locationOwner={owner} />
+        <OffersPage creditDepthSearch={search.creditDepth} locationOwner={owner} />
       ) : scope === "vouchers" ? (
-        <MarketListPage creditableSearch={search.creditable} locationOwner={owner} />
+        <MarketListPage creditDepthSearch={search.creditDepth} locationOwner={owner} />
       ) : scope === "all" ? (
-        <MarketplacePage creditableSearch={search.creditable} locationOwner={owner} />
+        <MarketplacePage creditDepthSearch={search.creditDepth} locationOwner={owner} />
       ) : (
         <div className="min-h-[100svh] bg-background px-4 pb-bottom-nav text-foreground">
           <PoolsPage
-            creditableSearch={search.creditable}
+            creditDepthSearch={search.creditDepth}
             outputVoucherSearch={search.out_voucher}
           />
         </div>

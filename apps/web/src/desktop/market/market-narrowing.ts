@@ -19,6 +19,7 @@ export function useClearMarketNarrowing() {
         search: (previous) => ({
           ...previous,
           ...CLEARED_CATALOG_SEARCH,
+          creditDepth: undefined,
           creditable: undefined,
           out_voucher: undefined,
         }),

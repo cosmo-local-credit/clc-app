@@ -95,11 +95,11 @@ vi.mock("#/components/creditable-browse-control", () => ({
     onClear,
   }: {
     part: "control" | "feedback";
-    onChange: (checked: boolean) => void;
+    onChange: (depth: 1 | 2 | undefined) => void;
     onClear: () => void;
   }) => (
     <div data-testid={`credit-${part}`}>
-      <button type="button" onClick={() => onChange(true)}>
+      <button type="button" onClick={() => onChange(1)}>
         {part} Credit on
       </button>
       <button type="button" onClick={onClear}>
@@ -225,11 +225,19 @@ describe("OffersPage", () => {
       ([call]) => call,
     );
     expect(shellOn).toMatchObject({ to: "/market" });
-    expect(shellOn.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(shellOn.search(previous)).toEqual({
+      ...previous,
+      creditDepth: 1,
+      creditable: undefined,
+    });
     expect(shellClear).toMatchObject({ to: "/market", replace: true });
     expect(shellClear.search(previous)).toEqual({ scope: "offers", q: "food" });
     expect(feedbackOn).toMatchObject({ to: "." });
-    expect(feedbackOn.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(feedbackOn.search(previous)).toEqual({
+      ...previous,
+      creditDepth: 1,
+      creditable: undefined,
+    });
     expect(feedbackClear).toMatchObject({ to: ".", replace: true });
     expect(feedbackClear.search(previous)).toEqual({ scope: "offers", q: "food" });
   });
@@ -282,7 +290,7 @@ describe("OffersPage", () => {
     }));
     mocks.credit.scope = { depth: 2, wallet: `0x${"A1".repeat(20)}`, digest: "0xAB" };
 
-    render(<OffersPage creditableSearch />);
+    render(<OffersPage creditDepthSearch={1} />);
 
     const key = (mocks.queryOptions?.queryKey as unknown[] | undefined)?.[3] as Record<
       string,
@@ -297,7 +305,7 @@ describe("OffersPage", () => {
     mocks.credit.poolRefs = [];
     mocks.credit.blocksResults = true;
 
-    render(<OffersPage creditableSearch />);
+    render(<OffersPage creditDepthSearch={1} />);
 
     expect(mocks.queryOptions?.enabled).toBe(false);
     expect(screen.getByText("No offers are available through your Credit pools.")).toBeTruthy();

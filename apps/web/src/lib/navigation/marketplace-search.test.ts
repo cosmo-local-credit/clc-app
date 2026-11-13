@@ -41,14 +41,14 @@ describe("marketplace route search", () => {
       scope: "pools",
       q: "bike",
       tags: "Repair",
-      creditable: true,
+      creditDepth: 2,
       out_voucher: `0x${"a".repeat(40)}`,
     });
     expect(marketplaceSearchForScope(previous, "all")).toMatchObject({
       scope: "all",
       q: "bike",
       tags: "Repair",
-      creditable: true,
+      creditDepth: 2,
       out_voucher: undefined,
     });
   });
@@ -58,14 +58,14 @@ describe("marketplace route search", () => {
       scope: "pools",
       q: "bike",
       tags: "Repair",
-      creditable: true,
+      creditDepth: 1,
       out_voucher: `0x${"a".repeat(40)}`,
     });
     expect(marketplaceSearchForScope(previous, "offers")).toMatchObject({
       scope: "offers",
       q: "bike",
       tags: "Repair",
-      creditable: true,
+      creditDepth: 1,
       out_voucher: undefined,
     });
   });
@@ -87,17 +87,21 @@ describe("marketplace route search", () => {
     });
   });
 
-  it("carries only the query, tags and Credit back to the map", () => {
+  it("carries only the query, tags and Credit depth back to the map", () => {
     expect(
       mapSearchFrom({
         scope: "pools",
         q: "bike",
         tags: "Repair",
         tagMatch: "all",
-        creditable: true,
+        creditDepth: 2,
         out_voucher: `0x${"a".repeat(40)}`,
       }),
-    ).toEqual({ q: "bike", tags: "Repair", tagMatch: "all", creditable: true });
+    ).toEqual({ q: "bike", tags: "Repair", tagMatch: "all", creditDepth: 2 });
+    // A legacy Credit link arrives at the map as depth 1.
+    expect(mapSearchFrom({ creditable: true })).toEqual({ creditDepth: 1 });
+    // An invalid depth is kept so the map can say so and clear it.
+    expect(mapSearchFrom({ creditDepth: "9" })).toEqual({ creditDepth: "9" });
   });
 
   it("carries non-default Post timing to the map", () => {
@@ -116,7 +120,7 @@ describe("marketplace route search", () => {
         q: "  bike   repair  ",
         tags: ["Repair, Food", "Repair"],
         tagMatch: "all",
-        creditable: "TRUE",
+        creditDepth: "2",
         out_voucher: `0x${"a".repeat(40)}`,
         vouchers: `100:0x${"b".repeat(40)}`,
         voucherMatch: "all",
@@ -126,7 +130,7 @@ describe("marketplace route search", () => {
       q: "bike repair",
       tags: "Food,Repair",
       tagMatch: "all",
-      creditable: true,
+      creditDepth: 2,
     });
   });
 
@@ -149,6 +153,6 @@ describe("marketplace route search", () => {
         tags: Array.from({ length: 13 }, (_, index) => `Tag ${index}`),
         creditable: "true",
       }),
-    ).toEqual({ q: "bike", creditable: true });
+    ).toEqual({ q: "bike", creditDepth: 1 });
   });
 });

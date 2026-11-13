@@ -114,9 +114,9 @@ vi.mock("#/components/creditable-browse-control", () => ({
     onChange,
   }: {
     part: "control" | "feedback";
-    onChange: (checked: boolean) => void;
+    onChange: (depth: 1 | 2 | undefined) => void;
   }) => (
-    <button type="button" onClick={() => onChange(true)}>
+    <button type="button" onClick={() => onChange(1)}>
       {part} Credit on
     </button>
   ),
@@ -343,7 +343,7 @@ describe("MarketplacePage", () => {
     mocks.credit.poolRefs = [{ chainId: 100, address: POOL }];
     mocks.credit.scope = { depth: 2, wallet: WALLET, digest: "0xAB" };
 
-    render(<MarketplacePage creditableSearch />);
+    render(<MarketplacePage creditDepthSearch={1} />);
 
     expect(mocks.queryOptions?.enabled).toBe(true);
     const key = (mocks.queryOptions?.queryKey as unknown[] | undefined)?.[3];
@@ -368,9 +368,17 @@ describe("MarketplacePage", () => {
     const [control, feedback] = mocks.navigate.mock.calls.map(([call]) => call);
     const previous = { scope: "all", q: "food" };
     expect(control).toMatchObject({ to: "/market" });
-    expect(control.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(control.search(previous)).toEqual({
+      ...previous,
+      creditDepth: 1,
+      creditable: undefined,
+    });
     expect(feedback).toMatchObject({ to: "." });
-    expect(feedback.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(feedback.search(previous)).toEqual({
+      ...previous,
+      creditDepth: 1,
+      creditable: undefined,
+    });
   });
 
   it("renders the complete server-bounded page and preserves pagination", () => {
@@ -418,7 +426,7 @@ describe("MarketplacePage", () => {
     mocks.credit.poolRefs = [];
     mocks.credit.blocksResults = true;
 
-    render(<MarketplacePage creditableSearch />);
+    render(<MarketplacePage creditDepthSearch={1} />);
 
     expect(mocks.queryOptions?.enabled).toBe(false);
     expect(

@@ -1,4 +1,5 @@
 import { viewportToBoundingBoxes } from "@clc/api/features/market/client";
+import { withCreditDepth, type CreditDepthValue } from "#/lib/navigation/pool-search";
 import { wantDetailQueryOptions } from "@clc/api/features/wants/queries";
 import { canonicalMarketBounds } from "@clc/core/features/catalog/nearby";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
@@ -58,7 +59,7 @@ type MarketMapStatus =
 export function useMarketScreen({
   isAuthenticated = false,
   locationOwner = GUEST_STORAGE_OWNER,
-  creditableSearch,
+  creditDepthSearch,
   kinds,
   creditRoute = "home",
   output,
@@ -66,7 +67,7 @@ export function useMarketScreen({
 }: {
   isAuthenticated?: boolean;
   locationOwner?: string;
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditDepthSearch?: number | string | readonly (number | string)[];
   kinds?: readonly MarketMapKind[];
   /** Where Credit writes its search param. The phone map is the home tab. */
   creditRoute?: "home" | "market";
@@ -174,7 +175,7 @@ export function useMarketScreen({
   const storageOwner = useStorageOwner();
   const filter = useMarketPostFilter(storageOwner, output !== undefined && output.state !== "off");
   const postTiming = usePostTiming(storageOwner);
-  const credit = useCreditableBrowse(creditableSearch);
+  const credit = useCreditableBrowse(creditDepthSearch);
   const mapResources = useMarketMapResourceSelection(locationOwner);
   const activeKinds = kinds ?? mapResources.selected;
   const includesPosts = activeKinds.includes("post");
@@ -358,13 +359,13 @@ export function useMarketScreen({
   const isEmpty =
     activeKinds.length > 0 && visibleCount === 0 && filter.result.ok && marketMap.isSettled;
 
-  const changeCredit = (checked: boolean) =>
+  const changeCredit = (depth: CreditDepthValue | undefined) =>
     void navigate({
       to: creditRoute === "market" ? "/market" : "/",
       search: (previous) =>
         creditRoute === "market"
-          ? { ...previous, creditable: checked }
-          : { ...previous, tab: "market", view: "map", creditable: checked },
+          ? { ...previous, ...withCreditDepth(depth) }
+          : { ...previous, tab: "market", view: "map", ...withCreditDepth(depth) },
     });
   const clearCredit = () =>
     void navigate({
@@ -372,8 +373,8 @@ export function useMarketScreen({
       replace: true,
       search: (previous) =>
         creditRoute === "market"
-          ? { ...previous, creditable: false }
-          : { ...previous, tab: "market", view: "map", creditable: false },
+          ? { ...previous, ...withCreditDepth(undefined) }
+          : { ...previous, tab: "market", view: "map", ...withCreditDepth(undefined) },
     });
 
   // What the result count may claim. A zero is only a count once a result set

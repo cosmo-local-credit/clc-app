@@ -1,4 +1,5 @@
 import type { Offering } from "@clc/api/features/offerings/client";
+import { withCreditDepth, type CreditDepthValue } from "#/lib/navigation/pool-search";
 import type { MarketplaceResult } from "@clc/core/features/marketplace/logic";
 import { formatOfferingPrice, formatOfferingQuantity } from "@clc/core/features/market/logic";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
@@ -50,12 +51,12 @@ import { type MarketListPhase, useMarketList } from "#/desktop/market/use-market
 
 export function MarketListDesk({
   scope,
-  creditableSearch,
+  creditDepthSearch,
   outputVoucherSearch,
   locationOwner = GUEST_STORAGE_OWNER,
 }: {
   scope: MarketListScope;
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditDepthSearch?: number | string | readonly (number | string)[];
   /** The link's requested output voucher; it narrows the Pools list to pools that can pay it out. */
   outputVoucherSearch?: string | readonly string[];
   locationOwner?: string;
@@ -64,7 +65,7 @@ export function MarketListDesk({
   const navigate = useNavigate();
   useRememberMarketView("list");
   const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
-  const credit = useCreditableBrowse(creditableSearch);
+  const credit = useCreditableBrowse(creditDepthSearch);
   const output = useOutputVoucherBrowse(outputVoucherSearch, credit);
   // Offers and Pools remember their own filters, as the phone's Offers and
   // Pools pages do; the other lists share the market's.
@@ -77,7 +78,7 @@ export function MarketListDesk({
     useStorageOwner(),
     {
       ...(scope === "pools" ? { voucherRelationships: false } : {}),
-      externalFilterActive: creditableSearch !== undefined || outputVoucherSearch !== undefined,
+      externalFilterActive: creditDepthSearch !== undefined || outputVoucherSearch !== undefined,
     },
   );
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -120,16 +121,16 @@ export function MarketListDesk({
     return () => observer.disconnect();
   }, [hasMore, nextFailed, nextLoading, load]);
 
-  const changeCredit = (checked: boolean) =>
+  const changeCredit = (depth: CreditDepthValue | undefined) =>
     void navigate({
       to: "/market",
-      search: (previous) => ({ ...previous, creditable: checked }),
+      search: (previous) => ({ ...previous, ...withCreditDepth(depth) }),
     });
   const clearCredit = () =>
     void navigate({
       to: "/market",
       replace: true,
-      search: (previous) => ({ ...previous, creditable: undefined }),
+      search: (previous) => ({ ...previous, ...withCreditDepth(undefined) }),
     });
 
   const distanceOf = (row: MarketplaceResult) => {

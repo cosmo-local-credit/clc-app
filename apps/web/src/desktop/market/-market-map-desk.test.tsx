@@ -177,7 +177,7 @@ function renderMap(
       return (
         <MarketMapDesk
           isAuthenticated={mocks.auth.isAuthenticated}
-          creditableSearch={search.creditable}
+          creditDepthSearch={search.creditDepth}
           outputVoucherSearch={search.out_voucher}
           scope={options.scope ?? "all"}
           creditRoute="market"
@@ -495,7 +495,7 @@ describe("MarketMapDesk Credit", () => {
       points: [marker("pool", POOL_A, "Mombasa Bakers")],
       truncated: false,
     });
-    renderMap("/market?scope=pools&view=map&creditable=true", { scope: "pools" });
+    renderMap("/market?scope=pools&view=map&creditDepth=2", { scope: "pools" });
 
     await waitFor(() =>
       expect(mocks.mapList.mock.calls.at(-1)?.[0]).toMatchObject({
@@ -509,7 +509,7 @@ describe("MarketMapDesk Credit", () => {
   it("never asks a guest's map for creditDepth", async () => {
     rememberResources("guest", ["pool"]);
     mocks.mapList.mockResolvedValue({ points: [], truncated: false });
-    renderMap("/market?scope=pools&view=map&creditable=true", { scope: "pools" });
+    renderMap("/market?scope=pools&view=map&creditDepth=1", { scope: "pools" });
     await screen.findAllByText("Sign in to browse results available through your Credit pools.");
     expect(mocks.mapList.mock.calls.every(([params]) => params.credit === undefined)).toBe(true);
   });
@@ -583,10 +583,9 @@ describe("MarketMapDesk requested output (Get a voucher)", () => {
     signIn();
     mocks.availability.pools = [];
     mocks.verification.pools = [{ chainId: 100, address: POOL_A }];
-    const router = renderMap(
-      `/market?scope=pools&view=map&creditable=true&out_voucher=${VOUCHER}`,
-      { scope: "pools" },
-    );
+    const router = renderMap(`/market?scope=pools&view=map&creditDepth=1&out_voucher=${VOUCHER}`, {
+      scope: "pools",
+    });
     expect(
       await screen.findByText("No creditable pools have this voucher available."),
     ).toBeTruthy();

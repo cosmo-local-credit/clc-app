@@ -1,4 +1,5 @@
 import { marketplaceInfiniteQueryOptions } from "@clc/api/features/marketplace/queries";
+import { withCreditDepth } from "#/lib/navigation/pool-search";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import type {
   MarketplaceKind,
@@ -46,10 +47,10 @@ const KIND_SCOPE: Record<Exclude<MarketplaceKind, "post">, MarketplaceScope> = {
 
 /** All: offers, vouchers, pools and catalogs in one list, under the same search as the map. */
 export function MarketplacePage({
-  creditableSearch,
+  creditDepthSearch,
   locationOwner = GUEST_STORAGE_OWNER,
 }: {
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditDepthSearch?: number | string | readonly (number | string)[];
   locationOwner?: string;
 }) {
   const { t } = useLingui();
@@ -57,8 +58,8 @@ export function MarketplacePage({
   const headingId = useId();
   const nearby = useNearbyCatalog();
   const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
-  const credit = useCreditableBrowse(creditableSearch);
-  const filter = useMarketFilter(useStorageOwner(), creditableSearch !== undefined);
+  const credit = useCreditableBrowse(creditDepthSearch);
+  const filter = useMarketFilter(useStorageOwner(), creditDepthSearch !== undefined);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const parsed = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
   const query = useInfiniteQuery({
@@ -110,17 +111,17 @@ export function MarketplacePage({
           <CreditableBrowseControl
             part="control"
             state={credit}
-            onChange={(checked) =>
+            onChange={(depth) =>
               void navigate({
                 to: "/market",
-                search: (previous) => ({ ...previous, creditable: checked }),
+                search: (previous) => ({ ...previous, ...withCreditDepth(depth) }),
               })
             }
             onClear={() =>
               void navigate({
                 to: "/market",
                 replace: true,
-                search: (previous) => ({ ...previous, creditable: undefined }),
+                search: (previous) => ({ ...previous, ...withCreditDepth(undefined) }),
               })
             }
           />
@@ -142,17 +143,17 @@ export function MarketplacePage({
       <CreditableBrowseControl
         part="feedback"
         state={credit}
-        onChange={(checked) =>
+        onChange={(depth) =>
           void navigate({
             to: ".",
-            search: (previous) => ({ ...previous, creditable: checked }),
+            search: (previous) => ({ ...previous, ...withCreditDepth(depth) }),
           })
         }
         onClear={() =>
           void navigate({
             to: ".",
             replace: true,
-            search: (previous) => ({ ...previous, creditable: undefined }),
+            search: (previous) => ({ ...previous, ...withCreditDepth(undefined) }),
           })
         }
       />

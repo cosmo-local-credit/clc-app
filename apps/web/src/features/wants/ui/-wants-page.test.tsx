@@ -122,11 +122,11 @@ vi.mock("#/components/creditable-browse-control", () => ({
     onClear,
   }: {
     part: string;
-    onChange: (enabled: boolean) => void;
+    onChange: (depth: 1 | 2 | undefined) => void;
     onClear: () => void;
   }) => (
     <div>
-      <button type="button" onClick={() => onChange(true)}>
+      <button type="button" onClick={() => onChange(1)}>
         {part} Credit on
       </button>
       <button type="button" onClick={onClear}>
@@ -220,14 +220,14 @@ describe("Wants marketplace page", () => {
     expect(calls[0]?.search({ q: "repair" })).toEqual({
       q: "repair",
       scope: "wants",
-      creditable: true,
+      creditDepth: 1,
     });
     expect(calls[1]?.search({ q: "repair" })).toEqual({
       q: "repair",
       scope: "wants",
       creditable: undefined,
     });
-    expect(calls[2]?.search({ q: "repair" })).toEqual({ q: "repair", creditable: true });
+    expect(calls[2]?.search({ q: "repair" })).toEqual({ q: "repair", creditDepth: 1 });
     expect(calls[3]?.search({ q: "repair" })).toEqual({ q: "repair", creditable: undefined });
   });
 
@@ -266,7 +266,7 @@ describe("Wants marketplace page", () => {
   it("keeps feedback available while Credit eligibility blocks results", () => {
     mocks.credit.enabled = true;
     mocks.credit.blocksResults = true;
-    render(<WantsPage creditableSearch />);
+    render(<WantsPage creditDepthSearch={1} />);
     expect(screen.queryByText("No Wants found.")).toBeNull();
     expect(screen.getByRole("button", { name: "feedback Credit clear" })).toBeTruthy();
   });

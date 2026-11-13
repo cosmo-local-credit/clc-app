@@ -33,13 +33,13 @@ import { DESK_SELECTED } from "#/desktop/ui/page";
 
 export function MarketMapDesk({
   isAuthenticated = false,
-  creditableSearch,
+  creditDepthSearch,
   outputVoucherSearch,
   scope: _scope = "all",
   creditRoute = "home",
 }: {
   isAuthenticated?: boolean;
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditDepthSearch?: number | string | readonly (number | string)[];
   /** The link's requested output voucher; it narrows the Pools map to pools that can pay it out. */
   outputVoucherSearch?: string | readonly string[];
   scope?: MarketListScope;
@@ -54,12 +54,12 @@ export function MarketMapDesk({
   // The requested output reads Credit too, to intersect with it. This is the
   // same Credit the screen reads (one set of queries), taken first so the
   // screen can send the one pool restriction.
-  const credit = useCreditableBrowse(creditableSearch);
+  const credit = useCreditableBrowse(creditDepthSearch);
   const output = useOutputVoucherBrowse(outputVoucherSearch, credit);
   const screen = useMarketScreen({
     isAuthenticated,
     locationOwner,
-    creditableSearch,
+    creditDepthSearch,
     creditRoute,
     output,
     alsoClear: clearNarrowing,
