@@ -113,8 +113,10 @@ export type VerifyCreditQuoteInput = {
 };
 
 /**
- * One row of the pre-signing table (ROUTER.md §7.2), plus the two the table
- * implies: the signing key, and that hop one guarantees what hop two spends.
+ * One check made before signing a credit quote's batch: each compares part of
+ * the batch with the app's own request, configuration or the terms the user
+ * reviewed. Two follow from the others: the signing key, and that hop one
+ * guarantees what hop two spends.
  */
 export type CreditQuoteCheck =
   | "domain"
