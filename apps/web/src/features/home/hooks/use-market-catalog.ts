@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 
+import type { CreditScope } from "@clc/api/features/credit-router/client";
 import type { MarketTagFacet, MarketVoucher } from "@clc/api/features/market/client";
 import {
   ensureSelectedFacets,
@@ -30,20 +31,21 @@ export function useMarketCatalogVouchers(
   enabled = true,
   /** The facet vocabulary is only read inside the filter sheet — don't pay for it until it opens. */
   vocabularyEnabled = false,
-  pools?: readonly { chainId: number; address: string }[],
+  /** The server-resolved Credit filter; the catalog is read filtered while it is on. */
+  credit?: CreditScope,
 ): MarketCatalog {
-  const usesPoolFilter = pools !== undefined;
+  const usesCreditFilter = credit !== undefined;
   const unfiltered = useMarketMapVouchers(
     bounds,
     undefined,
-    enabled && !filter.isFiltered && !usesPoolFilter,
+    enabled && !filter.isFiltered && !usesCreditFilter,
   );
   const filtered = useFilteredMarketVouchers(
-    enabled && filter.result.ok && (filter.isFiltered || usesPoolFilter)
+    enabled && filter.result.ok && (filter.isFiltered || usesCreditFilter)
       ? (filter.filter ?? EMPTY_CATALOG_FILTER)
       : null,
     undefined,
-    pools,
+    credit,
     bounds,
   );
   const filteredState = toFilteredCatalogState(filtered, filter.isDebouncing);
@@ -76,7 +78,7 @@ export function useMarketCatalogVouchers(
       };
     }
 
-    if (!filter.isFiltered && !usesPoolFilter) {
+    if (!filter.isFiltered && !usesCreditFilter) {
       return {
         vouchers: unfiltered.vouchers,
         isCatalogComplete: unfiltered.isCatalogComplete,
@@ -98,7 +100,7 @@ export function useMarketCatalogVouchers(
         retry: retryFiltered,
         retrying: false,
         tagFacets: chipFacets,
-        filterKey: `${filterIdentity(filter)}\u0000${poolIdentity(pools)}`,
+        filterKey: `${filterIdentity(filter)}\u0000${creditIdentity(credit)}`,
       };
     }
 
@@ -115,7 +117,7 @@ export function useMarketCatalogVouchers(
       retry: retryFiltered,
       retrying: filtered.isFetching,
       tagFacets: chipFacets,
-      filterKey: `${filterIdentity(filter)}\u0000${poolIdentity(pools)}`,
+      filterKey: `${filterIdentity(filter)}\u0000${creditIdentity(credit)}`,
     };
   }, [
     enabled,
@@ -124,13 +126,13 @@ export function useMarketCatalogVouchers(
     filteredState,
     retryFiltered,
     chipFacets,
-    pools,
-    usesPoolFilter,
+    credit,
+    usesCreditFilter,
   ]);
 }
 
-function poolIdentity(pools: readonly { chainId: number; address: string }[] | undefined): string {
-  return pools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`).join(",") ?? "all";
+function creditIdentity(credit: CreditScope | undefined): string {
+  return credit ? `${credit.depth}:${credit.wallet.toLowerCase()}:${credit.digest}` : "all";
 }
 
 function filterIdentity(filter: CatalogFilterControls): string {

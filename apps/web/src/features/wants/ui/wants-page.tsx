@@ -43,7 +43,8 @@ export function WantsPage({
       facets: true,
       nearby: nearby?.nearby === true,
       bounds: nearby?.bounds,
-      ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
+      // Credit is resolved on the server for this wallet (creditDepth), uncapped.
+      ...(credit.enabled && credit.scope ? { credit: credit.scope } : {}),
     }),
     enabled: filter.result.ok && !filter.isDebouncing && !credit.blocksResults,
     ...nearbyQueryPolicy(nearby),

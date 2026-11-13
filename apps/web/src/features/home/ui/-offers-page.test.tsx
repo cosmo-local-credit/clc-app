@@ -23,6 +23,7 @@ const mocks = vi.hoisted(() => ({
     enabled: false,
     verification: { status: "ready", pools: [], retry: vi.fn() },
     poolRefs: undefined as Array<{ chainId: number; address: string }> | undefined,
+    scope: undefined as { depth: 1 | 2; wallet: string; digest: string } | undefined,
     blocksResults: false,
   },
   query: {
@@ -173,6 +174,7 @@ beforeEach(() => {
   mocks.filter.isDebouncing = false;
   mocks.credit.enabled = false;
   mocks.credit.poolRefs = undefined;
+  mocks.credit.scope = undefined;
   mocks.credit.blocksResults = false;
   mocks.query.data = { pages: [{ offerings: [offering("1", 0.5)], tagFacets: [] }] };
   mocks.query.hasNextPage = false;
@@ -269,6 +271,25 @@ describe("OffersPage", () => {
     expect(screen.getByTestId("offerings").textContent).toContain("Offer 1");
     expect(screen.getByTestId("offerings").textContent).toContain("Offer 2");
     expect(screen.getByTestId("offerings").getAttribute("data-next")).toBe("true");
+  });
+
+  it("lets the server resolve Credit for the wallet instead of sending its pools", () => {
+    mocks.credit.enabled = true;
+    // More than the 100 pools a `pools` list may name.
+    mocks.credit.poolRefs = Array.from({ length: 104 }, (_, index) => ({
+      chainId: 100,
+      address: `0x${index.toString(16).padStart(40, "0")}`,
+    }));
+    mocks.credit.scope = { depth: 2, wallet: `0x${"A1".repeat(20)}`, digest: "0xAB" };
+
+    render(<OffersPage creditableSearch />);
+
+    const key = (mocks.queryOptions?.queryKey as unknown[] | undefined)?.[3] as Record<
+      string,
+      unknown
+    >;
+    expect(key.credit).toEqual({ depth: 2, wallet: `0x${"a1".repeat(20)}`, digest: "0xab" });
+    expect(key.pools).toBeUndefined();
   });
 
   it("never renders an unfiltered list while Credit verification blocks it", () => {

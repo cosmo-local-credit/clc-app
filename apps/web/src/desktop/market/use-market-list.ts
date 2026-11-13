@@ -66,10 +66,9 @@ export function useMarketList({
     scope: nearby?.scope,
     bounds: nearby?.bounds,
   };
-  // Credit's pools, narrowed to the requested output's when the link has one. The
-  // marketplace resolves Credit alone on the server; offerings take the pool list.
+  // With an output voucher the restriction is its pools, already narrowed to
+  // Credit's on the client; Credit alone is resolved on the server (creditDepth).
   const outputPools = output.active && output.poolRefs ? { pools: output.poolRefs } : {};
-  const creditPools = credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {};
   const creditScope = credit.enabled && credit.scope ? { credit: credit.scope } : {};
   const marketplace = useInfiniteQuery({
     ...marketplaceInfiniteQueryOptions(marketplaceClient, {
@@ -84,7 +83,7 @@ export function useMarketList({
   const offers = useInfiniteQuery({
     ...offeringsDiscoveryInfiniteQueryOptions(offeringsClient, {
       ...common,
-      ...(output.active ? outputPools : creditPools),
+      ...(output.active ? outputPools : creditScope),
     }),
     enabled: ready && scope === "offers",
     placeholderData: keepPreviousData,

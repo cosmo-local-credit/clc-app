@@ -50,7 +50,8 @@ export function OffersPage({
       nearby: nearby?.nearby === true,
       scope: nearby?.scope,
       bounds: nearby?.bounds,
-      ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
+      // Credit is resolved on the server for this wallet (creditDepth), uncapped.
+      ...(credit.enabled && credit.scope ? { credit: credit.scope } : {}),
     }),
     enabled:
       filter.result.ok &&

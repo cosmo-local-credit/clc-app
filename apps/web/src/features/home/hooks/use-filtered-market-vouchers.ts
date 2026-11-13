@@ -8,6 +8,7 @@ import {
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { isRetryableBackendError } from "@clc/api/client/errors";
+import type { CreditScope } from "@clc/api/features/credit-router/client";
 import {
   type FilteredMarketVoucherPage,
   type MarketTagFacet,
@@ -47,13 +48,17 @@ export type FilteredCatalogState =
 export function useFilteredMarketVouchers(
   filter: CatalogFilter | null,
   perPage = MARKET_MAP_PAGE_SIZE,
-  pools?: readonly { chainId: number; address: string }[],
+  /** The server-resolved Credit filter (`creditDepth`). */
+  credit?: CreditScope,
   boundsOverride?: readonly MarketBoundingBox[],
 ) {
   const nearby = useNearbyCatalog();
   const discovery = mapDiscovery(boundsOverride) ?? nearby;
   const query = useQuery({
-    queryKey: nearbyQueryKey(marketVoucherQueryKeys.filtered(filter, perPage, pools), discovery),
+    queryKey: nearbyQueryKey(
+      marketVoucherQueryKeys.filtered(filter, perPage, undefined, credit),
+      discovery,
+    ),
     queryFn: async ({ signal }): Promise<FilteredMarketCatalog> => {
       if (!filter) throw new Error("The filtered catalog query ran without a filter.");
 
@@ -70,7 +75,7 @@ export function useFilteredMarketVouchers(
             next: cursor === undefined ? undefined : true,
             filter,
             facets: index === 0,
-            ...(pools ? { pools } : {}),
+            ...(credit ? { credit } : {}),
           },
           signal,
         );
@@ -92,7 +97,7 @@ export function useFilteredMarketVouchers(
       };
     },
     select: (data: FilteredMarketCatalog) => data,
-    enabled: filter !== null && (pools === undefined || pools.length > 0),
+    enabled: filter !== null,
     placeholderData: keepPreviousData,
     staleTime: MARKET_QUERY_FRESHNESS.staleTime,
     refetchOnReconnect: MARKET_QUERY_FRESHNESS.refetchOnReconnect,

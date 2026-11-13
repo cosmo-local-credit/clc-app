@@ -59,7 +59,8 @@ function CatalogList({
       q: search.result.ok ? search.result.filter.term : "",
       tags: search.result.ok ? search.result.filter.tags : [],
       tagMatch: search.result.ok ? search.result.filter.tagMatch : "any",
-      ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
+      // Credit is resolved on the server for this wallet (creditDepth), uncapped.
+      ...(credit.enabled && credit.scope ? { credit: credit.scope } : {}),
     }),
     enabled: search.result.ok && !search.isDebouncing && !credit.blocksResults,
     ...nearbyQueryPolicy(scope),

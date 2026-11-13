@@ -44,7 +44,7 @@ export function MarketListPage({
     [],
     !filter.isRestoringPreference && !credit.blocksResults,
     filtersEverOpened,
-    credit.enabled ? credit.poolRefs : undefined,
+    credit.enabled ? credit.scope : undefined,
   );
   const { vouchers, isCatalogComplete, error, retry, retrying } = catalog;
   const [visibleCount, setVisibleCount] = useState(MARKET_LIST_BATCH_SIZE);
