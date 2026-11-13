@@ -100,14 +100,20 @@ vi.mock("#/features/pools/hooks/use-pool-vouchers", () => ({
   }),
 }));
 
-vi.mock("#/features/pools/hooks/use-creditable-pools", () => ({
-  useCreditablePools: () => ({
-    pools: [],
-    status: "ready",
-    isRefreshing: false,
-    hasVerificationGaps: false,
-    retry: vi.fn(),
-  }),
+vi.mock("#/lib/api/credit-router", () => ({
+  creditRouterClient: {
+    reach: () =>
+      Promise.resolve({
+        depth: 2,
+        asOfBlock: 1,
+        graphVersion: 1,
+        stale: false,
+        digest: `0x${"ab".repeat(32)}`,
+        inputs: [],
+        vouchers: [],
+        pools: [],
+      }),
+  },
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-output-availability", () => ({

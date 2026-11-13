@@ -1,7 +1,18 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 import { transientBackendReadQueryPolicy } from "../../client/errors";
-import type { CreditDepth, CreditRouterClient, CreditRoutesParams } from "./client";
+import type { CreditDepth, CreditRouterClient, CreditRoutesParams, CreditScope } from "./client";
+
+/** A Credit filter's cache identity: never shared across wallets, depths or reach changes. */
+export function creditScopeKey(scope: CreditScope | undefined) {
+  return scope
+    ? {
+        depth: scope.depth,
+        wallet: scope.wallet.toLowerCase(),
+        digest: scope.digest.toLowerCase(),
+      }
+    : null;
+}
 
 /**
  * Every key carries the wallet: the router answers privately for the session

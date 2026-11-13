@@ -71,8 +71,27 @@ vi.mock("#/lib/api/market", () => ({
 }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => mocks.auth }));
 vi.mock("wagmi", () => ({ useConnection: () => ({ address: mocks.auth.address }) }));
-vi.mock("#/features/pools/hooks/use-creditable-pools", () => ({
-  useCreditablePools: () => mocks.verification,
+vi.mock("#/lib/api/credit-router", () => ({
+  creditRouterClient: {
+    reach: () =>
+      mocks.verification.status === "error"
+        ? Promise.reject(new Error("Couldn't check creditable pools."))
+        : mocks.verification.status === "loading"
+          ? new Promise(() => {})
+          : Promise.resolve({
+              depth: 2,
+              asOfBlock: 1,
+              graphVersion: 1,
+              stale: false,
+              digest: `0x${"ab".repeat(32)}`,
+              inputs: [],
+              vouchers: [],
+              pools: mocks.verification.pools.map((pool) => ({
+                address: pool.address,
+                minHops: 1,
+              })),
+            }),
+  },
 }));
 vi.mock("#/features/pools/hooks/use-pool-output-availability", () => ({
   usePoolOutputAvailability: (voucher: unknown) =>
@@ -464,6 +483,35 @@ describe("MarketMapDesk layers (the saved resource selection)", () => {
     mocks.mapList.mockResolvedValue({ points: [], truncated: false });
     renderMap("/market?scope=offers&view=map", { scope: "offers" });
     await waitFor(() => expect(lastKinds()).toEqual(["voucher", "want"]));
+  });
+});
+
+describe("MarketMapDesk Credit", () => {
+  it("lets the server resolve Credit for the signed-in wallet instead of sending pools", async () => {
+    signIn();
+    rememberResources(MEMBER, ["pool"]);
+    mocks.verification.pools = [{ chainId: 100, address: POOL_A }];
+    mocks.mapList.mockResolvedValue({
+      points: [marker("pool", POOL_A, "Mombasa Bakers")],
+      truncated: false,
+    });
+    renderMap("/market?scope=pools&view=map&creditable=true", { scope: "pools" });
+
+    await waitFor(() =>
+      expect(mocks.mapList.mock.calls.at(-1)?.[0]).toMatchObject({
+        kinds: ["pool"],
+        credit: { depth: 2, wallet: MEMBER, digest: `0x${"ab".repeat(32)}` },
+      }),
+    );
+    expect(mocks.mapList.mock.calls.at(-1)?.[0].creditablePools).toBeUndefined();
+  });
+
+  it("never asks a guest's map for creditDepth", async () => {
+    rememberResources("guest", ["pool"]);
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
+    renderMap("/market?scope=pools&view=map&creditable=true", { scope: "pools" });
+    await screen.findAllByText("Sign in to browse results available through your Credit pools.");
+    expect(mocks.mapList.mock.calls.every(([params]) => params.credit === undefined)).toBe(true);
   });
 });
 

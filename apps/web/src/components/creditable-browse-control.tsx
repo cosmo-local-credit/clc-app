@@ -10,12 +10,15 @@ import { cn } from "#/lib/utils";
 type State = ReturnType<typeof useCreditableBrowse>;
 
 /** Which notice the feedback part shows, if any. */
-export function creditFeedback(state: State): "invalid" | "signin" | "checking" | "error" | null {
+export function creditFeedback(
+  state: State,
+): "invalid" | "signin" | "checking" | "error" | "stale" | null {
   if (!state.parsed.ok) return "invalid";
   if (!state.enabled) return null;
   if (state.auth.isLoading) return "checking";
   if (!state.auth.isAuthenticated) return "signin";
-  return state.verification.status === "error" ? "error" : null;
+  if (state.verification.status === "error") return "error";
+  return state.verification.stale ? "stale" : null;
 }
 
 /** Whether the feedback part has anything to say, so a screen can give it the one notice slot. */
@@ -106,6 +109,14 @@ export function CreditableBrowseControl({
           )}
           <Trans>Credit</Trans>
         </Button>
+      ) : null}
+      {showFeedback && state.enabled && state.verification.stale ? (
+        <div
+          className="border border-border bg-card p-3 text-sm text-muted-foreground"
+          role="status"
+        >
+          <Trans>Credit may be out of date.</Trans>
+        </div>
       ) : null}
       {showFeedback && state.enabled && state.verification.status === "error" ? (
         <div

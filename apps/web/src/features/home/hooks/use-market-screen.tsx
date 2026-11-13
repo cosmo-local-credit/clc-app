@@ -189,8 +189,10 @@ export function useMarketScreen({
     postVoucherMatch: parsedFilter.voucherMatch,
     postPools: includesPosts ? parsedFilter.pools : [],
     postPoolMatch: parsedFilter.poolMatch,
-    // Credit's pools, narrowed to the requested output's when the link has one.
-    creditablePools: output ? output.poolRefs : credit.enabled ? credit.poolRefs : undefined,
+    // With an output voucher the filter is that voucher's pools, already narrowed to
+    // Credit's; otherwise Credit alone is resolved by the server for this wallet.
+    creditablePools: output?.address ? output.poolRefs : undefined,
+    credit: !output?.address && credit.enabled ? credit.scope : undefined,
   };
   const discoveryEnabled =
     activeKinds.length > 0 &&

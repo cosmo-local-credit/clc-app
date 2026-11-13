@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => ({
   credit: {
     enabled: false,
     poolRefs: undefined as Array<{ chainId: number; address: string }> | undefined,
+    scope: undefined as { depth: 1 | 2; wallet: string; digest: string } | undefined,
     blocksResults: false,
   },
   query: {
@@ -124,6 +125,7 @@ vi.mock("#/components/creditable-browse-control", () => ({
 import { MarketplacePage } from "./marketplace-page";
 
 const VOUCHER = "0x2222222222222222222222222222222222222222";
+const WALLET = "0x00000000000000000000000000000000000000Aa";
 const POOL = "0x1111111111111111111111111111111111111111";
 const OFFER_VOUCHER = "0x3333333333333333333333333333333333333333";
 
@@ -254,6 +256,7 @@ beforeEach(() => {
   mocks.filter.clear.mockReset();
   mocks.credit.enabled = false;
   mocks.credit.poolRefs = undefined;
+  mocks.credit.scope = undefined;
   mocks.credit.blocksResults = false;
   mocks.query.data = { pages: [{ results: [offering(), voucher(), pool(), catalog()] }] };
   mocks.query.isPending = false;
@@ -330,7 +333,7 @@ describe("MarketplacePage", () => {
     expect(rowLink("Community harvest").textContent).toContain("Post");
   });
 
-  it("asks for every kind with the search, its tags and the Credit pools", () => {
+  it("asks for every kind with the search, its tags and the server-resolved Credit", () => {
     mocks.filter.result = {
       ok: true,
       filter: { term: "bike", tags: ["Repair"], tagMatch: "any" },
@@ -338,6 +341,7 @@ describe("MarketplacePage", () => {
     };
     mocks.credit.enabled = true;
     mocks.credit.poolRefs = [{ chainId: 100, address: POOL }];
+    mocks.credit.scope = { depth: 2, wallet: WALLET, digest: "0xAB" };
 
     render(<MarketplacePage creditableSearch />);
 
@@ -350,7 +354,8 @@ describe("MarketplacePage", () => {
       kinds: [],
       facets: true,
       nearby: false,
-      pools: [`100:${POOL}`],
+      pools: undefined,
+      credit: { depth: 2, wallet: WALLET.toLowerCase(), digest: "0xab" },
     });
   });
 

@@ -71,7 +71,7 @@ export function MarketplacePage({
       nearby: nearby?.nearby === true,
       scope: nearby?.scope,
       bounds: nearby?.bounds,
-      ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
+      ...(credit.enabled && credit.scope ? { credit: credit.scope } : {}),
     }),
     enabled:
       filter.result.ok &&

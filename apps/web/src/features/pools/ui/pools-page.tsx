@@ -10,6 +10,7 @@ import { PoolLogo } from "#/components/wallet";
 import type { UserPool } from "@clc/api/features/pools/client";
 import { usePoolCatalog } from "#/features/pools/hooks/use-filtered-pools";
 import { usePoolOutputAvailability } from "#/features/pools/hooks/use-pool-output-availability";
+import { useReachablePools } from "#/features/pools/hooks/use-reachable-pools";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
@@ -78,7 +79,7 @@ export function PoolsPage({
     },
     filtersEverOpened,
   );
-  const creditable = credit.verification;
+  const creditable = useReachablePools(credit.poolRefs);
   const outputAvailability = usePoolOutputAvailability(
     outputVoucherAddress ? { chainId: CHAIN_ID, address: outputVoucherAddress } : undefined,
   );
@@ -103,6 +104,7 @@ export function PoolsPage({
   const specialPools = outputFilterActive ? creditableOutputPools : filteredCreditablePools;
   const creditReady =
     auth.isAuthenticated &&
+    credit.verification.status === "ready" &&
     creditable.status === "ready" &&
     (!outputFilterActive || outputAvailability.status === "ready") &&
     !outputFilterInvalid &&
@@ -276,7 +278,7 @@ export function PoolsPage({
         </div>
       ) : null}
 
-      {(creditable.status === "ready" && creditable.hasVerificationGaps) ||
+      {(credit.enabled && creditable.status === "ready" && creditable.hasGaps) ||
       (outputFilterActive &&
         outputAvailability.status === "ready" &&
         outputAvailability.hasVerificationGaps) ? (

@@ -65,17 +65,27 @@ export function useMarketList({
     sort: "nearest" as const,
     scope: nearby?.scope,
     bounds: nearby?.bounds,
-    // Credit's pools, narrowed to the requested output's when the link has one.
-    ...(output.poolRefs ? { pools: output.poolRefs } : {}),
   };
+  // Credit's pools, narrowed to the requested output's when the link has one. The
+  // marketplace resolves Credit alone on the server; offerings take the pool list.
+  const outputPools = output.active && output.poolRefs ? { pools: output.poolRefs } : {};
+  const creditPools = credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {};
+  const creditScope = credit.enabled && credit.scope ? { credit: credit.scope } : {};
   const marketplace = useInfiniteQuery({
-    ...marketplaceInfiniteQueryOptions(marketplaceClient, { ...common, kinds }),
+    ...marketplaceInfiniteQueryOptions(marketplaceClient, {
+      ...common,
+      ...(output.active ? outputPools : creditScope),
+      kinds,
+    }),
     enabled: ready && scope !== "offers",
     placeholderData: keepPreviousData,
     ...nearbyQueryPolicy(nearby),
   });
   const offers = useInfiniteQuery({
-    ...offeringsDiscoveryInfiniteQueryOptions(offeringsClient, common),
+    ...offeringsDiscoveryInfiniteQueryOptions(offeringsClient, {
+      ...common,
+      ...(output.active ? outputPools : creditPools),
+    }),
     enabled: ready && scope === "offers",
     placeholderData: keepPreviousData,
     ...nearbyQueryPolicy(nearby),

@@ -17,6 +17,14 @@ import type { HttpClient } from "../../client/http-client";
 
 export type CreditDepth = 1 | 2;
 
+/**
+ * The server-resolved Credit filter a discovery read sends as `creditDepth`.
+ * The response is private to the session wallet, so a cache key carries the
+ * wallet and the reach digest the filter was resolved against, not the depth
+ * alone.
+ */
+export type CreditScope = { depth: CreditDepth; wallet: string; digest: string };
+
 const addressSchema = z
   .string()
   .regex(/^0x[0-9a-fA-F]{40}$/)

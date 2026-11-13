@@ -94,8 +94,44 @@ vi.mock("wagmi", () => ({
   useConnection: () => ({ address: "0xabc0000000000000000000000000000000000123" }),
 }));
 
-vi.mock("#/features/pools/hooks/use-creditable-pools", () => ({
-  useCreditablePools: () => creditableState.current,
+// The router resolves Credit for the session wallet: its reach names the pools,
+// and the page reads their catalog rows.
+vi.mock("#/lib/api/credit-router", () => ({
+  creditRouterClient: {
+    reach: () => {
+      creditableState.current.retry();
+      return creditableState.current.status === "error"
+        ? Promise.reject(new Error("Couldn't check creditable pools."))
+        : creditableState.current.status === "loading"
+          ? new Promise(() => {})
+          : Promise.resolve({
+              depth: 2,
+              asOfBlock: 1,
+              graphVersion: 1,
+              stale: false,
+              digest: `0x${"ab".repeat(32)}`,
+              inputs: [],
+              vouchers: [],
+              pools: creditableState.current.pools.map((pool) => ({
+                address: pool.address,
+                minHops: 1,
+              })),
+            });
+    },
+  },
+}));
+
+vi.mock("#/features/pools/hooks/use-reachable-pools", () => ({
+  useReachablePools: (refs: readonly { address: string }[] | undefined) =>
+    refs === undefined
+      ? { pools: [], status: "loading", hasGaps: false }
+      : {
+          pools: creditableState.current.pools.filter((pool) =>
+            refs.some((ref) => ref.address.toLowerCase() === pool.address.toLowerCase()),
+          ),
+          status: "ready",
+          hasGaps: creditableState.current.hasVerificationGaps,
+        },
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-output-availability", () => ({
@@ -549,21 +585,23 @@ describe("creditable pools", () => {
     routeSearch.current = { creditable: true };
     creditableState.current = { ...creditableState.current, pools: [POOLS[0]!] };
     mockPoolsList();
-    const view = renderWithQueryClient(<PoolsPage creditableSearch={true} />);
-
-    const credit = await screen.findByRole("button", { name: "Credit" });
-    await waitFor(() => expect(credit.getAttribute("aria-pressed")).toBe("true"));
-    expect(screen.getByText("Trade Pool")).toBeTruthy();
-    expect(screen.queryByText("Solo Pool")).toBeNull();
-
-    creditableState.current = { ...creditableState.current, pools: [POOLS[0]!, POOLS[1]!] };
-    view.rerender(
-      <QueryClientProvider client={new QueryClient()}>
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
         <PoolsPage creditableSearch={true} />
       </QueryClientProvider>,
     );
+
+    const credit = await screen.findByRole("button", { name: "Credit" });
+    await waitFor(() => expect(credit.getAttribute("aria-pressed")).toBe("true"));
+    expect(await screen.findByText("Trade Pool")).toBeTruthy();
+    expect(screen.queryByText("Solo Pool")).toBeNull();
+
+    // The reach refreshes for the same wallet and depth and now names one more pool.
+    creditableState.current = { ...creditableState.current, pools: [POOLS[0]!, POOLS[1]!] };
+    await queryClient.invalidateQueries({ queryKey: ["clc", "credit-router"] });
     expect(credit.getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByText("Solo Pool")).toBeTruthy();
+    expect(await screen.findByText("Solo Pool")).toBeTruthy();
   });
 
   it("intersects Credit with the current search result", async () => {
@@ -589,19 +627,21 @@ describe("creditable pools", () => {
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toContain("Couldn't check creditable pools.");
     expect(screen.queryByText("Trade Pool")).toBeNull();
-    fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
     expect(retry).toHaveBeenCalledOnce();
+    fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
+    await waitFor(() => expect(retry).toHaveBeenCalledTimes(2));
     expect(screen.getByRole("button", { name: "Credit" }).hasAttribute("disabled")).toBe(false);
   });
 
-  it("discloses incomplete verification while retaining verified pools", async () => {
+  it("discloses pools whose rows could not be read while retaining the others", async () => {
+    routeSearch.current = { creditable: true };
     creditableState.current = {
       ...creditableState.current,
       pools: [POOLS[0]!],
       hasVerificationGaps: true,
     };
     mockPoolsList();
-    renderWithQueryClient(<PoolsPage />);
+    renderWithQueryClient(<PoolsPage creditableSearch={true} />);
 
     expect(
       await screen.findByText("Some pools couldn't be checked. Showing verified results."),

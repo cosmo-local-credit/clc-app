@@ -19,6 +19,7 @@ import {
 import type { z } from "zod";
 
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
+import type { CreditScope } from "../credit-router/client";
 import type { HttpClient } from "../../client/http-client";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
 
@@ -27,6 +28,11 @@ export type MarketMapParams = {
   kinds: readonly MarketMapKind[];
   filter: Pick<CatalogFilter, "term" | "tags" | "tagMatch">;
   creditablePools?: readonly { chainId: number; address: string }[];
+  /**
+   * The server-resolved Credit filter (`creditDepth`), for a signed-in wallet.
+   * It replaces `creditablePools`; the two cannot be sent together.
+   */
+  credit?: CreditScope;
   postTiming?: PostTiming;
   postVouchers?: readonly VoucherRef[];
   postVoucherMatch?: "any" | "all";
@@ -63,10 +69,13 @@ export function createMarketMapClient(http: HttpClient) {
   }
 
   return {
-    points(params: MarketMapParams, signal?: AbortSignal): Promise<MarketMapPointsResponse> {
+    async points(params: MarketMapParams, signal?: AbortSignal): Promise<MarketMapPointsResponse> {
       return read("points", filterQuery(params), marketMapPointsResponseSchema, signal);
     },
-    facets(params: MarketMapFacetsParams, signal?: AbortSignal): Promise<MarketMapFacetsResponse> {
+    async facets(
+      params: MarketMapFacetsParams,
+      signal?: AbortSignal,
+    ): Promise<MarketMapFacetsResponse> {
       const query = filterQuery(params);
       appendMarketBounds(query, params.bounds);
       return read("facets", query, marketMapFacetsResponseSchema, signal);
@@ -82,9 +91,13 @@ function filterQuery(params: MarketMapParams): URLSearchParams {
   if (params.filter.tags.length > 1 && params.filter.tagMatch === "all") {
     query.set("tagMatch", "all");
   }
+  if (params.credit && params.creditablePools) {
+    throw new Error("creditDepth replaces creditablePools; send one or the other.");
+  }
   for (const pool of params.creditablePools ?? []) {
     query.append("creditablePools", `${pool.chainId}:${pool.address}`);
   }
+  if (params.credit) query.set("creditDepth", String(params.credit.depth));
   query.set(
     "postTiming",
     serializePostTiming(params.postTiming ?? DEFAULT_POST_TIMING) ?? DEFAULT_POST_TIMING,

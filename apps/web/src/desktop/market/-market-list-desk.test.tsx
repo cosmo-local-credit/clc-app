@@ -55,8 +55,27 @@ vi.mock("#/lib/api/market", () => ({
   marketClient: { getMarketVoucher: (...args: unknown[]) => mocks.voucher(...args) },
 }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => mocks.auth }));
-vi.mock("#/features/pools/hooks/use-creditable-pools", () => ({
-  useCreditablePools: () => mocks.verification,
+vi.mock("#/lib/api/credit-router", () => ({
+  creditRouterClient: {
+    reach: () =>
+      mocks.verification.status === "error"
+        ? Promise.reject(new Error("Couldn't check creditable pools."))
+        : mocks.verification.status === "loading"
+          ? new Promise(() => {})
+          : Promise.resolve({
+              depth: 2,
+              asOfBlock: 1,
+              graphVersion: 1,
+              stale: false,
+              digest: `0x${"ab".repeat(32)}`,
+              inputs: [],
+              vouchers: [],
+              pools: mocks.verification.pools.map((pool) => ({
+                address: pool.address,
+                minHops: 1,
+              })),
+            }),
+  },
 }));
 vi.mock("#/features/pools/hooks/use-pool-output-availability", () => ({
   usePoolOutputAvailability: (voucher: unknown) =>
