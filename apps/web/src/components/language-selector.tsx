@@ -22,7 +22,17 @@ const LOCALE_LABELS = Object.fromEntries(
   LOCALE_OPTIONS.map((option) => [option.code, option.nativeLabel]),
 );
 
-export function LanguageSelector({ triggerClassName }: { triggerClassName?: string }) {
+export function LanguageSelector({
+  triggerClassName,
+  label,
+  iconOnly = false,
+  title,
+}: {
+  triggerClassName?: string;
+  label?: string;
+  iconOnly?: boolean;
+  title?: string;
+}) {
   const { t } = useLingui();
   const { locale, setLocale, loading, error } = useLocale();
 
@@ -38,13 +48,18 @@ export function LanguageSelector({ triggerClassName }: { triggerClassName?: stri
       >
         <SelectTrigger
           aria-label={t`Language`}
+          title={title}
+          size={iconOnly ? "sm" : "default"}
+          showIndicator={!iconOnly}
           className={cn(
             "h-9 w-auto border-border font-medium text-foreground text-xs",
+            iconOnly && "size-8 justify-center p-0",
             triggerClassName,
           )}
         >
           <RiTranslate2 className="size-4" aria-hidden="true" />
-          <SelectValue />
+          {label ? <span>{label}</span> : null}
+          <SelectValue className={cn(label && "ms-auto", iconOnly && "sr-only")} />
         </SelectTrigger>
         <SelectContent>
           {LOCALE_OPTIONS.map((option) => (
@@ -55,7 +70,10 @@ export function LanguageSelector({ triggerClassName }: { triggerClassName?: stri
         </SelectContent>
       </SelectRoot>
       {error ? (
-        <p className="max-w-40 text-end text-xs text-destructive" role="alert">
+        <p
+          className={cn("max-w-40 text-end text-xs text-destructive", iconOnly && "sr-only")}
+          role="alert"
+        >
           {t`Unable to load language. Reverted to English.`}
         </p>
       ) : null}
