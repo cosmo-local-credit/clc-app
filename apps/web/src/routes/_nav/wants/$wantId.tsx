@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, retainSearchParams } from "@tanstack/react-router";
 import { lazy } from "react";
 import { z } from "zod";
+import { creditDepthSearchParam } from "#/lib/navigation/credit-depth-search";
 import { LayoutSwitch } from "#/desktop/switch";
 import { WantDetailPage } from "#/features/wants/ui/want-detail-page";
 
@@ -13,11 +14,13 @@ const WantDetailDesk = lazy(() =>
 const searchSchema = z.object({
   from: z.enum(["market", "wallet"]).optional().catch(undefined),
   poolAddress: z.string().optional().catch(undefined),
+  creditDepth: creditDepthSearchParam,
 });
 
 export const Route = createFileRoute("/_nav/wants/$wantId")({
   staticData: { navOwner: "market", desktop: "fill" },
   validateSearch: searchSchema,
+  search: { middlewares: [retainSearchParams(["creditDepth"])] },
   component: WantRoute,
 });
 

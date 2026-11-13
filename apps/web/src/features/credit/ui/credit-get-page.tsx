@@ -51,10 +51,17 @@ function amountOf(labels: Labels, address: string, raw: string, locale: string):
  * priced by an authoritative quote, checked against the request and the
  * review, and signed by the app over its own digest.
  */
-export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}` }) {
+export function CreditGetPage({
+  voucherAddress,
+  creditDepth,
+}: {
+  voucherAddress: `0x${string}`;
+  /** The Credit depth carried from the screen that opened Get. */
+  creditDepth?: 1 | 2;
+}) {
   const { t, i18n } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
-  const get = useCreditGet(voucherAddress);
+  const get = useCreditGet(voucherAddress, creditDepth);
   const routeVouchers = get.groups.flatMap((group) =>
     group.routes.flatMap((route) => creditRouteVouchers(route)),
   );

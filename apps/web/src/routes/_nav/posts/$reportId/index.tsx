@@ -1,7 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, retainSearchParams } from "@tanstack/react-router";
 import { lazy } from "react";
 import { z } from "zod";
 
+import { creditDepthSearchParam } from "#/lib/navigation/credit-depth-search";
 import { LayoutSwitch } from "#/desktop/switch";
 import { ReportPage } from "#/features/home/ui/report-page";
 
@@ -12,7 +13,11 @@ import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
 export const Route = createFileRoute("/_nav/posts/$reportId/")({
   staticData: { navOwner: "posts", desktop: "fill" },
-  validateSearch: z.object({ voucher: z.string().optional().catch(undefined) }),
+  validateSearch: z.object({
+    voucher: z.string().optional().catch(undefined),
+    creditDepth: creditDepthSearchParam,
+  }),
+  search: { middlewares: [retainSearchParams(["creditDepth"])] },
   beforeLoad: ({ params, search }) => {
     const voucherAddress = parseVoucherAddress(search.voucher);
     if (voucherAddress) {

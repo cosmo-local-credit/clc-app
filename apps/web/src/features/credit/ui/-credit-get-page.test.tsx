@@ -151,11 +151,11 @@ function page(params: CreditRoutesParams, overrides: Record<string, unknown> = {
   };
 }
 
-function renderPage() {
+function renderPage(creditDepth?: 1 | 2) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <CreditGetPage voucherAddress={FIXTURE.voucherC} />
+      <CreditGetPage voucherAddress={FIXTURE.voucherC} creditDepth={creditDepth} />
     </QueryClientProvider>,
   );
 }
@@ -212,6 +212,30 @@ describe("CreditGetPage", () => {
     expect(oneHop.textContent).toContain("Capacity unknown");
     expect(within(oneHop).getByText("Estimate")).toBeTruthy();
     expect(screen.getByText(/Estimated at block/).textContent).toContain("49254469");
+  });
+
+  it("lists one-hop routes only when opened with Credit at depth 1", async () => {
+    mocks.routes.mockImplementation(async (params: CreditRoutesParams) =>
+      params.depth === 1 ? page(params, { inputs: [page(params).inputs[1]] }) : page(params),
+    );
+    renderPage(1);
+    expect(await screen.findByText("Pay with DDD")).toBeTruthy();
+    expect(screen.queryByText("Pay with AAA")).toBeNull();
+    expect(mocks.routes.mock.calls.every(([params]) => params.depth === 1)).toBe(true);
+
+    fireEvent.change(screen.getByLabelText("You get"), { target: { value: "5" } });
+    await waitFor(() =>
+      expect(mocks.routes).toHaveBeenCalledWith(
+        expect.objectContaining({ depth: 1, amount: "5000000", mode: "exactOutput" }),
+        expect.anything(),
+      ),
+    );
+  });
+
+  it("lists every route the product offers (two hops) when Credit is off", async () => {
+    renderPage();
+    expect(await screen.findByText("Pay with AAA")).toBeTruthy();
+    expect(mocks.routes.mock.calls[0]?.[0]).toMatchObject({ depth: 2 });
   });
 
   it("shows the pools that hold the voucher when no route reaches it", async () => {

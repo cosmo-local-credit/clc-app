@@ -1,4 +1,5 @@
 import {
+  type CreditDepth,
   type CreditQuote,
   type CreditQuoteRequest,
   type CreditRoute,
@@ -47,8 +48,6 @@ import { useVoucherLabels } from "./use-voucher-labels";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 
-/** Two hops: the product's launch scope. Depth 2 lists one-hop routes too. */
-const ROUTE_DEPTH = CREDIT_ROUTER_MAX_HOPS;
 const AMOUNT_DEBOUNCE_MS = 400;
 /** A quote this close to its deadline is asked again rather than signed. */
 const QUOTE_EXPIRY_MARGIN_S = 15;
@@ -72,7 +71,15 @@ type Review = {
  * input), the authoritative quote, its review, and the checked, self-signed
  * relay.
  */
-export function useCreditGet(targetAddress: `0x${string}`) {
+export function useCreditGet(
+  targetAddress: `0x${string}`,
+  /**
+   * The Credit depth the page was opened with: depth 1 lists one-hop routes
+   * only. Without Credit, every route the product offers (two hops).
+   */
+  creditDepth?: CreditDepth,
+) {
+  const routeDepth: CreditDepth = creditDepth ?? CREDIT_ROUTER_MAX_HOPS;
   const auth = useAuthStatus();
   const { connector } = useConnection();
   const navigate = useNavigate();
@@ -87,7 +94,7 @@ export function useCreditGet(targetAddress: `0x${string}`) {
   const [problem, setProblem] = useState<string | null>(null);
   const [requoted, setRequoted] = useState(false);
 
-  const listingParams = { to: targetAddress, depth: ROUTE_DEPTH } as const;
+  const listingParams = { to: targetAddress, depth: routeDepth } as const;
   const listing = useInfiniteQuery(
     creditRoutesInfiniteQueryOptions(creditRouterClient, wallet ?? "", listingParams),
   );
