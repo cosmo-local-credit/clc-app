@@ -47,25 +47,13 @@ export async function relayCaliburBatch(
   const executor = relayerAddress as `0x${string}`;
   const deadline = input.deadline ?? "0";
 
-  // The signer follows the connector the wallet is connected through, never
-  // whichever secret happens to be on disk. Linking a passkey from a paper-wallet
-  // session stores the new credential before the connector switch completes; if
-  // that switch fails, the session stays on the paper wallet and must keep
-  // signing with it rather than silently moving to the passkey.
-  const { connectorId } = input;
-  if (connectorId === CALIBUR_WEBAUTHN_CONNECTOR_ID) {
-    const credential = getWebAuthnCredential();
-    if (!credential) throw new Error("No passkey is stored for this wallet.");
-    if (credential.stale) throw new Error("Credential is stale; re-authenticate");
-    if (credential.address.toLowerCase() !== input.senderAddress.toLowerCase()) {
-      throw new Error("Stored passkey does not match the connected wallet.");
-    }
-
+  const signer = resolveCaliburSigner(input.connectorId, input.senderAddress);
+  if (signer.kind === "webauthn") {
     const payload = await signCaliburBatchWithPasskey(
       {
-        credentialId: credential.credentialId,
-        keyHash: credential.keyHash,
-        senderAddress: credential.address,
+        credentialId: signer.credentialId,
+        keyHash: signer.keyHash,
+        senderAddress: signer.address,
         calls: input.calls,
         deadline,
         executor,
@@ -80,15 +68,9 @@ export async function relayCaliburBatch(
     };
   }
 
-  if (connectorId !== PRIVATE_KEY_CONNECTOR_ID) {
-    throw new Error("No wallet is connected to sign this transaction.");
-  }
-
-  const privateKey = getStoredKey();
-  if (!privateKey) throw new Error("No signing key found for this wallet.");
   const payload = await signCaliburBatchWithAccount(
     {
-      account: privateKeyToAccount(privateKey),
+      account: signer.account,
       senderAddress: input.senderAddress,
       calls: input.calls,
       includeAuthorization: input.includeAuthorization,
@@ -102,6 +84,74 @@ export async function relayCaliburBatch(
     trackingId: result.trackingId,
     signatureType: "secp256k1",
     ...(result.valuationSnapshots ? { valuationSnapshots: result.valuationSnapshots } : {}),
+  };
+}
+
+/** The key that signs for the connected wallet, chosen by its connector. */
+export type CaliburSigner =
+  | { kind: "secp256k1"; account: PrivateKeyAccount; keyHash: `0x${string}` }
+  | {
+      kind: "webauthn";
+      credentialId: string;
+      keyHash: `0x${string}`;
+      address: `0x${string}`;
+    };
+
+/**
+ * The signer follows the connector the wallet is connected through, never
+ * whichever secret happens to be on disk. Linking a passkey from a paper-wallet
+ * session stores the new credential before the connector switch completes; if
+ * that switch fails, the session stays on the paper wallet and must keep
+ * signing with it rather than silently moving to the passkey.
+ */
+export function resolveCaliburSigner(
+  connectorId: string | undefined,
+  senderAddress: `0x${string}`,
+): CaliburSigner {
+  if (connectorId === CALIBUR_WEBAUTHN_CONNECTOR_ID) {
+    const credential = getWebAuthnCredential();
+    if (!credential) throw new Error("No passkey is stored for this wallet.");
+    if (credential.stale) throw new Error("Credential is stale; re-authenticate");
+    if (credential.address.toLowerCase() !== senderAddress.toLowerCase()) {
+      throw new Error("Stored passkey does not match the connected wallet.");
+    }
+    return {
+      kind: "webauthn",
+      credentialId: credential.credentialId,
+      keyHash: credential.keyHash,
+      address: credential.address,
+    };
+  }
+
+  if (connectorId !== PRIVATE_KEY_CONNECTOR_ID) {
+    throw new Error("No wallet is connected to sign this transaction.");
+  }
+
+  const privateKey = getStoredKey();
+  if (!privateKey) throw new Error("No signing key found for this wallet.");
+  const account = privateKeyToAccount(privateKey);
+  if (account.address.toLowerCase() !== senderAddress.toLowerCase()) {
+    throw new Error("Signing key does not match the sending wallet.");
+  }
+  return { kind: "secp256k1", account, keyHash: ZERO_HASH };
+}
+
+/**
+ * Signs a digest the caller computed itself and wraps it as Calibur's batch
+ * signature, `(bytes signature, bytes hookData)`. Unlike the preview path
+ * below, nothing here asks the server what to sign.
+ */
+export async function signCaliburDigest(
+  signer: CaliburSigner,
+  digest: `0x${string}`,
+): Promise<{ signature: `0x${string}`; signatureType: "secp256k1" | "webauthn" }> {
+  const raw =
+    signer.kind === "webauthn"
+      ? await signDigestWithPasskey(digest, signer.credentialId)
+      : await signer.account.sign({ hash: digest });
+  return {
+    signature: encodeAbiParameters([{ type: "bytes" }, { type: "bytes" }], [raw, "0x"]),
+    signatureType: signer.kind,
   };
 }
 
@@ -223,7 +273,8 @@ export async function signCaliburBatchWithPasskey(
   };
 }
 
-async function buildAuthorization(account: PrivateKeyAccount, client: RelayerClient) {
+/** The EIP-7702 authorization a wallet's first relay carries, at its current EOA nonce. */
+export async function buildAuthorization(account: PrivateKeyAccount, client: RelayerClient) {
   const {
     result: { nonce: eoaNonce },
   } = await client.getEOANonce(account.address);

@@ -320,11 +320,20 @@ function VoucherActionRow({
       role="group"
       aria-label={t`Voucher actions`}
     >
+      {/* A signed-in wallet gets the voucher through one pool or two; a guest, who has
+          no Credit, browses the pools that hold it. */}
       <Button asChild tap>
-        <Link to="/market" search={{ scope: "pools", out_voucher: address.toLowerCase() }}>
-          <RiHandCoinLine aria-hidden="true" />
-          <Trans>Get</Trans>
-        </Link>
+        {auth.isAuthenticated ? (
+          <Link to="/get/$voucherAddress" params={{ voucherAddress: address }}>
+            <RiHandCoinLine aria-hidden="true" />
+            <Trans>Get</Trans>
+          </Link>
+        ) : (
+          <Link to="/market" search={{ scope: "pools", out_voucher: address.toLowerCase() }}>
+            <RiHandCoinLine aria-hidden="true" />
+            <Trans>Get</Trans>
+          </Link>
+        )}
       </Button>
       {hasPositiveBalance ? (
         <Button asChild variant="outline" tap>

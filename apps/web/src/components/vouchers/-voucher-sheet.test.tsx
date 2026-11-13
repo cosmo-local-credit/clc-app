@@ -491,12 +491,18 @@ describe("VoucherSheet summary", () => {
     },
   );
 
-  it("keeps existing Get and Directions behavior", () => {
-    mocks.authenticated = true;
+  it("sends a guest's Get to the pools that hold the voucher", () => {
+    mocks.authenticated = false;
     renderSheet();
     expect(screen.getByRole("link", { name: "Get" }).getAttribute("href")).toBe(
       `/market?scope=pools&out_voucher=${VOUCHER.toLowerCase()}`,
     );
+  });
+
+  it("sends a signed-in Get through the credit router, and keeps Directions", () => {
+    mocks.authenticated = true;
+    renderSheet();
+    expect(screen.getByRole("link", { name: "Get" }).getAttribute("href")).toBe(`/get/${VOUCHER}`);
     fireEvent.click(screen.getByRole("button", { name: "Directions" }));
     expect(mocks.maps).toEqual([{ label: "Kilifi", lat: -3.63, lng: 39.85 }]);
   });
