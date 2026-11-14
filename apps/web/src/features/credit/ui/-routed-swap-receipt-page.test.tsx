@@ -154,7 +154,10 @@ describe("RoutedSwapReceiptPage", () => {
     expect(text).toContain("Left in your wallet0.00 BBB");
     expect(text).toContain("Block number49254470");
     expect(within(details).getByRole("button", { name: "Copy transaction hash" })).toBeTruthy();
-    expect(within(details).getByRole("button", { name: "Copy tracking ID" })).toBeTruthy();
+    // A tracking ID is shown whole, never cut down like an address.
+    expect(within(details).getByRole("button", { name: "Copy tracking ID" }).textContent).toBe(
+      TRACKING,
+    );
     // The headline carries the state; nothing technical sits outside Details.
     const outside = document.body.textContent!.replace(text, "");
     expect(outside).not.toContain("Swap 1");

@@ -40,6 +40,7 @@ import {
 import { formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
 import { cn } from "#/lib/utils";
 import { CreditFailureNotice, CreditRefusal } from "./credit-failure-notice";
+import { CreditSwapBreakdown } from "./credit-swap-breakdown";
 
 type Labels = Map<string, VoucherLabel>;
 
@@ -874,26 +875,26 @@ function CreditReviewBody({
           <SwapCount hops={quote.hops.length} />
         </summary>
         <div className="border-t border-border">
-          {quote.hops.map((hop, index) => {
-            const position = formatTokenAmountFixed(String(index + 1), 0, 0, locale);
-            const path = `${symbolOf(labels, hop.tokenIn)} → ${symbolOf(labels, hop.tokenOut)}`;
-            const poolName = poolNames[index] ?? hop.pool;
-            return (
-              <div key={`${hop.pool}-${index}`} className="border-b border-border">
-                <p className="px-3 pt-2.5 text-xs font-semibold">
-                  <Trans>
-                    Swap {position}: <span dir="ltr">{path}</span> · {poolName}
-                  </Trans>
-                </p>
-                <ReviewRow label={<Trans>Pool fee</Trans>} last>
-                  {fee(hop.tokenOut, hop.poolFee)}
-                </ReviewRow>
-                <ReviewRow label={<Trans>Protocol fee</Trans>} last>
-                  {fee(hop.tokenOut, hop.protocolFee)}
-                </ReviewRow>
-              </div>
-            );
-          })}
+          {quote.hops.map((hop, index) => (
+            <CreditSwapBreakdown
+              key={`${hop.pool}-${index}`}
+              position={formatTokenAmountFixed(String(index + 1), 0, 0, locale)}
+              path={`${symbolOf(labels, hop.tokenIn)} → ${symbolOf(labels, hop.tokenOut)}`}
+              poolName={poolNames[index] ?? hop.pool}
+              lines={[
+                {
+                  key: "pool",
+                  label: <Trans>Pool fee</Trans>,
+                  value: fee(hop.tokenOut, hop.poolFee),
+                },
+                {
+                  key: "protocol",
+                  label: <Trans>Protocol fee</Trans>,
+                  value: fee(hop.tokenOut, hop.protocolFee),
+                },
+              ]}
+            />
+          ))}
           {bridgeSurplus.map((entry) => (
             <ReviewRow key={entry.voucher} label={<Trans>Left in your wallet</Trans>}>
               {amount(entry.voucher, entry.amount)}

@@ -6,6 +6,7 @@ import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { RiFileCopyLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
@@ -21,6 +22,7 @@ import { RELAYER_URL } from "#/lib/relayer-config";
 import { formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
 import { cn } from "#/lib/utils";
 import { CreditFailureNotice } from "./credit-failure-notice";
+import { CreditSwapBreakdown } from "./credit-swap-breakdown";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 
@@ -119,36 +121,40 @@ export function RoutedSwapReceiptPage({ trackingId }: { trackingId: string }) {
               <Trans>Details</Trans>
             </summary>
             <div className="border-t border-border">
-              {swap.hops.map((hop, index) => {
-                const position = formatTokenAmountFixed(String(index + 1), 0, 0, locale);
-                const path = `${symbol(hop.tokenIn)} → ${symbol(hop.tokenOut)}`;
-                const poolName = poolNames[index] ?? hop.pool;
-                return (
-                  <div key={hop.index} className="border-b border-border">
-                    <p className="px-3 pt-2.5 text-xs font-semibold">
-                      <Trans>
-                        Swap {position}: <span dir="ltr">{path}</span> · {poolName}
-                      </Trans>
-                    </p>
-                    <ReceiptRow label={<Trans>Sent</Trans>} last>
-                      {amount(hop.tokenIn, hop.settledAmountIn ?? hop.amountIn)}
-                    </ReceiptRow>
-                    <ReceiptRow label={<Trans>Pool fee</Trans>} last>
-                      {fee(hop.tokenOut, hop.poolFee)}
-                    </ReceiptRow>
-                    <ReceiptRow label={<Trans>Protocol fee</Trans>} last>
-                      {fee(hop.tokenOut, hop.protocolFee)}
-                    </ReceiptRow>
-                    <ReceiptRow label={<Trans>Received</Trans>} last>
-                      {hop.settledAt ? (
+              {swap.hops.map((hop, index) => (
+                <CreditSwapBreakdown
+                  key={hop.index}
+                  position={formatTokenAmountFixed(String(index + 1), 0, 0, locale)}
+                  path={`${symbol(hop.tokenIn)} → ${symbol(hop.tokenOut)}`}
+                  poolName={poolNames[index] ?? hop.pool}
+                  lines={[
+                    {
+                      key: "sent",
+                      label: <Trans>Sent</Trans>,
+                      value: amount(hop.tokenIn, hop.settledAmountIn ?? hop.amountIn),
+                    },
+                    {
+                      key: "pool",
+                      label: <Trans>Pool fee</Trans>,
+                      value: fee(hop.tokenOut, hop.poolFee),
+                    },
+                    {
+                      key: "protocol",
+                      label: <Trans>Protocol fee</Trans>,
+                      value: fee(hop.tokenOut, hop.protocolFee),
+                    },
+                    {
+                      key: "received",
+                      label: <Trans>Received</Trans>,
+                      value: hop.settledAt ? (
                         amount(hop.tokenOut, hop.amountOut)
                       ) : (
                         <Trans>Settling…</Trans>
-                      )}
-                    </ReceiptRow>
-                  </div>
-                );
-              })}
+                      ),
+                    },
+                  ]}
+                />
+              ))}
               <ReceiptRow label={<Trans>Minimum received</Trans>}>
                 {amount(swap.tokenOut, swap.minAmountOut)}
               </ReceiptRow>
@@ -172,11 +178,18 @@ export function RoutedSwapReceiptPage({ trackingId }: { trackingId: string }) {
                 <ReceiptRow label={<Trans>Block number</Trans>}>{block}</ReceiptRow>
               ) : null}
               <ReceiptRow label={<Trans>Tracking ID</Trans>}>
-                <CopyableInfoValue
-                  value={swap.trackingId}
-                  label={t`Copy tracking ID`}
-                  onCopy={copy}
-                />
+                {/* A tracking ID is not an address: show all of it, not an 0x-ellipsis. */}
+                <button
+                  type="button"
+                  aria-label={t`Copy tracking ID`}
+                  onClick={() => copy(swap.trackingId)}
+                  className="flex min-w-0 items-center gap-1.5 bg-card text-end"
+                >
+                  <span className="min-w-0 break-all">{swap.trackingId}</span>
+                  <span className="flex size-6 shrink-0 items-center justify-center bg-muted text-muted-foreground">
+                    <RiFileCopyLine className="size-3" aria-hidden="true" />
+                  </span>
+                </button>
               </ReceiptRow>
               <ReceiptRow label={<Trans>Status</Trans>} last>
                 <StatusPill
