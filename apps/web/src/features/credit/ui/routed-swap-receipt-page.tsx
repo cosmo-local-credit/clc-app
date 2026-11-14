@@ -6,7 +6,7 @@ import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { RiFileCopyLine } from "react-icons/ri";
+import { RiArrowDownSLine, RiFileCopyLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
@@ -116,9 +116,13 @@ export function RoutedSwapReceiptPage({ trackingId }: { trackingId: string }) {
             </ReceiptRow>
           </div>
 
-          <details className="mt-3 border border-border bg-card">
-            <summary className="flex min-h-11 cursor-pointer items-center px-3 font-semibold text-sm">
+          <details className="group mt-3 border border-border bg-card">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1 px-3 font-semibold text-sm [&::-webkit-details-marker]:hidden">
               <Trans>Details</Trans>
+              <RiArrowDownSLine
+                className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+                aria-hidden="true"
+              />
             </summary>
             <div className="border-t border-border">
               {swap.hops.map((hop, index) => (

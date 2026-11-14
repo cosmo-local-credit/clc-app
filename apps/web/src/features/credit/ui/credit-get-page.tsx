@@ -870,15 +870,21 @@ function CreditReviewBody({
           {formatFeePpm(quote.fees.effectiveFeePpm, locale) ?? "—"}
         </ReviewRow>
       </div>
-      <details className="border border-border bg-card">
+      <details className="group border border-border bg-card">
         {/* The sheet's swipe would capture a mouse press here and swallow the toggle. */}
         <summary
           data-base-ui-swipe-ignore=""
-          className="flex min-h-11 cursor-pointer items-center px-3 font-semibold text-sm"
+          className="flex min-h-11 cursor-pointer list-none items-center gap-1 px-3 font-semibold text-sm [&::-webkit-details-marker]:hidden"
         >
-          <Trans>Route details</Trans>
-          {" · "}
-          <SwapCount hops={quote.hops.length} />
+          <span>
+            <Trans>Route details</Trans>
+            {" · "}
+            <SwapCount hops={quote.hops.length} />
+          </span>
+          <RiArrowDownSLine
+            className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+            aria-hidden="true"
+          />
         </summary>
         <div className="border-t border-border">
           {quote.hops.map((hop, index) => (

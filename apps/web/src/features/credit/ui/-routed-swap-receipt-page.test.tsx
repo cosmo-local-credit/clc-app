@@ -125,6 +125,7 @@ function openDetails(): HTMLDetailsElement {
   const details = screen.getByText("Details", { selector: "summary" })
     .parentElement as HTMLDetailsElement;
   expect(details.open).toBe(false);
+  expect(details.querySelector("summary svg[aria-hidden='true']")).toBeTruthy();
   fireEvent.click(details.querySelector("summary")!);
   expect(details.open).toBe(true);
   return details;

@@ -319,9 +319,14 @@ async function chooseTwoHopForFiveCcc() {
  * summary names the swaps; everything else sits inside.
  */
 function openRouteDetails(sheet: HTMLElement, summary: string): HTMLElement {
-  const details = within(sheet).getByText(summary, { selector: "summary" })
-    .parentElement as HTMLDetailsElement;
+  const found = [...sheet.querySelectorAll("summary")].find(
+    (element) => element.textContent === summary,
+  );
+  expect(found).toBeTruthy();
+  const details = found!.parentElement as HTMLDetailsElement;
   expect(details.open).toBe(false);
+  // The same turning chevron as the Pay with rows marks it as one to open.
+  expect(details.querySelector("summary svg[aria-hidden='true']")).toBeTruthy();
   fireEvent.click(details.querySelector("summary")!);
   expect(details.open).toBe(true);
   return details;
