@@ -129,6 +129,7 @@ export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}
   const get = useCreditGet(voucherAddress);
   const amountInput = useRef<HTMLInputElement>(null);
   const payWithId = useId();
+  const unitHintId = useId();
   const routeVouchers = get.options.flatMap((option) =>
     [option.route, ...option.others].flatMap((route) => creditRouteVouchers(route)),
   );
@@ -197,10 +198,18 @@ export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}
           highlighted
           value={get.amount}
           onValueChange={get.setAmount}
+          aria-describedby={get.amountVoucher ? undefined : unitHintId}
         />
-        <span dir="ltr" className="font-mono text-sm font-semibold">
-          {amountSymbol}
-        </span>
+        {get.amountVoucher ? (
+          <span dir="ltr" className="font-mono text-sm font-semibold">
+            {amountSymbol}
+          </span>
+        ) : (
+          // Spending counts in the voucher paid with, which is not picked yet.
+          <span id={unitHintId} className="max-w-24 text-xs leading-tight text-muted-foreground">
+            <Trans>of the voucher you pay with</Trans>
+          </span>
+        )}
       </div>
       {get.stale ? (
         <p role="status" className="mt-2 text-xs text-muted-foreground">

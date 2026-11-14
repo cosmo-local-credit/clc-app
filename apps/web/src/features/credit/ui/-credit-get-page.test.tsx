@@ -446,6 +446,24 @@ describe("CreditGetPage", () => {
     await waitFor(() => expect(row("AAA").textContent).toContain("1 AAA ≈ 0.98 CCC"));
   });
 
+  it("names the amount's unit: the target when getting, the voucher paid with when spending", async () => {
+    renderPage();
+    await screen.findAllByRole("radio");
+    const unit = () => screen.getByLabelText(/^You (get|spend)$/).parentElement!.lastElementChild!;
+    await waitFor(() => expect(unit().textContent).toBe("CCC"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Spend" }));
+    // No voucher is picked yet, so the amount counts in whichever one will pay.
+    const hint = screen.getByText("of the voucher you pay with");
+    expect(unit()).toBe(hint);
+    expect(screen.getByLabelText("You spend").getAttribute("aria-describedby")).toBe(hint.id);
+
+    fireEvent.click(screen.getByRole("radio", { name: /^AAA/ }));
+    await waitFor(() => expect(unit().textContent).toBe("AAA"));
+    expect(screen.queryByText("of the voucher you pay with")).toBeNull();
+    expect(screen.getByLabelText("You spend").hasAttribute("aria-describedby")).toBe(false);
+  });
+
   it("says More than you have when the wallet is the limit, and offers the most a pool takes", async () => {
     mocks.routes.mockImplementation(async (params: CreditRoutesParams) =>
       page(params, {
