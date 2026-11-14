@@ -12,6 +12,7 @@ import {
 
 import type { HttpClient } from "../../client/http-client";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
+import type { CreditScope } from "../credit-router/client";
 import {
   type CursorParams,
   type HexAddress,
@@ -120,6 +121,12 @@ export type FilteredMarketVouchersParams = MarketVouchersParams & {
   owner?: string;
   /** Vouchers accepted by at least one of these verified pools. */
   pools?: readonly { chainId: number; address: string }[];
+  /**
+   * The server-resolved Credit filter (`creditDepth`): resources related to the
+   * pools the session wallet reaches. Needs the session, so the request carries
+   * credentials and is never cached; it cannot be combined with `pools`.
+   */
+  credit?: CreditScope;
 };
 
 export type FilteredMarketVoucherPage = MarketVoucherPage & {
@@ -377,10 +384,10 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
         `/api/v2/vouchers${formatFilteredMarketQuery(params)}`,
         {
           method: "GET",
-          credentials: params.nearby ? "include" : "omit",
+          credentials: params.nearby || params.credit ? "include" : "omit",
           signal,
           ...cachePolicy,
-          ...(params.nearby ? { cache: "no-store" as const } : {}),
+          ...(params.nearby || params.credit ? { cache: "no-store" as const } : {}),
         },
       );
 
@@ -412,9 +419,13 @@ function formatFilteredMarketQuery({
   facets,
   owner,
   pools,
+  credit,
   nearby,
   ...cursor
 }: FilteredMarketVouchersParams): string {
+  if (credit && pools && pools.length > 0) {
+    throw new Error("creditDepth cannot be combined with pools; send one or the other.");
+  }
   const search = new URLSearchParams(formatCursorQuery(cursor));
   appendMarketBounds(search, bounds);
   if (filter.term !== "") search.set("q", filter.term);
@@ -427,6 +438,7 @@ function formatFilteredMarketQuery({
       pools.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`).join(","),
     );
   }
+  if (credit) search.set("creditDepth", String(credit.depth));
   if (facets) search.set("facets", "true");
   if (nearby) search.set("nearby", "true");
   return `?${search.toString()}`;

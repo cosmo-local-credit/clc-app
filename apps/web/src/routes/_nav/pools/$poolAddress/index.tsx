@@ -1,4 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, retainSearchParams } from "@tanstack/react-router";
+import { creditDepthSearchParam } from "#/lib/navigation/credit-depth-search";
 import { lazy, useEffect } from "react";
 import { z } from "zod";
 
@@ -20,11 +21,13 @@ const searchSchema = z.object({
   wantId: z.string().trim().min(1).optional().catch(undefined),
   /** The desktop Activity tab's kinds, comma separated, as the wallet's Activity takes them. */
   activityTypes: z.string().optional().catch(undefined),
+  creditDepth: creditDepthSearchParam,
 });
 
 export const Route = createFileRoute("/_nav/pools/$poolAddress/")({
   staticData: { navOwner: "wallet", desktop: "fill" },
   validateSearch: searchSchema,
+  search: { middlewares: [retainSearchParams(["creditDepth"])] },
   beforeLoad: ({ params, search }) => {
     const voucherAddress = parseVoucherAddress(search.voucher);
     if (voucherAddress) {

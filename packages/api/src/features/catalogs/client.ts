@@ -12,6 +12,7 @@ import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
+import type { CreditScope } from "../credit-router/client";
 
 const catalogPageSchema = z.object({
   catalogs: z.array(catalogSchema),
@@ -47,7 +48,7 @@ export function createCatalogsClient(http: HttpClient) {
     return `/api/v2/catalogs/${catalogIdSchema.parse(id)}/${catalogKindSchema.parse(kind) === "pool" ? "pools" : "vouchers"}/${catalogIdSchema.parse(resourceId)}`;
   }
   return {
-    list(
+    async list(
       params: {
         cursor?: string;
         nearby?: boolean;
@@ -58,9 +59,14 @@ export function createCatalogsClient(http: HttpClient) {
         tagMatch?: "any" | "all";
         facets?: boolean;
         pools?: readonly { chainId: number; address: string }[];
+        /** The server-resolved Credit filter (`creditDepth`); cannot be combined with `pools`. */
+        credit?: CreditScope;
       },
       signal?: AbortSignal,
     ) {
+      if (params.credit && params.pools?.length) {
+        throw new Error("creditDepth cannot be combined with pools; send one or the other.");
+      }
       const query = new URLSearchParams({ perPage: String(params.perPage ?? 20) });
       if (params.cursor) query.set("cursor", params.cursor);
       if (params.nearby) query.set("nearby", "true");
@@ -71,9 +77,10 @@ export function createCatalogsClient(http: HttpClient) {
       if (params.facets) query.set("facets", "true");
       if (params.pools?.length)
         query.set("pools", params.pools.map((pool) => `${pool.chainId}:${pool.address}`).join(","));
+      if (params.credit) query.set("creditDepth", String(params.credit.depth));
       return read(catalogPageSchema, `/api/v2/catalogs?${query}`, {
         method: "GET",
-        credentials: params.nearby ? "include" : "omit",
+        credentials: params.nearby || params.credit ? "include" : "omit",
         signal,
       });
     },

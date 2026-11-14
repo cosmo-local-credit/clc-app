@@ -215,11 +215,11 @@ vi.mock("#/components/creditable-browse-control", () => ({
     onClear,
   }: {
     part: "control" | "feedback";
-    onChange: (checked: boolean) => void;
+    onChange: (depth: 1 | 2 | undefined) => void;
     onClear: () => void;
   }) => (
     <div data-testid={`credit-${part}`}>
-      <button type="button" onClick={() => onChange(true)}>
+      <button type="button" onClick={() => onChange(1)}>
         {part} Credit on
       </button>
       <button type="button" onClick={onClear}>
@@ -654,11 +654,12 @@ describe("MarketPage location button", () => {
     const previous = { q: "food", creditable: false };
     for (const [index, [call]] of mockNavigate.mock.calls.entries()) {
       expect(call).toMatchObject({ to: "/", ...(index % 2 === 1 ? { replace: true } : {}) });
+      // Writing sets the depth; clearing turns Credit off. Either drops the legacy flag.
       expect(call.search(previous)).toEqual({
         q: "food",
         tab: "market",
         view: "map",
-        creditable: index % 2 === 0 ? true : false,
+        ...(index % 2 === 0 ? { creditDepth: 1 } : {}),
       });
     }
   });

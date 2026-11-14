@@ -246,11 +246,12 @@ describe("a market without a list", () => {
       });
       const options = redirectOptions(() => beforeLoad({ params: {}, search }));
       expect(options).toMatchObject({ to: "/", replace: true });
+      // A legacy Credit link reaches the map as its depth.
       expect(options.search).toEqual({
         q: "food",
         tags: "Repair",
         tagMatch: undefined,
-        creditable: "true",
+        creditDepth: 1,
       });
     },
   );

@@ -1,26 +1,48 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { RiCheckLine, RiHandCoinLine } from "react-icons/ri";
+import { RiCheckDoubleLine, RiCheckLine, RiHandCoinLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { Spinner } from "#/components/ui/spinner";
 import type { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
+import { type CreditDepthValue, nextCreditDepth } from "#/lib/navigation/pool-search";
 import { cn } from "#/lib/utils";
 
 type State = ReturnType<typeof useCreditableBrowse>;
 
 /** Which notice the feedback part shows, if any. */
-export function creditFeedback(state: State): "invalid" | "signin" | "checking" | "error" | null {
+export function creditFeedback(
+  state: State,
+): "invalid" | "signin" | "checking" | "error" | "stale" | null {
   if (!state.parsed.ok) return "invalid";
   if (!state.enabled) return null;
   if (state.auth.isLoading) return "checking";
   if (!state.auth.isAuthenticated) return "signin";
-  return state.verification.status === "error" ? "error" : null;
+  if (state.verification.status === "error") return "error";
+  return state.verification.stale ? "stale" : null;
 }
 
 /** Whether the feedback part has anything to say, so a screen can give it the one notice slot. */
 export function hasCreditFeedback(state: State): boolean {
   return creditFeedback(state) !== null;
+}
+
+/**
+ * The Credit control's exact state as one localized label: off, one pool hop,
+ * or up to two. The control cycles through them, so its name says which.
+ */
+export function useCreditStateLabel(depth: CreditDepthValue | null): string {
+  const { t } = useLingui();
+  if (depth === 1) return t`Credit: one hop`;
+  if (depth === 2) return t`Credit: up to two hops`;
+  return t`Credit: off`;
+}
+
+/** One check for one hop, two for two: the depth at a glance. */
+export function CreditDepthChecks({ depth }: { depth: CreditDepthValue | null }) {
+  if (depth === 1) return <RiCheckLine aria-hidden="true" />;
+  if (depth === 2) return <RiCheckDoubleLine aria-hidden="true" />;
+  return <RiHandCoinLine aria-hidden="true" />;
 }
 
 export function CreditableBrowseControl({
@@ -30,10 +52,12 @@ export function CreditableBrowseControl({
   part = "all",
 }: {
   state: State;
-  onChange: (checked: boolean) => void;
+  /** The next depth in the OFF, one hop, two hops cycle; undefined is off. */
+  onChange: (depth: CreditDepthValue | undefined) => void;
   onClear: () => void;
   part?: "all" | "control" | "feedback";
 }) {
+  const label = useCreditStateLabel(state.depth);
   const showControl = part !== "feedback";
   const showFeedback = part !== "control";
   const checking = state.enabled && state.verification.status === "loading";
@@ -92,20 +116,24 @@ export function CreditableBrowseControl({
             "font-semibold hover:bg-success/90",
             state.enabled && "shadow-[inset_0_0_0_2px_var(--color-success-foreground)]",
           )}
+          aria-label={label}
+          title={label}
           aria-pressed={state.enabled}
           aria-busy={checking}
           disabled={state.auth.isLoading}
-          onClick={() => onChange(!state.enabled)}
+          onClick={() => onChange(nextCreditDepth(state.depth))}
         >
-          {checking ? (
-            <Spinner />
-          ) : state.enabled ? (
-            <RiCheckLine aria-hidden="true" />
-          ) : (
-            <RiHandCoinLine aria-hidden="true" />
-          )}
+          {checking ? <Spinner /> : <CreditDepthChecks depth={state.depth} />}
           <Trans>Credit</Trans>
         </Button>
+      ) : null}
+      {showFeedback && state.enabled && state.verification.stale ? (
+        <div
+          className="border border-border bg-card p-3 text-sm text-muted-foreground"
+          role="status"
+        >
+          <Trans>Credit may be out of date.</Trans>
+        </div>
       ) : null}
       {showFeedback && state.enabled && state.verification.status === "error" ? (
         <div

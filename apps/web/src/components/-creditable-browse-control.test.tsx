@@ -11,7 +11,8 @@ import { CreditableBrowseControl, hasCreditFeedback } from "./creditable-browse-
 function state(overrides: Record<string, unknown> = {}) {
   return {
     auth: { isAuthenticated: true, isLoading: false },
-    parsed: { ok: true, enabled: false },
+    parsed: { ok: true, depth: null },
+    depth: null,
     enabled: false,
     verification: { status: "ready", pools: [], retry: vi.fn() },
     poolRefs: undefined,
@@ -49,7 +50,7 @@ describe("CreditableBrowseControl", () => {
     );
     expect(screen.getByText(/Sign in to browse results/)).toBeTruthy();
     expect(screen.getByRole("link", { name: "Sign in" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Credit" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Credit/ })).toBeNull();
   });
 
   it("keeps verification loading and errors explicit", () => {
@@ -58,6 +59,7 @@ describe("CreditableBrowseControl", () => {
       <CreditableBrowseControl
         state={state({
           enabled: true,
+          depth: 1,
           verification: { status: "loading", pools: [], retry },
           blocksResults: true,
         })}
@@ -65,12 +67,15 @@ describe("CreditableBrowseControl", () => {
         onClear={vi.fn()}
       />,
     );
-    expect(screen.getByRole("button", { name: "Credit" }).getAttribute("aria-busy")).toBe("true");
+    expect(screen.getByRole("button", { name: "Credit: one hop" }).getAttribute("aria-busy")).toBe(
+      "true",
+    );
 
     view.rerender(
       <CreditableBrowseControl
         state={state({
           enabled: true,
+          depth: 1,
           verification: { status: "error", pools: [], retry },
           blocksResults: true,
         })}
@@ -82,23 +87,62 @@ describe("CreditableBrowseControl", () => {
     expect(retry).toHaveBeenCalledTimes(1);
   });
 
-  it("writes both checked and unchecked manual choices", () => {
+  it("cycles OFF, one hop, two hops and back to OFF, saying which", () => {
     const change = vi.fn();
     const view = render(
       <CreditableBrowseControl state={state()} onChange={change} onClear={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Credit" }));
-    expect(change.mock.calls.at(-1)?.[0]).toBe(true);
+    const off = screen.getByRole("button", { name: "Credit: off" });
+    expect(off.getAttribute("aria-pressed")).toBe("false");
+    expect(off.querySelectorAll("svg")).toHaveLength(1);
+    fireEvent.click(off);
+    expect(change.mock.calls.at(-1)?.[0]).toBe(1);
 
     view.rerender(
       <CreditableBrowseControl
-        state={state({ enabled: true })}
+        state={state({ enabled: true, depth: 1 })}
         onChange={change}
         onClear={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Credit" }));
-    expect(change.mock.calls.at(-1)?.[0]).toBe(false);
+    const one = screen.getByRole("button", { name: "Credit: one hop" });
+    expect(one.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(one);
+    expect(change.mock.calls.at(-1)?.[0]).toBe(2);
+
+    view.rerender(
+      <CreditableBrowseControl
+        state={state({ enabled: true, depth: 2 })}
+        onChange={change}
+        onClear={vi.fn()}
+      />,
+    );
+    const two = screen.getByRole("button", { name: "Credit: up to two hops" });
+    expect(two.getAttribute("aria-pressed")).toBe("true");
+    expect(two.getAttribute("title")).toBe("Credit: up to two hops");
+    fireEvent.click(two);
+    expect(change.mock.calls.at(-1)?.[0]).toBeUndefined();
+    expect(change).toHaveBeenCalledTimes(3);
+  });
+
+  it("shows one check at one hop and a double check at two", () => {
+    const view = render(
+      <CreditableBrowseControl
+        state={state({ enabled: true, depth: 1 })}
+        onChange={vi.fn()}
+        onClear={vi.fn()}
+      />,
+    );
+    const one = screen.getByRole("button", { name: "Credit: one hop" }).innerHTML;
+    view.rerender(
+      <CreditableBrowseControl
+        state={state({ enabled: true, depth: 2 })}
+        onChange={vi.fn()}
+        onClear={vi.fn()}
+      />,
+    );
+    const two = screen.getByRole("button", { name: "Credit: up to two hops" }).innerHTML;
+    expect(one).not.toBe(two);
   });
 
   it("exposes its pressed and busy state without widening the label", () => {
@@ -106,6 +150,7 @@ describe("CreditableBrowseControl", () => {
       <CreditableBrowseControl
         state={state({
           enabled: true,
+          depth: 1,
           verification: { status: "loading", pools: [], retry: vi.fn() },
         })}
         onChange={vi.fn()}
@@ -113,7 +158,7 @@ describe("CreditableBrowseControl", () => {
       />,
     );
 
-    const credit = screen.getByRole("button", { name: "Credit" });
+    const credit = screen.getByRole("button", { name: "Credit: one hop" });
     expect(credit.getAttribute("aria-pressed")).toBe("true");
     expect(credit.getAttribute("aria-busy")).toBe("true");
     expect(credit.textContent).toBe("Credit");
@@ -128,7 +173,7 @@ describe("CreditableBrowseControl", () => {
         part="control"
       />,
     );
-    const off = screen.getByRole("button", { name: "Credit" });
+    const off = screen.getByRole("button", { name: "Credit: off" });
     expect(off.getAttribute("data-size")).toBe("lg");
     expect(off.className).toContain("bg-success");
     expect(off.className).not.toContain("shadow-[inset");
@@ -136,13 +181,13 @@ describe("CreditableBrowseControl", () => {
 
     view.rerender(
       <CreditableBrowseControl
-        state={state({ enabled: true })}
+        state={state({ enabled: true, depth: 1 })}
         onChange={vi.fn()}
         onClear={vi.fn()}
         part="control"
       />,
     );
-    expect(screen.getByRole("button", { name: "Credit" }).className).toContain(
+    expect(screen.getByRole("button", { name: "Credit: one hop" }).className).toContain(
       "shadow-[inset_0_0_0_2px_var(--color-success-foreground)]",
     );
 
@@ -150,6 +195,7 @@ describe("CreditableBrowseControl", () => {
       <CreditableBrowseControl
         state={state({
           enabled: true,
+          depth: 1,
           verification: { status: "loading", pools: [], retry: vi.fn() },
         })}
         onChange={vi.fn()}
@@ -157,7 +203,7 @@ describe("CreditableBrowseControl", () => {
         part="control"
       />,
     );
-    const on = screen.getByRole("button", { name: "Credit" });
+    const on = screen.getByRole("button", { name: "Credit: one hop" });
     expect(on.className).toContain("bg-success text-success-foreground");
     expect(on.querySelector("[data-slot=spinner]")).toBeTruthy();
   });
@@ -165,7 +211,7 @@ describe("CreditableBrowseControl", () => {
   it("says when the feedback part has something to show", () => {
     expect(hasCreditFeedback(state())).toBe(false);
     expect(hasCreditFeedback(state({ parsed: { ok: false } }))).toBe(true);
-    expect(hasCreditFeedback(state({ enabled: true }))).toBe(false);
+    expect(hasCreditFeedback(state({ enabled: true, depth: 1 }))).toBe(false);
     expect(
       hasCreditFeedback(
         state({ enabled: true, auth: { isAuthenticated: false, isLoading: false } }),

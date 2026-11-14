@@ -22,6 +22,13 @@ export const swapPoolWithdrawToSenderAbi = parseAbi([
 export const swapPoolWithdrawToRecipientAbi = parseAbi([
   "function withdraw(address outToken, address inToken, uint256 value, address recipient)",
 ]);
+/**
+ * The bounded trader overload: reverts unless `recipient` gains at least
+ * `minAmountOut`, and after `deadline`. The credit router builds every hop with it.
+ */
+export const swapPoolWithdrawBoundedAbi = parseAbi([
+  "function withdraw(address outToken, address inToken, uint256 value, address recipient, uint256 minAmountOut, uint256 deadline)",
+]);
 export const swapPoolWithdrawAllFeesAbi = parseAbi(["function withdraw(address outToken)"]);
 export const swapPoolWithdrawExactFeesAbi = parseAbi([
   "function withdraw(address outToken, uint256 value)",

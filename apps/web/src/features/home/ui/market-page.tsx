@@ -17,11 +17,11 @@ import { MarketMap } from "./market-map.lazy";
 export function MarketPage({
   isAuthenticated = false,
   locationOwner = GUEST_STORAGE_OWNER,
-  creditableSearch,
+  creditDepthSearch,
 }: {
   isAuthenticated?: boolean;
   locationOwner?: string;
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditDepthSearch?: number | string | readonly (number | string)[];
 }) {
   const { t } = useLingui();
   const {
@@ -57,7 +57,7 @@ export function MarketPage({
     mapNotice,
     changeCredit,
     clearCredit,
-  } = useMarketScreen({ isAuthenticated, locationOwner, creditableSearch });
+  } = useMarketScreen({ isAuthenticated, locationOwner, creditDepthSearch });
   const [zoomControls, setZoomControls] = useState<MarketMapZoomControls | null>(null);
   const mapControls = <MarketMapControls location={locationButton} zoom={zoomControls} />;
 

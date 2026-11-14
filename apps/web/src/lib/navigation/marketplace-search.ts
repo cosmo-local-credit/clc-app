@@ -7,7 +7,7 @@ import {
 } from "@clc/core/features/marketplace/logic";
 import {
   canonicalPoolRedirectSearch,
-  parsePoolCreditable,
+  parsePoolCredit,
   type PoolRouteSearch,
   pickPoolSearch,
 } from "#/lib/navigation/pool-search";
@@ -86,11 +86,13 @@ export function marketplaceSearchForScope(
  */
 export function mapSearchFrom(search: unknown): MarketplaceRouteSearch {
   const state = pickMarketplaceSearch(search);
+  const credit = parsePoolCredit(state);
   return {
     q: state.q,
     tags: state.tags,
     tagMatch: state.tagMatch,
-    creditable: state.creditable,
+    // A legacy link's Credit arrives as its depth; an invalid one is kept to be cleared.
+    creditDepth: credit.ok ? (credit.depth ?? undefined) : state.creditDepth,
     ...(state.timing !== undefined ? { timing: state.timing } : {}),
   };
 }
@@ -100,12 +102,12 @@ export function marketplaceSharedSearch(search: unknown): MarketplaceRouteSearch
   const state = pickMarketplaceSearch(search);
   const term = parseCatalogFilter({ q: state.q });
   const tags = parseCatalogFilter({ tags: state.tags, tagMatch: state.tagMatch });
-  const creditable = parsePoolCreditable(state.creditable);
+  const credit = parsePoolCredit(state);
 
   return {
     ...(term.ok ? toCatalogSearchState(term.filter) : {}),
     ...(tags.ok ? toCatalogSearchState(tags.filter) : {}),
-    creditable: creditable.ok ? (creditable.enabled ?? undefined) : undefined,
+    creditDepth: credit.ok ? (credit.depth ?? undefined) : undefined,
     ...(state.timing !== undefined ? { timing: state.timing } : {}),
   };
 }

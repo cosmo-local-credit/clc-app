@@ -1,4 +1,5 @@
 import { wantsInfiniteQueryOptions } from "@clc/api/features/wants/queries";
+import { withCreditDepth } from "#/lib/navigation/pool-search";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -21,16 +22,16 @@ import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 
 export function WantsPage({
-  creditableSearch,
+  creditDepthSearch,
 }: {
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditDepthSearch?: number | string | readonly (number | string)[];
 }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const nearby = useNearbyCatalog();
-  const credit = useCreditableBrowse(creditableSearch);
+  const credit = useCreditableBrowse(creditDepthSearch);
   const storageOwner = useStorageOwner();
-  const filter = useMarketFilter(storageOwner, creditableSearch !== undefined);
+  const filter = useMarketFilter(storageOwner, creditDepthSearch !== undefined);
   const distanceOrigin = useDiscoveryDistanceOrigin(storageOwner ?? GUEST_STORAGE_OWNER);
   const parsed = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -43,7 +44,8 @@ export function WantsPage({
       facets: true,
       nearby: nearby?.nearby === true,
       bounds: nearby?.bounds,
-      ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
+      // Credit is resolved on the server for this wallet (creditDepth), uncapped.
+      ...(credit.enabled && credit.scope ? { credit: credit.scope } : {}),
     }),
     enabled: filter.result.ok && !filter.isDebouncing && !credit.blocksResults,
     ...nearbyQueryPolicy(nearby),
@@ -65,17 +67,21 @@ export function WantsPage({
           <CreditableBrowseControl
             part="control"
             state={credit}
-            onChange={(checked) =>
+            onChange={(depth) =>
               void navigate({
                 to: "/market",
-                search: (previous) => ({ ...previous, scope: "wants", creditable: checked }),
+                search: (previous) => ({ ...previous, scope: "wants", ...withCreditDepth(depth) }),
               })
             }
             onClear={() =>
               void navigate({
                 to: "/market",
                 replace: true,
-                search: (previous) => ({ ...previous, scope: "wants", creditable: undefined }),
+                search: (previous) => ({
+                  ...previous,
+                  scope: "wants",
+                  ...withCreditDepth(undefined),
+                }),
               })
             }
           />
@@ -97,14 +103,17 @@ export function WantsPage({
       <CreditableBrowseControl
         part="feedback"
         state={credit}
-        onChange={(checked) =>
-          void navigate({ to: ".", search: (previous) => ({ ...previous, creditable: checked }) })
+        onChange={(depth) =>
+          void navigate({
+            to: ".",
+            search: (previous) => ({ ...previous, ...withCreditDepth(depth) }),
+          })
         }
         onClear={() =>
           void navigate({
             to: ".",
             replace: true,
-            search: (previous) => ({ ...previous, creditable: undefined }),
+            search: (previous) => ({ ...previous, ...withCreditDepth(undefined) }),
           })
         }
       />

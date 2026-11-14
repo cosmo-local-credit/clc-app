@@ -757,7 +757,7 @@ describe("VoucherDetailPage", () => {
     expect(addToCatalog.getAttribute("data-size")).toBeNull();
     expect(addToCatalog.getAttribute("data-tap")).toBe("true");
     expect(within(actions).getByRole("link", { name: "Get" }).getAttribute("href")).toBe(
-      `/market?scope=pools&out_voucher=${ADDRESS.toLowerCase()}`,
+      `/get/${ADDRESS}`,
     );
     const redeem = within(actions).getByRole("link", { name: "Redeem" });
     expect(redeem.getAttribute("data-variant")).toBe("outline");

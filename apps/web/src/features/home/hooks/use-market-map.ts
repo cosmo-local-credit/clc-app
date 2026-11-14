@@ -9,6 +9,7 @@ import type {
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
+import type { CreditScope } from "@clc/api/features/credit-router/client";
 import { marketMapClient } from "#/lib/api/market-map";
 import type { MarketLocation } from "#/features/home/ui/market-data";
 
@@ -21,6 +22,7 @@ type UseMarketMapOptions = {
   kinds: readonly MarketMapKind[];
   filter: Pick<CatalogFilter, "term" | "tags" | "tagMatch">;
   creditablePools?: readonly { chainId: number; address: string }[];
+  credit?: CreditScope;
   postTiming?: PostTiming;
   postVouchers?: readonly VoucherRef[];
   postVoucherMatch?: "any" | "all";
@@ -39,6 +41,7 @@ export function useMarketMap(options: UseMarketMapOptions) {
       kinds: options.kinds,
       filter: options.filter,
       creditablePools: options.creditablePools,
+      credit: options.credit,
       postTiming: options.postTiming ?? DEFAULT_POST_TIMING,
       postVouchers: options.postVouchers,
       postVoucherMatch: options.postVoucherMatch,

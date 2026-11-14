@@ -26,6 +26,7 @@ import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
+import type { CreditScope } from "../credit-router/client";
 import {
   type HexAddress,
   isPresent,
@@ -216,6 +217,8 @@ export type FilteredReportsParams = {
   facets?: boolean;
   /** Posts directly linked to these pools or to vouchers they accept. */
   creditablePools?: readonly VoucherRef[];
+  /** The server-resolved Credit filter (`creditDepth`); replaces `creditablePools`. */
+  credit?: CreditScope;
   /** Created-at window. Omitted is 1 month; `all` is every approved post. */
   posted?: PostedWithin;
   /** Schedule timing. New clients send this explicitly; it cannot accompany `posted`. */
@@ -419,6 +422,7 @@ export function createReportsClient(http: HttpClient) {
         sort,
         bounds,
         creditablePools,
+        credit,
         posted,
         timing,
       }: FilteredReportsParams,
@@ -437,16 +441,20 @@ export function createReportsClient(http: HttpClient) {
       if (nearby) query.set("nearby", "true");
       if (sort) query.set("sort", sort);
       appendMarketBounds(query, bounds);
+      if (credit && creditablePools?.length) {
+        throw new Error("creditDepth replaces creditablePools; send one or the other.");
+      }
       if (creditablePools?.length) {
         query.set("creditablePools", creditablePools.map(serializeVoucherRef).join(","));
       }
+      if (credit) query.set("creditDepth", String(credit.depth));
 
       const result = await http.request<BackendFilteredReportPage>(
         `/api/v2/reports?${query.toString()}`,
         {
           method: "GET",
           cache: "no-store",
-          credentials: nearby || sort ? "include" : "omit",
+          credentials: nearby || sort || credit ? "include" : "omit",
           signal,
         },
       );

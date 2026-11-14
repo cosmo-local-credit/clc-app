@@ -3,6 +3,8 @@ import type { CatalogKind, CatalogWrite } from "@clc/core/features/catalogs/logi
 import { infiniteQueryOptions, mutationOptions, queryOptions } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import type { CatalogsClient } from "./client";
+import type { CreditScope } from "../credit-router/client";
+import { creditScopeKey } from "../credit-router/queries";
 import { transientBackendReadQueryPolicy } from "../../client/errors";
 
 export const catalogKeys = {
@@ -17,6 +19,7 @@ export const catalogKeys = {
           tags?: readonly string[];
           tagMatch?: "any" | "all";
           pools?: readonly { chainId: number; address: string }[];
+          credit?: CreditScope;
         }
       | string = {},
   ) => {
@@ -32,6 +35,7 @@ export const catalogKeys = {
       [...(params.tags ?? [])],
       params.tagMatch ?? "any",
       params.pools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`),
+      ...("credit" in params && params.credit ? [creditScopeKey(params.credit)] : []),
     ] as const;
   },
   mine: (address: string) => ["clc", "catalogs", "mine", address.toLowerCase()] as const,
@@ -54,6 +58,7 @@ export function catalogsInfiniteQueryOptions(
         tags?: readonly string[];
         tagMatch?: "any" | "all";
         pools?: readonly { chainId: number; address: string }[];
+        credit?: CreditScope;
       }
     | string = {},
 ) {
@@ -71,6 +76,7 @@ export function catalogsInfiniteQueryOptions(
           tags: params.tags,
           tagMatch: params.tagMatch,
           pools: params.pools,
+          ...("credit" in params && params.credit ? { credit: params.credit } : {}),
           facets: true,
         },
         signal,

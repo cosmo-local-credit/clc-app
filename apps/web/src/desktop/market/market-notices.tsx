@@ -106,6 +106,15 @@ export function MarketCreditNotice({ credit, onClear }: { credit: Credit; onClea
       </NoticeRow>
     );
   }
+  if (feedback === "stale") {
+    return (
+      <NoticeRow role="status">
+        <span className="text-muted-foreground">
+          <Trans>Credit may be out of date.</Trans>
+        </span>
+      </NoticeRow>
+    );
+  }
   if (feedback === "error") {
     return (
       <NoticeRow

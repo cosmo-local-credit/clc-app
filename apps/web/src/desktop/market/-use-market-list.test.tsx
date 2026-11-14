@@ -11,6 +11,11 @@ vi.mock("#/lib/api/marketplace", () => ({ marketplaceClient: { list: mocks.list 
 import { useMarketList } from "./use-market-list";
 
 const POOL = "0x0000000000000000000000000000000000000001";
+const SCOPE = {
+  depth: 2 as const,
+  wallet: "0x00000000000000000000000000000000000000aa",
+  digest: "0x01",
+};
 
 function row(id: number, kind: "voucher" | "pool" = "voucher"): MarketplaceResult {
   return {
@@ -29,8 +34,17 @@ function page(ids: number[], nextCursor: string | null = null) {
 
 type Props = {
   term?: string;
-  credit?: { blocksResults: boolean };
-  output?: { blocksResults: boolean; poolRefs?: { chainId: number; address: string }[] };
+  credit?: {
+    blocksResults: boolean;
+    enabled?: boolean;
+    poolRefs?: { chainId: number; address: string }[];
+    scope?: { depth: 1 | 2; wallet: string; digest: string };
+  };
+  output?: {
+    active?: boolean;
+    blocksResults: boolean;
+    poolRefs?: { chainId: number; address: string }[];
+  };
   isDebouncing?: boolean;
 };
 
@@ -165,13 +179,33 @@ describe("useMarketList", () => {
   it("sends the pool restriction (output and Credit already intersected) to the request", async () => {
     mocks.list.mockResolvedValueOnce(page([5]));
     const pools = [{ chainId: 100, address: POOL }];
-    const { result } = setup({ output: { blocksResults: false, poolRefs: pools } });
+    const { result } = setup({
+      credit: { blocksResults: false, enabled: true, poolRefs: [], scope: SCOPE },
+      output: { active: true, blocksResults: false, poolRefs: pools },
+    });
     await waitFor(() => expect(result.current.phase).toBe("ready"));
     expect(mocks.list.mock.calls[0]?.[0]).toMatchObject({
       pools,
       kinds: ["voucher"],
       sort: "nearest",
     });
+    expect(mocks.list.mock.calls[0]?.[0]).not.toHaveProperty("credit");
+  });
+
+  it("lets the server resolve Credit alone through creditDepth", async () => {
+    mocks.list.mockResolvedValueOnce(page([5]));
+    const { result } = setup({
+      credit: {
+        blocksResults: false,
+        enabled: true,
+        poolRefs: [{ chainId: 100, address: POOL }],
+        scope: SCOPE,
+      },
+      output: { active: false, blocksResults: false },
+    });
+    await waitFor(() => expect(result.current.phase).toBe("ready"));
+    expect(mocks.list.mock.calls[0]?.[0]).toMatchObject({ credit: SCOPE, kinds: ["voucher"] });
+    expect(mocks.list.mock.calls[0]?.[0]).not.toHaveProperty("pools");
   });
 
   it("holds the search request while the term is still debouncing, with the rows kept", async () => {
