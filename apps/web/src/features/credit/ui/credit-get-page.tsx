@@ -7,6 +7,7 @@ import { formatCreditRate, formatFeePpm } from "@clc/core/features/credit-router
 import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
+import { useRef } from "react";
 import { RiArrowRightLine } from "react-icons/ri";
 
 import { SwapCount } from "#/components/credit/credit-hops";
@@ -56,6 +57,7 @@ export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}
   const { t, i18n } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
   const get = useCreditGet(voucherAddress);
+  const amountInput = useRef<HTMLInputElement>(null);
   const routeVouchers = get.groups.flatMap((group) =>
     group.routes.flatMap((route) => creditRouteVouchers(route)),
   );
@@ -125,6 +127,7 @@ export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}
 
       <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         <WalletAmountInput
+          ref={amountInput}
           id="credit-amount"
           label={get.mode === "exactOutput" ? t`You get` : t`You spend`}
           highlighted
@@ -149,7 +152,7 @@ export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}
         ) : null}
         {get.stale ? (
           <span role="status">
-            <Trans>Routes may be out of date.</Trans>
+            <Trans>Options may be out of date.</Trans>
           </span>
         ) : null}
       </div>
@@ -168,7 +171,7 @@ export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}
       <div className="mt-4 space-y-5">
         {get.routesPending ? (
           <p className="text-sm text-muted-foreground" role="status">
-            <Trans>Finding routes…</Trans>
+            <Trans>Finding options…</Trans>
           </p>
         ) : null}
         {get.routesError ? (
@@ -233,7 +236,11 @@ export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}
       ) : null}
       {get.quoteError && !get.review ? (
         <div className="mt-3">
-          <CreditFailureNotice error={get.quoteError} onRetry={() => void get.requestQuote()} />
+          <CreditFailureNotice
+            error={get.quoteError}
+            onRetry={() => void get.requestQuote()}
+            onEdit={() => amountInput.current?.focus()}
+          />
         </div>
       ) : null}
       <Button
@@ -498,7 +505,7 @@ function CreditReviewSheet({
           ) : null}
           {get.requoted ? (
             <p role="status" className="px-6 pb-2 text-xs text-muted-foreground">
-              <Trans>The quote changed. Review the updated amounts before confirming.</Trans>
+              <Trans>Amounts changed. Review again.</Trans>
             </p>
           ) : null}
           {get.quoteError && get.review ? (

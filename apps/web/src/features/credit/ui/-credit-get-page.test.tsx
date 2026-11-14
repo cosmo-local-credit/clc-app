@@ -409,7 +409,7 @@ describe("CreditGetPage", () => {
     renderPage();
     const alert = await screen.findByRole("alert");
     expect(mocks.routes.mock.calls.length).toBeGreaterThan(1);
-    expect(alert.textContent).toContain("Routing is unavailable right now.");
+    expect(alert.textContent).toContain("Exchange unavailable");
     expect(screen.queryByText(/No route from your vouchers/)).toBeNull();
     available = true;
     fireEvent.click(within(alert).getByRole("button", { name: "Try again" }));
@@ -487,11 +487,7 @@ describe("CreditGetPage", () => {
     const sheet = await screen.findByRole("dialog");
     fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
 
-    expect(
-      await within(sheet).findByText(
-        "The quote changed. Review the updated amounts before confirming.",
-      ),
-    ).toBeTruthy();
+    expect(await within(sheet).findByText("Amounts changed. Review again.")).toBeTruthy();
     expect(mocks.quote).toHaveBeenCalledTimes(2);
     expect(mocks.quote.mock.calls[1]![0]).toEqual(mocks.quote.mock.calls[0]![0]);
     expect(mocks.relay).not.toHaveBeenCalled();
@@ -515,9 +511,7 @@ describe("CreditGetPage", () => {
     const sheet = await screen.findByRole("dialog");
     fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
     expect(
-      await within(sheet).findByText(
-        "This quote didn't match what you asked for, so it was not signed.",
-      ),
+      await within(sheet).findByText("Quote didn't match your request. Not signed."),
     ).toBeTruthy();
     expect(mocks.relay).not.toHaveBeenCalled();
     expect(mocks.navigate).not.toHaveBeenCalled();
@@ -531,22 +525,45 @@ describe("CreditGetPage", () => {
       new BackendApiError(409, "route_unavailable", "E24", {
         result: { state: "route_unavailable", reason: "deposit_cap", hop: 0 },
       }),
-      "A pool on this route can't take more of this voucher right now.",
+      "A pool can't take more right now",
+      "Change amount",
+    ],
+    [
+      new BackendApiError(409, "route_unavailable", "E24", {
+        result: { state: "route_unavailable", reason: "wallet_balance", hop: -1 },
+      }),
+      "More than you have",
+      "Change amount",
     ],
     [
       new BackendApiError(409, "simulation_failed", "E26", {
         result: { revert: { reason: "LimitExceeded", message: "", data: "0x" } },
       }),
-      "This exchange would fail: LimitExceeded.",
+      "Exchange would fail: LimitExceeded",
+      "Change amount",
     ],
     [
       new BackendApiError(409, "quote_mismatch", "E25", { result: { hop: 1 } }),
-      "A pool's price could not be confirmed.",
+      "Price couldn't be confirmed",
+      "Try again",
     ],
-  ])("explains a refused quote (%s)", async (error, message) => {
+    [
+      new BackendApiError(503, "router_unavailable", "E27", { retryAfterMs: 0 }),
+      "Exchange unavailable",
+      "Try again",
+    ],
+  ])("explains a refused quote with its next step (%s)", async (error, message, action) => {
     mocks.quote.mockRejectedValue(error);
     fireEvent.click(await chooseTwoHopForFiveCcc());
-    expect(await screen.findByText(message)).toBeTruthy();
+    const alert = (await screen.findByText(message)).closest("[role=alert]") as HTMLElement;
     expect(screen.queryByRole("dialog")).toBeNull();
+    const next = within(alert).getByRole("button", { name: action });
+    fireEvent.click(next);
+    if (action === "Change amount") {
+      expect(document.activeElement).toBe(screen.getByLabelText("You get"));
+      expect(mocks.quote).toHaveBeenCalledOnce();
+    } else {
+      await waitFor(() => expect(mocks.quote).toHaveBeenCalledTimes(2));
+    }
   });
 });
