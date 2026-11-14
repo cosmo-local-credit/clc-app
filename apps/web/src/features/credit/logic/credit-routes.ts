@@ -57,3 +57,64 @@ export function creditRouteHopRefs(route: Pick<CreditRoute, "hops">): CreditRout
 export function creditRouteVouchers(route: Pick<CreditRoute, "hops">): `0x${string}`[] {
   return [route.hops[0]!.tokenIn, ...route.hops.map((hop) => hop.tokenOut)];
 }
+
+/**
+ * How far a voucher's routes are priced at the entered amount: `idle` before
+ * any amount, `pending` while the routes answer without it, `priced` once
+ * every route says whether it carries it.
+ */
+export type CreditPricing = "idle" | "pending" | "priced";
+
+/**
+ * One voucher the wallet could pay with: the route that stands for it, the
+ * voucher's other routes, and whether that route takes the entered amount.
+ */
+export type CreditPayOption = {
+  voucher: `0x${string}`;
+  walletBalance: string;
+  route: CreditRoute;
+  others: CreditRoute[];
+  state: "idle" | "pending" | "carries" | "refused";
+};
+
+/**
+ * The option a voucher's group makes. Its route is the one the person chose,
+ * while it is still listed; otherwise the group's best: the first route, or
+ * once priced the first that carries the amount. Null for a group with no
+ * routes.
+ */
+export function creditPayOption(
+  group: CreditRouteInput,
+  pricing: CreditPricing,
+  chosenKey?: string,
+): CreditPayOption | null {
+  const { routes } = group;
+  const first = routes[0];
+  if (!first) return null;
+  const best =
+    (pricing === "priced" ? routes.find((route) => route.carriesAmount !== false) : undefined) ??
+    first;
+  const route =
+    (chosenKey ? routes.find((entry) => creditRouteKey(entry) === chosenKey) : undefined) ?? best;
+  return {
+    voucher: group.voucher,
+    walletBalance: group.walletBalance,
+    route,
+    others: routes.filter((entry) => entry !== route),
+    state: pricing === "priced" ? (route.carriesAmount === false ? "refused" : "carries") : pricing,
+  };
+}
+
+/**
+ * Why a priced route does not carry the amount: the wallet's balance, a
+ * pool's stock or credit limit, or any other refusal. The route's refusal
+ * decides; without one, its limit does.
+ */
+export function creditRouteShortfall(
+  route: Pick<CreditRoute, "refusal" | "limitedBy">,
+): "wallet" | "pool" | "other" {
+  const reason = route.refusal?.reason ?? route.limitedBy;
+  if (reason === "wallet_balance" || reason === "wallet") return "wallet";
+  if (reason === "liquidity" || reason === "deposit_cap") return "pool";
+  return "other";
+}

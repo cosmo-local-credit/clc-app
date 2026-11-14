@@ -2,8 +2,10 @@ import type { CreditRoutesPage } from "@clc/api/features/credit-router/client";
 import { describe, expect, it } from "vite-plus/test";
 
 import {
+  creditPayOption,
   creditRouteHopRefs,
   creditRouteKey,
+  creditRouteShortfall,
   creditRouteVouchers,
   mergeCreditRouteGroups,
 } from "./credit-routes";
@@ -72,5 +74,65 @@ describe("credit routes", () => {
       { pool: P2, tokenIn: B, tokenOut: C },
     ]);
     expect(creditRouteVouchers(twoHop)).toEqual([A, B, C]);
+  });
+
+  it("stands a voucher for its first route until the amount is priced", () => {
+    const direct = route("direct", [hop(P1, A, C)]);
+    const bridged = route("bridged", [hop(P1, A, B), hop(P2, B, C)]);
+    const group = { voucher: A as `0x${string}`, walletBalance: "1", routes: [direct, bridged] };
+
+    const idle = creditPayOption(group, "idle");
+    expect(idle?.route).toBe(direct);
+    expect(idle?.others).toEqual([bridged]);
+    expect(idle?.state).toBe("idle");
+    expect(creditPayOption(group, "pending")?.state).toBe("pending");
+    expect(creditPayOption({ ...group, routes: [] }, "idle")).toBeNull();
+  });
+
+  it("stands a priced voucher for the first route that carries the amount", () => {
+    const refused = { ...route("full", [hop(P1, A, C)]), carriesAmount: false };
+    const carries = { ...route("open", [hop(P1, A, B), hop(P2, B, C)]), carriesAmount: true };
+    const group = { voucher: A as `0x${string}`, walletBalance: "1", routes: [refused, carries] };
+
+    const option = creditPayOption(group, "priced");
+    expect(option?.route).toBe(carries);
+    expect(option?.others).toEqual([refused]);
+    expect(option?.state).toBe("carries");
+    // When none carries, the first route stands, refused.
+    const none = creditPayOption({ ...group, routes: [refused] }, "priced");
+    expect(none?.route).toBe(refused);
+    expect(none?.state).toBe("refused");
+  });
+
+  it("keeps the route the person chose while it is listed, carrying or not", () => {
+    const carries = { ...route("open", [hop(P1, A, C)]), carriesAmount: true };
+    const refused = { ...route("full", [hop(P1, A, B), hop(P2, B, C)]), carriesAmount: false };
+    const group = { voucher: A as `0x${string}`, walletBalance: "1", routes: [carries, refused] };
+
+    const chosen = creditPayOption(group, "priced", creditRouteKey(refused));
+    expect(chosen?.route).toBe(refused);
+    expect(chosen?.others).toEqual([carries]);
+    expect(chosen?.state).toBe("refused");
+    // A choice the listing no longer holds falls back to the best route.
+    const gone = creditPayOption(group, "priced", creditRouteKey(route("x", [hop(P2, A, C)])));
+    expect(gone?.route).toBe(carries);
+  });
+
+  it("names why a route falls short: the wallet, a pool, or something else", () => {
+    expect(
+      creditRouteShortfall({ refusal: { reason: "wallet_balance", hop: 0 }, limitedBy: null }),
+    ).toBe("wallet");
+    expect(creditRouteShortfall({ limitedBy: "wallet" })).toBe("wallet");
+    expect(
+      creditRouteShortfall({ refusal: { reason: "deposit_cap", hop: 1 }, limitedBy: "wallet" }),
+    ).toBe("pool");
+    expect(
+      creditRouteShortfall({ refusal: { reason: "liquidity", hop: 0 }, limitedBy: null }),
+    ).toBe("pool");
+    expect(creditRouteShortfall({ limitedBy: "deposit_cap" })).toBe("pool");
+    expect(
+      creditRouteShortfall({ refusal: { reason: "retired", hop: 0 }, limitedBy: "wallet" }),
+    ).toBe("other");
+    expect(creditRouteShortfall({ limitedBy: null })).toBe("other");
   });
 });
