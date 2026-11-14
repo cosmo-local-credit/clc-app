@@ -85,7 +85,7 @@ function CreditFailureMessage({ error }: { error: unknown }) {
  * route's limit: the wallet's balance, a pool's credit limit or stock, a
  * retired pool, a wallet the router cannot serve, or anything else.
  */
-function CreditRefusal({ reason }: { reason: string }) {
+export function CreditRefusal({ reason }: { reason: string }) {
   switch (reason) {
     case "wallet_balance":
     case "wallet":
