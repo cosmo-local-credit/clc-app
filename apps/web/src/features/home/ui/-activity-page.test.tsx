@@ -255,7 +255,12 @@ describe("ActivityPage", () => {
       tokenDecimals: 6,
       amount,
     });
-    const receipt = (trackingId: string, txHash: string | null, createdAt: string) => ({
+    const receipt = (
+      trackingId: string,
+      txHash: string | null,
+      createdAt: string,
+      hopCount = 2,
+    ) => ({
       swap: {
         trackingId,
         chainId: 100,
@@ -265,7 +270,7 @@ describe("ActivityPage", () => {
         tokenOut: "0x2222222222222222222222222222222222222222",
         amountIn: "1000000",
         minAmountOut: "1990000",
-        hopCount: 2,
+        hopCount,
         bounded: true,
         deadline: 1794567890,
         createdAt,
@@ -314,6 +319,18 @@ describe("ActivityPage", () => {
       expect(entry.getAttribute("href")).toBe(`/routed-swaps/${TRACKING}`);
       expect(entry.textContent).toContain("2 hops");
       expect(screen.queryByRole("button", { name: /swapped knsm2 for my3r/i })).toBeNull();
+    });
+
+    it("counts every hop of a longer routed swap", async () => {
+      stubActivity([swapped]);
+      routedMocks.routedSwaps.mockResolvedValue({
+        items: [receipt(TRACKING, SWAP_TX, "2026-10-20T07:59:58Z", 3)],
+        cursor: null,
+      });
+      renderWithQueryClient(<ActivityPage address={ADDRESS} />);
+
+      const entry = await screen.findByRole("link", { name: /swapped knsm2 for my3r/i });
+      expect(entry.textContent).toContain("3 hops");
     });
 
     it("lists an exchange the index has not seen yet, from the server, by time", async () => {

@@ -37,9 +37,16 @@ const CALIBUR = getAddress("0x000000009b1d0af20d8c6d0a44e162d11f9b8f00");
 const POOL_1 = address("b1");
 const POOL_2 = address("b2");
 const POOL_3 = address("b3");
+const POOL_4 = address("b4");
+const POOL_5 = address("b5");
+const POOL_6 = address("b6");
 const VOUCHER_A = address("c1");
 const VOUCHER_B = address("c2");
 const VOUCHER_C = address("c3");
+const VOUCHER_D = address("c4");
+const VOUCHER_E = address("c5");
+const VOUCHER_F = address("c6");
+const VOUCHER_G = address("c7");
 const VOUCHER_X = address("c9");
 const CHAIN_ID = 100n;
 const NOW = 1_794_567_590;
@@ -186,6 +193,45 @@ type Fixture = {
   reviewed: CreditReviewTerms;
 };
 
+/** A contiguous chain A, B, C, ... through POOL_1, POOL_2, ..., `length` hops long. */
+function chain(length: number) {
+  const pools = [POOL_1, POOL_2, POOL_3, POOL_4, POOL_5, POOL_6];
+  const vouchers = [VOUCHER_A, VOUCHER_B, VOUCHER_C, VOUCHER_D, VOUCHER_E, VOUCHER_F, VOUCHER_G];
+  return Array.from({ length }, (_, index) => ({
+    pool: pools[index]!,
+    tokenIn: vouchers[index]!,
+    tokenOut: vouchers[index + 1]!,
+  }));
+}
+
+/**
+ * Exact output of 5 at the end of an n-hop chain. Each hop guarantees exactly
+ * what the next spends, and spends 0.001 more than it guarantees.
+ */
+function exactOutputThrough(length: number) {
+  const route = chain(length);
+  const hops: HopSpec[] = route.map((hop, index) => ({
+    ...hop,
+    amountIn: 5_000_000n + 1_000n * BigInt(length - index),
+    minOut: 5_000_000n + 1_000n * BigInt(length - 1 - index),
+    recipient: WALLET,
+  }));
+  return {
+    request: {
+      route,
+      mode: "exactOutput",
+      amount: "5000000",
+      recipient: null,
+      keyHash: ROOT_KEY_HASH,
+    } satisfies CreditQuoteRequestSent,
+    reviewed: {
+      amountIn: hops[0]!.amountIn.toString(),
+      minAmountOut: "5000000",
+    } satisfies CreditReviewTerms,
+    hops,
+  };
+}
+
 function verify(
   fixture: Fixture,
   quote: CreditQuoteForVerification,
@@ -256,6 +302,23 @@ describe("verifyCreditQuote — the honest response", () => {
       hops: [{ ...ROUTE_2[0]!, amountIn: 1_000_000n, minOut: 999_800n, recipient }],
     });
     expect(verify(fixture, quote).ok).toBe(true);
+  });
+
+  it("accepts a three-hop batch and signs every hop's calls", () => {
+    const three = exactOutputThrough(3);
+    const result = verify(three, buildQuote({ mode: "exactOutput", hops: three.hops }));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.signedBatch.batchedCall.calls).toHaveLength(9);
+    const own = bytesToHex(computeEIP712Digest(result.signedBatch, WALLET, CALIBUR, CHAIN_ID));
+    expect(result.digest).toBe(own);
+  });
+
+  it("accepts a route of up to five hops", () => {
+    const five = exactOutputThrough(5);
+    const result = verify(five, buildQuote({ mode: "exactOutput", hops: five.hops }));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.signedBatch.batchedCall.calls).toHaveLength(15);
   });
 
   it("uses the bounded withdraw selector the router builds", () => {
@@ -525,8 +588,58 @@ describe("verifyCreditQuote — row 9: deadline and executor", () => {
   });
 });
 
+describe("verifyCreditQuote — the middle of a three-hop route", () => {
+  const three = exactOutputThrough(3);
+
+  it("refuses the second bridge voucher paid to someone else", () => {
+    const hops = withHop(three.hops, 1, { recipient: ATTACKER });
+    expectRefused(
+      verify(three, buildQuote({ mode: "exactOutput", hops })),
+      "intermediate_recipient",
+      1,
+    );
+  });
+
+  it("refuses a second hop that does not guarantee what the third spends", () => {
+    const hops = withHop(three.hops, 1, { minOut: 1n });
+    expectRefused(
+      verify(three, buildQuote({ mode: "exactOutput", hops })),
+      "intermediate_minimum",
+      1,
+    );
+  });
+
+  it("refuses a third hop that spends more than the quote shows", () => {
+    const quote = buildQuote({
+      mode: "exactOutput",
+      hops: withHop(three.hops, 2, { amountIn: 9_000_000n }),
+      shownHops: three.hops.map((hop) => ({
+        pool: hop.pool,
+        tokenIn: hop.tokenIn,
+        tokenOut: hop.tokenOut,
+        amountIn: hop.amountIn.toString(),
+      })),
+    });
+    expectRefused(verify(three, quote), "intermediate_minimum", 2);
+  });
+
+  it("refuses a quote that drops the last hop", () => {
+    const two = buildQuote({ mode: "exactOutput", hops: three.hops.slice(0, 2) });
+    expectRefused(verify(three, two), "route");
+  });
+
+  it("refuses a third withdrawal with its own deadline", () => {
+    const quote = buildQuote({
+      mode: "exactOutput",
+      hops: three.hops,
+      withdrawDeadlines: [DEADLINE, DEADLINE, DEADLINE + 60n],
+    });
+    expectRefused(verify(three, quote), "deadline", 2);
+  });
+});
+
 describe("verifyCreditQuote — what the table implies", () => {
-  it("refuses a hop one that does not guarantee what hop two spends", () => {
+  it("refuses a first hop that does not guarantee what the second spends", () => {
     const hops = withHop(EXACT_OUTPUT.hops, 0, { minOut: 1n });
     expectRefused(
       verify(EXACT_OUTPUT, buildQuote({ mode: "exactOutput", hops })),
@@ -560,13 +673,14 @@ describe("verifyCreditQuote — what the table implies", () => {
 });
 
 describe("creditRouteProblem", () => {
-  it("accepts a contiguous two-hop route", () => {
-    expect(creditRouteProblem(ROUTE_2)).toBeNull();
+  it.each([1, 2, 3, 4, 5])("accepts a contiguous %i-hop route", (length) => {
+    expect(creditRouteProblem(chain(length))).toBeNull();
   });
 
   it.each([
     ["empty", []],
-    ["too_long", [...ROUTE_2, { pool: POOL_3, tokenIn: VOUCHER_C, tokenOut: VOUCHER_X }]],
+    ["too_long", chain(6)],
+    ["repeats", [...chain(3), { pool: POOL_4, tokenIn: VOUCHER_D, tokenOut: VOUCHER_B }]],
     ["not_contiguous", [ROUTE_2[0]!, { ...ROUTE_2[1]!, tokenIn: VOUCHER_X }]],
     ["repeats", [ROUTE_2[0]!, { ...ROUTE_2[1]!, pool: POOL_1 }]],
     ["repeats", [ROUTE_2[0]!, { ...ROUTE_2[1]!, tokenOut: VOUCHER_A }]],

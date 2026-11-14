@@ -14,9 +14,16 @@ export const FIXTURE = {
   attacker: getAddress(`0x${"e7".repeat(20)}`),
   pool1: getAddress(`0x${"b1".repeat(20)}`),
   pool2: getAddress(`0x${"b2".repeat(20)}`),
+  pool3: getAddress(`0x${"b3".repeat(20)}`),
   voucherA: getAddress(`0x${"c1".repeat(20)}`),
   voucherB: getAddress(`0x${"c2".repeat(20)}`),
   voucherC: getAddress(`0x${"c3".repeat(20)}`),
+  voucherD: getAddress(`0x${"c4".repeat(20)}`),
+};
+
+const CHAIN = {
+  pools: [FIXTURE.pool1, FIXTURE.pool2, FIXTURE.pool3],
+  vouchers: [FIXTURE.voucherA, FIXTURE.voucherB, FIXTURE.voucherC, FIXTURE.voucherD],
 };
 
 export type FixtureHop = {
@@ -30,49 +37,43 @@ export type FixtureHop = {
 };
 
 /**
- * A two-hop exact-output quote for 5 C through B, as the router would answer
- * it, with its digest over the batch it sends. `tamper` edits the hops before
- * the batch is built, as a dishonest server that signs consistently would.
+ * An exact-output quote for 5 of the chain's last voucher, as the router would
+ * answer it, with its digest over the batch it sends: two hops (A, B, C
+ * through pools 1 and 2) by default, three with `hops: 3` (on to D through
+ * pool 3). Each hop guarantees what the next spends. `tamper` edits the hops
+ * before the batch is built, as a dishonest server that signs consistently
+ * would.
  */
 export function creditQuoteFixture({
   wallet,
   keyHash = ROOT_KEY_HASH,
   nowSeconds,
   delegated = true,
+  hops: hopCount = 2,
   tamper,
 }: {
   wallet: Address;
   keyHash?: Address;
   nowSeconds: number;
   delegated?: boolean;
+  hops?: 1 | 2 | 3;
   tamper?: (hops: FixtureHop[]) => FixtureHop[];
 }): { request: CreditQuoteRequest; quote: CreditQuote } {
   const request: CreditQuoteRequest = {
-    route: [
-      { pool: FIXTURE.pool1, tokenIn: FIXTURE.voucherA, tokenOut: FIXTURE.voucherB },
-      { pool: FIXTURE.pool2, tokenIn: FIXTURE.voucherB, tokenOut: FIXTURE.voucherC },
-    ],
+    route: CHAIN.pools.slice(0, hopCount).map((pool, index) => ({
+      pool,
+      tokenIn: CHAIN.vouchers[index]!,
+      tokenOut: CHAIN.vouchers[index + 1]!,
+    })),
     mode: "exactOutput",
     amount: "5000000",
     recipient: null,
     keyHash,
   };
-  const honest: FixtureHop[] = [
-    {
-      ...request.route[0]!,
-      amountIn: 5_002_000n,
-      minOut: 5_001_000n,
-      recipient: wallet,
-      netOut: 5_001_000n,
-    },
-    {
-      ...request.route[1]!,
-      amountIn: 5_001_000n,
-      minOut: 5_000_000n,
-      recipient: wallet,
-      netOut: 5_000_000n,
-    },
-  ];
+  const honest: FixtureHop[] = request.route.map((hop, index) => {
+    const out = 5_000_000n + 1_000n * BigInt(hopCount - 1 - index);
+    return { ...hop, amountIn: out + 1_000n, minOut: out, recipient: wallet, netOut: out };
+  });
   const hops = tamper ? tamper(honest) : honest;
   const deadline = BigInt(nowSeconds + 300);
   const calls = hops.flatMap((hop) => [

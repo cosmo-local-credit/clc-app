@@ -13,8 +13,12 @@ import { type CaliburCall, computeEIP712Digest, type SignedBatch } from "../weba
 
 type Address = `0x${string}`;
 
-/** The most hops the product offers (the router engine is depth-generic). */
-const CREDIT_ROUTER_MAX_HOPS = 2;
+/**
+ * The longest route a quote request may name. The router routes up to its own
+ * configured maximum, below this bound, so the server can raise it without an
+ * app release; every check below walks the hops, whatever their number.
+ */
+const CREDIT_ROUTER_MAX_HOPS = 5;
 
 /**
  * How far ahead a signed route may expire. The router quotes now + 300 s and
@@ -115,8 +119,8 @@ export type VerifyCreditQuoteInput = {
 /**
  * One check made before signing a credit quote's batch: each compares part of
  * the batch with the app's own request, configuration or the terms the user
- * reviewed. Two follow from the others: the signing key, and that hop one
- * guarantees what hop two spends.
+ * reviewed. Two follow from the others: the signing key, and that each hop
+ * guarantees what the next one spends.
  */
 export type CreditQuoteCheck =
   | "domain"
@@ -287,7 +291,7 @@ export function verifyCreditQuote(input: VerifyCreditQuoteInput): CreditQuoteVer
       return refuse(
         "intermediate_minimum",
         index,
-        "hop one does not guarantee what hop two spends, so it could spend held vouchers",
+        "a hop does not guarantee what the next hop spends, so it could spend held vouchers",
       );
     }
   }

@@ -87,6 +87,7 @@ const SYMBOLS: Record<string, string> = {
   [FIXTURE.voucherB.toLowerCase()]: "BBB",
   [FIXTURE.voucherC.toLowerCase()]: "CCC",
   [VOUCHER_D.toLowerCase()]: "DDD",
+  [FIXTURE.voucherD.toLowerCase()]: "FFF",
 };
 
 function hop(
@@ -131,6 +132,47 @@ const ONE_HOP = {
   effectiveFeePpm: "200",
 };
 
+/** Three hops to FFF: AAA, BBB and CCC through Kilifi, Mombasa and Malindi. */
+const THREE_HOP = {
+  id: "r_three",
+  hops: [
+    hop(FIXTURE.pool1, "Kilifi Pool", FIXTURE.voucherA, FIXTURE.voucherB),
+    hop(FIXTURE.pool2, "Mombasa Pool", FIXTURE.voucherB, FIXTURE.voucherC),
+    hop(FIXTURE.pool3, "Malindi Pool", FIXTURE.voucherC, FIXTURE.voucherD),
+  ],
+  rate: { amountIn: "1000000", amountOut: "999400" },
+  maxAmountIn: "9000000",
+  maxAmountOut: "8994600",
+  maxIsExact: false,
+  limitedBy: "deposit_cap",
+  limitedByHop: 2,
+  effectiveFeePpm: "600",
+};
+
+function threeHopPage(params: CreditRoutesParams) {
+  const sized = params.amount !== undefined;
+  return {
+    target: { address: FIXTURE.voucherD, symbol: "FFF", decimals: 6 },
+    asOfBlock: 49254469,
+    graphVersion: 812,
+    stale: false,
+    complete: true,
+    inputs: [
+      {
+        voucher: FIXTURE.voucherA,
+        walletBalance: "9000000",
+        routes: [
+          sized
+            ? { ...THREE_HOP, carriesAmount: true, amountIn: "5003000", amountOut: "5000000" }
+            : THREE_HOP,
+        ],
+      },
+    ],
+    fallbackPools: [],
+    cursor: null,
+  };
+}
+
 function page(params: CreditRoutesParams, overrides: Record<string, unknown> = {}) {
   const sized = params.amount !== undefined;
   const carry = (route: typeof TWO_HOP | typeof ONE_HOP) =>
@@ -151,11 +193,11 @@ function page(params: CreditRoutesParams, overrides: Record<string, unknown> = {
   };
 }
 
-function renderPage() {
+function renderPage(voucherAddress: `0x${string}` = FIXTURE.voucherC) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <CreditGetPage voucherAddress={FIXTURE.voucherC} />
+      <CreditGetPage voucherAddress={voucherAddress} />
     </QueryClientProvider>,
   );
 }
@@ -199,7 +241,7 @@ describe("CreditGetPage", () => {
 
     const twoHop = await screen.findByRole("button", { name: /AAA.*BBB.*CCC/ });
     expect(twoHop.textContent).toContain("2 hops");
-    expect(twoHop.textContent).toContain("Kilifi Pool · Mombasa Pool");
+    expect(twoHop.textContent).toContain("via Kilifi Pool, Mombasa Pool");
     expect(twoHop.textContent).toContain("1 AAA = 0.99 CCC");
     expect(twoHop.textContent).toContain("Up to 8.99 CCC");
     expect(twoHop.textContent).toContain("limited by pool liquidity");
@@ -209,9 +251,64 @@ describe("CreditGetPage", () => {
 
     const oneHop = screen.getByRole("button", { name: /DDD.*CCC/ });
     expect(oneHop.textContent).toContain("1 hop");
+    expect(oneHop.textContent).toContain("via Mombasa Pool");
     expect(oneHop.textContent).toContain("Capacity unknown");
     expect(within(oneHop).getByText("Estimate")).toBeTruthy();
     expect(screen.getByText(/Estimated at block/).textContent).toContain("49254469");
+  });
+
+  it("renders a three-hop route the way it renders any other", async () => {
+    mocks.routes.mockImplementation(async (params: CreditRoutesParams) => threeHopPage(params));
+    renderPage(FIXTURE.voucherD);
+
+    const route = await screen.findByRole("button", { name: /AAA.*BBB.*CCC.*FFF/ });
+    expect(route.textContent).toContain("3 hops");
+    expect(route.textContent).toContain("via Kilifi Pool, Mombasa Pool, Malindi Pool");
+    expect(route.textContent).toContain("1 AAA = 0.99 FFF");
+    expect(route.textContent).toContain("At least 8.99 FFF");
+    expect(route.textContent).toContain("limited by a pool's credit limit");
+    expect(route.textContent).toContain("Fee 0.06%");
+  });
+
+  it("quotes, reviews, checks and relays a three-hop route", async () => {
+    const fixture = creditQuoteFixture({
+      wallet: WALLET,
+      nowSeconds: Math.floor(Date.now() / 1000),
+      hops: 3,
+    });
+    mocks.quote.mockResolvedValue(fixture.quote);
+    mocks.routes.mockImplementation(async (params: CreditRoutesParams) => threeHopPage(params));
+    renderPage(FIXTURE.voucherD);
+
+    fireEvent.change(await screen.findByLabelText("You get"), { target: { value: "5" } });
+    await waitFor(() =>
+      expect(mocks.routes).toHaveBeenCalledWith(
+        expect.objectContaining({ amount: "5000000", mode: "exactOutput" }),
+        expect.anything(),
+      ),
+    );
+    fireEvent.click(await screen.findByRole("button", { name: /AAA.*BBB.*CCC.*FFF/ }));
+    const review = screen.getByRole("button", { name: "Review" });
+    await waitFor(() => expect(review.hasAttribute("disabled")).toBe(false));
+    fireEvent.click(review);
+
+    await waitFor(() => expect(mocks.quote).toHaveBeenCalledOnce());
+    expect(mocks.quote.mock.calls[0]![0].route).toEqual(fixture.request.route);
+    const sheet = await screen.findByRole("dialog");
+    expect(sheet.textContent).toContain("Hop 1 · Kilifi Pool");
+    expect(sheet.textContent).toContain("Hop 2 · Mombasa Pool");
+    expect(sheet.textContent).toContain("Hop 3 · Malindi Pool");
+    expect(sheet.textContent).toContain("You get5.00 FFF");
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledOnce());
+    expect(mocks.relay.mock.calls[0]![0].signedBatch.batchedCall.calls).toHaveLength(9);
+    await waitFor(() =>
+      expect(mocks.navigate).toHaveBeenCalledWith({
+        to: "/routed-swaps/$trackingId",
+        params: { trackingId: "f47ac10b-58cc-4372-a567-0e02b2c3d479" },
+      }),
+    );
   });
 
   it("asks for routes without a depth, so the router lists up to its maximum", async () => {

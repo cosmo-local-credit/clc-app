@@ -5,9 +5,11 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 const WALLET = "0xA1a1A1a1A1A1A1a1A1a1a1a1a1a1A1A1A1a1A1a1";
 const POOL_1 = "0xb1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1";
 const POOL_2 = "0xb2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2";
+const POOL_3 = "0xb3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3";
 const A = "0xc1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1";
 const B = "0xc2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2";
 const C = "0xc3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3";
+const D = "0xc4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4";
 const TX = `0x${"ab".repeat(32)}`;
 const TRACKING = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
 
@@ -32,7 +34,7 @@ vi.mock("#/lib/api/market", () => ({
   marketClient: {
     getMarketVoucher: async (address: string) => ({
       address,
-      symbol: { [A]: "AAA", [B]: "BBB", [C]: "CCC" }[address.toLowerCase()] ?? "???",
+      symbol: { [A]: "AAA", [B]: "BBB", [C]: "CCC", [D]: "DDD" }[address.toLowerCase()] ?? "???",
       decimals: 6,
     }),
   },
@@ -41,23 +43,31 @@ vi.mock("#/lib/api/pools", () => ({
   poolsClient: {
     getPoolByAddress: async (address: string) => ({
       address,
-      name: address.toLowerCase() === POOL_1 ? "Kilifi Pool" : "Mombasa Pool",
+      name:
+        { [POOL_1]: "Kilifi Pool", [POOL_2]: "Mombasa Pool", [POOL_3]: "Malindi Pool" }[
+          address.toLowerCase()
+        ] ?? "???",
     }),
   },
 }));
 
 import { RoutedSwapReceiptPage } from "./routed-swap-receipt-page";
 
+const LEGS = [
+  [POOL_1, A, B, "5002000", "5001400", "5001000"],
+  [POOL_2, B, C, "5001000", "5000300", "5000000"],
+  [POOL_3, C, D, "5000000", "4999500", "4999000"],
+] as const;
+
 function hop(index: number, settled: boolean) {
-  const [pool, tokenIn, tokenOut, amountIn, out] =
-    index === 0 ? [POOL_1, A, B, "5002000", "5001400"] : [POOL_2, B, C, "5001000", "5000300"];
+  const [pool, tokenIn, tokenOut, amountIn, out, minAmountOut] = LEGS[index]!;
   return {
     index,
     pool,
     tokenIn,
     tokenOut,
     amountIn,
-    minAmountOut: index === 0 ? "5001000" : "5000000",
+    minAmountOut,
     recipient: WALLET,
     txHash: settled ? TX : null,
     block: settled ? 49254470 : null,
@@ -130,6 +140,31 @@ describe("RoutedSwapReceiptPage", () => {
     expect(document.body.textContent).toContain("Hop 2 · Mombasa Pool");
     expect(screen.getAllByText("0.00 BBB").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Done" })).toBeTruthy();
+  });
+
+  it("shows every hop of a three-hop exchange, in order, as each settles", async () => {
+    const two = receipt(false);
+    mocks.routedSwap.mockResolvedValue({
+      ...two,
+      swap: {
+        ...two.swap,
+        tokenOut: D,
+        minAmountOut: "4999000",
+        hopCount: 3,
+        hops: [hop(0, true), hop(1, true), hop(2, false)],
+      },
+    });
+    mocks.trackRelay.mockResolvedValue({ ok: true, result: { otx: [] } });
+    renderReceipt();
+
+    await waitFor(() => expect(document.body.textContent).toContain("Hop 3 · Malindi Pool"));
+    const text = document.body.textContent ?? "";
+    expect(text.indexOf("Hop 1 · Kilifi Pool")).toBeLessThan(text.indexOf("Hop 2 · Mombasa Pool"));
+    expect(text.indexOf("Hop 2 · Mombasa Pool")).toBeLessThan(text.indexOf("Hop 3 · Malindi Pool"));
+    expect(text).toContain("CCC → DDD");
+    expect(text).toContain("Minimum received4.99 DDD");
+    // Hops one and two have settled; the third is still on its way.
+    expect(screen.getAllByText("Settling…")).toHaveLength(1);
   });
 
   it("keeps a relayed exchange pending until its hops settle, without a Done to leave by", async () => {

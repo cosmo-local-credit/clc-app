@@ -46,10 +46,11 @@ function amountOf(labels: Labels, address: string, raw: string, locale: string):
 }
 
 /**
- * Get a voucher with the vouchers the wallet already holds, through one pool
- * or two. Routes come from the server's discovery (estimates); the exchange is
- * priced by an authoritative quote, checked against the request and the
- * review, and signed by the app over its own digest.
+ * Get a voucher with the vouchers the wallet already holds, through as many
+ * pools as the router routes. Routes come from the server's discovery
+ * (estimates); the exchange is priced by an authoritative quote, checked
+ * against the request and the review, and signed by the app over its own
+ * digest.
  */
 export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}` }) {
   const { t, i18n } = useLingui();
@@ -272,6 +273,9 @@ function CreditRouteRow({
   const feeUnconfirmed = route.hops.some((hop) => hop.feeSource === "default");
   const maxOut = route.maxAmountOut ? amountOf(labels, output, route.maxAmountOut, locale) : null;
   const hops = route.hops.length;
+  const pools = new Intl.ListFormat(locale, { type: "unit", style: "short" }).format(
+    route.hops.map((hop) => hop.pool.name),
+  );
 
   return (
     <button
@@ -300,7 +304,7 @@ function CreditRouteRow({
         </Badge>
       </div>
       <p className="mt-1 truncate text-xs text-muted-foreground">
-        {route.hops.map((hop) => hop.pool.name).join(" · ")}
+        <Trans>via {pools}</Trans>
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         {rate ? (

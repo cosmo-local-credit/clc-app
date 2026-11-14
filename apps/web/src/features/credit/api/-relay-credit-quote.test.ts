@@ -75,6 +75,42 @@ describe("relayCreditQuote", () => {
     expect(await recoverAddress({ hash: own, signature })).toBe(WALLET);
   });
 
+  it("checks, signs and relays a three-hop batch", async () => {
+    const fixture = creditQuoteFixture({ wallet: WALLET, nowSeconds: NOW, hops: 3 });
+    expect(fixture.quote.hops).toHaveLength(3);
+    const { client, relay } = relayer();
+
+    await relayCreditQuote(input(fixture), client);
+
+    const payload = relay.mock.calls[0]![0];
+    expect(payload.signedBatch.batchedCall.calls).toHaveLength(9);
+    expect(payload.signedBatch.batchedCall.calls).toEqual(fixture.quote.batch.batchedCall.calls);
+    const own = bytesToHex(
+      computeEIP712Digest(payload.signedBatch, WALLET, CALIBUR_ADDRESS, CHAIN_ID_BIGINT),
+    );
+    const [signature] = decodeAbiParameters(
+      [{ type: "bytes" }, { type: "bytes" }],
+      payload.signature,
+    );
+    expect(await recoverAddress({ hash: own, signature })).toBe(WALLET);
+  });
+
+  it("refuses a three-hop batch whose middle hop pays someone else", async () => {
+    const fixture = creditQuoteFixture({
+      wallet: WALLET,
+      nowSeconds: NOW,
+      hops: 3,
+      tamper: (hops) =>
+        hops.map((hop, i) => (i === 1 ? { ...hop, recipient: FIXTURE.attacker } : hop)),
+    });
+    const { client, relay } = relayer();
+    await expect(relayCreditQuote(input(fixture), client)).rejects.toMatchObject({
+      check: "intermediate_recipient",
+      hop: 1,
+    });
+    expect(relay).not.toHaveBeenCalled();
+  });
+
   it("attaches the EIP-7702 authorization on a first relay", async () => {
     const fixture = creditQuoteFixture({ wallet: WALLET, nowSeconds: NOW, delegated: false });
     const { client, relay, getEOANonce } = relayer();
