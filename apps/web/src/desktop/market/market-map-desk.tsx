@@ -5,6 +5,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { RiFocus3Line } from "react-icons/ri";
 import { useConnection } from "wagmi";
 
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { useViewportScopedSearch } from "#/components/market-viewport-search-notice";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
 import { Progress, ProgressTrack } from "#/components/ui/progress";
@@ -370,6 +371,14 @@ function MapResultRow({
           <span className="block truncate text-xs text-muted-foreground">{distance}</span>
         ) : null}
       </span>
+      {row.kind === "pool" ? (
+        <CreditHopsBadge kind="pool" address={row.address} />
+      ) : row.kind === "voucher" || row.kind === "offering" ? (
+        <CreditHopsBadge
+          kind="voucher"
+          address={row.kind === "offering" ? row.voucherAddress : row.address}
+        />
+      ) : null}
       <MarketKindBadge kind={kind} />
     </button>
   );

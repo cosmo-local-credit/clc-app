@@ -7,6 +7,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { MarketEmptyMessage } from "#/components/market-empty-message";
 import {
   resolveOfferingDisplayPrice,
@@ -409,18 +410,25 @@ function MarketResultTile({
           <MarketKindBadge kind={kind} />
         </span>
         <span className="min-h-4 truncate text-xs text-muted-foreground">{meta.join(" · ")}</span>
-        {row.tags.length > 0 ? (
-          <span className="flex min-w-0 gap-1 overflow-hidden">
-            {row.tags.slice(0, 2).map((tag) => (
-              <TagBadge key={tag} tag={tag} size="sm" />
-            ))}
-            {row.tags.length > 2 ? (
-              <Badge size="sm" variant="outline">
-                +{row.tags.length - 2}
-              </Badge>
-            ) : null}
-          </span>
-        ) : null}
+        {/* Hidden while empty: a row with no swap count and no tags draws no chip line. */}
+        <span className="flex min-w-0 gap-1 overflow-hidden empty:hidden">
+          {row.kind === "pool" ? (
+            <CreditHopsBadge kind="pool" address={row.address} />
+          ) : row.kind === "voucher" || row.kind === "offering" ? (
+            <CreditHopsBadge
+              kind="voucher"
+              address={row.kind === "offering" ? row.voucherAddress : row.address}
+            />
+          ) : null}
+          {row.tags.slice(0, 2).map((tag) => (
+            <TagBadge key={tag} tag={tag} size="sm" />
+          ))}
+          {row.tags.length > 2 ? (
+            <Badge size="sm" variant="outline">
+              +{row.tags.length - 2}
+            </Badge>
+          ) : null}
+        </span>
       </span>
     </>
   );
@@ -611,6 +619,11 @@ function OfferTile({
           </span>
         )}
         <span className="min-h-4 truncate text-xs text-muted-foreground">{meta.join(" · ")}</span>
+        <CreditHopsBadge
+          kind="voucher"
+          address={offering.voucherAddress}
+          className="mt-1 justify-self-start"
+        />
       </span>
     </Link>
   );

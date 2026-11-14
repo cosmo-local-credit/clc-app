@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RiArrowRightSLine } from "react-icons/ri";
 
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Button } from "#/components/ui/button";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
@@ -392,13 +393,16 @@ function PoolRow({
           active={pool.active}
           compact
         />
-        <p className="mt-1 text-primary text-xs font-semibold">
-          {pool.voucherCount === 1 ? (
-            <Trans>1 voucher</Trans>
-          ) : (
-            <Trans>{pool.voucherCount} vouchers</Trans>
-          )}
-        </p>
+        <div className="mt-1 flex items-center gap-2">
+          <p className="text-primary text-xs font-semibold">
+            {pool.voucherCount === 1 ? (
+              <Trans>1 voucher</Trans>
+            ) : (
+              <Trans>{pool.voucherCount} vouchers</Trans>
+            )}
+          </p>
+          <CreditHopsBadge kind="pool" address={pool.address} />
+        </div>
         {pool.locationName || distanceLabel ? (
           <p className="mt-1 truncate text-xs text-muted-foreground">
             {[pool.locationName, distanceLabel].filter(Boolean).join(" · ")}

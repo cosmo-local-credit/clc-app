@@ -5,6 +5,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RiArrowRightSLine } from "react-icons/ri";
 
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
 import { MarketEmptyMessage } from "#/components/market-empty-message";
@@ -266,6 +267,7 @@ function MarketVoucherRow({
           <Badge variant="muted" size="sm">
             {kindLabel}
           </Badge>
+          <CreditHopsBadge kind="voucher" address={voucher.address} />
           {distanceLabel ? (
             <span className="truncate text-muted-foreground text-xs">{distanceLabel}</span>
           ) : voucher.locationName ? (

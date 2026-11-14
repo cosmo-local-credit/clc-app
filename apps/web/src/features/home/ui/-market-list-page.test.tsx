@@ -1,13 +1,18 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketVoucher } from "@clc/api/features/market/client";
+import { CreditHopsProvider } from "#/components/credit/credit-hops";
 import { FilteredCatalogTooLargeError } from "#/features/home/hooks/use-filtered-market-vouchers";
 import { MARKET_FILTER_PREFERENCES_NAME } from "#/features/home/hooks/use-market-filter";
 import { ownerScopedKey } from "#/lib/storage/owner-tier-key";
+
+const reach = vi.hoisted(() => vi.fn());
+vi.mock("#/lib/api/credit-router", () => ({ creditRouterClient: { reach } }));
 
 vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
@@ -320,6 +325,49 @@ describe("MarketListPage", () => {
       expect.stringContaining("Far voucher"),
     ]);
     expect(screen.queryByText("Vouchers ordered by approximate distance.")).toBeNull();
+  });
+
+  it("labels each voucher row with how far the wallet is from it", async () => {
+    mocks.catalog = {
+      ...mocks.catalog,
+      vouchers: [
+        voucher(1, -1.29, 36.82, { name: "Held voucher" }),
+        voucher(2, -1.3, 36.83, { name: "Near voucher" }),
+        voucher(3, -1.31, 36.84, { name: "Far voucher" }),
+        voucher(4, -1.32, 36.85, { name: "Unreached voucher" }),
+      ],
+    };
+    const address = (id: number) => `0x${id.toString(16).padStart(40, "0")}`;
+    reach.mockResolvedValue({
+      depth: 3,
+      maxHops: 3,
+      asOfBlock: 1,
+      graphVersion: 1,
+      stale: false,
+      digest: `0x${"ab".repeat(32)}`,
+      inputs: [{ voucher: address(1), balance: "1" }],
+      vouchers: [
+        { address: address(1), minHops: 0 },
+        { address: address(2), minHops: 1 },
+        { address: address(3), minHops: 3 },
+      ],
+      pools: [],
+    });
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    render(
+      <QueryClientProvider client={client}>
+        <CreditHopsProvider wallet="0xabc0000000000000000000000000000000000123">
+          <MarketListPage />
+        </CreditHopsProvider>
+      </QueryClientProvider>,
+    );
+
+    const row = (name: string) => screen.getByRole("link", { name: new RegExp(name) });
+    await waitFor(() => expect(row("Held voucher").textContent).toContain("In your wallet"));
+    expect(row("Near voucher").textContent).toContain("1 swap");
+    expect(row("Far voucher").textContent).toContain("3 swaps");
+    expect(row("Unreached voucher").textContent).not.toMatch(/swap|In your wallet/);
   });
 
   it("reveals the complete sorted catalog in infinite-scroll batches", () => {

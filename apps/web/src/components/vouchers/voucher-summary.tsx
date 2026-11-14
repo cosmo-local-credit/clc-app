@@ -21,6 +21,7 @@ import {
 import { toast } from "sonner";
 import { isAddress, type Address, zeroAddress } from "viem";
 
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { ReviewSummaryContent } from "#/components/reviews/review-summary";
 import { Button } from "#/components/ui/button";
@@ -237,6 +238,7 @@ export function VoucherIdentitySummary({
           <div className="min-w-0 flex-1">
             {title}
             <VoucherBalanceSummaryLine balance={balance} className="mt-1.5" />
+            <CreditHopsBadge kind="voucher" address={address} className="mt-1.5" />
           </div>
         </div>
         {headerActions ? <div className="flex shrink-0 items-center">{headerActions}</div> : null}

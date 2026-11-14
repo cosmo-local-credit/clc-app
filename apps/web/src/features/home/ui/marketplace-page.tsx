@@ -14,6 +14,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { RiArrowRightSLine, RiArticleLine } from "react-icons/ri";
 
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
 import { MarketEmptyMessage } from "#/components/market-empty-message";
@@ -305,6 +306,14 @@ function MarketplaceResultRow({
             <Icon className="size-3" aria-hidden="true" />
             <ResultKind kind={row.kind} />
           </Badge>
+          {row.kind === "pool" ? (
+            <CreditHopsBadge kind="pool" address={row.address} />
+          ) : row.kind === "voucher" || row.kind === "offering" ? (
+            <CreditHopsBadge
+              kind="voucher"
+              address={row.kind === "offering" ? row.voucherAddress : row.address}
+            />
+          ) : null}
           {row.tags.slice(0, ROW_TAG_LIMIT).map((tag) => (
             <TagBadge key={tag} tag={tag} size="sm" />
           ))}

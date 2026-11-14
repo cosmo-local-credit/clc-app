@@ -4,6 +4,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { Button } from "#/components/ui/button";
 import { Spinner } from "#/components/ui/spinner";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
@@ -366,6 +367,10 @@ function OfferingTile({
           <span className="mt-1 line-clamp-2 block text-xs text-muted-foreground">
             {locationLabel}
           </span>
+        ) : null}
+        {/* A tile that names its voucher also says how far the wallet is from it. */}
+        {showVoucher ? (
+          <CreditHopsBadge kind="voucher" address={offering.voucherAddress} className="mt-1" />
         ) : null}
       </span>
     </>

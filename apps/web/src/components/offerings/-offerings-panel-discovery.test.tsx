@@ -1,4 +1,5 @@
 import type { Offering } from "@clc/api/features/offerings/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
@@ -28,6 +29,10 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }));
 
+const reach = vi.hoisted(() => vi.fn());
+vi.mock("#/lib/api/credit-router", () => ({ creditRouterClient: { reach } }));
+
+import { CreditHopsProvider } from "#/components/credit/credit-hops";
 import { OfferingsPanel } from "./offerings-panel";
 
 const offering: Offering = {
@@ -100,6 +105,42 @@ describe("OfferingsPanel discovery mode", () => {
       "https://content.example/voucher.webp",
     );
     expect(screen.queryByRole("button", { name: /view offering details/i })).toBeNull();
+  });
+
+  it("says how many swaps away a named voucher is, and only where the tile names it", async () => {
+    reach.mockResolvedValue({
+      depth: 3,
+      maxHops: 3,
+      asOfBlock: 1,
+      graphVersion: 1,
+      stale: false,
+      digest: `0x${"ab".repeat(32)}`,
+      inputs: [],
+      vouchers: [{ address: offering.voucherAddress, minHops: 2 }],
+      pools: [],
+    });
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const panel = (showVoucher: boolean) => (
+      <QueryClientProvider client={client}>
+        <CreditHopsProvider wallet="0x2222222222222222222222222222222222222222">
+          <OfferingsPanel
+            query={queryFor(offering)}
+            emptyState="No offers"
+            showVoucher={showVoucher}
+            directNavigation
+          />
+        </CreditHopsProvider>
+      </QueryClientProvider>
+    );
+    const view = render(panel(true));
+    const tile = screen.getByRole("link", { name: "Open voucher for Fresh maize" });
+    await waitFor(() => expect(tile.textContent).toContain("2 swaps"));
+
+    // A voucher's own page lists its offers without naming it on each tile.
+    view.rerender(panel(false));
+    expect(
+      screen.getByRole("link", { name: "Open voucher for Fresh maize" }).textContent,
+    ).not.toContain("swaps");
   });
 
   it("distinguishes an unavailable UoA conversion from an unpriced offering", () => {
