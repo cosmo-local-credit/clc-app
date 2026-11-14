@@ -807,6 +807,11 @@ function CreditReviewSheet({
   );
 }
 
+/**
+ * The quote as a short summary: what is spent and got, the minimum when
+ * spending, any extra when getting, and the fee. The swaps, their fees, any
+ * bridge remainder and the quote's expiry fold into Route details.
+ */
 function CreditReviewBody({
   quote,
   poolNames,
@@ -828,7 +833,9 @@ function CreditReviewBody({
     if (decimals === null || decimals === undefined) return "—";
     return `${formatPoolSwapFee(raw, decimals, locale)} ${symbolOf(labels, address)}`;
   };
-  const outputSurplus = BigInt(quote.surplus.output) > 0n;
+  // Getting an exact amount guarantees it, so only spending has a minimum to state.
+  const spending = quote.mode === "exactInput";
+  const extra = !spending && BigInt(quote.surplus.output) > 0n;
   const bridgeSurplus = quote.surplus.bridge.filter((entry) => BigInt(entry.amount) > 0n);
   const expires = new Date(quote.expiresAt * 1000).toLocaleTimeString(locale, {
     hour: "2-digit",
@@ -841,48 +848,57 @@ function CreditReviewBody({
       <div className="border border-border bg-card">
         <ReviewRow label={<Trans>You spend</Trans>}>{amount(input, quote.amountIn)}</ReviewRow>
         <ReviewRow label={<Trans>You get</Trans>}>{amount(output, quote.amountOut)}</ReviewRow>
-        <ReviewRow label={<Trans>Minimum received</Trans>}>
-          {amount(output, quote.minAmountOut)}
-        </ReviewRow>
-        <ReviewRow label={<Trans>Effective fee</Trans>}>
-          {formatFeePpm(quote.fees.effectiveFeePpm, locale) ?? "—"}
-        </ReviewRow>
-        {outputSurplus ? (
+        {spending ? (
+          <ReviewRow label={<Trans>Minimum received</Trans>}>
+            {amount(output, quote.minAmountOut)}
+          </ReviewRow>
+        ) : null}
+        {extra ? (
           <ReviewRow label={<Trans>Extra received</Trans>}>
             {amount(output, quote.surplus.output)}
           </ReviewRow>
         ) : null}
-        {bridgeSurplus.map((entry) => (
-          <ReviewRow key={entry.voucher} label={<Trans>Left in your wallet</Trans>}>
-            {amount(entry.voucher, entry.amount)}
-          </ReviewRow>
-        ))}
-        <ReviewRow label={<Trans>Quote valid until</Trans>} last>
-          {expires}
+        <ReviewRow label={<Trans>Fee</Trans>} last>
+          {formatFeePpm(quote.fees.effectiveFeePpm, locale) ?? "—"}
         </ReviewRow>
       </div>
-      {quote.hops.map((hop, index) => (
-        <div key={`${hop.pool}-${index}`} className="border border-border bg-card">
-          <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2">
-            <span className="min-w-0 truncate text-sm font-semibold">
-              <Trans>
-                Hop {index + 1} · {poolNames[index] ?? hop.pool}
-              </Trans>
-            </span>
-            <span dir="ltr" className="shrink-0 font-mono text-xs font-semibold">
-              {symbolOf(labels, hop.tokenIn)} → {symbolOf(labels, hop.tokenOut)}
-            </span>
-          </div>
-          <ReviewRow label={<Trans>Sent</Trans>}>{amount(hop.tokenIn, hop.amountIn)}</ReviewRow>
-          <ReviewRow label={<Trans>Pool fee</Trans>}>{fee(hop.tokenOut, hop.poolFee)}</ReviewRow>
-          <ReviewRow label={<Trans>Protocol fee</Trans>}>
-            {fee(hop.tokenOut, hop.protocolFee)}
-          </ReviewRow>
-          <ReviewRow label={<Trans>Received</Trans>} last>
-            {amount(hop.tokenOut, hop.netOut)}
+      <details className="border border-border bg-card">
+        <summary className="flex min-h-11 cursor-pointer items-center px-3 font-semibold text-sm">
+          <Trans>Route details</Trans>
+          {" · "}
+          <SwapCount hops={quote.hops.length} />
+        </summary>
+        <div className="border-t border-border">
+          {quote.hops.map((hop, index) => {
+            const position = index + 1;
+            const path = `${symbolOf(labels, hop.tokenIn)} → ${symbolOf(labels, hop.tokenOut)}`;
+            const poolName = poolNames[index] ?? hop.pool;
+            return (
+              <div key={`${hop.pool}-${index}`} className="border-b border-border">
+                <p className="px-3 pt-2.5 text-xs font-semibold">
+                  <Trans>
+                    Swap {position}: <span dir="ltr">{path}</span> · {poolName}
+                  </Trans>
+                </p>
+                <ReviewRow label={<Trans>Pool fee</Trans>} last>
+                  {fee(hop.tokenOut, hop.poolFee)}
+                </ReviewRow>
+                <ReviewRow label={<Trans>Protocol fee</Trans>} last>
+                  {fee(hop.tokenOut, hop.protocolFee)}
+                </ReviewRow>
+              </div>
+            );
+          })}
+          {bridgeSurplus.map((entry) => (
+            <ReviewRow key={entry.voucher} label={<Trans>Left in your wallet</Trans>}>
+              {amount(entry.voucher, entry.amount)}
+            </ReviewRow>
+          ))}
+          <ReviewRow label={<Trans>Quote valid until</Trans>} last>
+            {expires}
           </ReviewRow>
         </div>
-      ))}
+      </details>
     </div>
   );
 }

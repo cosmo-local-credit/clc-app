@@ -314,6 +314,19 @@ async function chooseTwoHopForFiveCcc() {
   return review;
 }
 
+/**
+ * The review's collapsed Route details: checked closed, then opened. Its
+ * summary names the swaps; everything else sits inside.
+ */
+function openRouteDetails(sheet: HTMLElement, summary: string): HTMLElement {
+  const details = within(sheet).getByText(summary, { selector: "summary" })
+    .parentElement as HTMLDetailsElement;
+  expect(details.open).toBe(false);
+  fireEvent.click(details.querySelector("summary")!);
+  expect(details.open).toBe(true);
+  return details;
+}
+
 describe("CreditGetPage", () => {
   it("lists one Pay with row per voucher, with its best route's swaps and the rate before an amount", async () => {
     renderPage();
@@ -614,10 +627,16 @@ describe("CreditGetPage", () => {
     await waitFor(() => expect(mocks.quote).toHaveBeenCalledOnce());
     expect(mocks.quote.mock.calls[0]![0].route).toEqual(fixture.request.route);
     const sheet = await screen.findByRole("dialog");
-    expect(sheet.textContent).toContain("Hop 1 · Kilifi Pool");
-    expect(sheet.textContent).toContain("Hop 2 · Mombasa Pool");
-    expect(sheet.textContent).toContain("Hop 3 · Malindi Pool");
     expect(sheet.textContent).toContain("You get5.00 FFF");
+    const route = openRouteDetails(sheet, "Route details · 3 swaps");
+    const swaps = route.textContent ?? "";
+    expect(swaps.indexOf("Swap 1: AAA → BBB · Kilifi Pool")).toBeGreaterThan(-1);
+    expect(swaps.indexOf("Swap 1: AAA → BBB · Kilifi Pool")).toBeLessThan(
+      swaps.indexOf("Swap 2: BBB → CCC · Mombasa Pool"),
+    );
+    expect(swaps.indexOf("Swap 2: BBB → CCC · Mombasa Pool")).toBeLessThan(
+      swaps.indexOf("Swap 3: CCC → FFF · Malindi Pool"),
+    );
 
     fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
     await waitFor(() => expect(mocks.relay).toHaveBeenCalledOnce());
@@ -762,11 +781,15 @@ describe("CreditGetPage", () => {
     const sheet = await screen.findByRole("dialog");
     expect(sheet.textContent).toContain("You spend5.00 AAA");
     expect(sheet.textContent).toContain("You get5.00 CCC");
-    expect(sheet.textContent).toContain("Minimum received5.00 CCC");
-    expect(sheet.textContent).toContain("Effective fee0.04%");
-    expect(sheet.textContent).toContain("Hop 1 · Kilifi Pool");
-    expect(sheet.textContent).toContain("Hop 2 · Mombasa Pool");
-    expect(sheet.textContent).toContain("Protocol fee<0.01 BBB");
+    expect(sheet.textContent).toContain("Fee0.04%");
+    // Getting an exact amount guarantees it: no minimum, and no extra when there is none.
+    expect(sheet.textContent).not.toContain("Minimum received");
+    expect(sheet.textContent).not.toContain("Extra received");
+    const route = openRouteDetails(sheet, "Route details · 2 swaps");
+    expect(route.textContent).toContain("Swap 1: AAA → BBB · Kilifi Pool");
+    expect(route.textContent).toContain("Swap 2: BBB → CCC · Mombasa Pool");
+    expect(route.textContent).toContain("Protocol fee<0.01 BBB");
+    expect(route.textContent).toContain("Quote valid until");
 
     fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
     await waitFor(() => expect(mocks.relay).toHaveBeenCalledOnce());
@@ -791,7 +814,9 @@ describe("CreditGetPage", () => {
     const sheet = await screen.findByRole("dialog");
     fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
 
-    expect(await within(sheet).findByText("Amounts changed. Review again.")).toBeTruthy();
+    const changed = await within(sheet).findByText("Amounts changed. Review again.");
+    // The notice stays outside the collapsed route details.
+    expect(changed.closest("details")).toBeNull();
     expect(mocks.quote).toHaveBeenCalledTimes(2);
     expect(mocks.quote.mock.calls[1]![0]).toEqual(mocks.quote.mock.calls[0]![0]);
     expect(mocks.relay).not.toHaveBeenCalled();
@@ -814,14 +839,56 @@ describe("CreditGetPage", () => {
     fireEvent.click(await chooseTwoHopForFiveCcc());
     const sheet = await screen.findByRole("dialog");
     fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
-    expect(
-      await within(sheet).findByText("Quote didn't match your request. Not signed."),
-    ).toBeTruthy();
+    const refused = await within(sheet).findByText("Quote didn't match your request. Not signed.");
+    expect(refused.closest("details")).toBeNull();
     expect(mocks.relay).not.toHaveBeenCalled();
     expect(mocks.navigate).not.toHaveBeenCalled();
     expect(within(sheet).getByRole("button", { name: "Confirm" }).hasAttribute("disabled")).toBe(
       true,
     );
+  });
+
+  it("reviews an amount to spend with its minimum received", async () => {
+    const fixture = creditQuoteFixture({
+      wallet: WALLET,
+      nowSeconds: Math.floor(Date.now() / 1000),
+      mode: "exactInput",
+      surplus: { output: "1000" },
+    });
+    mocks.quote.mockResolvedValue(fixture.quote);
+    renderPage();
+    await screen.findAllByRole("radio");
+    fireEvent.click(screen.getByRole("button", { name: "Spend" }));
+    fireEvent.click(screen.getByRole("radio", { name: /^AAA/ }));
+    fireEvent.change(screen.getByLabelText("You spend"), { target: { value: "5" } });
+    await pricedAt("5000000", "exactInput");
+    const review = screen.getByRole("button", { name: "Review" });
+    await waitFor(() => expect(review.hasAttribute("disabled")).toBe(false));
+    fireEvent.click(review);
+
+    await waitFor(() => expect(mocks.quote).toHaveBeenCalledOnce());
+    expect(mocks.quote.mock.calls[0]![0]).toMatchObject({ mode: "exactInput", amount: "5000000" });
+    const sheet = await screen.findByRole("dialog");
+    expect(sheet.textContent).toContain("You spend5.00 AAA");
+    expect(sheet.textContent).toContain("Minimum received5.00 CCC");
+    // Extra received belongs to getting an exact amount.
+    expect(sheet.textContent).not.toContain("Extra received");
+  });
+
+  it("states extra received when getting only when there is some", async () => {
+    const fixture = creditQuoteFixture({
+      wallet: WALLET,
+      nowSeconds: Math.floor(Date.now() / 1000),
+      surplus: { output: "40000", bridge: [{ voucher: FIXTURE.voucherB, amount: "3000" }] },
+    });
+    mocks.quote.mockResolvedValue(fixture.quote);
+    fireEvent.click(await chooseTwoHopForFiveCcc());
+    const sheet = await screen.findByRole("dialog");
+    expect(sheet.textContent).toContain("Extra received0.04 CCC");
+    expect(sheet.textContent).not.toContain("Minimum received");
+    // A bridge remainder is route detail, inside the collapsed section.
+    const route = openRouteDetails(sheet, "Route details · 2 swaps");
+    expect(route.textContent).toContain("Left in your wallet0.00 BBB");
   });
 
   it.each([
