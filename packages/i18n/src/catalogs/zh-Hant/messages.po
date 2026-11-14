@@ -14,13 +14,13 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/pools/ui/pools-page.tsx:150
+#: apps/web/src/features/pools/ui/pools-page.tsx:144
 msgid "{count, plural, one {# pool} other {# pools}}"
 msgstr "{count, plural, other {# 個資金池}}"
 
 #. js-lingui-explicit-id
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:225
-#: apps/web/src/features/home/ui/market-list-page.tsx:117
+#: apps/web/src/features/home/ui/market-list-page.tsx:118
 msgid "{count, plural, one {# voucher} other {# vouchers}}"
 msgstr "{count, plural, other {# 張代金券}}"
 
@@ -225,10 +225,10 @@ msgstr "{0} 已更新。"
 
 #. placeholder {0}: pool.voucherCount
 #. placeholder {0}: row.voucherCount
-#: apps/web/src/desktop/market/market-list-desk.tsx:385
+#: apps/web/src/desktop/market/market-list-desk.tsx:380
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:654
 #: apps/web/src/features/home/ui/wallet-page.tsx:470
-#: apps/web/src/features/pools/ui/pools-page.tsx:420
+#: apps/web/src/features/pools/ui/pools-page.tsx:401
 msgid "{0} vouchers"
 msgstr "{0} 代金券"
 
@@ -329,6 +329,10 @@ msgstr "{failedCount, plural, other {# 筆交易失敗。請再試一次以轉�
 msgid "{formattedStars} out of 5 stars"
 msgstr "滿分 5 星，獲得 {formattedStars} 星"
 
+#: apps/web/src/components/credit/credit-hops.tsx:78
+msgid "{hops, plural, one {# swap} other {# swaps}}"
+msgstr "{hops, plural, other {# 次兌換}}"
+
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:51
 #~ msgid "{pinIcon}, {pinColor}"
 #~ msgstr "{pinIcon}、{pinColor}"
@@ -358,13 +362,13 @@ msgstr "已使用 {used} / {limit}"
 msgid "{used} used · Unlimited"
 msgstr "已使用 {used} · 無限制"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:208
-#: apps/web/src/features/home/ui/marketplace-page.tsx:283
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:186
+#: apps/web/src/features/home/ui/marketplace-page.tsx:270
 msgid "{value} km"
 msgstr "{value} 公里"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:208
-#: apps/web/src/features/home/ui/marketplace-page.tsx:283
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:186
+#: apps/web/src/features/home/ui/marketplace-page.tsx:270
 msgid "{value} m"
 msgstr "{value} 公尺"
 
@@ -407,7 +411,7 @@ msgstr "1 {symbol} = {0} {1}"
 
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:652
 #: apps/web/src/features/home/ui/wallet-page.tsx:468
-#: apps/web/src/features/pools/ui/pools-page.tsx:418
+#: apps/web/src/features/pools/ui/pools-page.tsx:399
 msgid "1 voucher"
 msgstr "1 代金券"
 
@@ -478,11 +482,11 @@ msgstr "無法確認某個資金池的價格。"
 #~ msgid "A service"
 #~ msgstr "服務"
 
-#: apps/web/src/routes/__root.tsx:368
+#: apps/web/src/routes/__root.tsx:371
 msgid "A sign-in card link was opened. Sign in to this wallet?"
 msgstr "登入卡連結已開啟。用這個地址登入？"
 
-#: apps/web/src/routes/__root.tsx:366
+#: apps/web/src/routes/__root.tsx:369
 msgid "A sign-in card was scanned. Switch to this wallet?"
 msgstr "已掃描登入卡。切換到此錢包？"
 
@@ -979,7 +983,7 @@ msgstr "傳送前請務必確認代幣和網路相符。"
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:445
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:549
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:618
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:94
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:91
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:127
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:405
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
@@ -1016,11 +1020,11 @@ msgstr "資金池中的金額"
 msgid "Amount to collect"
 msgstr "收取金額"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:100
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:97
 msgid "Amount to get"
 msgstr "取得金額"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:108
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:105
 msgid "Amount to spend"
 msgstr "花費金額"
 
@@ -1152,7 +1156,7 @@ msgid "Ask to talk again"
 msgstr "請求重新溝通"
 
 #. placeholder {0}: symbolOf(labels, output)
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:337
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:348
 msgid "At least <0>{maxOut} {0}</0>"
 msgstr "至少 <0>{maxOut} {0}</0>"
 
@@ -1353,7 +1357,7 @@ msgstr "在 Gnosis 上購買穩定幣"
 msgid "Buy USD₮ with KES."
 msgstr "使用 KES 購買 USD₮。"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:371
+#: apps/web/src/components/vouchers/voucher-summary.tsx:373
 #: apps/web/src/components/wants/want-detail.tsx:195
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:202
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:208
@@ -1365,7 +1369,7 @@ msgstr "撥打電話"
 msgid "Camera access denied."
 msgstr "相機存取被拒絕。"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:385
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:396
 msgid "Can't carry this amount"
 msgstr "無法處理此金額"
 
@@ -1397,7 +1401,7 @@ msgstr "無法處理此金額"
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:118
 #: apps/web/src/desktop/wants/want-form-desk.tsx:376
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:175
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:520
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:531
 #: apps/web/src/features/home/ui/settings-page.tsx:160
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:191
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:120
@@ -1409,7 +1413,7 @@ msgstr "無法處理此金額"
 #: apps/web/src/features/wallet/ui/collect-page.tsx:231
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:357
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:88
-#: apps/web/src/routes/__root.tsx:383
+#: apps/web/src/routes/__root.tsx:386
 msgid "Cancel"
 msgstr "取消"
 
@@ -1418,7 +1422,7 @@ msgstr "取消"
 msgid "Cancel request"
 msgstr "取消申請"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:345
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:356
 msgid "Capacity unknown"
 msgstr "容量未知"
 
@@ -1471,7 +1475,7 @@ msgstr "{0} 不提供現金服務。"
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:186
 #: apps/web/src/desktop/market/market-bits.tsx:76
 #: apps/web/src/desktop/shell/command-palette.tsx:87
-#: apps/web/src/features/home/ui/marketplace-page.tsx:436
+#: apps/web/src/features/home/ui/marketplace-page.tsx:431
 msgid "Catalog"
 msgstr "目錄"
 
@@ -1502,7 +1506,7 @@ msgstr "目錄已儲存，但無法新增項目。請重試。"
 #: apps/web/src/desktop/shell/crumbs.tsx:30
 #: apps/web/src/desktop/shell/sidebar.tsx:198
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:32
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:34
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:30
 msgid "Catalogs"
 msgstr "目錄"
 
@@ -1632,8 +1636,8 @@ msgstr "正在檢查餘額…"
 msgid "Checking creation status"
 msgstr "正在檢查增發狀態"
 
-#: apps/web/src/components/creditable-browse-control.tsx:102
-#: apps/web/src/desktop/market/market-notices.tsx:104
+#: apps/web/src/components/creditable-browse-control.tsx:67
+#: apps/web/src/desktop/market/market-notices.tsx:89
 msgid "Checking Credit availability…"
 msgstr "正在檢查可存入狀態…"
 
@@ -1679,8 +1683,8 @@ msgstr "正在檢查評價資格…"
 msgid "Checking supply…"
 msgstr "正在檢查發行量…"
 
-#: apps/web/src/desktop/market/market-notices.tsx:197
-#: apps/web/src/features/pools/ui/pools-page.tsx:301
+#: apps/web/src/desktop/market/market-notices.tsx:182
+#: apps/web/src/features/pools/ui/pools-page.tsx:281
 msgid "Checking voucher availability…"
 msgstr "正在檢查代金券可用性…"
 
@@ -1770,8 +1774,8 @@ msgid "intro.send.body"
 msgstr "選擇接收人、你持有的憑證和金額。確認前檢查資訊，然後等待轉帳結果。"
 
 #: apps/web/src/desktop/market/market-layers.tsx:95
-#: apps/web/src/desktop/market/market-notices.tsx:265
-#: apps/web/src/features/home/hooks/use-market-screen.tsx:417
+#: apps/web/src/desktop/market/market-notices.tsx:247
+#: apps/web/src/features/home/hooks/use-market-screen.tsx:408
 msgid "Choose a resource type to show it on the map."
 msgstr "選擇要在地圖上顯示的資源類型。"
 
@@ -1868,21 +1872,19 @@ msgstr "清潔"
 #~ msgid "Clear"
 #~ msgstr "清除"
 
-#: apps/web/src/components/creditable-browse-control.tsx:76
-#: apps/web/src/desktop/market/market-notices.tsx:76
-#: apps/web/src/desktop/market/market-notices.tsx:165
-#: apps/web/src/features/pools/ui/pools-page.tsx:261
+#: apps/web/src/desktop/market/market-notices.tsx:150
+#: apps/web/src/features/pools/ui/pools-page.tsx:241
 msgid "Clear filter"
 msgstr "清除篩選條件"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:115
 #: apps/web/src/desktop/activity/transactions-desk.tsx:544
-#: apps/web/src/desktop/market/market-list-desk.tsx:501
-#: apps/web/src/desktop/market/market-notices.tsx:207
-#: apps/web/src/desktop/market/market-notices.tsx:275
-#: apps/web/src/desktop/market/market-notices.tsx:290
+#: apps/web/src/desktop/market/market-list-desk.tsx:503
+#: apps/web/src/desktop/market/market-notices.tsx:192
+#: apps/web/src/desktop/market/market-notices.tsx:257
+#: apps/web/src/desktop/market/market-notices.tsx:272
 #: apps/web/src/desktop/posts/posts-desk.tsx:207
-#: apps/web/src/features/home/hooks/use-market-screen.tsx:455
+#: apps/web/src/features/home/hooks/use-market-screen.tsx:441
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:37
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:46
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:56
@@ -1891,16 +1893,16 @@ msgstr "清除篩選條件"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:45
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:62
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:159
-#: apps/web/src/features/home/ui/marketplace-page.tsx:167
-#: apps/web/src/features/home/ui/marketplace-page.tsx:227
-#: apps/web/src/features/home/ui/offers-page.tsx:159
+#: apps/web/src/features/home/ui/marketplace-page.tsx:154
+#: apps/web/src/features/home/ui/marketplace-page.tsx:214
+#: apps/web/src/features/home/ui/offers-page.tsx:145
 #: apps/web/src/features/home/ui/posts-page.tsx:151
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:56
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:65
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:76
-#: apps/web/src/features/pools/ui/pools-page.tsx:340
-#: apps/web/src/features/wants/ui/wants-page.tsx:127
-#: apps/web/src/features/wants/ui/wants-page.tsx:167
+#: apps/web/src/features/pools/ui/pools-page.tsx:320
+#: apps/web/src/features/wants/ui/wants-page.tsx:105
+#: apps/web/src/features/wants/ui/wants-page.tsx:145
 msgid "Clear filters"
 msgstr "清除篩選條件"
 
@@ -1921,7 +1923,7 @@ msgid "Clear search"
 msgstr "清除搜尋"
 
 #: apps/web/src/components/introduction/introduction.tsx:179
-#: apps/web/src/components/offerings/offerings-panel.tsx:507
+#: apps/web/src/components/offerings/offerings-panel.tsx:512
 #: apps/web/src/components/retirement/retirement-control.tsx:112
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:118
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:264
@@ -2085,7 +2087,7 @@ msgid "Complete your profile"
 msgstr "完成您的個人資料"
 
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:244
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:511
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:522
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:240
 msgid "Confirm"
 msgstr "確認"
@@ -2119,7 +2121,7 @@ msgstr "確認並發佈"
 msgid "Confirm and send"
 msgstr "確認併傳送"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:477
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:488
 msgid "Confirm exchange"
 msgstr "確認兌換"
 
@@ -2227,14 +2229,14 @@ msgstr "正在連線錢包…"
 #: apps/web/src/desktop/account/settings-desk.tsx:565
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:266
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:84
-#: apps/web/src/routes/__root.tsx:374
+#: apps/web/src/routes/__root.tsx:377
 msgid "Connecting…"
 msgstr "正在連線…"
 
 #: apps/web/src/components/auth/use-sign-in.ts:121
 #: apps/web/src/features/onboarding/hooks/use-onboarding-wallet.ts:296
-#: apps/web/src/routes/__root.tsx:260
-#: apps/web/src/routes/__root.tsx:292
+#: apps/web/src/routes/__root.tsx:261
+#: apps/web/src/routes/__root.tsx:293
 msgid "Connection failed."
 msgstr "連線失敗。"
 
@@ -2456,7 +2458,7 @@ msgstr "複製部署交易雜湊"
 msgid "Copy fee recipient"
 msgstr "複製費用接收方"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:442
+#: apps/web/src/components/vouchers/voucher-summary.tsx:444
 #: apps/web/src/desktop/ui/phone-only.tsx:48
 #: apps/web/src/desktop/wallet/receive-poster-dialog.tsx:208
 #: apps/web/src/features/catalogs/hooks/use-catalog-share.ts:42
@@ -2544,7 +2546,7 @@ msgstr "Cosmo-Local Credit 幫助個人與組織支持、分享及交換商品�
 
 #. placeholder {0}: amountOf(labels, input, route.amountIn, locale) ?? "—"
 #. placeholder {1}: symbolOf(labels, input)
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:367
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:378
 msgid "Costs about <0>{0} {1}</0>"
 msgstr "約花費 <0>{0} {1}</0>"
 
@@ -2613,8 +2615,8 @@ msgstr "無法解鎖此登入卡。"
 msgid "Could not upload your photo. Please try again."
 msgstr "無法上傳您的照片。請再試一次。"
 
-#: apps/web/src/components/creditable-browse-control.tsx:144
-#: apps/web/src/desktop/market/market-notices.tsx:133
+#: apps/web/src/components/creditable-browse-control.tsx:115
+#: apps/web/src/desktop/market/market-notices.tsx:118
 msgid "Couldn't check creditable pools."
 msgstr "無法檢查可存入的資金池。"
 
@@ -2628,8 +2630,8 @@ msgstr "無法檢查訊息可用性。"
 msgid "Couldn't check order availability."
 msgstr "無法檢查訂單可用性。"
 
-#: apps/web/src/desktop/market/market-notices.tsx:188
-#: apps/web/src/features/pools/ui/pools-page.tsx:272
+#: apps/web/src/desktop/market/market-notices.tsx:173
+#: apps/web/src/features/pools/ui/pools-page.tsx:252
 msgid "Couldn't check voucher availability."
 msgstr "無法檢查代金券可用性。"
 
@@ -2712,8 +2714,8 @@ msgstr "無法複製部署交易雜湊"
 msgid "Couldn't copy fee recipient"
 msgstr "無法複製費用接收方"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:419
-#: apps/web/src/components/vouchers/voucher-summary.tsx:425
+#: apps/web/src/components/vouchers/voucher-summary.tsx:421
+#: apps/web/src/components/vouchers/voucher-summary.tsx:427
 #: apps/web/src/desktop/ui/phone-only.tsx:23
 #: apps/web/src/desktop/ui/phone-only.tsx:29
 #: apps/web/src/desktop/wallet/receive-poster-dialog.tsx:133
@@ -2849,7 +2851,7 @@ msgstr "無法載入目錄項目。"
 #: apps/web/src/desktop/wallet/wallet-catalogs.tsx:46
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:32
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:41
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:139
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:117
 msgid "Couldn't load catalogs."
 msgstr "無法載入目錄。"
 
@@ -2877,9 +2879,9 @@ msgstr "無法載入信用額度。"
 #~ msgid "Couldn't load holdings."
 #~ msgstr "無法載入持有的代金券。"
 
-#: apps/web/src/desktop/market/market-list-desk.tsx:98
-#: apps/web/src/features/home/ui/marketplace-page.tsx:180
-#: apps/web/src/features/home/ui/marketplace-page.tsx:241
+#: apps/web/src/desktop/market/market-list-desk.tsx:99
+#: apps/web/src/features/home/ui/marketplace-page.tsx:167
+#: apps/web/src/features/home/ui/marketplace-page.tsx:228
 msgid "Couldn't load marketplace results."
 msgstr "無法載入市場結果。"
 
@@ -2899,7 +2901,7 @@ msgstr "無法載入更多"
 msgid "Couldn't load notifications."
 msgstr "無法載入通知。"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:179
+#: apps/web/src/components/offerings/offerings-panel.tsx:180
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:185
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:130
 msgid "Couldn't load offerings."
@@ -3013,7 +3015,7 @@ msgstr "無法載入此貼文。您只能編輯您撰寫的貼文。"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:116
 #: apps/web/src/desktop/market/place-panel.tsx:133
-#: apps/web/src/desktop/vouchers/voucher-desk.tsx:126
+#: apps/web/src/desktop/vouchers/voucher-desk.tsx:127
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:147
 msgid "Couldn't load this voucher."
 msgstr "無法載入此代金券。"
@@ -3078,7 +3080,7 @@ msgstr "無法載入代金券。"
 msgid "Couldn't load Wants for this pool."
 msgstr "無法載入此資金池的需求。"
 
-#: apps/web/src/features/wants/ui/wants-page.tsx:135
+#: apps/web/src/features/wants/ui/wants-page.tsx:113
 msgid "Couldn't load Wants."
 msgstr "無法載入需求。"
 
@@ -3488,8 +3490,8 @@ msgstr "建立"
 msgid "Creation failed"
 msgstr "增發失敗"
 
-#: apps/web/src/components/creditable-browse-control.tsx:127
-#: apps/web/src/desktop/market/market-toolbar.tsx:372
+#: apps/web/src/components/creditable-browse-control.tsx:98
+#: apps/web/src/desktop/market/market-toolbar.tsx:362
 #: apps/web/src/desktop/pools/pool-main.tsx:432
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:48
 msgid "Credit"
@@ -3508,22 +3510,26 @@ msgstr "信用額度"
 msgid "Credit limit unknown"
 msgstr "信用額度未知"
 
-#: apps/web/src/components/creditable-browse-control.tsx:135
-#: apps/web/src/desktop/market/market-notices.tsx:113
+#: apps/web/src/components/creditable-browse-control.tsx:106
+#: apps/web/src/desktop/market/market-notices.tsx:98
 msgid "Credit may be out of date."
 msgstr "可存入狀態可能已過時。"
 
-#: apps/web/src/components/creditable-browse-control.tsx:38
+#: apps/web/src/components/creditable-browse-control.tsx:29
 msgid "Credit: off"
 msgstr "可存入：關閉"
 
+#: apps/web/src/components/creditable-browse-control.tsx:29
+msgid "Credit: on"
+msgstr "可存入：開啟"
+
 #: apps/web/src/components/creditable-browse-control.tsx:36
-msgid "Credit: one hop"
-msgstr "可存入：一步"
+#~ msgid "Credit: one hop"
+#~ msgstr "可存入：一步"
 
 #: apps/web/src/components/creditable-browse-control.tsx:37
-msgid "Credit: up to two hops"
-msgstr "可存入：最多兩步"
+#~ msgid "Credit: up to two hops"
+#~ msgstr "可存入：最多兩步"
 
 #: apps/web/src/components/wants/want-detail.tsx:230
 #: apps/web/src/desktop/wants/want-place-desk.tsx:326
@@ -3746,7 +3752,7 @@ msgstr "正在銷毀代金券…"
 msgid "Details"
 msgstr "詳情"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:364
+#: apps/web/src/components/vouchers/voucher-summary.tsx:366
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:187
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:193
 msgid "Directions"
@@ -3878,7 +3884,7 @@ msgstr "每個代金券只能連結一次"
 msgid "Ecovillage"
 msgstr "生態村"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:406
+#: apps/web/src/components/offerings/offerings-panel.tsx:411
 #: apps/web/src/desktop/posts/my-posts-desk.tsx:61
 #: apps/web/src/desktop/posts/post-desk.tsx:98
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:358
@@ -3966,7 +3972,7 @@ msgstr "編輯您的評價"
 msgid "Education"
 msgstr "教育"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:566
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:577
 msgid "Effective fee"
 msgstr "實際費率"
 
@@ -4154,7 +4160,7 @@ msgstr "輸入大於零的匯率"
 #: apps/web/src/components/auth/sign-in-panel.tsx:205
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:34
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:412
-#: apps/web/src/routes/__root.tsx:337
+#: apps/web/src/routes/__root.tsx:340
 msgid "Enter card password"
 msgstr "輸入卡片密碼"
 
@@ -4204,12 +4210,12 @@ msgstr "請輸入您的 Gnosis 錢包地址。"
 msgid "Equal value"
 msgstr "等值"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:324
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:335
 msgid "Estimate"
 msgstr "估算"
 
 #. placeholder {0}: get.asOfBlock
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:145
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:142
 msgid "Estimated at block <0>{0}</0>"
 msgstr "按區塊 <0>{0}</0> 估算"
 
@@ -4314,7 +4320,7 @@ msgstr "即將到期"
 #~ msgid "Export CSV"
 #~ msgstr "匯出 CSV"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:570
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:581
 msgid "Extra received"
 msgstr "額外收到"
 
@@ -4355,7 +4361,7 @@ msgstr "農業"
 #~ msgid "fee"
 #~ msgstr "費用"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:320
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:331
 msgid "Fee {fee}"
 msgstr "費率 {fee}"
 
@@ -4379,7 +4385,7 @@ msgstr "費率和費用接收方"
 msgid "Fee details unavailable."
 msgstr "無法取得費用明細。"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:324
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:335
 msgid "Fee not confirmed"
 msgstr "費率未確認"
 
@@ -4476,19 +4482,19 @@ msgid "Filter by tag"
 msgstr "按標籤篩選"
 
 #: apps/web/src/desktop/market/market-toolbar.tsx:253
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:101
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:86
 msgid "Filter catalogs"
 msgstr "篩選目錄"
 
 #: apps/web/src/desktop/market/market-toolbar.tsx:237
 #: apps/web/src/desktop/market/market-toolbar.tsx:255
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:130
-#: apps/web/src/features/home/ui/marketplace-page.tsx:133
+#: apps/web/src/features/home/ui/marketplace-page.tsx:127
 msgid "Filter marketplace"
 msgstr "篩選市場"
 
 #: apps/web/src/desktop/market/market-toolbar.tsx:245
-#: apps/web/src/features/home/ui/offers-page.tsx:125
+#: apps/web/src/features/home/ui/offers-page.tsx:118
 msgid "Filter offers"
 msgstr "篩選商品或服務項目"
 
@@ -4510,7 +4516,7 @@ msgid "Filter vouchers"
 msgstr "篩選代金券"
 
 #: apps/web/src/desktop/market/market-toolbar.tsx:247
-#: apps/web/src/features/wants/ui/wants-page.tsx:93
+#: apps/web/src/features/wants/ui/wants-page.tsx:78
 msgid "Filter Wants"
 msgstr "篩選需求"
 
@@ -4538,7 +4544,7 @@ msgstr "篩選條件"
 msgid "Finding location"
 msgstr "正在尋找位置"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:163
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:171
 msgid "Finding routes…"
 msgstr "正在尋找路徑…"
 
@@ -4611,33 +4617,33 @@ msgstr "Gas 餘額"
 msgid "Gathering"
 msgstr "聚會"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:329
-#: apps/web/src/components/vouchers/voucher-summary.tsx:334
+#: apps/web/src/components/vouchers/voucher-summary.tsx:331
+#: apps/web/src/components/vouchers/voucher-summary.tsx:336
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:119
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:129
 msgid "Get"
 msgstr "取得"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:383
+#: apps/web/src/desktop/market/market-toolbar.tsx:373
 msgid "Get {symbol}"
 msgstr "取得 {symbol}"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:91
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:88
 msgid "Get {targetSymbol}"
 msgstr "取得 {targetSymbol}"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:394
+#: apps/web/src/desktop/market/market-toolbar.tsx:384
 msgid "Get <0>{symbol}</0>"
 msgstr "取得 <0>{symbol}</0>"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:383
-#: apps/web/src/desktop/market/market-toolbar.tsx:398
+#: apps/web/src/desktop/market/market-toolbar.tsx:373
+#: apps/web/src/desktop/market/market-toolbar.tsx:388
 msgid "Get voucher"
 msgstr "取得代金券"
 
 #. placeholder {0}: amountOf(labels, output, route.amountOut, locale) ?? "—"
 #. placeholder {1}: symbolOf(labels, output)
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:374
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:385
 msgid "Gets about <0>{0} {1}</0>"
 msgstr "約可獲得 <0>{0} {1}</0>"
 
@@ -4759,7 +4765,7 @@ msgstr "持有的代金券"
 
 #. placeholder {0}: index + 1
 #. placeholder {1}: poolNames[index] ?? hop.pool
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:587
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:598
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:139
 msgid "Hop {0} · {1}"
 msgstr "第 {0} 步 · {1}"
@@ -4946,6 +4952,10 @@ msgstr "池中"
 #~ msgid "In this pool"
 #~ msgstr "在這個資金池中"
 
+#: apps/web/src/components/credit/credit-hops.tsx:76
+msgid "In your wallet"
+msgstr "在您的錢包中"
+
 #: apps/web/src/desktop/account/settings-desk.tsx:603
 #: apps/web/src/features/home/ui/settings-page.tsx:265
 msgid "Inactive"
@@ -4963,7 +4973,7 @@ msgstr "增加{0}數量"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:160
 #: apps/web/src/desktop/market/place-panel.tsx:62
 #: apps/web/src/desktop/pools/pool-main.tsx:436
-#: apps/web/src/desktop/vouchers/voucher-desk.tsx:288
+#: apps/web/src/desktop/vouchers/voucher-desk.tsx:290
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:50
 msgid "Info"
 msgstr "資訊"
@@ -5121,7 +5131,7 @@ msgstr "留空以顯示需求標記。"
 msgid "Leave without saving?"
 msgstr "不儲存就離開？"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:575
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:586
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:114
 msgid "Left in your wallet"
 msgstr "留在您的錢包中"
@@ -5170,15 +5180,15 @@ msgstr "已達到上限"
 msgid "Limit reached. Ask an administrator to increase your allowance."
 msgstr "已達到上限。請聯絡管理員提高您的額度。"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:355
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:366
 msgid "limited by a pool's credit limit"
 msgstr "受資金池信用額度限制"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:360
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:371
 msgid "limited by pool liquidity"
 msgstr "受資金池流動性限制"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:350
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:361
 msgid "limited by your balance"
 msgstr "受您的餘額限制"
 
@@ -5236,7 +5246,7 @@ msgstr "請至少關聯一個代金券或資金池。"
 msgid "Link at most 12 vouchers"
 msgstr "最多連結 12 個代金券"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:424
+#: apps/web/src/components/vouchers/voucher-summary.tsx:426
 #: apps/web/src/components/wants/use-want-detail.ts:39
 #: apps/web/src/desktop/ui/phone-only.tsx:28
 #: apps/web/src/desktop/wallet/receive-poster-dialog.tsx:138
@@ -5338,7 +5348,7 @@ msgstr "載入更早的訊息"
 #: apps/web/src/components/account-retirement/recovery-page.tsx:224
 #: apps/web/src/components/market-search.tsx:310
 #: apps/web/src/components/messaging/messages-section.tsx:73
-#: apps/web/src/components/offerings/offerings-panel.tsx:246
+#: apps/web/src/components/offerings/offerings-panel.tsx:247
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:382
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:517
 #: apps/web/src/components/wants/want-detail.tsx:295
@@ -5359,13 +5369,13 @@ msgstr "載入更早的訊息"
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:744
 #: apps/web/src/desktop/wants/want-place-desk.tsx:406
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:110
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:179
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:206
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:214
 #: apps/web/src/features/home/ui/wallet-page.tsx:373
 #: apps/web/src/features/home/ui/wallet-page.tsx:489
 #: apps/web/src/features/pools/ui/pool-wants-panel.tsx:54
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:245
-#: apps/web/src/features/wants/ui/wants-page.tsx:180
+#: apps/web/src/features/wants/ui/wants-page.tsx:158
 msgid "Load more"
 msgstr "載入更多"
 
@@ -5444,12 +5454,12 @@ msgstr "正在載入持有的代金券…"
 msgid "Loading location map"
 msgstr "載入位置圖"
 
-#: apps/web/src/desktop/market/market-list-desk.tsx:292
-#: apps/web/src/desktop/market/market-map-desk.tsx:174
-#: apps/web/src/desktop/market/market-map-desk.tsx:189
-#: apps/web/src/features/home/ui/market-list-page.tsx:202
-#: apps/web/src/features/home/ui/market-page.tsx:187
-#: apps/web/src/features/home/ui/marketplace-page.tsx:176
+#: apps/web/src/desktop/market/market-list-desk.tsx:287
+#: apps/web/src/desktop/market/market-map-desk.tsx:175
+#: apps/web/src/desktop/market/market-map-desk.tsx:190
+#: apps/web/src/features/home/ui/market-list-page.tsx:189
+#: apps/web/src/features/home/ui/market-page.tsx:179
+#: apps/web/src/features/home/ui/marketplace-page.tsx:163
 msgid "Loading marketplace…"
 msgstr "正在載入市場…"
 
@@ -5458,14 +5468,14 @@ msgstr "正在載入市場…"
 msgid "Loading messages…"
 msgstr "訊息載入中…"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:227
+#: apps/web/src/components/offerings/offerings-panel.tsx:228
 #: apps/web/src/desktop/market/market-list-states.tsx:80
 #: apps/web/src/desktop/posts/posts-desk.tsx:240
 #: apps/web/src/features/home/ui/activity-page.tsx:258
-#: apps/web/src/features/home/ui/marketplace-page.tsx:235
+#: apps/web/src/features/home/ui/marketplace-page.tsx:222
 #: apps/web/src/features/home/ui/posts-page.tsx:166
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:117
-#: apps/web/src/features/pools/ui/pools-page.tsx:368
+#: apps/web/src/features/pools/ui/pools-page.tsx:348
 msgid "Loading more…"
 msgstr "載入更多…"
 
@@ -5474,7 +5484,7 @@ msgstr "載入更多…"
 msgid "Loading notifications…"
 msgstr "通知載入中…"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:173
+#: apps/web/src/components/offerings/offerings-panel.tsx:174
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:179
 msgid "Loading offerings…"
 msgstr "正在載入商品或服務項目…"
@@ -5496,7 +5506,7 @@ msgstr "正在載入資金池…"
 #: apps/web/src/components/account-retirement/recovery-page.tsx:210
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:618
 #: apps/web/src/features/home/ui/wallet-page.tsx:398
-#: apps/web/src/features/pools/ui/pools-page.tsx:297
+#: apps/web/src/features/pools/ui/pools-page.tsx:277
 msgid "Loading pools…"
 msgstr "正在載入資金池…"
 
@@ -5561,7 +5571,7 @@ msgstr "正在載入編輯器…"
 msgid "Loading tokens…"
 msgstr "正在載入代幣…"
 
-#: apps/web/src/desktop/vouchers/voucher-desk.tsx:119
+#: apps/web/src/desktop/vouchers/voucher-desk.tsx:120
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:143
 msgid "Loading voucher…"
 msgstr "正在載入代金券…"
@@ -5592,7 +5602,7 @@ msgstr "正在載入需求…"
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:690
 #: apps/web/src/features/home/ui/wallet-page.tsx:295
 #: apps/web/src/features/pools/ui/pool-wants-panel.tsx:20
-#: apps/web/src/features/wants/ui/wants-page.tsx:131
+#: apps/web/src/features/wants/ui/wants-page.tsx:109
 msgid "Loading Wants…"
 msgstr "正在載入需求…"
 
@@ -5618,13 +5628,13 @@ msgstr "正在載入您的個人資料…"
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
 #: apps/web/src/components/market-search.tsx:302
 #: apps/web/src/components/nearby-catalog.tsx:126
-#: apps/web/src/components/offerings/offerings-panel.tsx:246
+#: apps/web/src/components/offerings/offerings-panel.tsx:247
 #: apps/web/src/components/resource-usage.tsx:64
 #: apps/web/src/components/resource-usage.tsx:141
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:270
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:382
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:517
-#: apps/web/src/components/vouchers/voucher-summary.tsx:141
+#: apps/web/src/components/vouchers/voucher-summary.tsx:142
 #: apps/web/src/components/wants/want-detail.tsx:279
 #: apps/web/src/desktop/catalogs/catalog-create-desk.tsx:37
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:41
@@ -5652,8 +5662,8 @@ msgstr "正在載入您的個人資料…"
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:309
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:38
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:110
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:134
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:179
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:112
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1069
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:69
 #: apps/web/src/features/wallet/hooks/use-send-payment.ts:130
@@ -5789,12 +5799,12 @@ msgstr "地圖示記"
 #~ msgstr "標記顏色"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:62
-#: apps/web/src/desktop/market/market-list-desk.tsx:159
+#: apps/web/src/desktop/market/market-list-desk.tsx:154
 #: apps/web/src/desktop/market/market-map-desk.tsx:267
 #: apps/web/src/desktop/onboarding/onboarding-desk.tsx:115
 #: apps/web/src/desktop/shell/crumbs.tsx:12
 #: apps/web/src/desktop/shell/sidebar.tsx:104
-#: apps/web/src/features/home/ui/market-page.tsx:67
+#: apps/web/src/features/home/ui/market-page.tsx:66
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:69
 #: apps/web/src/lib/category-label.ts:18
@@ -5802,11 +5812,11 @@ msgid "Market"
 msgstr "市場"
 
 #: apps/web/src/desktop/shell/command-palette.tsx:224
-#: apps/web/src/features/home/ui/marketplace-page.tsx:103
+#: apps/web/src/features/home/ui/marketplace-page.tsx:104
 msgid "Marketplace"
 msgstr "市場"
 
-#: apps/web/src/desktop/market/market-list-desk.tsx:154
+#: apps/web/src/desktop/market/market-list-desk.tsx:149
 msgid "Marketplace details"
 msgstr "市場詳情"
 
@@ -5907,7 +5917,7 @@ msgstr "私人訊息功能僅適用於已註冊的 Cosmo 使用者。"
 msgid "Metre"
 msgstr "米"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:563
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:574
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:108
 msgid "Minimum received"
 msgstr "最少收到"
@@ -6368,11 +6378,11 @@ msgstr "在此裝置上找不到相機。"
 msgid "No cash activity yet."
 msgstr "尚無現金活動。"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:131
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
 msgid "No catalogs are available through your Credit pools."
 msgstr "您的可存入資金池中沒有可用目錄。"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:160
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:138
 msgid "No catalogs found."
 msgstr "找不到任何目錄。"
 
@@ -6419,23 +6429,23 @@ msgstr "無信用額度限制"
 msgid "No credit offered"
 msgstr "不提供信用額度"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:238
-#: apps/web/src/features/pools/ui/pools-page.tsx:331
+#: apps/web/src/features/pools/ui/pools-page.tsx:218
+#: apps/web/src/features/pools/ui/pools-page.tsx:311
 msgid "No creditable pools are available."
 msgstr "沒有可用的可存入的資金池。"
 
-#: apps/web/src/desktop/market/market-list-desk.tsx:300
-#: apps/web/src/desktop/market/market-notices.tsx:213
-#: apps/web/src/features/pools/ui/pools-page.tsx:323
+#: apps/web/src/desktop/market/market-list-desk.tsx:295
+#: apps/web/src/desktop/market/market-notices.tsx:198
+#: apps/web/src/features/pools/ui/pools-page.tsx:303
 msgid "No creditable pools have this voucher available."
 msgstr "沒有可存入的資金池提供此代金券。"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:329
+#: apps/web/src/features/pools/ui/pools-page.tsx:309
 msgid "No creditable pools match this search."
 msgstr "沒有可存入的資金池與此搜尋匹配。"
 
-#: apps/web/src/desktop/market/market-list-desk.tsx:314
-#: apps/web/src/features/pools/ui/pools-page.tsx:321
+#: apps/web/src/desktop/market/market-list-desk.tsx:309
+#: apps/web/src/features/pools/ui/pools-page.tsx:301
 msgid "No creditable pools with this voucher match these filters."
 msgstr "沒有同時符合此代金券和這些篩選條件的可存入資金池。"
 
@@ -6489,20 +6499,20 @@ msgstr "未列出發行方"
 msgid "No location listed"
 msgstr "未列出地點"
 
-#: apps/web/src/desktop/market/market-list-desk.tsx:305
-#: apps/web/src/desktop/market/market-notices.tsx:295
-#: apps/web/src/features/home/hooks/use-market-screen.tsx:428
-#: apps/web/src/features/home/ui/marketplace-page.tsx:173
+#: apps/web/src/desktop/market/market-list-desk.tsx:300
+#: apps/web/src/desktop/market/market-notices.tsx:277
+#: apps/web/src/features/home/hooks/use-market-screen.tsx:414
+#: apps/web/src/features/home/ui/marketplace-page.tsx:160
 msgid "No marketplace results are available through your Credit pools."
 msgstr "您的可存入資金池中沒有可用的市場結果。"
 
-#: apps/web/src/desktop/market/market-list-desk.tsx:318
-#: apps/web/src/features/home/ui/marketplace-page.tsx:220
+#: apps/web/src/desktop/market/market-list-desk.tsx:313
+#: apps/web/src/features/home/ui/marketplace-page.tsx:207
 msgid "No marketplace results found."
 msgstr "找不到市場結果。"
 
-#: apps/web/src/desktop/market/market-notices.tsx:280
-#: apps/web/src/features/home/hooks/use-market-screen.tsx:452
+#: apps/web/src/desktop/market/market-notices.tsx:262
+#: apps/web/src/features/home/hooks/use-market-screen.tsx:438
 msgid "No marketplace results match this search."
 msgstr "沒有符合此搜尋的市場結果。"
 
@@ -6550,15 +6560,15 @@ msgstr "沒有更多結果"
 msgid "No notifications yet."
 msgstr "還沒有通知。"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:257
+#: apps/web/src/components/offerings/offerings-panel.tsx:258
 msgid "No offerings yet"
 msgstr "還沒有商品或服務項目"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:165
+#: apps/web/src/features/home/ui/offers-page.tsx:151
 msgid "No offers are available through your Credit pools."
 msgstr "您的信用資金池中沒有可用的商品或服務項目。"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:172
+#: apps/web/src/features/home/ui/offers-page.tsx:158
 msgid "No offers match this search."
 msgstr "沒有與此搜尋相符的商品或服務項目。"
 
@@ -6579,9 +6589,9 @@ msgstr "未列出電話"
 #~ msgid "No pool vouchers match this search."
 #~ msgstr "沒有資金池代金券與此搜尋匹配。"
 
-#: apps/web/src/desktop/market/market-list-desk.tsx:302
-#: apps/web/src/desktop/market/market-notices.tsx:215
-#: apps/web/src/features/pools/ui/pools-page.tsx:327
+#: apps/web/src/desktop/market/market-list-desk.tsx:297
+#: apps/web/src/desktop/market/market-notices.tsx:200
+#: apps/web/src/features/pools/ui/pools-page.tsx:307
 msgid "No pools have this voucher available."
 msgstr "沒有資金池提供此代金券。"
 
@@ -6593,12 +6603,12 @@ msgstr "沒有資金池符合此搜尋。"
 #: apps/web/src/desktop/posts/post-facets.tsx:237
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:267
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:241
-#: apps/web/src/features/pools/ui/pools-page.tsx:333
+#: apps/web/src/features/pools/ui/pools-page.tsx:313
 msgid "No pools match this search."
 msgstr "沒有資金池與此搜尋匹配。"
 
-#: apps/web/src/desktop/market/market-list-desk.tsx:316
-#: apps/web/src/features/pools/ui/pools-page.tsx:325
+#: apps/web/src/desktop/market/market-list-desk.tsx:311
+#: apps/web/src/features/pools/ui/pools-page.tsx:305
 msgid "No pools with this voucher match these filters."
 msgstr "沒有同時符合此代金券和這些篩選條件的資金池。"
 
@@ -6653,7 +6663,7 @@ msgstr "沒有符合此星級的評價。"
 msgid "No reviews yet."
 msgstr "暫無評價。"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:408
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:419
 msgid "No route from your vouchers reaches {targetSymbol}."
 msgstr "沒有從您的代金券通往 {targetSymbol} 的路徑。"
 
@@ -6711,7 +6721,7 @@ msgstr "沒有經過驗證的價格來源"
 msgid "No voucher in this pool is offering anything yet."
 msgstr "此資金池中的代金券暫時沒有商品或服務項目。"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:207
+#: apps/web/src/features/home/ui/market-list-page.tsx:194
 msgid "No vouchers are available through your Credit pools."
 msgstr "您的信用資金池中沒有可用的代金券。"
 
@@ -6776,7 +6786,7 @@ msgstr "沒有可用的錢包地址。"
 msgid "No Wants are connected to this pool yet."
 msgstr "此資金池尚未關聯任何需求。"
 
-#: apps/web/src/features/wants/ui/wants-page.tsx:160
+#: apps/web/src/features/wants/ui/wants-page.tsx:138
 msgid "No Wants found."
 msgstr "找不到需求。"
 
@@ -6942,7 +6952,7 @@ msgstr "已關閉"
 
 #: apps/web/src/desktop/market/market-bits.tsx:80
 #: apps/web/src/desktop/shell/command-palette.tsx:79
-#: apps/web/src/features/home/ui/marketplace-page.tsx:431
+#: apps/web/src/features/home/ui/marketplace-page.tsx:426
 msgid "Offer"
 msgstr "商品或服務項目"
 
@@ -7070,12 +7080,12 @@ msgid "Open this page in Safari or Chrome and tap Share."
 msgstr "在 Safari 或 Chrome 中開啟此頁面並點選分享。"
 
 #. placeholder {0}: offering.name
-#: apps/web/src/components/offerings/offerings-panel.tsx:382
+#: apps/web/src/components/offerings/offerings-panel.tsx:387
 msgid "Open voucher for {0}"
 msgstr "開啟 {0} 的代金券"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:539
-#: apps/web/src/components/offerings/offerings-panel.tsx:558
+#: apps/web/src/components/offerings/offerings-panel.tsx:544
+#: apps/web/src/components/offerings/offerings-panel.tsx:563
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:351
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:742
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:384
@@ -7353,7 +7363,7 @@ msgid "Pay Out"
 msgstr "付款"
 
 #. placeholder {0}: symbolOf(labels, group.voucher)
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:178
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:186
 msgid "Pay with {0}"
 msgstr "使用 {0} 支付"
 
@@ -7568,7 +7578,7 @@ msgstr "苗圃"
 #: apps/web/src/desktop/shell/command-palette.tsx:85
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:187
 #: apps/web/src/features/home/ui/activity-page.tsx:453
-#: apps/web/src/features/home/ui/marketplace-page.tsx:434
+#: apps/web/src/features/home/ui/marketplace-page.tsx:429
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:11
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
@@ -7648,7 +7658,7 @@ msgstr "資金池詳細資訊已更新。"
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:228
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:203
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:321
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:596
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:607
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:151
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:89
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:113
@@ -7797,7 +7807,7 @@ msgstr "資金池跟蹤詳細資訊丟失。"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:92
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:133
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:500
-#: apps/web/src/features/pools/ui/pools-page.tsx:173
+#: apps/web/src/features/pools/ui/pools-page.tsx:167
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:125
 msgid "Pools"
 msgstr "資金池"
@@ -7806,11 +7816,11 @@ msgstr "資金池"
 msgid "Pools accepting your vouchers"
 msgstr "接受您代金券的資金池"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:355
+#: apps/web/src/features/pools/ui/pools-page.tsx:335
 msgid "Pools list"
 msgstr "資金池列表"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:413
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:424
 msgid "Pools that hold {targetSymbol}"
 msgstr "持有 {targetSymbol} 的資金池"
 
@@ -7826,7 +7836,7 @@ msgstr "調整照片位置"
 #: apps/web/src/desktop/market/market-bits.tsx:78
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:167
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:249
-#: apps/web/src/features/home/ui/marketplace-page.tsx:435
+#: apps/web/src/features/home/ui/marketplace-page.tsx:430
 msgid "Post"
 msgstr "貼文"
 
@@ -8051,9 +8061,9 @@ msgstr "價格必須大於零"
 #: apps/web/src/components/offerings/offering-order-picker.tsx:121
 #: apps/web/src/components/offerings/offering-order-picker.tsx:173
 #: apps/web/src/components/offerings/offering-order-picker.tsx:195
-#: apps/web/src/components/offerings/offerings-panel.tsx:354
-#: apps/web/src/components/offerings/offerings-panel.tsx:613
-#: apps/web/src/desktop/market/market-list-desk.tsx:616
+#: apps/web/src/components/offerings/offerings-panel.tsx:355
+#: apps/web/src/components/offerings/offerings-panel.tsx:618
+#: apps/web/src/desktop/market/market-list-desk.tsx:618
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:307
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:296
 #: apps/web/src/features/wallet/hooks/use-send-share-form.ts:92
@@ -8065,9 +8075,9 @@ msgstr "價格面議"
 msgid "Price per unit in {priceCurrency}"
 msgstr "以 {priceCurrency} 計價的每單位價格"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:352
-#: apps/web/src/components/offerings/offerings-panel.tsx:611
-#: apps/web/src/desktop/market/market-list-desk.tsx:616
+#: apps/web/src/components/offerings/offerings-panel.tsx:353
+#: apps/web/src/components/offerings/offerings-panel.tsx:616
+#: apps/web/src/desktop/market/market-list-desk.tsx:618
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:294
 msgid "Price unavailable"
 msgstr "價格無法取得"
@@ -8191,7 +8201,7 @@ msgstr "登入卡受到保護。將密碼與卡分開儲存。"
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:232
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:218
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:321
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:597
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:608
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:154
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:104
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:126
@@ -8292,7 +8302,7 @@ msgstr "問題"
 msgid "Queued"
 msgstr "已排隊"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:579
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:590
 msgid "Quote valid until"
 msgstr "報價有效期至"
 
@@ -8411,7 +8421,7 @@ msgstr "接收代金券"
 #: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:961
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:76
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:600
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:611
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:157
 #: apps/web/src/features/home/ui/activity-page.tsx:500
 msgid "Received"
@@ -8488,7 +8498,7 @@ msgstr "請重新連線發行此代金券的錢包以增發。"
 #~ msgid "Reconnect the wallet that published this voucher to mint."
 #~ msgstr "重新連線發佈此代金券的錢包進行鑄造。"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:353
+#: apps/web/src/components/vouchers/voucher-summary.tsx:355
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:332
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:337
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:163
@@ -8565,7 +8575,7 @@ msgstr "相關代金券"
 msgid "Relative pricing"
 msgstr "相對定價"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:421
+#: apps/web/src/components/offerings/offerings-panel.tsx:426
 #: apps/web/src/components/ui/avatar-picker.tsx:84
 #: apps/web/src/components/ui/image-upload-field.tsx:167
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:599
@@ -8618,7 +8628,7 @@ msgstr "刪除{tag}"
 #~ msgid "Remove 「{0}」 from the marketplace?"
 #~ msgstr "從市場中刪除「{0}」？"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:388
+#: apps/web/src/desktop/market/market-toolbar.tsx:378
 msgid "Remove filter: {label}"
 msgstr "移除篩選條件：{label}"
 
@@ -8668,7 +8678,7 @@ msgid "Removing {0} stops it being swapped in or out of this pool. Its rate and 
 "limit are kept."
 msgstr "刪除 {0} 後，將無法再將其兌入或兌出此資金池。其匯率和額度會保留。"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:418
+#: apps/web/src/components/offerings/offerings-panel.tsx:423
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:367
 msgid "Removing…"
 msgstr "正在刪除…"
@@ -8806,7 +8816,7 @@ msgstr "重置"
 msgid "Reset logo"
 msgstr "重置徽標"
 
-#: apps/web/src/desktop/market/market-notices.tsx:260
+#: apps/web/src/desktop/market/market-notices.tsx:242
 msgid "Reset resources"
 msgstr "重設資源"
 
@@ -8843,7 +8853,7 @@ msgstr "正在還原…"
 msgid "Results"
 msgstr "結果"
 
-#: apps/web/src/desktop/market/market-map-desk.tsx:185
+#: apps/web/src/desktop/market/market-map-desk.tsx:186
 msgid "Results unavailable"
 msgstr "無法取得結果"
 
@@ -8928,7 +8938,7 @@ msgstr "靜修"
 #: apps/web/src/components/auth/authenticated-details-gate.tsx:58
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:38
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:66
-#: apps/web/src/components/creditable-browse-control.tsx:152
+#: apps/web/src/components/creditable-browse-control.tsx:123
 #: apps/web/src/components/resource-usage.tsx:134
 #: apps/web/src/components/retirement/my-retirement-requests.tsx:29
 #: apps/web/src/components/retirement/retirement-control.tsx:80
@@ -8937,7 +8947,7 @@ msgstr "靜修"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:227
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:243
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:127
-#: apps/web/src/components/vouchers/voucher-summary.tsx:155
+#: apps/web/src/components/vouchers/voucher-summary.tsx:156
 #: apps/web/src/components/wants/want-detail.tsx:160
 #: apps/web/src/components/wants/want-detail.tsx:285
 #: apps/web/src/components/wants/want-sheet.tsx:79
@@ -8951,8 +8961,8 @@ msgstr "靜修"
 #: apps/web/src/desktop/market/market-list-states.tsx:91
 #: apps/web/src/desktop/market/market-map-desk.tsx:220
 #: apps/web/src/desktop/market/market-map-desk.tsx:253
-#: apps/web/src/desktop/market/market-notices.tsx:129
-#: apps/web/src/desktop/market/market-notices.tsx:184
+#: apps/web/src/desktop/market/market-notices.tsx:114
+#: apps/web/src/desktop/market/market-notices.tsx:169
 #: apps/web/src/desktop/market/place-panel.tsx:140
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:61
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:99
@@ -8982,7 +8992,7 @@ msgstr "靜修"
 #: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:119
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:100
 #: apps/web/src/desktop/vouchers/detail/voucher-section-bits.tsx:70
-#: apps/web/src/desktop/vouchers/voucher-desk.tsx:133
+#: apps/web/src/desktop/vouchers/voucher-desk.tsx:134
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:56
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:130
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:386
@@ -8997,12 +9007,12 @@ msgstr "靜修"
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:323
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:339
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:50
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:147
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:125
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:53
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:69
 #: apps/web/src/features/home/ui/market-map.tsx:1232
-#: apps/web/src/features/home/ui/marketplace-page.tsx:188
-#: apps/web/src/features/home/ui/marketplace-page.tsx:249
+#: apps/web/src/features/home/ui/marketplace-page.tsx:175
+#: apps/web/src/features/home/ui/marketplace-page.tsx:236
 #: apps/web/src/features/home/ui/report-page.tsx:59
 #: apps/web/src/features/home/ui/wallet-page.tsx:160
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:463
@@ -9017,7 +9027,7 @@ msgstr "靜修"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1083
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1099
 #: apps/web/src/features/pools/ui/pool-wants-panel.tsx:32
-#: apps/web/src/features/pools/ui/pools-page.tsx:280
+#: apps/web/src/features/pools/ui/pools-page.tsx:260
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:58
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:109
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:387
@@ -9029,7 +9039,7 @@ msgstr "靜修"
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:154
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:47
 #: apps/web/src/features/wants/ui/want-form-page.tsx:37
-#: apps/web/src/features/wants/ui/wants-page.tsx:143
+#: apps/web/src/features/wants/ui/wants-page.tsx:121
 msgid "Retry"
 msgstr "重試"
 
@@ -9059,7 +9069,7 @@ msgid "Reverted"
 msgstr "已回滾"
 
 #: apps/web/src/desktop/wallet/send-desk.tsx:380
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:238
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:246
 msgid "Review"
 msgstr "核對"
 
@@ -9097,7 +9107,7 @@ msgstr "撤銷此對話？"
 msgid "Route"
 msgstr "路徑"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:155
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:152
 msgid "Routes may be out of date."
 msgstr "路徑可能已過時。"
 
@@ -9292,7 +9302,7 @@ msgstr "搜尋「{term}」"
 msgid "Search activity"
 msgstr "搜尋活動"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:131
+#: apps/web/src/features/home/ui/market-list-page.tsx:132
 msgid "Search by name or symbol"
 msgstr "按名稱或符號搜尋"
 
@@ -9301,7 +9311,7 @@ msgid "Search by voucher name, symbol, address or transaction hash."
 msgstr "依代金券名稱、符號、地址或交易雜湊搜尋。"
 
 #: apps/web/src/desktop/market/market-toolbar.tsx:173
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:77
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:69
 msgid "Search catalogs"
 msgstr "搜尋目錄"
 
@@ -9364,7 +9374,7 @@ msgstr "搜尋資金池標籤"
 #: apps/web/src/desktop/posts/post-facets.tsx:239
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:185
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:213
-#: apps/web/src/features/pools/ui/pools-page.tsx:179
+#: apps/web/src/features/pools/ui/pools-page.tsx:173
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:115
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:116
 msgid "Search pools"
@@ -9407,8 +9417,8 @@ msgstr "搜尋標籤"
 #: apps/web/src/desktop/shell/command-palette.tsx:280
 #: apps/web/src/desktop/shell/command-palette.tsx:298
 #: apps/web/src/desktop/shell/command-palette.tsx:299
-#: apps/web/src/features/home/ui/market-page.tsx:103
-#: apps/web/src/features/home/ui/marketplace-page.tsx:109
+#: apps/web/src/features/home/ui/market-page.tsx:102
+#: apps/web/src/features/home/ui/marketplace-page.tsx:110
 msgid "Search the marketplace"
 msgstr "搜尋市場"
 
@@ -9455,7 +9465,7 @@ msgid "Search vouchers, pools, people"
 msgstr "搜尋代金券、資金池、使用者"
 
 #: apps/web/src/desktop/market/market-toolbar.tsx:167
-#: apps/web/src/features/wants/ui/wants-page.tsx:65
+#: apps/web/src/features/wants/ui/wants-page.tsx:61
 msgid "Search Wants"
 msgstr "搜尋需求"
 
@@ -9594,7 +9604,7 @@ msgid "Sell to a bank account"
 msgstr "賣出至銀行帳戶"
 
 #: apps/web/src/components/account-retirement/recovery-page.tsx:131
-#: apps/web/src/components/vouchers/voucher-summary.tsx:342
+#: apps/web/src/components/vouchers/voucher-summary.tsx:344
 #: apps/web/src/desktop/messaging/composer-desk.tsx:109
 #: apps/web/src/desktop/shell/command-palette.tsx:101
 #: apps/web/src/desktop/shell/crumbs.tsx:32
@@ -9684,7 +9694,7 @@ msgstr "正在傳送…"
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:960
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:78
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:89
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:595
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:606
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:148
 #: apps/web/src/features/home/ui/activity-page.tsx:502
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:193
@@ -9755,7 +9765,7 @@ msgstr "設定"
 msgid "Settling…"
 msgstr "正在結算…"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:442
+#: apps/web/src/components/vouchers/voucher-summary.tsx:444
 #: apps/web/src/components/wants/want-detail.tsx:361
 #: apps/web/src/desktop/account/settings-desk.tsx:119
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:629
@@ -9862,7 +9872,7 @@ msgstr "顯示這些快速鍵"
 
 #. placeholder {0}: viewportList.rows.length
 #. placeholder {1}: viewportList.total
-#: apps/web/src/desktop/market/market-map-desk.tsx:181
+#: apps/web/src/desktop/market/market-map-desk.tsx:182
 msgid "Showing {0} of {1} in this area"
 msgstr "此區域顯示 {0}/{1}"
 
@@ -9910,12 +9920,12 @@ msgstr "向加入此資金池的任何人展示"
 msgid "Shown to anyone using this pool"
 msgstr "向任何使用此資金池的人展示"
 
-#: apps/web/src/components/creditable-browse-control.tsx:91
+#: apps/web/src/components/creditable-browse-control.tsx:56
 #: apps/web/src/components/market-bar.tsx:140
 #: apps/web/src/desktop/auth/sign-in-action.tsx:21
-#: apps/web/src/desktop/market/market-notices.tsx:91
+#: apps/web/src/desktop/market/market-notices.tsx:76
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:269
-#: apps/web/src/routes/__root.tsx:374
+#: apps/web/src/routes/__root.tsx:377
 msgid "Sign in"
 msgstr "登入"
 
@@ -9937,8 +9947,8 @@ msgstr "登入後查看路線"
 #~ msgid "Sign in or sign up"
 #~ msgstr "登入或註冊"
 
-#: apps/web/src/components/creditable-browse-control.tsx:87
-#: apps/web/src/desktop/market/market-notices.tsx:96
+#: apps/web/src/components/creditable-browse-control.tsx:52
+#: apps/web/src/desktop/market/market-notices.tsx:81
 msgid "Sign in to browse results available through your Credit pools."
 msgstr "登入以瀏覽您的信用資金池中可用的結果。"
 
@@ -9986,7 +9996,7 @@ msgstr "使用私鑰登入"
 msgid "Sign in with QR card"
 msgstr "使用 QR 碼卡登入"
 
-#: apps/web/src/routes/__root.tsx:362
+#: apps/web/src/routes/__root.tsx:365
 msgid "Sign in with this card?"
 msgstr "使用此卡登入？"
 
@@ -10056,7 +10066,7 @@ msgstr "簽署者與核准"
 msgid "Signing out…"
 msgstr "正在退出…"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:511
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:522
 msgid "Signing…"
 msgstr "正在簽署…"
 
@@ -10101,8 +10111,8 @@ msgstr "部分檔案已跳過。請使用小於 8 MB 的 JPEG、PNG 或 WebP 圖
 msgid "Some photos didn't upload. Try adding them again."
 msgstr "部分照片未上傳。請重新新增。"
 
-#: apps/web/src/desktop/market/market-notices.tsx:225
-#: apps/web/src/features/pools/ui/pools-page.tsx:293
+#: apps/web/src/desktop/market/market-notices.tsx:210
+#: apps/web/src/features/pools/ui/pools-page.tsx:273
 msgid "Some pools couldn't be checked. Showing verified results."
 msgstr "無法檢查某些資金池。顯示經過驗證的結果。"
 
@@ -10115,8 +10125,8 @@ msgstr "無法檢查某些資金池。顯示經過驗證的結果。"
 msgid "Something went wrong."
 msgstr "出了點問題。"
 
-#: apps/web/src/desktop/market/market-list-desk.tsx:177
-#: apps/web/src/desktop/market/market-map-desk.tsx:194
+#: apps/web/src/desktop/market/market-list-desk.tsx:172
+#: apps/web/src/desktop/market/market-map-desk.tsx:195
 msgid "Sorted nearest to the map view"
 msgstr "按距地圖檢視中心的遠近排序"
 
@@ -10310,7 +10320,7 @@ msgstr "不支援 SVG 檔案。使用 PNG、JPEG 或 WebP。"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:55
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:58
-#: apps/web/src/components/offerings/offerings-panel.tsx:570
+#: apps/web/src/components/offerings/offerings-panel.tsx:575
 #: apps/web/src/desktop/activity/transactions-desk.tsx:600
 #: apps/web/src/desktop/activity/transactions-desk.tsx:815
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:362
@@ -10418,11 +10428,11 @@ msgstr "兌換 · 30 天"
 msgid "Swaps settle within the market association..."
 msgstr "兌換在市場協會內結算…"
 
-#: apps/web/src/routes/__root.tsx:374
+#: apps/web/src/routes/__root.tsx:377
 msgid "Switch wallet"
 msgstr "切換錢包"
 
-#: apps/web/src/routes/__root.tsx:362
+#: apps/web/src/routes/__root.tsx:365
 msgid "Switch wallet?"
 msgstr "切換錢包？"
 
@@ -10464,16 +10474,16 @@ msgstr "符號已被佔用，改用 {0}。"
 #: apps/web/src/desktop/wants/want-form-desk.tsx:145
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:80
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:93
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:102
-#: apps/web/src/features/home/ui/marketplace-page.tsx:134
-#: apps/web/src/features/home/ui/offers-page.tsx:126
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:87
+#: apps/web/src/features/home/ui/marketplace-page.tsx:128
+#: apps/web/src/features/home/ui/offers-page.tsx:119
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:66
 #: apps/web/src/features/pools/ui/pool-profile-fields.tsx:140
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:362
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:474
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:52
 #: apps/web/src/features/wants/ui/want-form-page.tsx:120
-#: apps/web/src/features/wants/ui/wants-page.tsx:94
+#: apps/web/src/features/wants/ui/wants-page.tsx:79
 msgid "Tags"
 msgstr "標籤"
 
@@ -10508,7 +10518,7 @@ msgstr "拍照"
 
 #. placeholder {0}: shown.join(", ")
 #. placeholder {1}: more > 0 ? ` +${more}` : ""
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:433
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:444
 msgid "Takes <0>{0}{1}</0>"
 msgstr "接受 <0>{0}{1}</0>"
 
@@ -10811,7 +10821,7 @@ msgstr "資金池無法發佈。"
 msgid "The pool doesn't hold that much {0}."
 msgstr "資金池沒有那麼多 {0}。"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:490
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:501
 #: apps/web/src/features/pools/hooks/use-pool-swap-form.ts:329
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "報價已更改。確認前請檢查更新的金額。"
@@ -10866,10 +10876,10 @@ msgstr "暫時沒有可與此代金券兌換的內容。"
 
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:55
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:61
-#: apps/web/src/features/home/ui/marketplace-page.tsx:164
-#: apps/web/src/features/home/ui/offers-page.tsx:156
+#: apps/web/src/features/home/ui/marketplace-page.tsx:151
+#: apps/web/src/features/home/ui/offers-page.tsx:142
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:75
-#: apps/web/src/features/wants/ui/wants-page.tsx:124
+#: apps/web/src/features/wants/ui/wants-page.tsx:102
 msgid "These filters aren't valid."
 msgstr "這些篩選條件無效。"
 
@@ -10991,11 +11001,11 @@ msgstr "這是另一張登入卡。"
 
 #: apps/web/src/components/creditable-browse-control.tsx:73
 #: apps/web/src/desktop/market/market-notices.tsx:80
-msgid "This link contains an invalid Credit filter."
-msgstr "此連結包含無效的「可存入」篩選條件。"
+#~ msgid "This link contains an invalid Credit filter."
+#~ msgstr "此連結包含無效的「可存入」篩選條件。"
 
-#: apps/web/src/desktop/market/market-notices.tsx:169
-#: apps/web/src/features/pools/ui/pools-page.tsx:248
+#: apps/web/src/desktop/market/market-notices.tsx:154
+#: apps/web/src/features/pools/ui/pools-page.tsx:228
 msgid "This link contains an invalid output voucher."
 msgstr "此連結包含無效輸出代金券。"
 
@@ -11389,7 +11399,7 @@ msgstr "旅行"
 #: apps/web/src/components/messaging/messages-section.tsx:34
 #: apps/web/src/components/messaging/notifications-section.tsx:31
 #: apps/web/src/components/nfc-card-prompt.tsx:112
-#: apps/web/src/components/offerings/offerings-panel.tsx:187
+#: apps/web/src/components/offerings/offerings-panel.tsx:188
 #: apps/web/src/components/reviews/redemption-review-prompt.tsx:42
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:77
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:149
@@ -11509,7 +11519,7 @@ msgid "Unable to load language. Reverted to English."
 msgstr "無法載入語言。恢復為英語。"
 
 #: apps/web/src/components/resource-usage.tsx:62
-#: apps/web/src/components/vouchers/voucher-summary.tsx:146
+#: apps/web/src/components/vouchers/voucher-summary.tsx:147
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:295
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:134
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:677
@@ -11632,7 +11642,7 @@ msgid "Unverified"
 msgstr "未驗證"
 
 #. placeholder {0}: symbolOf(labels, output)
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:330
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:341
 msgid "Up to <0>{maxOut} {0}</0>"
 msgstr "最多 <0>{maxOut} {0}</0>"
 
@@ -11883,6 +11893,10 @@ msgstr "價值：{0} {1}"
 msgid "Value: {0} {1} of offerings"
 msgstr "商品或服務項目價值：{0} {1}"
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:321
+msgid "via {pools}"
+msgstr "經由 {pools}"
+
 #: apps/web/src/desktop/account/settings-desk.tsx:471
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:87
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:89
@@ -11918,7 +11932,7 @@ msgid "View image full screen"
 msgstr "全螢幕查看圖片"
 
 #. placeholder {0}: offering.name
-#: apps/web/src/components/offerings/offerings-panel.tsx:390
+#: apps/web/src/components/offerings/offerings-panel.tsx:395
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:283
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:323
 msgid "View offering details: {0}"
@@ -11985,15 +11999,15 @@ msgstr "代金券"
 #: apps/web/src/desktop/wallet/send-desk.tsx:291
 #: apps/web/src/desktop/wallet/send-desk.tsx:421
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:201
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:89
-#: apps/web/src/features/home/ui/marketplace-page.tsx:433
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:86
+#: apps/web/src/features/home/ui/marketplace-page.tsx:428
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:13
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:135
 #: apps/web/src/features/posts/hooks/use-post-editor.ts:149
 msgid "Voucher"
 msgstr "代金券"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:321
+#: apps/web/src/components/vouchers/voucher-summary.tsx:323
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:245
 msgid "Voucher actions"
 msgstr "代金券操作"
@@ -12116,7 +12130,7 @@ msgstr "代金券符號不得超過 6 個字元"
 msgid "Voucher tags"
 msgstr "代金券標籤"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:113
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:110
 msgid "Voucher to spend"
 msgstr "要花費的代金券"
 
@@ -12151,7 +12165,7 @@ msgstr "代金券：任何"
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:400
 #: apps/web/src/desktop/wants/want-place-desk.tsx:291
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:29
-#: apps/web/src/features/home/ui/market-list-page.tsx:125
+#: apps/web/src/features/home/ui/market-list-page.tsx:126
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:104
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:116
@@ -12164,7 +12178,7 @@ msgstr "代金券"
 #~ msgid "Vouchers by {0}"
 #~ msgstr "{0} 的代用券"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:226
+#: apps/web/src/features/home/ui/market-list-page.tsx:213
 msgid "Vouchers list"
 msgstr "代金券清單"
 
@@ -12274,7 +12288,7 @@ msgstr "錢包登入狀態"
 #: apps/web/src/desktop/wants/want-form-desk.tsx:412
 #: apps/web/src/desktop/wants/want-outline.tsx:11
 #: apps/web/src/desktop/wants/want-place-desk.tsx:58
-#: apps/web/src/features/home/ui/marketplace-page.tsx:432
+#: apps/web/src/features/home/ui/marketplace-page.tsx:427
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:133
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:64
 msgid "Want"
@@ -12305,7 +12319,7 @@ msgstr "需求圖片"
 #: apps/web/src/desktop/shell/sidebar.tsx:193
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:43
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:28
-#: apps/web/src/features/wants/ui/wants-page.tsx:59
+#: apps/web/src/features/wants/ui/wants-page.tsx:55
 msgid "Wants"
 msgstr "需求"
 
@@ -12347,7 +12361,7 @@ msgstr "無法驗證此代金券是否已有發行量。"
 
 #: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:39
 #: apps/web/src/components/vouchers/voucher-about.tsx:102
-#: apps/web/src/components/vouchers/voucher-summary.tsx:379
+#: apps/web/src/components/vouchers/voucher-summary.tsx:381
 #: apps/web/src/desktop/account/profile-desk.tsx:221
 #: apps/web/src/desktop/account/profile-desk.tsx:237
 #: apps/web/src/desktop/onboarding/paper-wallet-desk.tsx:110
@@ -12531,6 +12545,10 @@ msgstr "每年"
 msgid "Yes"
 msgstr "是"
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:159
+msgid "You already have <0>{heldAmount} {targetSymbol}</0>"
+msgstr "您已有 <0>{heldAmount} {targetSymbol}</0>"
+
 #: apps/web/src/desktop/catalogs/catalog-create-desk.tsx:68
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:48
 msgid "You already have a catalog."
@@ -12609,8 +12627,8 @@ msgstr "您沒有持有此資金池接受的代金券。"
 msgid "You don't hold enough for this amount."
 msgstr "您的餘額不足以支付此金額。"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:132
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:562
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:129
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:573
 msgid "You get"
 msgstr "您獲得"
 
@@ -12666,8 +12684,8 @@ msgstr "您已收到"
 msgid "You send"
 msgstr "您傳送"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:132
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:561
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:129
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:572
 msgid "You spend"
 msgstr "您花費"
 
@@ -12723,8 +12741,8 @@ msgid "Your account is awaiting approval. You will be able to continue once it "
 "is approved."
 msgstr "您的帳戶正在等待批准。批准後即可繼續。"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:133
-#: apps/web/src/components/vouchers/voucher-summary.tsx:137
+#: apps/web/src/components/vouchers/voucher-summary.tsx:134
+#: apps/web/src/components/vouchers/voucher-summary.tsx:138
 #: apps/web/src/desktop/vouchers/detail/voucher-section-bits.tsx:61
 msgid "Your Balance"
 msgstr "您的餘額"
