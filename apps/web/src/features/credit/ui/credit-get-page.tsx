@@ -553,7 +553,7 @@ function CreditRouteDetails({
       </p>
       <ol className="space-y-2">
         {route.hops.map((hop, index) => {
-          const position = index + 1;
+          const position = formatTokenAmountFixed(String(index + 1), 0, 0, locale);
           const path = `${symbolOf(labels, hop.tokenIn)} → ${symbolOf(labels, hop.tokenOut)}`;
           const poolName = hop.pool.name;
           return (
@@ -870,7 +870,7 @@ function CreditReviewBody({
         </summary>
         <div className="border-t border-border">
           {quote.hops.map((hop, index) => {
-            const position = index + 1;
+            const position = formatTokenAmountFixed(String(index + 1), 0, 0, locale);
             const path = `${symbolOf(labels, hop.tokenIn)} → ${symbolOf(labels, hop.tokenOut)}`;
             const poolName = poolNames[index] ?? hop.pool;
             return (

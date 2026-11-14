@@ -120,7 +120,7 @@ export function RoutedSwapReceiptPage({ trackingId }: { trackingId: string }) {
             </summary>
             <div className="border-t border-border">
               {swap.hops.map((hop, index) => {
-                const position = index + 1;
+                const position = formatTokenAmountFixed(String(index + 1), 0, 0, locale);
                 const path = `${symbol(hop.tokenIn)} → ${symbol(hop.tokenOut)}`;
                 const poolName = poolNames[index] ?? hop.pool;
                 return (
