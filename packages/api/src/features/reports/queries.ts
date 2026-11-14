@@ -6,6 +6,8 @@ import { DEFAULT_POST_TIMING, type PostTiming } from "@clc/core/features/reports
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import type { ManagedReportsParams, ReportCursor, ReportFilter, ReportsClient } from "./client";
 import { isRetryableBackendError } from "../../client/errors";
+import type { CreditScope } from "../credit-router/client";
+import { creditScopeKey } from "../credit-router/queries";
 
 /**
  * Canonical query identity and base options for reports.
@@ -52,6 +54,7 @@ export const reportKeys = {
     pools: readonly VoucherRef[] | undefined,
     timing: PostTiming,
     facets: boolean,
+    credit?: CreditScope,
   ) =>
     [
       "clc",
@@ -62,6 +65,7 @@ export const reportKeys = {
       pools?.map(serializeVoucherRef).sort() ?? [],
       timing,
       facets,
+      creditScopeKey(credit),
     ] as const,
 
   /**
@@ -199,6 +203,7 @@ export function reportMapQueryOptions(
     filter: CatalogFilter;
     bounds: readonly MarketBoundingBox[];
     creditablePools?: readonly VoucherRef[];
+    credit?: CreditScope;
     timing?: PostTiming;
     facets: boolean;
   },
@@ -210,6 +215,7 @@ export function reportMapQueryOptions(
       input.creditablePools,
       input.timing ?? DEFAULT_POST_TIMING,
       input.facets,
+      input.credit,
     ),
     queryFn: async ({ signal }) => {
       const rows = [];
@@ -224,6 +230,7 @@ export function reportMapQueryOptions(
             cursor,
             facets: input.facets && cursor === undefined,
             creditablePools: input.creditablePools,
+            credit: input.credit,
             timing: input.timing ?? DEFAULT_POST_TIMING,
           },
           signal,

@@ -19,15 +19,24 @@ import { poolDepositCap } from "@clc/core/features/pools/logic";
 
 /** The vouchers sharing one price feed, or the ones sharing none. */
 export type PoolFeedGroup = {
-  /** Feed id, or `unpriced` for the vouchers with no mapping. */
+  /** Aggregator address, or `unpriced` for the vouchers with no mapping. */
   key: string;
+  /**
+   * The registry name. Null for the unpriced group and for an aggregator the
+   * registry does not list, which is set on chain but unverified.
+   */
   name: string | null;
   address: HexAddress | null;
   vouchers: PoolVoucher[];
 };
 
 /**
- * Pool vouchers grouped by the feed that prices them.
+ * Pool vouchers grouped by the aggregator that prices them.
+ *
+ * Keyed on the address rather than the registry id: an aggregator the registry
+ * does not list has no id but still prices its vouchers, and grouping on the id
+ * would file them with the unmapped ones. Two registry names sharing one
+ * aggregator are one feed for the same reason.
  *
  * One aggregator usually serves several vouchers, so the group is the unit of
  * blast radius: a feed that goes stale takes every voucher in its row with it.
@@ -39,17 +48,18 @@ export function groupPoolFeeds(vouchers: PoolVoucher[]): PoolFeedGroup[] {
   const unpriced: PoolVoucher[] = [];
 
   for (const voucher of vouchers) {
-    if (!voucher.oracleFeedId) {
+    if (!voucher.oracleAddress) {
       unpriced.push(voucher);
       continue;
     }
-    const existing = groups.get(voucher.oracleFeedId);
+    const existing = groups.get(voucher.oracleAddress);
     if (existing) {
       existing.vouchers.push(voucher);
+      existing.name ??= voucher.oracleName;
       continue;
     }
-    groups.set(voucher.oracleFeedId, {
-      key: voucher.oracleFeedId,
+    groups.set(voucher.oracleAddress, {
+      key: voucher.oracleAddress,
       name: voucher.oracleName,
       address: voucher.oracleAddress,
       vouchers: [voucher],
@@ -71,7 +81,7 @@ export type PoolComposition = {
   pricing: UserPool["quoterType"];
   unpriced: number;
   blocked: number;
-  /** Distinct recorded feeds, not counting the unpriced group. */
+  /** Distinct aggregators, verified or not, not counting the unpriced group. */
   feeds: number;
   offers: number;
   liveOffers: number;
@@ -92,11 +102,11 @@ export function poolComposition(
     if (
       pool.quoterType === "relative" ||
       pool.quoterType === "decimal" ||
-      (pool.quoterType === "oracle" && voucher.oracleFeedId)
+      (pool.quoterType === "oracle" && voucher.oracleAddress)
     )
       priced += 1;
-    if (pool.quoterType === "oracle" && voucher.oracleFeedId) {
-      feeds.add(voucher.oracleFeedId);
+    if (pool.quoterType === "oracle" && voucher.oracleAddress) {
+      feeds.add(voucher.oracleAddress);
     }
     if (poolDepositCap(pool, voucher).kind === "blocked") blocked += 1;
     offers += voucher.offerCount;

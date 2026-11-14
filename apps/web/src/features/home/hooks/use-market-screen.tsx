@@ -1,4 +1,5 @@
 import { viewportToBoundingBoxes } from "@clc/api/features/market/client";
+import { withCredit } from "#/lib/navigation/pool-search";
 import { wantDetailQueryOptions } from "@clc/api/features/wants/queries";
 import { canonicalMarketBounds } from "@clc/core/features/catalog/nearby";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
@@ -58,7 +59,7 @@ type MarketMapStatus =
 export function useMarketScreen({
   isAuthenticated = false,
   locationOwner = GUEST_STORAGE_OWNER,
-  creditableSearch,
+  creditOn = false,
   kinds,
   creditRoute = "home",
   output,
@@ -66,7 +67,7 @@ export function useMarketScreen({
 }: {
   isAuthenticated?: boolean;
   locationOwner?: string;
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditOn?: boolean;
   kinds?: readonly MarketMapKind[];
   /** Where Credit writes its search param. The phone map is the home tab. */
   creditRoute?: "home" | "market";
@@ -174,7 +175,7 @@ export function useMarketScreen({
   const storageOwner = useStorageOwner();
   const filter = useMarketPostFilter(storageOwner, output !== undefined && output.state !== "off");
   const postTiming = usePostTiming(storageOwner);
-  const credit = useCreditableBrowse(creditableSearch);
+  const credit = useCreditableBrowse(creditOn);
   const mapResources = useMarketMapResourceSelection(locationOwner);
   const activeKinds = kinds ?? mapResources.selected;
   const includesPosts = activeKinds.includes("post");
@@ -189,8 +190,10 @@ export function useMarketScreen({
     postVoucherMatch: parsedFilter.voucherMatch,
     postPools: includesPosts ? parsedFilter.pools : [],
     postPoolMatch: parsedFilter.poolMatch,
-    // Credit's pools, narrowed to the requested output's when the link has one.
-    creditablePools: output ? output.poolRefs : credit.enabled ? credit.poolRefs : undefined,
+    // With an output voucher the filter is that voucher's pools, already narrowed to
+    // Credit's; otherwise Credit alone is resolved by the server for this wallet.
+    creditablePools: output?.address ? output.poolRefs : undefined,
+    credit: !output?.address && credit.enabled ? credit.scope : undefined,
   };
   const discoveryEnabled =
     activeKinds.length > 0 &&
@@ -356,22 +359,13 @@ export function useMarketScreen({
   const isEmpty =
     activeKinds.length > 0 && visibleCount === 0 && filter.result.ok && marketMap.isSettled;
 
-  const changeCredit = (checked: boolean) =>
+  const changeCredit = (on: boolean) =>
     void navigate({
       to: creditRoute === "market" ? "/market" : "/",
       search: (previous) =>
         creditRoute === "market"
-          ? { ...previous, creditable: checked }
-          : { ...previous, tab: "market", view: "map", creditable: checked },
-    });
-  const clearCredit = () =>
-    void navigate({
-      to: creditRoute === "market" ? "/market" : "/",
-      replace: true,
-      search: (previous) =>
-        creditRoute === "market"
-          ? { ...previous, creditable: false }
-          : { ...previous, tab: "market", view: "map", creditable: false },
+          ? { ...previous, ...withCredit(on) }
+          : { ...previous, tab: "market", view: "map", ...withCredit(on) },
     });
 
   // What the result count may claim. A zero is only a count once a result set
@@ -414,12 +408,7 @@ export function useMarketScreen({
         <Trans>Choose a resource type to show it on the map.</Trans>
       </div>
     ) : mapStatus?.kind === "credit" ? (
-      <CreditableBrowseControl
-        part="feedback"
-        state={credit}
-        onChange={changeCredit}
-        onClear={clearCredit}
-      />
+      <CreditableBrowseControl part="feedback" state={credit} onChange={changeCredit} />
     ) : mapStatus?.kind === "credit-empty" ? (
       <div className="border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
         <Trans>No marketplace results are available through your Credit pools.</Trans>
@@ -503,7 +492,6 @@ export function useMarketScreen({
     mapNotice,
     mapStatus,
     changeCredit,
-    clearCredit,
     clearFilters,
   };
 }

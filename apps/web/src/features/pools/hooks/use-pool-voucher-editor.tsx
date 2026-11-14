@@ -1,12 +1,21 @@
+import type { OracleFeed } from "@clc/api/features/oracle-feeds/client";
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import {
   buildAddPoolVoucherCalls,
   buildRemovePoolVoucherCalls,
+  findPoolVoucherFeed,
   POOL_PRICE_INDEX_DECIMALS,
+  POOL_VOUCHER_CUSTOM_FEED,
+  type PoolVoucherFeedInput,
+  type PoolVoucherPricing,
+  poolVoucherFeedSchema,
   poolVoucherUnitValueFromCap,
   poolVoucherRateSchema,
+  resolvePoolVoucherFeedAddress,
+  seedPoolVoucherFeedInput,
   seedPoolVoucherRateInput,
+  toPoolVoucherFeedConfig,
   toPoolVoucherRateConfig,
   type PoolVoucherRateInput,
 } from "@clc/core/features/pool-admin/logic";
@@ -21,6 +30,7 @@ import { BackendApiError } from "@clc/api/client/errors";
 import { useIsMutating } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import {
@@ -33,7 +43,11 @@ import {
   usePoolAdminRelay,
 } from "#/features/pools/hooks/use-pool-admin";
 import {
+  type OracleFeedRound,
+  useOracleFeedRounds,
+  useOracleFeeds,
   usePoolQuoterKind,
+  usePoolVoucherOracles,
   usePoolVoucherRatesByAddress,
   type PoolQuoterKind,
 } from "#/features/pools/hooks/use-pool-quoter";
@@ -64,6 +78,34 @@ export type PoolVoucherEditorVoucher = {
   symbol: string;
   decimals: number | null;
 };
+
+/**
+ * What the form is seeded with, by quoter. A RelativeQuoter takes a typed rate;
+ * an OracleQuoter takes a feed, and its credit limit is in voucher units.
+ */
+export type PoolVoucherPricingSeed =
+  | { kind: "relative"; values: PoolVoucherRateInput; ratePpm: string }
+  | {
+      kind: "oracle";
+      values: PoolVoucherFeedInput;
+      /** The aggregator `oracles(token)` returns now; null when none is set. */
+      currentAggregator: `0x${string}` | null;
+      /** The bound the quoter applies to that mapping: its own, or the global one. */
+      currentMaxStalenessSeconds: number;
+      /** The quoter's global bound, which a feed sent without one falls back to. */
+      globalMaxStalenessSeconds: number;
+      feeds: readonly OracleFeed[];
+    };
+
+/** Both field groups in one form: each quoter validates and writes only its own. */
+type PoolVoucherFormValues = PoolVoucherRateInput & PoolVoucherFeedInput;
+
+const poolVoucherFormShape = z.object({
+  exchangeRate: z.string(),
+  creditLimit: z.string(),
+  feed: z.string(),
+  customAddress: z.string(),
+});
 
 export type VoucherBalanceState =
   | { status: "loading" }
@@ -180,10 +222,17 @@ export function usePoolVoucherEditor({
   const hasLimiter = pool.limiterAddress !== null;
   const unitSymbol = pool.unitOfAccount ?? pool.symbol;
   const canConfigure = POOL_QUOTER_SUPPORT[quoter.kind];
+  const oracle = quoter.kind === "oracle";
+  const ratesRead = canConfigure && !oracle;
   const selectedAddresses = selected ? [selected.address] : [];
-  const rates = usePoolVoucherRatesByAddress(pool, selectedAddresses, !!selected && canConfigure, {
+  const rates = usePoolVoucherRatesByAddress(pool, selectedAddresses, !!selected && ratesRead, {
     failOnReadError: true,
   });
+  const oracles = usePoolVoucherOracles(pool, selectedAddresses, !!selected && oracle);
+  const feeds = useOracleFeeds(oracle);
+  // A refetch that fails keeps the list it already had: only a list never read blocks.
+  const feedList = feeds.data;
+  const currentOracle = selected ? oracles.data?.get(selected.address.toLowerCase()) : undefined;
   const treasury = usePoolTreasury(pool, selectedAddresses, !!selected);
   const treasuryRow = selected ? treasury.data?.get(selected.address.toLowerCase()) : undefined;
   const currentRatePpm = selected ? rates.data?.get(selected.address.toLowerCase()) : undefined;
@@ -191,8 +240,12 @@ export function usePoolVoucherEditor({
   const seedCapRaw = hasLimiter ? (treasuryRow?.limitRaw ?? null) : null;
   const decimalsPending = !!picked && pickedDetail.isPending;
   const decimalsUnread = !!selected && !decimalsPending && selected.decimals === null;
-  const ratePending = !!selected && canConfigure && rates.isPending;
-  const rateUnread = !!selected && canConfigure && !ratePending && !seedRatePpm;
+  const ratePending = !!selected && ratesRead && rates.isPending;
+  const rateUnread = !!selected && ratesRead && !ratePending && !seedRatePpm;
+  const oraclePending = !!selected && oracle && oracles.isPending;
+  const oracleUnread = !!selected && oracle && !oraclePending && !currentOracle;
+  const feedsPending = oracle && !feedList && feeds.isPending;
+  const feedsUnread = oracle && !feedList && feeds.isError;
   const treasuryPending = !!selected && treasury.isPending;
   const capUnread = !!selected && hasLimiter && !treasuryPending && seedCapRaw === null;
   const blockedReason = quoter.isPending
@@ -205,11 +258,15 @@ export function usePoolVoucherEditor({
           ? quoterNotice(quoter.kind)
           : rateUnread
             ? t`Couldn't read this voucher's current rate, so it can't be changed right now.`
-            : capUnread
-              ? t`Couldn't load credit limits.`
-              : decimalsUnread
-                ? t`This voucher's decimals are unknown, so a limit can't be set.`
-                : null;
+            : oracleUnread
+              ? t`Couldn't read this voucher's current price feed, so it can't be changed right now.`
+              : feedsUnread
+                ? t`Couldn't load price feeds.`
+                : capUnread
+                  ? t`Couldn't load credit limits.`
+                  : decimalsUnread
+                    ? t`This voucher's decimals are unknown, so a limit can't be set.`
+                    : null;
   const balance: VoucherBalanceState = !selected
     ? { status: "loading" }
     : decimalsPending || treasuryPending
@@ -218,16 +275,20 @@ export function usePoolVoucherEditor({
         ? { status: "ready", raw: treasuryRow.balanceRaw }
         : { status: "unavailable" };
   const retryReads = () => {
-    if (canConfigure) void rates.refetch();
+    if (ratesRead) void rates.refetch();
+    if (oracle) void oracles.refetch();
     void treasury.refetch();
   };
-  const retryingReads = (canConfigure && rates.isFetching) || treasury.isFetching;
+  const retryingReads =
+    (ratesRead && rates.isFetching) || (oracle && oracles.isFetching) || treasury.isFetching;
   const retryBlockedReads = () => {
     if (membershipUnread) void membership.refetch();
-    if (rateUnread || capUnread) retryReads();
+    if (feedsUnread) void feeds.refetch();
+    if (rateUnread || oracleUnread || capUnread) retryReads();
   };
+  const capReady = !hasLimiter || seedCapRaw !== null;
   const chainSeed =
-    selected && seedRatePpm && (!hasLimiter || seedCapRaw !== null)
+    selected && seedRatePpm && capReady
       ? seedPoolVoucherRateInput({
           exchangeRatePpm: seedRatePpm,
           capRaw: seedCapRaw,
@@ -235,11 +296,33 @@ export function usePoolVoucherEditor({
         })
       : null;
   // A link's rate and limit replace the chain's only once every read the chain
-  // seed waits on is in, so no block is lifted by them.
+  // seed waits on is in, so no block is lifted by them. They are relative-pool
+  // figures: a link names no feed, so an oracle pool takes only its voucher.
   const seed =
     chainSeed && seeds && selected?.address === seeds.candidate
       ? applyApproveSeed(chainSeed, seeds, hasLimiter)
       : chainSeed;
+  const pricingSeed: PoolVoucherPricingSeed | null = oracle
+    ? selected && currentOracle && feedList && capReady
+      ? {
+          kind: "oracle",
+          values: seedPoolVoucherFeedInput({
+            aggregatorAddress: currentOracle.aggregatorAddress,
+            feeds: feedList,
+            capRaw: seedCapRaw,
+            decimals: selected.decimals,
+          }),
+          currentAggregator: currentOracle.aggregatorAddress,
+          currentMaxStalenessSeconds: Number(
+            currentOracle.maxStalenessSeconds || currentOracle.globalMaxStalenessSeconds,
+          ),
+          globalMaxStalenessSeconds: Number(currentOracle.globalMaxStalenessSeconds),
+          feeds: feedList,
+        }
+      : null
+    : seed && seedRatePpm
+      ? { kind: "relative", values: seed, ratePpm: seedRatePpm }
+      : null;
   // A link never becomes a change to a live voucher: that stays a deliberate
   // `manage`.
   useEffect(() => {
@@ -248,11 +331,13 @@ export function usePoolVoucherEditor({
 
   const configuring =
     selected &&
-    seed &&
+    pricingSeed &&
     canConfigure &&
     !quoter.isPending &&
     !membershipPending &&
     !ratePending &&
+    !oraclePending &&
+    !feedsPending &&
     !treasuryPending &&
     !blockedReason
       ? selected
@@ -288,6 +373,11 @@ export function usePoolVoucherEditor({
     decimalsPending,
     ratePending,
     rateUnread,
+    oraclePending,
+    oracleUnread,
+    feedsPending,
+    feedsUnread,
+    retryingFeeds: feeds.isFetching,
     treasuryPending,
     capUnread,
     blockedReason,
@@ -295,7 +385,7 @@ export function usePoolVoucherEditor({
     retryReads,
     retryingReads,
     retryBlockedReads,
-    seed,
+    pricingSeed,
     configuring,
   };
 }
@@ -309,9 +399,8 @@ export function usePoolVoucherConfiguration({
   pool,
   voucher,
   selected,
-  seed,
-  seedRatePpm,
-  seedCapRaw,
+  pricingSeed: openingPricingSeed,
+  seedCapRaw: openingCapRaw,
   hasLimiter,
   register,
   registrationUnknown,
@@ -320,8 +409,7 @@ export function usePoolVoucherConfiguration({
   pool: UserPool;
   voucher: PoolVoucher | null;
   selected: PoolVoucherEditorVoucher;
-  seed: PoolVoucherRateInput;
-  seedRatePpm: string;
+  pricingSeed: PoolVoucherPricingSeed;
   seedCapRaw: string | null;
   hasLimiter: boolean;
   register: boolean;
@@ -333,13 +421,39 @@ export function usePoolVoucherConfiguration({
   // Any batch for this pool, including one the other view started before a
   // phone/desktop swap: a second press would relay beside it.
   const inFlight = useIsMutating({ mutationKey: poolAdminRelayMutationKey(pool.address) }) > 0;
+  // What the form was seeded with, held for the life of the form. The chain
+  // reads behind the seed can refresh after it opens; comparing the steward's
+  // untouched fields against a newer value would read them as edits and write
+  // the older value back over it. Only a field the steward changed is written.
+  const [{ pricingSeed, seedCapRaw }] = useState(() => ({
+    pricingSeed: openingPricingSeed,
+    seedCapRaw: openingCapRaw,
+  }));
   const [confirmingRemoval, setConfirmingRemoval] = useState(false);
   // Save and Remove share one relay; this says which of the two is waiting.
   const [removing, setRemoving] = useState(false);
   const saving = inFlight && !removing;
+  const defaultValues: PoolVoucherFormValues =
+    pricingSeed.kind === "relative"
+      ? { ...pricingSeed.values, feed: "", customAddress: "" }
+      : { ...pricingSeed.values, exchangeRate: "" };
   const form = useForm({
-    defaultValues: seed,
-    validators: { onSubmit: poolVoucherRateSchema({ requireCreditLimit: hasLimiter }) },
+    defaultValues,
+    validators: {
+      // The whole form's shape, held to the active quoter's own rules only.
+      onSubmit: poolVoucherFormShape.superRefine((value, ctx) => {
+        const rules =
+          pricingSeed.kind === "relative"
+            ? poolVoucherRateSchema({ requireCreditLimit: hasLimiter })
+            : poolVoucherFeedSchema({
+                requireCreditLimit: hasLimiter,
+                decimals: selected.decimals,
+              });
+        for (const issue of rules.safeParse(value).error?.issues ?? []) {
+          ctx.addIssue({ code: "custom", path: issue.path, message: issue.message });
+        }
+      }),
+    },
     onSubmit: async ({ value }) => {
       if (inFlight) return;
       if (hasLimiter && selected.decimals === null) {
@@ -347,14 +461,30 @@ export function usePoolVoucherConfiguration({
         return;
       }
 
-      const config = toPoolVoucherRateConfig({
-        values: value,
-        decimals: selected.decimals ?? 0,
-        hasLimiter,
-      });
       // New registrations deliberately write the displayed defaults. Existing
       // members write only genuine changes, avoiding a stale no-op overwrite.
-      const rateChanged = register || config.pricing.exchangeRatePpm !== seedRatePpm;
+      // An unchanged feed sends no quoter call, even when its registry bound has
+      // moved since it was set.
+      let config: { pricing: PoolVoucherPricing; depositCapRaw?: string };
+      let rateChanged: boolean;
+      if (pricingSeed.kind === "relative") {
+        const rate = toPoolVoucherRateConfig({
+          values: value,
+          decimals: selected.decimals ?? 0,
+          hasLimiter,
+        });
+        config = rate;
+        rateChanged = register || rate.pricing.exchangeRatePpm !== pricingSeed.ratePpm;
+      } else {
+        const feed = toPoolVoucherFeedConfig({
+          values: value,
+          feeds: pricingSeed.feeds,
+          decimals: selected.decimals ?? 0,
+          hasLimiter,
+        });
+        config = feed;
+        rateChanged = register || feed.pricing.aggregatorAddress !== pricingSeed.currentAggregator;
+      }
       const capChanged =
         hasLimiter && (register || config.depositCapRaw !== (seedCapRaw ?? undefined));
       if (!register && !rateChanged && !capChanged) {
@@ -505,24 +635,19 @@ function applyApproveSeed(
  * Which quoters this screen can configure.
  *
  * A map rather than a condition because the three quoters take genuinely
- * different inputs, and the next one to get a UI — an oracle feed picker, say —
- * should arrive as an entry here plus its own field group, not as another
- * branch threaded through the form. `false` is a quoter the protocol supports
- * and this screen does not yet.
+ * different inputs: each one with a UI arrives as an entry here plus its own
+ * field group (a typed rate, a feed picker), not as another branch threaded
+ * through the form. `false` is a quoter the protocol supports and this screen
+ * does not yet.
  */
 const POOL_QUOTER_SUPPORT: Record<PoolQuoterKind, boolean> = {
   relative: true,
-  oracle: false,
+  oracle: true,
   decimal: false,
   unknown: false,
 };
 
 function quoterNotice(kind: PoolQuoterKind) {
-  if (kind === "oracle") {
-    return (
-      <Trans>This pool prices from a live feed. Feed settings aren't editable here yet.</Trans>
-    );
-  }
   if (kind === "decimal") {
     return (
       <Trans>
@@ -582,4 +707,62 @@ export function usePoolVoucherFigures(
   }
 
   return { amount, unitValue };
+}
+
+/** One entry in the feed select: a verified feed and its latest round. */
+type PoolVoucherFeedChoice = {
+  address: `0x${string}`;
+  /** The pair as the feed describes it (`EUR / USD`), or the registry name. */
+  label: string;
+  round: OracleFeedRound | null;
+};
+
+/**
+ * The feed select's options and the state of the feed the fields name.
+ *
+ * Rounds are read for every verified feed plus a custom address, so the price
+ * beside each option is live. A custom address takes the quoter's global bound,
+ * which is what the batch will send for it.
+ */
+export function usePoolVoucherFeedChoices(
+  seed: Pick<
+    Extract<PoolVoucherPricingSeed, { kind: "oracle" }>,
+    "feeds" | "currentAggregator" | "currentMaxStalenessSeconds" | "globalMaxStalenessSeconds"
+  >,
+  values: Pick<PoolVoucherFeedInput, "feed" | "customAddress">,
+) {
+  const { feeds } = seed;
+  const custom = values.feed === POOL_VOUCHER_CUSTOM_FEED;
+  const customAddress = custom ? resolvePoolVoucherFeedAddress(values) : null;
+  const unverified = customAddress !== null && !findPoolVoucherFeed(feeds, customAddress);
+  // Stale by the bound the quoter would apply once this is saved. The current
+  // feed is left alone by an unchanged save, so it keeps its own bound; any other
+  // is sent with its registry bound, or none, which defers to the global one.
+  const boundFor = (address: `0x${string}`) =>
+    address === seed.currentAggregator
+      ? seed.currentMaxStalenessSeconds
+      : (findPoolVoucherFeed(feeds, address)?.maxStalenessSeconds ??
+        seed.globalMaxStalenessSeconds);
+  const rounds = useOracleFeedRounds(
+    [
+      ...feeds.map((feed) => feed.address),
+      ...(customAddress && unverified ? [customAddress] : []),
+    ].map((address) => ({ address, maxStalenessSeconds: boundFor(address) })),
+    true,
+  );
+  const choices: PoolVoucherFeedChoice[] = feeds.map((feed) => ({
+    address: feed.address,
+    label: feed.description ?? feed.name,
+    round: rounds.data?.get(feed.address) ?? null,
+  }));
+  const selectedAddress = resolvePoolVoucherFeedAddress(values);
+  return {
+    choices,
+    custom,
+    /** A valid typed address the registry does not list. */
+    unverified,
+    selected: choices.find((choice) => choice.address === selectedAddress) ?? null,
+    customRound: customAddress ? (rounds.data?.get(customAddress) ?? null) : null,
+    roundsPending: rounds.isPending && rounds.fetchStatus !== "idle",
+  };
 }

@@ -141,6 +141,37 @@ describe("getFilteredReports", () => {
     );
   });
 
+  it("sends creditDepth=max for Credit with the session cookie", async () => {
+    const fetcher = mockFetch({ reports: [] });
+    vi.stubGlobal("fetch", fetcher);
+
+    await api.getFilteredReports({
+      perPage: 20,
+      filter: EMPTY_FILTER,
+      credit: { wallet: `0x${"a1".repeat(20)}`, digest: "0x01" },
+    });
+
+    const [url, init] = fetcher.mock.calls[0]!;
+    const search = new URL(String(url)).searchParams;
+    expect(search.get("creditDepth")).toBe("max");
+    expect(search.has("creditablePools")).toBe(false);
+    expect(init).toMatchObject({ credentials: "include", cache: "no-store" });
+  });
+
+  it("refuses to combine creditDepth with creditablePools", async () => {
+    const fetcher = mockFetch({ reports: [] });
+    vi.stubGlobal("fetch", fetcher);
+    await expect(
+      api.getFilteredReports({
+        perPage: 20,
+        filter: EMPTY_FILTER,
+        credit: { wallet: `0x${"a1".repeat(20)}`, digest: "0x01" },
+        creditablePools: [{ chainId: 100, address: `0x${"b".repeat(40)}` }],
+      }),
+    ).rejects.toThrow(/creditDepth/);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
   it("preserves nearest cursor distance and origin for an exact viewport", async () => {
     const fetcher = mockFetch({ reports: [] });
     vi.stubGlobal("fetch", fetcher);

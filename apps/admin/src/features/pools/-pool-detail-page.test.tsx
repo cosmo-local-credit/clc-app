@@ -17,7 +17,8 @@ import { parsePoolDetailSearch } from "./pool-detail-search";
 const ADDRESS = "0xdD97a5282D11e55d7271d466C80963d6793B276f";
 const OWNER = "0x33a573149db22e759fB9A38Bcc461C12855c2645";
 const LIMITER = "0x4d9000000000000000000000000000000000a1c7";
-const AGGREGATOR = "0x0826000000000000000000000000000000005e9D";
+const AGGREGATOR = "0x0826000000000000000000000000000000005e9d";
+const UNVERIFIED = "0xab70BCB260073d036d1660201e9d5405F5829b7a";
 const RIBA = "0x3aa7000000000000000000000000000000000102";
 
 vi.mock("#/components/ui/location-map.lazy", () => ({
@@ -295,7 +296,10 @@ describe("PoolDetailPage", () => {
   it("counts the fetched voucher page into the summary tiles", async () => {
     getPoolByAddress.mockResolvedValue(pool({ voucherCount: 2 }));
     getPoolVouchers.mockResolvedValue({
-      vouchers: [poolVoucher(), poolVoucher({ id: "2", symbol: "MUMO", oracleFeedId: null })],
+      vouchers: [
+        poolVoucher(),
+        poolVoucher({ id: "2", symbol: "MUMO", oracleFeedId: null, oracleAddress: null }),
+      ],
     });
 
     renderDetailRoute();
@@ -391,6 +395,39 @@ describe("PoolDetailPage", () => {
     expect(within(panel).getByText("MUMO")).toBeTruthy();
     // One row for one shared feed, not one row per voucher.
     expect(within(panel).getAllByText("KES / USD")).toHaveLength(1);
+  });
+
+  it("marks an aggregator the registry does not list as unverified, not as no feed", async () => {
+    getPoolByAddress.mockResolvedValue(pool({ voucherCount: 2 }));
+    getPoolVouchers.mockResolvedValue({
+      vouchers: [
+        poolVoucher(),
+        poolVoucher({
+          id: "2",
+          symbol: "MUMO",
+          oracleFeedId: null,
+          oracleName: null,
+          oracleAddress: UNVERIFIED as PoolVoucher["oracleAddress"],
+        }),
+      ],
+    });
+
+    renderDetailRoute();
+
+    // The vouchers tab: the unregistered row reads unverified and keeps its address.
+    const vouchers = await waitFor(() => screen.getByRole("tabpanel"));
+    await waitFor(() =>
+      expect(within(vouchers).getByLabelText("price feed state unverified")).toBeTruthy(),
+    );
+    expect(within(vouchers).queryByText("None")).toBeNull();
+    const summary = screen.getByRole("region", { name: "Pool summary" });
+    expect(summary.textContent).not.toContain("unpriced");
+
+    fireEvent.click(screen.getByRole("tab", { name: "Price feeds" }));
+    const feeds = await waitFor(() => screen.getByRole("tabpanel"));
+    await waitFor(() => expect(within(feeds).getByText("KES / USD")).toBeTruthy());
+    expect(within(feeds).getByLabelText("price feed state unverified")).toBeTruthy();
+    expect(within(feeds).queryByText("No feed")).toBeNull();
   });
 
   it("lists what the pool's vouchers are offered for", async () => {

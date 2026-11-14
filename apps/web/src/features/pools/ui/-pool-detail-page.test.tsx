@@ -133,10 +133,6 @@ vi.mock("#/features/home/hooks/use-reports", () => ({
   usePoolReportsInfinite: () => mocks.poolReportsResult,
 }));
 
-vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({
-  usePoolVoucherTokens: () => [],
-}));
-
 vi.mock("#/features/pools/hooks/use-update-pool-profile", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   useUpdatePoolProfile: () => ({ mutateAsync: mocks.updateProfile, isPending: false }),
@@ -176,8 +172,8 @@ vi.mock("./pool-offerings-panel", () => ({
 // The on-chain steward surface has its own tests; here it only needs to stay out
 // of the way of the catalog editor, and its chain reads out of this render.
 vi.mock("#/features/pools/hooks/use-pool-quoter", () => ({
-  usePoolVoucherRates: () => ({ data: undefined }),
   usePoolQuoterKind: () => ({ kind: "unknown", isPending: false }),
+  usePoolVoucherFeedStatuses: () => null,
 }));
 
 // The controls panel renders for real — it owns the catalog editor now, so a
@@ -435,13 +431,13 @@ describe("PoolDetailPage pool details editor", () => {
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
       "Offerings",
       "Wants",
-      "Vouchers",
+      "Holdings",
       "Info",
     ]);
     expect(screen.queryByRole("link", { name: "Swap" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Deposit" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Receive" })).toBeNull();
-    expect(screen.queryByRole("tab", { name: "Holdings" })).toBeNull();
+    expect(screen.getByRole("tab", { name: "Holdings" })).toBeTruthy();
     expect(screen.queryByRole("tab", { name: "Credit" })).toBeNull();
     expect(screen.queryByRole("tab", { name: "Activity" })).toBeNull();
   });
@@ -718,7 +714,7 @@ describe("PoolDetailPage on-chain management", () => {
   });
 
   it("offers the steward controls to the pool's owner", () => {
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="holdings" />);
     expect(screen.getByRole("button", { name: "Withdraw liquidity" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Approve voucher" })).toBeTruthy();
   });
@@ -727,7 +723,7 @@ describe("PoolDetailPage on-chain management", () => {
     // Every call behind these is `onlyOwner`, so a superadmin pressing them
     // would only be signing a revert. They keep the catalog editor.
     mocks.auth.session = { address: OTHER, chainId: 100, role: "SUPERADMIN" };
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="holdings" />);
     expect(screen.queryByRole("button", { name: "Withdraw liquidity" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Approve voucher" })).toBeNull();
     expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
@@ -735,13 +731,13 @@ describe("PoolDetailPage on-chain management", () => {
 
   it("opens the approve sheet with its seeds from a steward-approve link", () => {
     mocks.search = {
-      tab: "vouchers",
+      tab: "holdings",
       tool: "approve",
       candidate: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
       exchangeRate: "1",
       creditLimit: "500",
     };
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="holdings" />);
 
     expect(JSON.parse(screen.getByTestId("approve-sheet").textContent ?? "null")).toEqual({
       candidate: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
@@ -751,16 +747,16 @@ describe("PoolDetailPage on-chain management", () => {
   });
 
   it("leaves the page unchanged for a non-steward opening the same link", () => {
-    mocks.search = { tab: "vouchers", tool: "approve", candidate: OTHER };
+    mocks.search = { tab: "holdings", tool: "approve", candidate: OTHER };
     mocks.auth.session = { address: OTHER, chainId: 100 };
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="holdings" />);
 
     expect(screen.queryByTestId("approve-sheet")).toBeNull();
   });
 
   it("withholds them from anyone else", () => {
     mocks.auth.session = { address: OTHER, chainId: 100 };
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="holdings" />);
     expect(screen.queryByRole("button", { name: "Withdraw liquidity" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Approve voucher" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Edit details" })).toBeNull();
@@ -768,15 +764,6 @@ describe("PoolDetailPage on-chain management", () => {
 });
 
 describe("PoolDetailPage manager closure", () => {
-  const closedVoucher: Partial<PoolVoucher> = {
-    id: "9",
-    tokenAddress: OTHER,
-    name: "Kilifi Maize",
-    symbol: "MAIZE",
-    active: true,
-    managerClosure: { state: "CLOSED", closesAt: null },
-  };
-
   it("tells everyone when the pool's managing account is scheduled to close", () => {
     mocks.auth.session = { address: OTHER, chainId: 100 };
     mocks.poolResult.data = pool({
@@ -799,18 +786,6 @@ describe("PoolDetailPage manager closure", () => {
 
     expect(screen.getByText("Retired pool")).toBeTruthy();
     expect(screen.queryByText(/This pool remains active/)).toBeNull();
-  });
-
-  it("marks a pool voucher whose manager has closed, without opening a box in the row", () => {
-    mocks.vouchersResult.vouchers = [closedVoucher as PoolVoucher];
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
-
-    expect(
-      screen.getByText(
-        "The account managing this voucher has closed. This voucher remains active.",
-      ),
-    ).toBeTruthy();
-    expect(screen.queryByRole("status")).toBeNull();
   });
 
   it("shows nothing for a pool without a closure", () => {

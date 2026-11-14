@@ -56,6 +56,7 @@ import { reloadOnceForStaleChunk } from "#/lib/stale-chunk-recovery";
 import { useInstallPromptListener } from "#/features/install/install-store";
 import { installBootstrapScript } from "#/features/install/install-bootstrap";
 import { IntroductionProvider } from "#/components/introduction/introduction-provider";
+import { CreditHopsProvider } from "#/components/credit/credit-hops";
 import { type AuthGateSlot, AuthGateSlotProvider } from "#/components/auth/auth-gate-slot";
 import appCss from "../styles.css?url";
 
@@ -317,7 +318,9 @@ function AppInner() {
           <RootDiscoveryLocation>
             <DesktopBoundary>
               <AccountLifecycleGate>
-                <Outlet />
+                <CreditHopsProvider wallet={auth.isAuthenticated ? auth.address : undefined}>
+                  <Outlet />
+                </CreditHopsProvider>
               </AccountLifecycleGate>
             </DesktopBoundary>
           </RootDiscoveryLocation>

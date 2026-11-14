@@ -27,6 +27,7 @@ describe("marketplace cache", () => {
         kinds: ["offering", "voucher"],
         tags: ["Repair"],
         pools: [`100:0x${"a".repeat(40)}`],
+        credit: null,
         postTiming: "future",
         postVouchers: [`100:0x${"b".repeat(40)}`],
         postPools: [`100:0x${"c".repeat(40)}`],
@@ -41,10 +42,22 @@ describe("marketplace cache", () => {
         kinds: [],
         tags: [],
         pools: undefined,
+        credit: null,
         postVouchers: undefined,
         postPools: undefined,
       },
     ]);
+  });
+
+  it("never shares a Credit page across wallets or reach digests", () => {
+    const alice = { wallet: `0x${"A1".repeat(20)}`, digest: "0xAB" };
+    const key = marketplaceKeys.list({ credit: alice });
+    expect(key[3].credit).toEqual({ wallet: alice.wallet.toLowerCase(), digest: "0xab" });
+    expect(
+      marketplaceKeys.list({ credit: { ...alice, wallet: `0x${"b2".repeat(20)}` } }),
+    ).not.toEqual(key);
+    expect(marketplaceKeys.list({ credit: { ...alice, digest: "0xcd" } })).not.toEqual(key);
+    expect(marketplaceKeys.list({})).not.toEqual(key);
   });
 
   it("keeps scope in the key, strips it from requests and preserves opaque cursors", async () => {

@@ -64,6 +64,27 @@ function respond(result: unknown) {
 
 afterEach(() => vi.unstubAllGlobals());
 
+describe("marketplace Credit", () => {
+  const credit = { wallet: `0x${"a1".repeat(20)}`, digest: "0x01" };
+
+  it("sends creditDepth=max with the session cookie and no pool list", async () => {
+    const fetcher = respond({ results: [], nextCursor: null });
+    await api.list({ kinds: ["voucher"], credit });
+    const url = new URL(String(fetcher.mock.calls[0]?.[0]));
+    expect(url.searchParams.get("creditDepth")).toBe("max");
+    expect(url.searchParams.has("pools")).toBe(false);
+    expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ credentials: "include", cache: "no-store" });
+  });
+
+  it("refuses to combine creditDepth with pools", async () => {
+    const fetcher = respond({ results: [], nextCursor: null });
+    await expect(
+      api.list({ credit, pools: [{ chainId: 100, address: `0x${"a".repeat(40)}` }] }),
+    ).rejects.toThrow(/creditDepth/);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+});
+
 describe("marketplace HTTP contract", () => {
   it("serializes mixed discovery filters and keeps nearby requests private", async () => {
     const fetcher = respond({

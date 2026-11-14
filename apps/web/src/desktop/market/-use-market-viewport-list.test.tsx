@@ -12,6 +12,7 @@ import { useMarketViewportList } from "./use-market-viewport-list";
 
 const BOUNDS = [{ minLng: 39.5, minLat: -4.2, maxLng: 39.8, maxLat: -3.9 }] as const;
 const POOL = "0x0000000000000000000000000000000000000001";
+const SCOPE = { wallet: "0x00000000000000000000000000000000000000aa", digest: "0x01" };
 
 function row(id: string): MarketplaceResult {
   return {
@@ -33,9 +34,11 @@ function page(ids: string[], nextCursor: string | null = null, total = ids.lengt
 function setup({
   settled = true,
   kinds = ["voucher", "post"],
+  outputActive = false,
 }: {
   settled?: boolean;
   kinds?: readonly ("voucher" | "post")[];
+  outputActive?: boolean;
 } = {}) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -62,8 +65,13 @@ function setup({
           enabled: true,
           blocksResults: false,
           poolRefs: [{ chainId: 100, address: POOL }],
+          scope: SCOPE,
         } as never,
-        output: { blocksResults: false, poolRefs: [{ chainId: 100, address: POOL }] },
+        output: {
+          active: outputActive,
+          blocksResults: false,
+          poolRefs: [{ chainId: 100, address: POOL }],
+        },
         kinds: props.kinds,
         bounds: BOUNDS,
         settled: props.settled,
@@ -89,13 +97,24 @@ describe("useMarketViewportList", () => {
       tags: ["Reuse"],
       tagMatch: "all",
       kinds: ["voucher", "post"],
-      pools: [{ chainId: 100, address: POOL }],
+      credit: SCOPE,
       sort: "nearest",
       perPage: 20,
       postTiming: "future",
     });
+    expect(mocks.list.mock.calls[0]?.[0]).not.toHaveProperty("pools");
     expect(result.current.rows.map((entry) => entry.id)).toEqual(["1"]);
     expect(result.current.total).toBe(1201);
+  });
+
+  it("sends the output voucher's pools, already narrowed to Credit, instead of creditDepth", async () => {
+    mocks.list.mockResolvedValue(page(["1"]));
+    const { result } = setup({ outputActive: true });
+    await waitFor(() => expect(result.current.hasData).toBe(true));
+    expect(mocks.list.mock.calls[0]?.[0]).toMatchObject({
+      pools: [{ chainId: 100, address: POOL }],
+    });
+    expect(mocks.list.mock.calls[0]?.[0]).not.toHaveProperty("credit");
   });
 
   it("pages the exact cursor chain and keeps the complete filtered total", async () => {

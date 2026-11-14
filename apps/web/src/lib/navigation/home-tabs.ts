@@ -75,6 +75,6 @@ export function isAtHomeTabRoot(search: unknown): boolean {
   if (tab === "activity") return parseActivitySection(record.section) === "transactions";
   if (tab !== "market") return true;
   if (view !== "map" || voucher || want) return false;
-  if (record.creditable !== undefined) return false;
+  if (record.credit !== undefined) return false;
   return !isFilterSearchActive(catalogSearchForScope(search, false));
 }

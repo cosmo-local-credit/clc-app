@@ -2,7 +2,7 @@ import type { AccountToken } from "@clc/api/features/accounts/client";
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import { describe, expect, it } from "vite-plus/test";
 
-import { buildPoolHoldings } from "./pool-holdings";
+import { buildPoolHoldings, partitionPoolHoldings } from "./pool-holdings";
 
 const POOL = "0xdD97a5282D11e55d7271d466C80963d6793B276f" as const;
 const LIMITER = "0x4d9000000000000000000000000000000000a1c7" as const;
@@ -403,5 +403,52 @@ describe("buildPoolHoldings", () => {
     });
 
     expect(holdings.map((entry) => entry.symbol)).toEqual(["BBB", "AAA", "CCC"]);
+  });
+});
+
+describe("partitionPoolHoldings", () => {
+  it("keeps every accepted member and only positive unaccepted deposits", () => {
+    const rows = buildPoolHoldings({
+      pool: pool(),
+      vouchers: [voucher()],
+      indexedTokens: [
+        accountToken({ tokenAddress: SAR, tokenName: "Zulu", balance: "50000000" }),
+        accountToken({
+          id: 8,
+          tokenAddress: "0xCCC0000000000000000000000000000000000003",
+          tokenName: "Old",
+          tokenSymbol: "OLD",
+          balance: "0",
+        }),
+      ],
+    });
+
+    const grouped = partitionPoolHoldings(rows, [KAW.toUpperCase()]);
+
+    expect(grouped.accepted.map((row) => row.symbol)).toEqual(["KAW"]);
+    expect(grouped.accepted[0]?.balanceRaw).toBe("0");
+    expect(grouped.pending.map((row) => row.symbol)).toEqual(["SAR"]);
+  });
+
+  it("sorts pending deposits alphabetically without comparing raw balances", () => {
+    const rows = buildPoolHoldings({
+      pool: pool(),
+      vouchers: [],
+      indexedTokens: [
+        accountToken({ tokenAddress: SAR, tokenName: "Zulu", balance: "1" }),
+        accountToken({
+          id: 8,
+          tokenAddress: "0xCCC0000000000000000000000000000000000003",
+          tokenName: "Alpha",
+          tokenSymbol: "ALP",
+          balance: "999999999",
+        }),
+      ],
+    });
+
+    expect(partitionPoolHoldings(rows, []).pending.map((row) => row.name)).toEqual([
+      "Alpha",
+      "Zulu",
+    ]);
   });
 });

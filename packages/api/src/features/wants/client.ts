@@ -12,6 +12,7 @@ import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
+import { CREDIT_DISCOVERY_DEPTH, type CreditScope } from "../credit-router/client";
 
 const cursorSchema = z
   .union([z.number().int().nonnegative(), z.string().regex(/^\d+$/)])
@@ -85,6 +86,12 @@ export type WantsParams = {
   nearby?: boolean;
   bounds?: readonly MarketBoundingBox[];
   pools?: readonly { chainId: number; address: string }[];
+  /**
+   * The server-resolved Credit filter (`creditDepth=max`): resources related to the
+   * pools the session wallet reaches. Needs the session, so the request carries
+   * credentials and is never cached; it cannot be combined with `pools`.
+   */
+  credit?: CreditScope;
 };
 
 function withContact(want: Want): Want {
@@ -115,6 +122,9 @@ export function createWantsClient(http: HttpClient) {
   }
 
   function listPath(base: string, params: WantsParams) {
+    if (params.credit && params.pools?.length) {
+      throw new Error("creditDepth cannot be combined with pools; send one or the other.");
+    }
     const query = new URLSearchParams({ perPage: String(params.perPage ?? 20) });
     if (params.cursor) query.set("cursor", String(params.cursor));
     if (params.cursor && params.next !== undefined) query.set("next", String(params.next));
@@ -126,6 +136,7 @@ export function createWantsClient(http: HttpClient) {
     appendMarketBounds(query, params.bounds);
     if (params.pools?.length)
       query.set("pools", params.pools.map((pool) => `${pool.chainId}:${pool.address}`).join(","));
+    if (params.credit) query.set("creditDepth", CREDIT_DISCOVERY_DEPTH);
     return `${base}?${query}`;
   }
 
@@ -133,7 +144,7 @@ export function createWantsClient(http: HttpClient) {
     async list(params: WantsParams, signal?: AbortSignal): Promise<WantPage> {
       const page = await read(wantPageSchema, listPath("/api/v2/wants", params), {
         method: "GET",
-        credentials: params.nearby ? "include" : "omit",
+        credentials: params.nearby || params.credit ? "include" : "omit",
         signal,
       });
       return { ...page, wants: page.wants.map(withoutContact) };

@@ -21,6 +21,7 @@ import {
 import { toast } from "sonner";
 import { isAddress, type Address, zeroAddress } from "viem";
 
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { ReviewSummaryContent } from "#/components/reviews/review-summary";
 import { Button } from "#/components/ui/button";
@@ -237,6 +238,7 @@ export function VoucherIdentitySummary({
           <div className="min-w-0 flex-1">
             {title}
             <VoucherBalanceSummaryLine balance={balance} className="mt-1.5" />
+            <CreditHopsBadge kind="voucher" address={address} className="mt-1.5" />
           </div>
         </div>
         {headerActions ? <div className="flex shrink-0 items-center">{headerActions}</div> : null}
@@ -320,11 +322,20 @@ function VoucherActionRow({
       role="group"
       aria-label={t`Voucher actions`}
     >
+      {/* A signed-in wallet gets the voucher through one pool or two; a guest, who has
+          no Credit, browses the pools that hold it. */}
       <Button asChild tap>
-        <Link to="/market" search={{ scope: "pools", out_voucher: address.toLowerCase() }}>
-          <RiHandCoinLine aria-hidden="true" />
-          <Trans>Get</Trans>
-        </Link>
+        {auth.isAuthenticated ? (
+          <Link to="/get/$voucherAddress" params={{ voucherAddress: address }}>
+            <RiHandCoinLine aria-hidden="true" />
+            <Trans>Get</Trans>
+          </Link>
+        ) : (
+          <Link to="/market" search={{ scope: "pools", out_voucher: address.toLowerCase() }}>
+            <RiHandCoinLine aria-hidden="true" />
+            <Trans>Get</Trans>
+          </Link>
+        )}
       </Button>
       {hasPositiveBalance ? (
         <Button asChild variant="outline" tap>

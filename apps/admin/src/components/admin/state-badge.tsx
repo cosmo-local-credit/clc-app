@@ -44,6 +44,11 @@ const stateTones: Record<string, StateTone> = {
     label: "unavailable",
     className: NEUTRAL,
   },
+  // A price feed set on chain whose aggregator clc-core's registry does not list.
+  unverified: {
+    label: "unverified",
+    className: "border-state-pending/30 bg-state-pending/10 text-state-pending",
+  },
   internal: {
     label: "internal",
     className: "border-foreground/20 bg-foreground/5 text-foreground",

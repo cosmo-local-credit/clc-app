@@ -14,6 +14,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { pickMarketplaceSearch } from "#/lib/navigation/marketplace-search";
+import { parseCredit } from "#/lib/navigation/pool-search";
 import { ownerScopedKey } from "#/lib/storage/owner-tier-key";
 
 const VOUCHER = "0xd524d0ed7bc970185ed9c6c9a65a8a02e8897363";
@@ -71,8 +72,28 @@ vi.mock("#/lib/api/market", () => ({
 }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => mocks.auth }));
 vi.mock("wagmi", () => ({ useConnection: () => ({ address: mocks.auth.address }) }));
-vi.mock("#/features/pools/hooks/use-creditable-pools", () => ({
-  useCreditablePools: () => mocks.verification,
+vi.mock("#/lib/api/credit-router", () => ({
+  creditRouterClient: {
+    reach: () =>
+      mocks.verification.status === "error"
+        ? Promise.reject(new Error("Couldn't check creditable pools."))
+        : mocks.verification.status === "loading"
+          ? new Promise(() => {})
+          : Promise.resolve({
+              depth: 3,
+              maxHops: 3,
+              asOfBlock: 1,
+              graphVersion: 1,
+              stale: false,
+              digest: `0x${"ab".repeat(32)}`,
+              inputs: [],
+              vouchers: [],
+              pools: mocks.verification.pools.map((pool) => ({
+                address: pool.address,
+                minHops: 1,
+              })),
+            }),
+  },
 }));
 vi.mock("#/features/pools/hooks/use-pool-output-availability", () => ({
   usePoolOutputAvailability: (voucher: unknown) =>
@@ -158,7 +179,7 @@ function renderMap(
       return (
         <MarketMapDesk
           isAuthenticated={mocks.auth.isAuthenticated}
-          creditableSearch={search.creditable}
+          creditOn={parseCredit(search)}
           outputVoucherSearch={search.out_voucher}
           scope={options.scope ?? "all"}
           creditRoute="market"
@@ -235,6 +256,19 @@ function rememberResources(owner: string, kinds: string[]) {
 }
 
 describe("MarketMapDesk result count", () => {
+  it("places zoom controls beneath the location control", async () => {
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
+    renderMap("/market?view=map");
+
+    const location = await screen.findByRole("button", { name: "Use current location" });
+    const zoomIn = screen.getByRole("button", { name: "Zoom in" });
+    const zoomOut = screen.getByRole("button", { name: "Zoom out" });
+    expect(
+      location.compareDocumentPosition(zoomIn) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(zoomIn.compareDocumentPosition(zoomOut) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("says it is loading, not zero, before any result set exists", async () => {
     mocks.mapList.mockImplementation(() => new Promise(() => {}));
     mocks.viewport.hasData = false;
@@ -454,6 +488,35 @@ describe("MarketMapDesk layers (the saved resource selection)", () => {
   });
 });
 
+describe("MarketMapDesk Credit", () => {
+  it("lets the server resolve Credit for the signed-in wallet instead of sending pools", async () => {
+    signIn();
+    rememberResources(MEMBER, ["pool"]);
+    mocks.verification.pools = [{ chainId: 100, address: POOL_A }];
+    mocks.mapList.mockResolvedValue({
+      points: [marker("pool", POOL_A, "Mombasa Bakers")],
+      truncated: false,
+    });
+    renderMap("/market?scope=pools&view=map&credit=1", { scope: "pools" });
+
+    await waitFor(() =>
+      expect(mocks.mapList.mock.calls.at(-1)?.[0]).toMatchObject({
+        kinds: ["pool"],
+        credit: { wallet: MEMBER, digest: `0x${"ab".repeat(32)}` },
+      }),
+    );
+    expect(mocks.mapList.mock.calls.at(-1)?.[0].creditablePools).toBeUndefined();
+  });
+
+  it("never asks a guest's map for Credit", async () => {
+    rememberResources("guest", ["pool"]);
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
+    renderMap("/market?scope=pools&view=map&credit=1", { scope: "pools" });
+    await screen.findAllByText("Sign in to browse results available through your Credit pools.");
+    expect(mocks.mapList.mock.calls.every(([params]) => params.credit === undefined)).toBe(true);
+  });
+});
+
 describe("MarketMapDesk requested output (Get a voucher)", () => {
   it("restricts the pools map to the pools that can pay the voucher and shows the Get chip", async () => {
     rememberResources("guest", ["pool"]);
@@ -522,10 +585,9 @@ describe("MarketMapDesk requested output (Get a voucher)", () => {
     signIn();
     mocks.availability.pools = [];
     mocks.verification.pools = [{ chainId: 100, address: POOL_A }];
-    const router = renderMap(
-      `/market?scope=pools&view=map&creditable=true&out_voucher=${VOUCHER}`,
-      { scope: "pools" },
-    );
+    const router = renderMap(`/market?scope=pools&view=map&credit=1&out_voucher=${VOUCHER}`, {
+      scope: "pools",
+    });
     expect(
       await screen.findByText("No creditable pools have this voucher available."),
     ).toBeTruthy();

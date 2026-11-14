@@ -335,15 +335,24 @@ function PricingCell({
 }
 
 function FeedCell({ voucher }: { voucher: PoolVoucher }) {
-  if (!voucher.oracleFeedId) {
+  if (!voucher.oracleAddress) {
     return <span className="text-destructive font-mono text-xs">None</span>;
   }
 
   return (
-    <span className="flex min-w-0 flex-col gap-0.5">
-      <span className="truncate text-sm">{voucher.oracleName ?? "Unnamed feed"}</span>
+    <span className="flex min-w-0 flex-col items-start gap-0.5">
+      <FeedName name={voucher.oracleFeedId ? voucher.oracleName : null} />
       <ContractAddress address={voucher.oracleAddress} label="Copy aggregator address" />
     </span>
+  );
+}
+
+/** A registry name, or the badge for an aggregator the registry does not list. */
+function FeedName({ name }: { name: string | null }) {
+  return name ? (
+    <span className="truncate text-sm font-medium">{name}</span>
+  ) : (
+    <StateBadge state="unverified" kind="price feed" />
   );
 }
 
@@ -410,9 +419,7 @@ function FeedsPanel({
                             No feed
                           </span>
                         ) : (
-                          <span className="text-sm font-medium">
-                            {group.name ?? "Unnamed feed"}
-                          </span>
+                          <FeedName name={group.name} />
                         )}
                         <PoolFeedRowActions pool={pool} group={group} />
                       </div>

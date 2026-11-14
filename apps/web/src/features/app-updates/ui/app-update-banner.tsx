@@ -23,13 +23,15 @@ import {
  * their async work runs in local state or effects: onboarding generates,
  * encrypts and persists keys and tracks the relayed deployment; send holds its
  * draft through confirmation; swap refetches its quote before the transfer
- * mutation; the create wizards confirm a symbol before deploying. Receipts keep
+ * mutation; Get holds a reviewed credit quote until it is signed; the create
+ * wizards confirm a symbol before deploying. Receipts keep
  * their tracking IDs in the URL and survive a reload.
  */
 const RELOAD_UNSAFE_ROUTES: ReadonlySet<RouteIds<RegisteredRouter["routeTree"]>> = new Set([
   "/onboarding",
   "/_nav/wallet/send/amount",
   "/_nav/pools/$poolAddress/swap/",
+  "/_nav/get/$voucherAddress",
   "/settings/sign-in-card",
   "/pools/create/$step",
   "/vouchers/create/$step",

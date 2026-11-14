@@ -119,18 +119,16 @@ vi.mock("#/components/creditable-browse-control", () => ({
   CreditableBrowseControl: ({
     part,
     onChange,
-    onClear,
   }: {
     part: string;
-    onChange: (enabled: boolean) => void;
-    onClear: () => void;
+    onChange: (on: boolean) => void;
   }) => (
     <div>
       <button type="button" onClick={() => onChange(true)}>
         {part} Credit on
       </button>
-      <button type="button" onClick={onClear}>
-        {part} Credit clear
+      <button type="button" onClick={() => onChange(false)}>
+        {part} Credit off
       </button>
     </div>
   ),
@@ -207,9 +205,9 @@ describe("Wants marketplace page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Apply filters" }));
     expect(mocks.filter.setTags).toHaveBeenCalledWith(["Repair"], "all");
     fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "control Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "control Credit off" }));
     fireEvent.click(screen.getByRole("button", { name: "feedback Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "feedback Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit off" }));
     expect(mocks.navigate).toHaveBeenCalledTimes(4);
     const calls = mocks.navigate.mock.calls.map(
       ([options]) =>
@@ -220,14 +218,14 @@ describe("Wants marketplace page", () => {
     expect(calls[0]?.search({ q: "repair" })).toEqual({
       q: "repair",
       scope: "wants",
-      creditable: true,
+      credit: 1,
     });
     expect(calls[1]?.search({ q: "repair" })).toEqual({
       q: "repair",
       scope: "wants",
       creditable: undefined,
     });
-    expect(calls[2]?.search({ q: "repair" })).toEqual({ q: "repair", creditable: true });
+    expect(calls[2]?.search({ q: "repair" })).toEqual({ q: "repair", credit: 1 });
     expect(calls[3]?.search({ q: "repair" })).toEqual({ q: "repair", creditable: undefined });
   });
 
@@ -266,8 +264,8 @@ describe("Wants marketplace page", () => {
   it("keeps feedback available while Credit eligibility blocks results", () => {
     mocks.credit.enabled = true;
     mocks.credit.blocksResults = true;
-    render(<WantsPage creditableSearch />);
+    render(<WantsPage creditOn />);
     expect(screen.queryByText("No Wants found.")).toBeNull();
-    expect(screen.getByRole("button", { name: "feedback Credit clear" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "feedback Credit off" })).toBeTruthy();
   });
 });

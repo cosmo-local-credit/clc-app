@@ -1,7 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, retainSearchParams } from "@tanstack/react-router";
 import { lazy } from "react";
 import { z } from "zod";
 
+import { creditSearch } from "#/lib/navigation/credit-search";
 import { LayoutSwitch } from "#/desktop/switch";
 import { ReportPage } from "#/features/home/ui/report-page";
 
@@ -10,9 +11,15 @@ const PostDesk = lazy(() =>
 );
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
+const searchSchema = z.object({ voucher: z.string().optional().catch(undefined) });
+
 export const Route = createFileRoute("/_nav/posts/$reportId/")({
   staticData: { navOwner: "posts", desktop: "fill" },
-  validateSearch: z.object({ voucher: z.string().optional().catch(undefined) }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    ...searchSchema.parse(search),
+    ...creditSearch(search),
+  }),
+  search: { middlewares: [retainSearchParams(["credit"])] },
   beforeLoad: ({ params, search }) => {
     const voucherAddress = parseVoucherAddress(search.voucher);
     if (voucherAddress) {

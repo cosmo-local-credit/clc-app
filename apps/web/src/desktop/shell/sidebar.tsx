@@ -4,6 +4,9 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { type ReactElement, type ReactNode } from "react";
 import {
   RiArticleLine,
+  RiExternalLinkLine,
+  RiFileTextLine,
+  RiInformationLine,
   RiMap2Line,
   RiPulseLine,
   RiSettings3Line,
@@ -12,7 +15,9 @@ import {
 } from "react-icons/ri";
 
 import { CLCLogo } from "#/components/ui/clc-logo";
+import { LanguageSelector } from "#/components/language-selector";
 import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
+import { ThemeSettingsButton, ThemeToggle } from "#/components/theme-selector";
 import { UnreadCount, UnreadCountLabel } from "#/components/ui/unread-count";
 import { desktopNavSelection, type DesktopScopeId } from "#/desktop/chrome";
 import { MarketHomeLink, MarketScopeLink } from "#/desktop/shell/market-links";
@@ -25,11 +30,15 @@ import { useActivityCounts } from "#/features/messaging/hooks/use-activity-count
 import { cn } from "#/lib/utils";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { DESK_SELECTED_EDGE } from "#/desktop/ui/page";
+import { PLATFORM_ABOUT_URL, PLATFORM_TERMS_URL } from "#/lib/legal";
 
 const SCOPES: readonly DesktopScopeId[] = ["offers", "wants", "vouchers", "pools", "catalogs"];
 
 const FOOTER_ICON =
-  "flex size-8 shrink-0 items-center justify-center text-muted-foreground hover:bg-sidebar-accent hover:text-foreground";
+  "flex size-8 shrink-0 items-center justify-center text-muted-foreground outline-none hover:bg-sidebar-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
+
+const UTILITY_LINK =
+  "flex h-9 items-center gap-2 px-2 text-sm text-muted-foreground outline-none hover:bg-sidebar-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground [&_svg]:size-4 [&_svg]:shrink-0";
 
 function initials(name: string | undefined, address: string | undefined) {
   const trimmed = name?.trim();
@@ -102,6 +111,10 @@ export function DesktopSidebar() {
   const postsLabel = t`Posts`;
   const settingsLabel = t`Settings`;
   const profileLabel = t`Edit profile`;
+  const aboutLabel = t`About`;
+  const languageLabel = t`Language`;
+  const themeLabel = t`Theme`;
+  const termsLabel = t`Terms of Service`;
 
   const settingsLink = !privateNav ? null : (
     <Link
@@ -252,6 +265,79 @@ export function DesktopSidebar() {
             </RailTip>
           ) : null}
         </nav>
+        {collapsed ? (
+          <div
+            role="group"
+            aria-label={t`App preferences`}
+            className="flex shrink-0 flex-col items-center gap-1 border-sidebar-border border-t p-2.5"
+          >
+            <RailTip show label={aboutLabel}>
+              <a
+                href={PLATFORM_ABOUT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={aboutLabel}
+                className={FOOTER_ICON}
+              >
+                <RiInformationLine aria-hidden="true" />
+              </a>
+            </RailTip>
+            <LanguageSelector
+              iconOnly
+              title={languageLabel}
+              triggerClassName="border-transparent bg-sidebar text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
+            />
+            <RailTip show label={themeLabel}>
+              <ThemeSettingsButton className="border-transparent bg-sidebar text-muted-foreground hover:bg-sidebar-accent hover:text-foreground" />
+            </RailTip>
+            <RailTip show label={termsLabel}>
+              <a
+                href={PLATFORM_TERMS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={termsLabel}
+                className={FOOTER_ICON}
+              >
+                <RiFileTextLine aria-hidden="true" />
+              </a>
+            </RailTip>
+          </div>
+        ) : (
+          <div
+            role="group"
+            aria-label={t`App preferences`}
+            className="grid shrink-0 gap-1 border-sidebar-border border-t p-2"
+          >
+            <a
+              href={PLATFORM_ABOUT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={UTILITY_LINK}
+            >
+              <RiInformationLine aria-hidden="true" />
+              <span>{aboutLabel}</span>
+              <RiExternalLinkLine className="ms-auto rtl:-scale-x-100" aria-hidden="true" />
+            </a>
+            <LanguageSelector
+              label={languageLabel}
+              triggerClassName="w-full border-transparent bg-sidebar px-2 hover:bg-sidebar-accent"
+            />
+            <ThemeToggle
+              label={themeLabel}
+              className="w-full border-transparent bg-sidebar px-2 text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
+            />
+            <a
+              href={PLATFORM_TERMS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={UTILITY_LINK}
+            >
+              <RiFileTextLine aria-hidden="true" />
+              <span>{termsLabel}</span>
+              <RiExternalLinkLine className="ms-auto rtl:-scale-x-100" aria-hidden="true" />
+            </a>
+          </div>
+        )}
         {collapsed ? (
           <div className="flex shrink-0 flex-col items-center gap-1 border-sidebar-border border-t p-2.5">
             <DeskTooltip label={t`Expand`}>

@@ -93,6 +93,27 @@ describe("reportMapQueryOptions", () => {
     expect(base).not.toEqual(reportKeys.map(filter, bounds, creditablePools, "past", true));
   });
 
+  it("keys a Credit catalog on the wallet and the reach digest", () => {
+    const alice = { wallet: `0x${"A1".repeat(20)}`, digest: "0x01" };
+    const base = reportKeys.map(filter, bounds, undefined, "future", true, alice);
+    expect(base).not.toEqual(reportKeys.map(filter, bounds, undefined, "future", true));
+    expect(base).not.toEqual(
+      reportKeys.map(filter, bounds, undefined, "future", true, {
+        ...alice,
+        wallet: `0x${"b2".repeat(20)}`,
+      }),
+    );
+    expect(base).not.toEqual(
+      reportKeys.map(filter, bounds, undefined, "future", true, { ...alice, digest: "0x02" }),
+    );
+    expect(base).toEqual(
+      reportKeys.map(filter, bounds, undefined, "future", true, {
+        ...alice,
+        wallet: alice.wallet.toLowerCase(),
+      }),
+    );
+  });
+
   it("walks every bounded page, sends Credit and AbortSignal, and asks for facets once", async () => {
     const signal = new AbortController().signal;
     const getFilteredReports = vi

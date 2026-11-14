@@ -1,3 +1,4 @@
+import type { CreditScope } from "@clc/api/features/credit-router/client";
 import { reportMapQueryOptions } from "@clc/api/features/reports/queries";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import {
@@ -17,17 +18,20 @@ export function useMarketMapReports({
   filter = EMPTY_CATALOG_FILTER,
   bounds,
   creditablePools,
+  credit,
   enabled,
   facets,
 }: {
   filter?: CatalogFilter;
   bounds: readonly MarketBoundingBox[];
   creditablePools?: readonly VoucherRef[];
+  /** The server-resolved Credit filter; replaces `creditablePools`. */
+  credit?: CreditScope;
   enabled: boolean;
   facets: boolean;
 }) {
   const query = useQuery({
-    ...reportMapQueryOptions(reportsClient, { filter, bounds, creditablePools, facets }),
+    ...reportMapQueryOptions(reportsClient, { filter, bounds, creditablePools, credit, facets }),
     enabled,
   });
 

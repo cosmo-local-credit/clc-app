@@ -36,7 +36,7 @@ export function useMarketViewportList({
 }: {
   filter: MarketFilterControls;
   credit: ReturnType<typeof useCreditableBrowse>;
-  output: Pick<OutputVoucherBrowse, "poolRefs" | "blocksResults">;
+  output: Pick<OutputVoucherBrowse, "active" | "poolRefs" | "blocksResults">;
   kinds: readonly MarketMapKind[];
   bounds: readonly MarketBoundingBox[];
   settled: boolean;
@@ -65,7 +65,13 @@ export function useMarketViewportList({
       postVoucherMatch: parsed.voucherMatch,
       postPools: kinds.includes("post") ? parsed.pools : [],
       postPoolMatch: parsed.poolMatch,
-      ...(output.poolRefs ? { pools: output.poolRefs } : {}),
+      // The output voucher's pools, narrowed to Credit's; Credit alone is resolved
+      // by the server for this wallet.
+      ...(output.active && output.poolRefs
+        ? { pools: output.poolRefs }
+        : credit.enabled && credit.scope
+          ? { credit: credit.scope }
+          : {}),
     }),
     enabled,
     placeholderData: keepPreviousData,

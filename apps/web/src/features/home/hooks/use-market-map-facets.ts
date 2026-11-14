@@ -6,6 +6,7 @@ import { DEFAULT_POST_TIMING, type PostTiming } from "@clc/core/features/reports
 import type { MarketMapKind } from "@clc/core/features/market-map/logic";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
+import type { CreditScope } from "@clc/api/features/credit-router/client";
 import { marketMapClient } from "#/lib/api/market-map";
 
 type UseMarketMapFacetsOptions = {
@@ -14,6 +15,7 @@ type UseMarketMapFacetsOptions = {
   kinds: readonly MarketMapKind[];
   filter: Pick<CatalogFilter, "term" | "tags" | "tagMatch">;
   creditablePools?: readonly { chainId: number; address: string }[];
+  credit?: CreditScope;
   postTiming?: PostTiming;
   postVouchers?: readonly VoucherRef[];
   postVoucherMatch?: "any" | "all";
@@ -30,6 +32,7 @@ export function useMarketMapFacets(options: UseMarketMapFacetsOptions) {
       kinds: options.kinds,
       filter: options.filter,
       creditablePools: options.creditablePools,
+      credit: options.credit,
       postTiming: options.postTiming ?? DEFAULT_POST_TIMING,
       postVouchers: options.postVouchers,
       postVoucherMatch: options.postVoucherMatch,

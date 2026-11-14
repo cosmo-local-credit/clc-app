@@ -19,7 +19,16 @@ import {
   buildWithdrawPoolLiquidityCalls,
   feePolicyPairFeeAbi,
   feePolicySetDefaultFeeAbi,
+  findPoolVoucherFeed,
+  formatPoolRate,
+  isOracleFeedStale,
   limiterSetLimitForAbi,
+  oracleFeedPrice,
+  POOL_VOUCHER_CUSTOM_FEED,
+  poolVoucherFeedSchema,
+  resolvePoolVoucherFeedAddress,
+  seedPoolVoucherFeedInput,
+  toPoolVoucherFeedConfig,
   oracleQuoterPolicyAbi,
   oracleQuoterSetOracleAbi,
   oracleQuoterSetOracleWithStalenessAbi,
@@ -45,6 +54,19 @@ const QUOTER = "0xb91c000000000000000000000000000000007d20" as const;
 const AGGREGATOR = "0x0826000000000000000000000000000000005e9d" as const;
 const RECIPIENT = "0x9911000000000000000000000000000000002244" as const;
 const FEE_POLICY = "0x70c1000000000000000000000000000000003b55" as const;
+
+describe("formatPoolRate", () => {
+  it("keeps two decimal places without dropping significant precision", () => {
+    expect(formatPoolRate("1000000")).toBe("1.00");
+    expect(formatPoolRate("1200000")).toBe("1.20");
+    expect(formatPoolRate("1234567")).toBe("1.234567");
+    expect(formatPoolRate("1000")).toBe("0.001");
+  });
+
+  it("localizes exact digits and separators", () => {
+    expect(formatPoolRate("1234567", "de-DE")).toBe("1,234567");
+  });
+});
 
 function base() {
   return {
@@ -696,5 +718,222 @@ describe("seedPoolVoucherRateInput", () => {
     expect(
       seedPoolVoucherRateInput({ exchangeRatePpm: "1000000", capRaw: "0", decimals: 6 }),
     ).toEqual({ exchangeRate: "1", creditLimit: "0" });
+  });
+});
+
+const EUR_FEED = getAddress("0xab70bcb260073d036d1660201e9d5405f5829b7a");
+const FEEDS = [
+  { address: EUR_FEED, maxStalenessSeconds: 93_600 },
+  { address: getAddress(AGGREGATOR), maxStalenessSeconds: null },
+];
+
+describe("findPoolVoucherFeed", () => {
+  it("matches a registry feed whatever casing the address arrives in", () => {
+    expect(findPoolVoucherFeed(FEEDS, EUR_FEED.toLowerCase())?.address).toBe(EUR_FEED);
+  });
+
+  it("finds nothing for an unregistered, empty or malformed address", () => {
+    expect(findPoolVoucherFeed(FEEDS, RECIPIENT)).toBeUndefined();
+    expect(findPoolVoucherFeed(FEEDS, null)).toBeUndefined();
+    expect(findPoolVoucherFeed(FEEDS, "0x12")).toBeUndefined();
+  });
+});
+
+describe("poolVoucherFeedSchema", () => {
+  const schema = poolVoucherFeedSchema({ requireCreditLimit: true, decimals: 6 });
+  const messages = (value: { feed: string; customAddress: string; creditLimit: string }) =>
+    schema.safeParse(value).error?.issues.map((issue) => [issue.path[0], issue.message]) ?? [];
+
+  it("requires a feed to be chosen", () => {
+    expect(messages({ feed: "", customAddress: "", creditLimit: "10" })).toEqual([
+      ["feed", "Choose a price feed"],
+    ]);
+  });
+
+  it("requires a valid non-zero address for a custom feed", () => {
+    expect(
+      messages({ feed: POOL_VOUCHER_CUSTOM_FEED, customAddress: zeroAddress, creditLimit: "1" }),
+    ).toEqual([["customAddress", "Enter a valid feed address"]]);
+    expect(
+      messages({ feed: POOL_VOUCHER_CUSTOM_FEED, customAddress: RECIPIENT, creditLimit: "1" }),
+    ).toEqual([]);
+  });
+
+  it("holds the credit limit to the voucher's own precision", () => {
+    expect(messages({ feed: EUR_FEED, customAddress: "", creditLimit: "1.123456" })).toEqual([]);
+    expect(messages({ feed: EUR_FEED, customAddress: "", creditLimit: "1.1234567" })).toEqual([
+      ["creditLimit", "Enter a credit limit of zero or more"],
+    ]);
+    expect(messages({ feed: EUR_FEED, customAddress: "", creditLimit: "0" })).toEqual([]);
+    expect(messages({ feed: EUR_FEED, customAddress: "", creditLimit: "" })).toEqual([
+      ["creditLimit", "Enter a credit limit of zero or more"],
+    ]);
+  });
+
+  it("skips the limit where the pool has no limiter", () => {
+    const uncapped = poolVoucherFeedSchema({ requireCreditLimit: false, decimals: null });
+    expect(uncapped.safeParse({ feed: EUR_FEED, customAddress: "", creditLimit: "" }).success).toBe(
+      true,
+    );
+  });
+});
+
+describe("toPoolVoucherFeedConfig", () => {
+  it("sends a registry feed with its freshness bound and the limit in voucher units", () => {
+    expect(
+      toPoolVoucherFeedConfig({
+        values: { feed: EUR_FEED, customAddress: "", creditLimit: "250.5" },
+        feeds: FEEDS,
+        decimals: 6,
+        hasLimiter: true,
+      }),
+    ).toEqual({
+      pricing: { kind: "oracle", aggregatorAddress: EUR_FEED, maxStalenessSeconds: "93600" },
+      depositCapRaw: "250500000",
+    });
+  });
+
+  it("uses the quoter's global bound for a feed with none, and for a custom address", () => {
+    expect(
+      toPoolVoucherFeedConfig({
+        values: { feed: getAddress(AGGREGATOR), customAddress: "", creditLimit: "" },
+        feeds: FEEDS,
+        decimals: 6,
+        hasLimiter: false,
+      }),
+    ).toEqual({ pricing: { kind: "oracle", aggregatorAddress: getAddress(AGGREGATOR) } });
+    expect(
+      toPoolVoucherFeedConfig({
+        values: {
+          feed: POOL_VOUCHER_CUSTOM_FEED,
+          customAddress: ` ${RECIPIENT.toLowerCase()} `,
+          creditLimit: "0",
+        },
+        feeds: FEEDS,
+        decimals: 18,
+        hasLimiter: true,
+      }),
+    ).toEqual({
+      pricing: { kind: "oracle", aggregatorAddress: getAddress(RECIPIENT) },
+      depositCapRaw: "0",
+    });
+  });
+
+  it("encodes the three-argument setOracle for a registry feed", () => {
+    const { pricing } = toPoolVoucherFeedConfig({
+      values: { feed: EUR_FEED, customAddress: "", creditLimit: "" },
+      feeds: FEEDS,
+      decimals: 6,
+      hasLimiter: false,
+    });
+    const [call] = buildAddPoolVoucherCalls({ ...base(), register: false, pricing });
+    expect(
+      decodeFunctionData({ abi: oracleQuoterSetOracleWithStalenessAbi, data: call?.data ?? "0x" }),
+    ).toEqual({ functionName: "setOracle", args: [TOKEN, EUR_FEED, 93_600n] });
+  });
+
+  it("refuses fields that name no feed", () => {
+    expect(() =>
+      toPoolVoucherFeedConfig({
+        values: { feed: "", customAddress: "", creditLimit: "1" },
+        feeds: FEEDS,
+        decimals: 6,
+        hasLimiter: true,
+      }),
+    ).toThrow("Choose a price feed.");
+  });
+});
+
+describe("seedPoolVoucherFeedInput", () => {
+  it("preselects nothing for a voucher without a feed", () => {
+    expect(
+      seedPoolVoucherFeedInput({
+        aggregatorAddress: null,
+        feeds: FEEDS,
+        capRaw: null,
+        decimals: 6,
+      }),
+    ).toEqual({ feed: "", customAddress: "", creditLimit: "" });
+    expect(
+      seedPoolVoucherFeedInput({
+        aggregatorAddress: zeroAddress,
+        feeds: FEEDS,
+        capRaw: "0",
+        decimals: 6,
+      }),
+    ).toEqual({ feed: "", customAddress: "", creditLimit: "0" });
+  });
+
+  it("seeds a registry feed by its address and the cap in voucher units", () => {
+    expect(
+      seedPoolVoucherFeedInput({
+        aggregatorAddress: EUR_FEED.toLowerCase() as `0x${string}`,
+        feeds: FEEDS,
+        capRaw: "250500000",
+        decimals: 6,
+      }),
+    ).toEqual({ feed: EUR_FEED, customAddress: "", creditLimit: "250.5" });
+  });
+
+  it("seeds an unregistered aggregator as a custom address", () => {
+    expect(
+      seedPoolVoucherFeedInput({
+        aggregatorAddress: RECIPIENT,
+        feeds: FEEDS,
+        capRaw: "1",
+        decimals: 18,
+      }),
+    ).toEqual({
+      feed: POOL_VOUCHER_CUSTOM_FEED,
+      customAddress: getAddress(RECIPIENT),
+      creditLimit: "0.000000000000000001",
+    });
+  });
+
+  it("round-trips through the config builder", () => {
+    const seed = seedPoolVoucherFeedInput({
+      aggregatorAddress: EUR_FEED,
+      feeds: FEEDS,
+      capRaw: "123456789",
+      decimals: 6,
+    });
+    expect(
+      toPoolVoucherFeedConfig({ values: seed, feeds: FEEDS, decimals: 6, hasLimiter: true })
+        .depositCapRaw,
+    ).toBe("123456789");
+    expect(resolvePoolVoucherFeedAddress(seed)).toBe(EUR_FEED);
+  });
+});
+
+describe("oracle feed reads", () => {
+  it("formats an answer at the feed's decimals", () => {
+    expect(oracleFeedPrice(110_815_500n, 8)).toBe("1.1081");
+    expect(oracleFeedPrice(5n, 0)).toBe("5");
+  });
+
+  it("treats a non-positive answer as no price", () => {
+    expect(oracleFeedPrice(0n, 8)).toBeNull();
+    expect(oracleFeedPrice(-1n, 8)).toBeNull();
+  });
+
+  it("applies the feed's own bound, falling back to the quoter default", () => {
+    const now = 1_000_000;
+    expect(
+      isOracleFeedStale({
+        updatedAt: BigInt(now - 90_000),
+        nowSeconds: now,
+        maxStalenessSeconds: 93_600,
+      }),
+    ).toBe(false);
+    expect(
+      isOracleFeedStale({
+        updatedAt: BigInt(now - 90_000),
+        nowSeconds: now,
+        maxStalenessSeconds: null,
+      }),
+    ).toBe(true);
+    expect(isOracleFeedStale({ updatedAt: 0n, nowSeconds: now, maxStalenessSeconds: null })).toBe(
+      true,
+    );
   });
 });

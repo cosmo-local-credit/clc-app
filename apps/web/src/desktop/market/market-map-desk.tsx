@@ -5,6 +5,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { RiFocus3Line } from "react-icons/ri";
 import { useConnection } from "wagmi";
 
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { useViewportScopedSearch } from "#/components/market-viewport-search-notice";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
 import { Progress, ProgressTrack } from "#/components/ui/progress";
@@ -14,6 +15,8 @@ import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse
 import { useMarketScreen } from "#/features/home/hooks/use-market-screen";
 import { useOutputVoucherBrowse } from "#/features/home/hooks/use-output-voucher-browse";
 import { MarketMap } from "#/features/home/ui/market-map.lazy";
+import type { MarketMapZoomControls } from "#/features/home/ui/market-map";
+import { MarketMapControls } from "#/features/home/ui/market-map-controls";
 import type { MarketListScope } from "#/lib/navigation/marketplace-search";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
@@ -31,13 +34,13 @@ import { DESK_SELECTED } from "#/desktop/ui/page";
 
 export function MarketMapDesk({
   isAuthenticated = false,
-  creditableSearch,
+  creditOn = false,
   outputVoucherSearch,
   scope: _scope = "all",
   creditRoute = "home",
 }: {
   isAuthenticated?: boolean;
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditOn?: boolean;
   /** The link's requested output voucher; it narrows the Pools map to pools that can pay it out. */
   outputVoucherSearch?: string | readonly string[];
   scope?: MarketListScope;
@@ -52,12 +55,12 @@ export function MarketMapDesk({
   // The requested output reads Credit too, to intersect with it. This is the
   // same Credit the screen reads (one set of queries), taken first so the
   // screen can send the one pool restriction.
-  const credit = useCreditableBrowse(creditableSearch);
+  const credit = useCreditableBrowse(creditOn);
   const output = useOutputVoucherBrowse(outputVoucherSearch, credit);
   const screen = useMarketScreen({
     isAuthenticated,
     locationOwner,
-    creditableSearch,
+    creditOn,
     creditRoute,
     output,
     alsoClear: clearNarrowing,
@@ -73,6 +76,7 @@ export function MarketMapDesk({
   });
   const narrowed = screen.filter.isFiltered || screen.credit.enabled || output.active;
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [zoomControls, setZoomControls] = useState<MarketMapZoomControls | null>(null);
   const hoverFromMap = useRef(false);
   const listRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -203,7 +207,6 @@ export function MarketMapDesk({
               status={screen.mapStatus}
               credit={screen.credit}
               narrowed={narrowed}
-              onClearCredit={screen.clearCredit}
               onClearFilters={screen.clearFilters}
               onResetLayers={screen.mapResources.reset}
             />
@@ -281,6 +284,7 @@ export function MarketMapDesk({
               }}
               onDeselect={screen.closeSelection}
               onViewportSettled={screen.handleViewportSettled}
+              onZoomControlsChange={setZoomControls}
               bottomInset={0}
               className="absolute inset-0 h-full w-full"
             />
@@ -301,7 +305,9 @@ export function MarketMapDesk({
           <DeskSignInAction />
         </div>
         {screen.isCardOpen ? null : (
-          <div className="pointer-events-none absolute end-4 bottom-4">{screen.locationButton}</div>
+          <div className="pointer-events-none absolute end-4 bottom-4">
+            <MarketMapControls location={screen.locationButton} zoom={zoomControls} />
+          </div>
         )}
       </div>
     </div>
@@ -365,6 +371,14 @@ function MapResultRow({
           <span className="block truncate text-xs text-muted-foreground">{distance}</span>
         ) : null}
       </span>
+      {row.kind === "pool" ? (
+        <CreditHopsBadge kind="pool" address={row.address} />
+      ) : row.kind === "voucher" || row.kind === "offering" ? (
+        <CreditHopsBadge
+          kind="voucher"
+          address={row.kind === "offering" ? row.voucherAddress : row.address}
+        />
+      ) : null}
       <MarketKindBadge kind={kind} />
     </button>
   );

@@ -1,4 +1,5 @@
 import { catalogsInfiniteQueryOptions } from "@clc/api/features/catalogs/queries";
+import { withCredit } from "#/lib/navigation/pool-search";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import type { Catalog } from "@clc/core/features/catalogs/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -21,35 +22,27 @@ import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
 
-export function CatalogsPage({
-  creditableSearch,
-}: {
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
-}) {
+export function CatalogsPage({ creditOn = false }: { creditOn?: boolean }) {
   return (
     <NearbyCatalog>
       <div className="min-h-[100svh] space-y-5 bg-background px-4 pb-bottom-nav">
         <h1 className="sr-only">
           <Trans>Catalogs</Trans>
         </h1>
-        <CatalogList creditableSearch={creditableSearch} />
+        <CatalogList creditOn={creditOn} />
       </div>
     </NearbyCatalog>
   );
 }
 
-function CatalogList({
-  creditableSearch,
-}: {
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
-}) {
+function CatalogList({ creditOn = false }: { creditOn?: boolean }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const storageOwner = useStorageOwner();
   const distanceOrigin = useDiscoveryDistanceOrigin(storageOwner ?? GUEST_STORAGE_OWNER);
   const scope = useNearbyCatalog();
   const search = useCatalogFilter();
-  const credit = useCreditableBrowse(creditableSearch);
+  const credit = useCreditableBrowse(creditOn);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const query = useInfiniteQuery({
     ...catalogsInfiniteQueryOptions(catalogsClient, {
@@ -59,7 +52,8 @@ function CatalogList({
       q: search.result.ok ? search.result.filter.term : "",
       tags: search.result.ok ? search.result.filter.tags : [],
       tagMatch: search.result.ok ? search.result.filter.tagMatch : "any",
-      ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
+      // Credit is resolved on the server for this wallet (creditDepth), uncapped.
+      ...(credit.enabled && credit.scope ? { credit: credit.scope } : {}),
     }),
     enabled: search.result.ok && !search.isDebouncing && !credit.blocksResults,
     ...nearbyQueryPolicy(scope),
@@ -77,17 +71,10 @@ function CatalogList({
           <CreditableBrowseControl
             part="control"
             state={credit}
-            onChange={(checked) =>
+            onChange={(on) =>
               void navigate({
                 to: "/market",
-                search: (previous) => ({ ...previous, creditable: checked }),
-              })
-            }
-            onClear={() =>
-              void navigate({
-                to: "/market",
-                replace: true,
-                search: (previous) => ({ ...previous, creditable: undefined }),
+                search: (previous) => ({ ...previous, ...withCredit(on) }),
               })
             }
           />
@@ -109,17 +96,10 @@ function CatalogList({
       <CreditableBrowseControl
         part="feedback"
         state={credit}
-        onChange={(checked) =>
+        onChange={(on) =>
           void navigate({
             to: "/market",
-            search: (previous) => ({ ...previous, creditable: checked }),
-          })
-        }
-        onClear={() =>
-          void navigate({
-            to: "/market",
-            replace: true,
-            search: (previous) => ({ ...previous, creditable: undefined }),
+            search: (previous) => ({ ...previous, ...withCredit(on) }),
           })
         }
       />

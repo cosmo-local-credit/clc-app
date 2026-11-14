@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => ({
   credit: {
     enabled: false,
     poolRefs: undefined as Array<{ chainId: number; address: string }> | undefined,
+    scope: undefined as { wallet: string; digest: string } | undefined,
     blocksResults: false,
   },
   query: {
@@ -113,7 +114,7 @@ vi.mock("#/components/creditable-browse-control", () => ({
     onChange,
   }: {
     part: "control" | "feedback";
-    onChange: (checked: boolean) => void;
+    onChange: (on: boolean) => void;
   }) => (
     <button type="button" onClick={() => onChange(true)}>
       {part} Credit on
@@ -124,6 +125,7 @@ vi.mock("#/components/creditable-browse-control", () => ({
 import { MarketplacePage } from "./marketplace-page";
 
 const VOUCHER = "0x2222222222222222222222222222222222222222";
+const WALLET = "0x00000000000000000000000000000000000000Aa";
 const POOL = "0x1111111111111111111111111111111111111111";
 const OFFER_VOUCHER = "0x3333333333333333333333333333333333333333";
 
@@ -254,6 +256,7 @@ beforeEach(() => {
   mocks.filter.clear.mockReset();
   mocks.credit.enabled = false;
   mocks.credit.poolRefs = undefined;
+  mocks.credit.scope = undefined;
   mocks.credit.blocksResults = false;
   mocks.query.data = { pages: [{ results: [offering(), voucher(), pool(), catalog()] }] };
   mocks.query.isPending = false;
@@ -330,7 +333,7 @@ describe("MarketplacePage", () => {
     expect(rowLink("Community harvest").textContent).toContain("Post");
   });
 
-  it("asks for every kind with the search, its tags and the Credit pools", () => {
+  it("asks for every kind with the search, its tags and the server-resolved Credit", () => {
     mocks.filter.result = {
       ok: true,
       filter: { term: "bike", tags: ["Repair"], tagMatch: "any" },
@@ -338,8 +341,9 @@ describe("MarketplacePage", () => {
     };
     mocks.credit.enabled = true;
     mocks.credit.poolRefs = [{ chainId: 100, address: POOL }];
+    mocks.credit.scope = { wallet: WALLET, digest: "0xAB" };
 
-    render(<MarketplacePage creditableSearch />);
+    render(<MarketplacePage creditOn />);
 
     expect(mocks.queryOptions?.enabled).toBe(true);
     const key = (mocks.queryOptions?.queryKey as unknown[] | undefined)?.[3];
@@ -350,7 +354,8 @@ describe("MarketplacePage", () => {
       kinds: [],
       facets: true,
       nearby: false,
-      pools: [`100:${POOL}`],
+      pools: undefined,
+      credit: { wallet: WALLET.toLowerCase(), digest: "0xab" },
     });
   });
 
@@ -363,9 +368,17 @@ describe("MarketplacePage", () => {
     const [control, feedback] = mocks.navigate.mock.calls.map(([call]) => call);
     const previous = { scope: "all", q: "food" };
     expect(control).toMatchObject({ to: "/market" });
-    expect(control.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(control.search(previous)).toEqual({
+      ...previous,
+      credit: 1,
+      creditable: undefined,
+    });
     expect(feedback).toMatchObject({ to: "." });
-    expect(feedback.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(feedback.search(previous)).toEqual({
+      ...previous,
+      credit: 1,
+      creditable: undefined,
+    });
   });
 
   it("renders the complete server-bounded page and preserves pagination", () => {
@@ -413,7 +426,7 @@ describe("MarketplacePage", () => {
     mocks.credit.poolRefs = [];
     mocks.credit.blocksResults = true;
 
-    render(<MarketplacePage creditableSearch />);
+    render(<MarketplacePage creditOn />);
 
     expect(mocks.queryOptions?.enabled).toBe(false);
     expect(
