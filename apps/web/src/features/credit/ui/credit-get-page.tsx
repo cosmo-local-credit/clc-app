@@ -864,7 +864,11 @@ function CreditReviewBody({
         </ReviewRow>
       </div>
       <details className="border border-border bg-card">
-        <summary className="flex min-h-11 cursor-pointer items-center px-3 font-semibold text-sm">
+        {/* The sheet's swipe would capture a mouse press here and swallow the toggle. */}
+        <summary
+          data-base-ui-swipe-ignore=""
+          className="flex min-h-11 cursor-pointer items-center px-3 font-semibold text-sm"
+        >
           <Trans>Route details</Trans>
           {" · "}
           <SwapCount hops={quote.hops.length} />
