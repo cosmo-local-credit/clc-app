@@ -9,7 +9,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { RiArrowRightLine } from "react-icons/ri";
 
-import { RoutedSwapHops } from "#/components/activity/routed-swap-activity";
+import { SwapCount } from "#/components/credit/credit-hops";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
@@ -314,7 +314,7 @@ function CreditRouteRow({
           ))}
         </span>
         <Badge size="sm" variant="muted">
-          <RoutedSwapHops count={hops} />
+          <SwapCount hops={hops} />
         </Badge>
       </div>
       <p className="mt-1 truncate text-xs text-muted-foreground">

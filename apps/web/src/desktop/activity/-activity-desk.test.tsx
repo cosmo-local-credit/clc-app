@@ -293,7 +293,7 @@ describe("Activity routed exchanges", () => {
       cursor: null,
     });
     renderDesk(`/?tab=activity&tx=${encodeURIComponent(activityRowKey(swap))}`);
-    const route = await screen.findByRole("link", { name: "2 hops" });
+    const route = await screen.findByRole("link", { name: "2 swaps" });
     expect(route.getAttribute("href")).toBe("/routed-swaps/f47ac10b-58cc-4372-a567-0e02b2c3d479");
   });
 });

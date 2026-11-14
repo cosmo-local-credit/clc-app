@@ -1,13 +1,8 @@
 import type { RoutedSwapReceipt } from "@clc/api/features/credit-router/client";
 import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
-import { Plural, Trans } from "@lingui/react/macro";
+import { Trans } from "@lingui/react/macro";
 
 import { SignedAmount } from "#/components/wallet";
-
-/** "2 hops", for a routed exchange's subtitle. */
-export function RoutedSwapHops({ count }: { count: number }) {
-  return <Plural value={count} one="# hop" other="# hops" />;
-}
 
 /**
  * A routed exchange the activity index has not listed yet: relayed and

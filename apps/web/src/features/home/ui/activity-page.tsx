@@ -17,11 +17,11 @@ import {
 import { AccountSwapDetailsSheet } from "#/components/activity/account-swap-details-sheet";
 import { ActivityFilterSheet } from "#/components/activity/activity-filter-sheet";
 import {
-  RoutedSwapHops,
   RoutedSwapPendingTitle,
   RoutedSwapSpent,
 } from "#/components/activity/routed-swap-activity";
 import { SwapActivityAmounts, SwapActivityTitle } from "#/components/activity/swap-activity";
+import { SwapCount } from "#/components/credit/credit-hops";
 import { MarketFeedBar } from "#/components/market-bar";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -363,7 +363,7 @@ function RoutedSwapRow({
           <RoutedSwapPendingTitle receipt={receipt} />
         </p>
         <p className="truncate text-muted-foreground text-xs">
-          <RoutedSwapHops count={receipt.swap.hopCount} />
+          <SwapCount hops={receipt.swap.hopCount} />
         </p>
       </div>
       <span className="shrink-0 text-end">
@@ -411,7 +411,7 @@ function ActivityRow({
             {isNew ? <UnreadDot /> : null}
           </p>
           <p className="truncate text-muted-foreground text-xs">
-            <RoutedSwapHops count={route.swap.hopCount} />
+            <SwapCount hops={route.swap.hopCount} />
             {date ? (
               <>
                 <span aria-hidden="true"> · </span>

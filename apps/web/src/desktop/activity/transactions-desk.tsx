@@ -8,8 +8,8 @@ import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-ro
 import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { RiChat1Line, RiCloseLine, RiExternalLinkLine, RiSearchLine } from "react-icons/ri";
 
-import { RoutedSwapHops } from "#/components/activity/routed-swap-activity";
 import { formatActivityLegAmount } from "#/components/activity/swap-activity";
+import { SwapCount } from "#/components/credit/credit-hops";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -860,7 +860,7 @@ function SwapInspector({
                   params={{ trackingId: route.swap.trackingId }}
                   className="underline underline-offset-2"
                 >
-                  <RoutedSwapHops count={route.swap.hopCount} />
+                  <SwapCount hops={route.swap.hopCount} />
                 </Link>,
               ]
             : null,

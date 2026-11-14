@@ -261,7 +261,7 @@ describe("CreditGetPage", () => {
     ]);
 
     const twoHop = await screen.findByRole("button", { name: /AAA.*BBB.*CCC/ });
-    expect(twoHop.textContent).toContain("2 hops");
+    expect(twoHop.textContent).toContain("2 swaps");
     expect(twoHop.textContent).toContain("via Kilifi Pool, Mombasa Pool");
     expect(twoHop.textContent).toContain("1 AAA = 0.99 CCC");
     expect(twoHop.textContent).toContain("Up to 8.99 CCC");
@@ -271,7 +271,7 @@ describe("CreditGetPage", () => {
     expect(within(twoHop).getByText("Fee not confirmed")).toBeTruthy();
 
     const oneHop = screen.getByRole("button", { name: /DDD.*CCC/ });
-    expect(oneHop.textContent).toContain("1 hop");
+    expect(oneHop.textContent).toContain("1 swap");
     expect(oneHop.textContent).toContain("via Mombasa Pool");
     expect(oneHop.textContent).toContain("Capacity unknown");
     expect(within(oneHop).getByText("Estimate")).toBeTruthy();
@@ -283,7 +283,7 @@ describe("CreditGetPage", () => {
     renderPage(FIXTURE.voucherD);
 
     const route = await screen.findByRole("button", { name: /AAA.*BBB.*CCC.*FFF/ });
-    expect(route.textContent).toContain("3 hops");
+    expect(route.textContent).toContain("3 swaps");
     expect(route.textContent).toContain("via Kilifi Pool, Mombasa Pool, Malindi Pool");
     expect(route.textContent).toContain("1 AAA = 0.99 FFF");
     expect(route.textContent).toContain("At least 8.99 FFF");

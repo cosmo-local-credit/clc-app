@@ -55,6 +55,11 @@ function useCreditHops(kind: "voucher" | "pool", address: string | null | undefi
   return (kind === "pool" ? hops.pools : hops.vouchers).get(address.toLowerCase());
 }
 
+/** "1 swap" or "3 swaps": the swaps a route or a routed exchange takes. */
+export function SwapCount({ hops }: { hops: number }) {
+  return <Plural value={hops} one="# swap" other="# swaps" />;
+}
+
 /**
  * "In your wallet", "1 swap" or "3 swaps" for a voucher or pool row; nothing
  * when the router names no route. A pool is never held, so it reads only swaps.
@@ -72,11 +77,7 @@ export function CreditHopsBadge({
   if (hops === undefined || (kind === "pool" && hops === 0)) return null;
   return (
     <Badge size="sm" variant="muted" className={className}>
-      {hops === 0 ? (
-        <Trans>In your wallet</Trans>
-      ) : (
-        <Plural value={hops} one="# swap" other="# swaps" />
-      )}
+      {hops === 0 ? <Trans>In your wallet</Trans> : <SwapCount hops={hops} />}
     </Badge>
   );
 }

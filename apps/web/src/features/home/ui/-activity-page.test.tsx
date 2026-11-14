@@ -307,7 +307,7 @@ describe("ActivityPage", () => {
       );
     }
 
-    it("shows a routed swap as one entry with its hops that opens its grouped receipt", async () => {
+    it("shows a routed swap as one entry with its swap count that opens its grouped receipt", async () => {
       stubActivity([swapped]);
       routedMocks.routedSwaps.mockResolvedValue({
         items: [receipt(TRACKING, SWAP_TX, "2026-10-20T07:59:58Z")],
@@ -317,11 +317,11 @@ describe("ActivityPage", () => {
 
       const entry = await screen.findByRole("link", { name: /swapped knsm2 for my3r/i });
       expect(entry.getAttribute("href")).toBe(`/routed-swaps/${TRACKING}`);
-      expect(entry.textContent).toContain("2 hops");
+      expect(entry.textContent).toContain("2 swaps");
       expect(screen.queryByRole("button", { name: /swapped knsm2 for my3r/i })).toBeNull();
     });
 
-    it("counts every hop of a longer routed swap", async () => {
+    it("counts every swap of a longer routed swap", async () => {
       stubActivity([swapped]);
       routedMocks.routedSwaps.mockResolvedValue({
         items: [receipt(TRACKING, SWAP_TX, "2026-10-20T07:59:58Z", 3)],
@@ -330,7 +330,7 @@ describe("ActivityPage", () => {
       renderWithQueryClient(<ActivityPage address={ADDRESS} />);
 
       const entry = await screen.findByRole("link", { name: /swapped knsm2 for my3r/i });
-      expect(entry.textContent).toContain("3 hops");
+      expect(entry.textContent).toContain("3 swaps");
     });
 
     it("lists an exchange the index has not seen yet, from the server, by time", async () => {
@@ -344,7 +344,7 @@ describe("ActivityPage", () => {
 
       const pending = await screen.findByRole("link", { name: /exchanging/i });
       expect(pending.getAttribute("href")).toBe(`/routed-swaps/${PENDING_TRACKING}`);
-      expect(pending.textContent).toContain("2 hops");
+      expect(pending.textContent).toContain("2 swaps");
       await waitFor(() => expect(pending.textContent).toContain("1.00 MY3R"));
       // Newer than the indexed swap, so it leads the list.
       const rows = screen.getByRole("region", { name: "Activity" }).querySelectorAll("a, button");
