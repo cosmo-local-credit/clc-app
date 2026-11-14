@@ -169,15 +169,21 @@ export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}
         <Toggle
           variant="outline"
           pressed={get.mode === "exactOutput"}
-          onPressedChange={() => get.setMode("exactOutput")}
+          onPressedChange={(nextPressed) => {
+            if (nextPressed) get.setMode("exactOutput");
+          }}
+          className="data-[pressed]:border-primary data-[pressed]:bg-primary data-[pressed]:text-primary-foreground"
         >
           <Trans>Get</Trans>
         </Toggle>
         <Toggle
           variant="outline"
           pressed={get.mode === "exactInput"}
-          onPressedChange={() => get.setMode("exactInput")}
+          onPressedChange={(nextPressed) => {
+            if (nextPressed) get.setMode("exactInput");
+          }}
           disabled={get.options.length === 0}
+          className="data-[pressed]:border-primary data-[pressed]:bg-primary data-[pressed]:text-primary-foreground"
         >
           <Trans>Spend</Trans>
         </Toggle>

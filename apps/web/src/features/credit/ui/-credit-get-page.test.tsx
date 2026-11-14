@@ -407,6 +407,13 @@ describe("CreditGetPage", () => {
 
   it("shows what each voucher costs when getting, and what it pays out when spending", async () => {
     renderPage();
+    // Get is the mode a person starts in, and it shows as the one chosen.
+    const getMode = await screen.findByRole("button", { name: "Get" });
+    expect(getMode.getAttribute("aria-pressed")).toBe("true");
+    expect(getMode.hasAttribute("data-pressed")).toBe(true);
+    expect(screen.getByRole("button", { name: "Spend" }).getAttribute("aria-pressed")).toBe(
+      "false",
+    );
     fireEvent.change(await screen.findByLabelText("You get"), { target: { value: "5" } });
     await pricedAt("5000000", "exactOutput");
     await waitFor(() => expect(row("AAA").textContent).toContain("≈ 5.10 AAA"));
@@ -414,6 +421,11 @@ describe("CreditGetPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Spend" }));
     expect((screen.getByLabelText("You spend") as HTMLInputElement).value).toBe("");
+    expect(screen.getByRole("button", { name: "Spend" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "Get" }).getAttribute("aria-pressed")).toBe("false");
+    // Pressing the active mode again keeps it rather than turning it off.
+    fireEvent.click(screen.getByRole("button", { name: "Spend" }));
+    expect(screen.getByRole("button", { name: "Spend" }).getAttribute("aria-pressed")).toBe("true");
     fireEvent.change(screen.getByLabelText("You spend"), { target: { value: "5" } });
     await pricedAt("5000000", "exactInput");
     await waitFor(() => expect(row("AAA").textContent).toContain("≈ 4.90 CCC"));
