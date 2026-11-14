@@ -259,7 +259,7 @@ describe("AddPoolVoucherSheet", () => {
     renderSheet({ quoterType: "relative" });
     await pickKiriba();
     expect(screen.queryByLabelText("Price feed")).toBeNull();
-    fireEvent.change(screen.getByLabelText(/Cap in RIBA/), { target: { value: "300" } });
+    fireEvent.change(screen.getByLabelText(/Credit limit in RIBA/), { target: { value: "300" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
     await waitFor(() =>
       expect(
@@ -292,7 +292,7 @@ describe("AddPoolVoucherSheet", () => {
       capRaw: "300000000",
     });
     expect(screen.getByLabelText("Exchange rate").getAttribute("value")).toBe("1.25");
-    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "0" } });
+    fireEvent.change(screen.getByLabelText(/Credit limit in MUMO/), { target: { value: "0" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
     await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
     expect(relayOperatorBatch.mock.calls[0]![0].map((call: { to: string }) => call.to)).toEqual([
@@ -305,7 +305,7 @@ describe("AddPoolVoucherSheet", () => {
     const voucher = member(RIBA);
     const edit = { voucher, ratePpm: "1250000", capRaw: "300000000" };
     const first = renderSheet({ quoterType: "relative" }, [voucher], edit);
-    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "600" } });
+    fireEvent.change(screen.getByLabelText(/Credit limit in MUMO/), { target: { value: "600" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
     await waitFor(() => expect(onUpdated).toHaveBeenCalledWith({ expectedCapRaw: "600000000" }));
     first.unmount();
@@ -314,7 +314,9 @@ describe("AddPoolVoucherSheet", () => {
 
     // The confirmed cap is 600, but the catalog still supplies 300 to this edit.
     renderSheet({ quoterType: "relative" }, [voucher], edit);
-    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "300.000000" } });
+    fireEvent.change(screen.getByLabelText(/Credit limit in MUMO/), {
+      target: { value: "300.000000" },
+    });
     fireEvent.change(screen.getByLabelText("Exchange rate"), { target: { value: "2.5" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
     await waitFor(() => expect(onUpdated).toHaveBeenCalledWith({}));
@@ -330,7 +332,7 @@ describe("AddPoolVoucherSheet", () => {
       ratePpm: "1250000",
       capRaw: "300000000",
     });
-    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "600" } });
+    fireEvent.change(screen.getByLabelText(/Credit limit in MUMO/), { target: { value: "600" } });
     fireEvent.change(screen.getByLabelText("Exchange rate"), { target: { value: "2.5" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
     await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
@@ -347,7 +349,7 @@ describe("AddPoolVoucherSheet", () => {
     await waitFor(() =>
       expect(screen.getByLabelText("Price feed").textContent).toContain("KES / USD"),
     );
-    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "600" } });
+    fireEvent.change(screen.getByLabelText(/Credit limit in MUMO/), { target: { value: "600" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
     await waitFor(() => expect(onUpdated).toHaveBeenCalledWith({ expectedCapRaw: "600000000" }));
     expect(relayOperatorBatch.mock.calls[0]![0].map((call: { to: string }) => call.to)).toEqual([
@@ -409,7 +411,7 @@ describe("AddPoolVoucherSheet", () => {
     expect(screen.getByRole("button", { name: "Sign and update" }).hasAttribute("disabled")).toBe(
       true,
     );
-    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "600" } });
+    fireEvent.change(screen.getByLabelText(/Credit limit in MUMO/), { target: { value: "600" } });
     answer([EUR_FEED, 0n]);
     await waitFor(() =>
       expect(screen.getByLabelText("Price feed").textContent).toContain("EUR / USD"),
@@ -433,7 +435,7 @@ describe("AddPoolVoucherSheet", () => {
     );
 
     // Someone else moves the voucher to EUR; the steward only edits the cap.
-    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "600" } });
+    fireEvent.change(screen.getByLabelText(/Credit limit in MUMO/), { target: { value: "600" } });
     chain.multicall.mockResolvedValueOnce([EUR_FEED, 0n]);
     await client.refetchQueries({ queryKey: oracleKey() });
     await waitFor(() =>
@@ -469,7 +471,9 @@ describe("AddPoolVoucherSheet", () => {
         ratePpm: "1250000",
         capRaw: "300000000",
       });
-      fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "0300.000000" } });
+      fireEvent.change(screen.getByLabelText(/Credit limit in MUMO/), {
+        target: { value: "0300.000000" },
+      });
       fireEvent.change(screen.getByLabelText("Exchange rate"), { target: { value: "01.250000" } });
       fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
       await waitFor(() => expect(info).toHaveBeenCalledWith("No changes to save."));
@@ -483,7 +487,7 @@ describe("AddPoolVoucherSheet", () => {
   it("adds to a decimal pool without sending a quoter setter", async () => {
     renderSheet({ quoterType: "decimal" });
     await pickKiriba();
-    fireEvent.change(screen.getByLabelText(/Cap in RIBA/), { target: { value: "300" } });
+    fireEvent.change(screen.getByLabelText(/Credit limit in RIBA/), { target: { value: "300" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
     await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
     expect(relayOperatorBatch.mock.calls[0]![0].map((call: { to: string }) => call.to)).toEqual([
@@ -497,14 +501,14 @@ describe("AddPoolVoucherSheet", () => {
 
     fireEvent.click(await waitFor(() => screen.getByRole("button", { name: /Kiriba/ })));
     await waitFor(() => expect(screen.getByText(/no limiter on record/)).toBeTruthy());
-    expect(screen.queryByLabelText(/Cap in RIBA/)).toBeNull();
+    expect(screen.queryByLabelText(/Credit limit in RIBA/)).toBeNull();
   });
 
   it("scales the cap by the voucher's decimals and relays one batch", async () => {
     renderSheet();
     await pickKiriba();
 
-    fireEvent.change(screen.getByLabelText(/Cap in RIBA/), { target: { value: "300" } });
+    fireEvent.change(screen.getByLabelText(/Credit limit in RIBA/), { target: { value: "300" } });
     await chooseFeed(/KES \/ USD/);
     fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
 
@@ -525,7 +529,7 @@ describe("AddPoolVoucherSheet", () => {
     renderSheet();
     await pickKiriba();
 
-    fireEvent.change(screen.getByLabelText(/Cap in RIBA/), { target: { value: "300" } });
+    fireEvent.change(screen.getByLabelText(/Credit limit in RIBA/), { target: { value: "300" } });
     await chooseFeed(/EUR \/ USD/);
     expect((screen.getByLabelText(/Freshness bound/) as HTMLInputElement).value).toBe("93600");
     fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
@@ -540,7 +544,7 @@ describe("AddPoolVoucherSheet", () => {
     renderSheet();
     await pickKiriba();
 
-    fireEvent.change(screen.getByLabelText(/Cap in RIBA/), { target: { value: "300" } });
+    fireEvent.change(screen.getByLabelText(/Credit limit in RIBA/), { target: { value: "300" } });
     await chooseFeed("Custom address");
     fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
     await waitFor(() =>
@@ -562,7 +566,7 @@ describe("AddPoolVoucherSheet", () => {
     renderSheet();
     await pickKiriba();
 
-    fireEvent.change(screen.getByLabelText(/Cap in RIBA/), { target: { value: "300" } });
+    fireEvent.change(screen.getByLabelText(/Credit limit in RIBA/), { target: { value: "300" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
 
     await waitFor(() => expect(screen.getByText("Choose a price feed")).toBeTruthy());

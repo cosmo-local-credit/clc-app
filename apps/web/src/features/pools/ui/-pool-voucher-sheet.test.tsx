@@ -743,7 +743,7 @@ describe("PoolVoucherSheet managing", () => {
     expect(within(dialog).getByText("125.00 KES")).toBeTruthy();
     expect(
       within(dialog).getByText(
-        "How much value in KES can be swapped from the pool using PEPAS vouchers?",
+        "The most PEPAS this pool will hold, valued in KES. Room comes back as it's swapped out.",
       ),
     ).toBeTruthy();
     expect(within(dialog).queryByText(/Zero accepts no deposits yet/)).toBeNull();

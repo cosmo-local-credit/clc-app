@@ -611,7 +611,10 @@ function TokenReason({ token, variant }: { token: PoolSwapToken; variant: "from"
   if (variant === "from" && token.held && token.depositHeadroomRaw === "0") {
     return (
       <span className="block text-muted-foreground text-xs">
-        <Trans>The credit limit has been reached. No more can be added to this pool.</Trans>
+        <Trans>
+          This pool is at its credit limit for this voucher. It can take more once some is swapped
+          out.
+        </Trans>
       </span>
     );
   }

@@ -99,14 +99,14 @@ const formSchema = z
           ? z
               .string()
               .trim()
-              .regex(/^\d+(\.\d+)?$/, "Enter a cap of zero or more")
+              .regex(/^\d+(\.\d+)?$/, "Enter a credit limit of zero or more")
           : positiveDecimal
       ).safeParse(value.depositCap);
       if (!cap.success) {
         ctx.addIssue({
           code: "custom",
           path: ["depositCap"],
-          message: cap.error.issues[0]?.message ?? "Enter a deposit cap",
+          message: cap.error.issues[0]?.message ?? "Enter a credit limit",
         });
       }
     }
@@ -408,13 +408,13 @@ export function AddPoolVoucherSheet({
             {selected ? (
               <>
                 <div className="border-border flex flex-col gap-3 border-t pt-4">
-                  <SectionLabel>Deposit cap</SectionLabel>
+                  <SectionLabel>Credit limit</SectionLabel>
                   {hasLimiter ? (
                     <form.Field name="depositCap">
                       {(field) => (
                         <Field
                           htmlFor={field.name}
-                          label={`Cap in ${selected.symbol}`}
+                          label={`Credit limit in ${selected.symbol}`}
                           error={getFieldError(field.state.meta.errors)}
                         >
                           <Input

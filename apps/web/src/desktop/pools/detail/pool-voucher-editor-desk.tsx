@@ -339,7 +339,7 @@ function ConfigurationSide({
                   onChange={field.handleChange}
                   onBlur={field.handleBlur}
                   error={getFieldError(field.state.meta.errors)}
-                  hint={t`How much value in ${unitSymbol} can be swapped from the pool using ${selected.symbol} vouchers?`}
+                  hint={t`The most ${selected.symbol} this pool will hold, valued in ${unitSymbol}. Room comes back as it's swapped out.`}
                   placeholder="0"
                 />
               )}
@@ -349,7 +349,8 @@ function ConfigurationSide({
       ) : (
         <p className="text-sm text-muted-foreground">
           <Trans>
-            This pool has no limiter, so deposits are uncapped and no credit limit can be set.
+            This pool has no limiter, so it takes any amount of each voucher and no credit limit can
+            be set.
           </Trans>
         </p>
       )}

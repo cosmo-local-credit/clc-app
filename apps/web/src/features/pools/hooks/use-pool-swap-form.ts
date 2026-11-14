@@ -321,7 +321,7 @@ export function usePoolSwapForm({
     }
     if (problem === "depositCap") {
       setConfirmError(
-        t`This pool's deposit limit changed. Review the updated amounts and try again.`,
+        t`This pool's credit limit changed. Review the updated amounts and try again.`,
       );
       return;
     }

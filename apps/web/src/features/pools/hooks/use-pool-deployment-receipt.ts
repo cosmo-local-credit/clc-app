@@ -37,7 +37,7 @@ export function usePoolDeploymentReceipt(trackingId: string | undefined) {
     records,
     {
       registry: t`Voucher registry`,
-      limits: t`Limits`,
+      limits: t`Credit limits`,
       feePolicy: t`Fee policy`,
       pricing: t`Pricing`,
       pool: t`The pool`,

@@ -672,7 +672,10 @@ function PoolTokenPickerReason({
   if (variant === "from" && token.held && token.depositHeadroomRaw === "0") {
     return (
       <p className="text-xs text-muted-foreground">
-        <Trans>The credit limit has been reached. No more can be added to this pool.</Trans>
+        <Trans>
+          This pool is at its credit limit for this voucher. It can take more once some is swapped
+          out.
+        </Trans>
       </p>
     );
   }

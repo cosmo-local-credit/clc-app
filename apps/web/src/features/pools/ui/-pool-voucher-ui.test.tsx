@@ -1450,7 +1450,7 @@ describe("pool voucher UI", () => {
 
     const full = await screen.findByRole("button", { name: /USDC/ });
     expect(full.textContent).toContain(
-      "The credit limit has been reached. No more can be added to this pool.",
+      "This pool is at its credit limit for this voucher. It can take more once some is swapped out.",
     );
     expect(full.hasAttribute("disabled")).toBe(true);
   });
@@ -1469,7 +1469,7 @@ describe("pool voucher UI", () => {
 
     const blocked = await screen.findByRole("button", { name: /USDC/ });
     expect(blocked.textContent).toContain(
-      "The credit limit has been reached. No more can be added to this pool.",
+      "This pool is at its credit limit for this voucher. It can take more once some is swapped out.",
     );
     expect(blocked.hasAttribute("disabled")).toBe(true);
   });

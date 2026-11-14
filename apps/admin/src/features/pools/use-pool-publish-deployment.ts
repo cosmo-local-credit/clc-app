@@ -21,7 +21,7 @@ import { clcApi } from "#/lib/api";
 
 const STAGE_LABELS = {
   registry: "Voucher registry",
-  limits: "Limits",
+  limits: "Credit limits",
   feePolicy: "Fee policy",
   pricing: "Pricing",
   pool: "Pool",

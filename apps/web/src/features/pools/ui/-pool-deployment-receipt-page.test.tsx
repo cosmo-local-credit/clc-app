@@ -130,7 +130,7 @@ describe("PoolDeploymentReceiptPage", () => {
 
     expect(screen.getByRole("heading", { name: "Publishing your pool…" })).toBeTruthy();
     expect(screen.getByText("Voucher registry")).toBeTruthy();
-    expect(screen.getByText("Limits")).toBeTruthy();
+    expect(screen.getByText("Credit limits")).toBeTruthy();
     expect(screen.getByText("Fee policy")).toBeTruthy();
     expect(screen.getByText("Pricing")).toBeTruthy();
     expect(screen.getByText("The pool")).toBeTruthy();

@@ -215,7 +215,7 @@ function VouchersPanel({
               <TableRow>
                 <TableHead>Voucher</TableHead>
                 <TableHead>Address</TableHead>
-                <TableHead>Deposit cap</TableHead>
+                <TableHead>Credit limit</TableHead>
                 <TableHead>{pool.quoterType === "oracle" ? "Price feed" : "Pricing"}</TableHead>
                 <TableHead>Offers</TableHead>
                 <TableHead>Synced</TableHead>
