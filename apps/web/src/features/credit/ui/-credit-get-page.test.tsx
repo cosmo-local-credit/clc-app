@@ -12,6 +12,7 @@ const WALLET = privateKeyToAccount(PRIVATE_KEY).address;
 
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
+  reach: vi.fn(),
   routes: vi.fn(),
   quote: vi.fn(),
   relay: vi.fn(),
@@ -58,7 +59,7 @@ vi.mock("#/connectors/privateKey", async (importOriginal) => ({
 }));
 vi.mock("#/features/webauthn/api/sign-digest", () => ({ signDigestWithPasskey: vi.fn() }));
 vi.mock("#/lib/api/credit-router", () => ({
-  creditRouterClient: { routes: mocks.routes, quote: mocks.quote },
+  creditRouterClient: { reach: mocks.reach, routes: mocks.routes, quote: mocks.quote },
 }));
 vi.mock("#/lib/api/market", () => ({
   marketClient: {
@@ -202,8 +203,28 @@ function renderPage(voucherAddress: `0x${string}` = FIXTURE.voucherC) {
   );
 }
 
+/** The wallet's reach: it holds AAA and DDD, and whatever `held` adds. */
+function reach(held: { voucher: string; balance: string }[] = []) {
+  return {
+    depth: 3,
+    maxHops: 3,
+    asOfBlock: 49254469,
+    graphVersion: 812,
+    stale: false,
+    digest: `0x${"ab".repeat(32)}`,
+    inputs: [
+      { voucher: FIXTURE.voucherA, balance: "9000000" },
+      { voucher: VOUCHER_D, balance: "3000000" },
+      ...held,
+    ],
+    vouchers: [],
+    pools: [],
+  };
+}
+
 beforeEach(() => {
   for (const mock of Object.values(mocks)) mock.mockReset();
+  mocks.reach.mockResolvedValue(reach());
   mocks.routes.mockImplementation(async (params: CreditRoutesParams) => page(params));
   mocks.getHealth.mockResolvedValue({
     ok: true,
@@ -309,6 +330,33 @@ describe("CreditGetPage", () => {
         params: { trackingId: "f47ac10b-58cc-4372-a567-0e02b2c3d479" },
       }),
     );
+  });
+
+  it("says how much of the voucher the wallet already has, above the routes it still lists", async () => {
+    mocks.reach.mockResolvedValue(reach([{ voucher: FIXTURE.voucherC, balance: "2500000" }]));
+    renderPage();
+
+    const held = await screen.findByText(/You already have/);
+    expect(held.textContent).toBe("You already have 2.50 CCC");
+    const routes = await screen.findByRole("heading", { name: "Pay with AAA" });
+    // The panel comes first in the page, and the routes are still there.
+    expect(held.compareDocumentPosition(routes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByRole("button", { name: /AAA.*BBB.*CCC/ })).toBeTruthy();
+  });
+
+  it("says nothing of a voucher the wallet holds none of", async () => {
+    mocks.reach.mockResolvedValue(reach([{ voucher: FIXTURE.voucherC, balance: "0" }]));
+    renderPage();
+    expect(await screen.findByText("Pay with AAA")).toBeTruthy();
+    await waitFor(() => expect(mocks.reach).toHaveBeenCalled());
+    expect(screen.queryByText(/You already have/)).toBeNull();
+  });
+
+  it("still lists routes when the reach cannot be read", async () => {
+    mocks.reach.mockRejectedValue(new BackendApiError(401, "no session", "E06"));
+    renderPage();
+    expect(await screen.findByText("Pay with AAA")).toBeTruthy();
+    expect(screen.queryByText(/You already have/)).toBeNull();
   });
 
   it("asks for routes without a depth, so the router lists up to its maximum", async () => {

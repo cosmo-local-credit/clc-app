@@ -5,6 +5,7 @@ import {
   creditRouterFailure,
 } from "@clc/api/features/credit-router/client";
 import {
+  creditReachQueryOptions,
   creditRouterKeys,
   creditRoutesInfiniteQueryOptions,
 } from "@clc/api/features/credit-router/queries";
@@ -17,6 +18,7 @@ import {
   useInfiniteQuery,
   useIsMutating,
   useMutation,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -91,6 +93,12 @@ export function useCreditGet(targetAddress: `0x${string}`) {
     [listing.data?.pages],
   );
   const target = listing.data?.pages[0]?.target;
+  // The wallet's own vouchers come with the reach the swap counts read; a
+  // target already among them is worth saying before any route.
+  const reach = useQuery(creditReachQueryOptions(creditRouterClient, wallet ?? ""));
+  const heldBalance = reach.data?.inputs.find(
+    (input) => input.voucher.toLowerCase() === targetAddress.toLowerCase(),
+  )?.balance;
 
   // The voucher the amount is counted in: the one obtained, or the one spent.
   const spendVoucher =
@@ -256,6 +264,8 @@ export function useCreditGet(targetAddress: `0x${string}`) {
     auth,
     target,
     targetLabel: labels.get(targetAddress.toLowerCase()),
+    /** Raw units of the target the wallet already holds; absent when it holds none. */
+    heldBalance: heldBalance && BigInt(heldBalance) > 0n ? heldBalance : undefined,
     mode,
     setMode: (next: CreditQuoteMode) => {
       if (next === mode) return;

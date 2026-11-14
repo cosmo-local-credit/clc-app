@@ -73,6 +73,9 @@ export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}
       : get.spendVoucher
         ? symbolOf(labels, get.spendVoucher)
         : "";
+  const heldAmount = get.heldBalance
+    ? amountOf(labels, voucherAddress, get.heldBalance, locale)
+    : null;
   const noRoutes =
     !get.routesPending &&
     !get.routesError &&
@@ -150,6 +153,17 @@ export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}
           </span>
         ) : null}
       </div>
+
+      {heldAmount ? (
+        <p role="status" className="mt-4 border border-border bg-card p-3 text-sm">
+          <Trans>
+            You already have{" "}
+            <span dir="ltr" className="font-mono font-semibold">
+              {heldAmount} {targetSymbol}
+            </span>
+          </Trans>
+        </p>
+      ) : null}
 
       <div className="mt-4 space-y-5">
         {get.routesPending ? (
