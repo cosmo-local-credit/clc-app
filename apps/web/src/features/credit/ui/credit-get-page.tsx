@@ -336,22 +336,23 @@ function CreditPayRow({
   return (
     <div className="border-b border-border last:border-b-0">
       {radio ? (
-        <label className="flex min-h-11 cursor-pointer items-center gap-3 px-3 pt-2.5 pb-1 has-[[data-disabled]]:cursor-default">
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 px-3 pt-2 has-[[data-disabled]]:cursor-default">
           {line}
           <RadioGroupItem
             value={option.voucher.toLowerCase()}
             disabled={option.state === "refused"}
+            className="data-[disabled]:opacity-50"
           />
         </label>
       ) : (
-        <div className="flex min-h-11 items-center gap-3 px-3 pt-2.5 pb-1">
+        <div className="flex min-h-11 items-center gap-3 px-3 pt-2">
           {line}
           {get.selectedVoucher === option.voucher.toLowerCase() ? (
             <RiCheckLine className="size-4 shrink-0 text-primary" aria-hidden="true" />
           ) : null}
         </div>
       )}
-      <div className="flex min-h-9 items-center justify-between gap-3 px-3 pb-1.5">
+      <div className="flex min-h-8 items-center justify-between gap-3 px-3 pb-2">
         <button
           type="button"
           aria-expanded={open}
@@ -557,13 +558,13 @@ function CreditRouteDetails({
           const path = `${symbolOf(labels, hop.tokenIn)} → ${symbolOf(labels, hop.tokenOut)}`;
           const poolName = hop.pool.name;
           return (
-            <li key={`${hop.pool.address}-${index}`} className="space-y-0.5 text-xs">
-              <p className="font-semibold">
+            <li key={`${hop.pool.address}-${index}`} className="space-y-0.5">
+              <p className="text-xs font-semibold">
                 <Trans>
                   Swap {position}: <span dir="ltr">{path}</span> · {poolName}
                 </Trans>
               </p>
-              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
+              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                 <span>
                   <Trans>Pool fee</Trans>{" "}
                   <span className="font-mono font-semibold text-foreground">
@@ -638,7 +639,7 @@ function CreditOtherWay({
     <button
       type="button"
       onClick={onChoose}
-      className="flex min-h-11 w-full items-center gap-3 border-t border-border py-2 text-start"
+      className="flex min-h-11 w-full items-center gap-3 border-t border-border py-2 text-start active:bg-muted"
     >
       <span className="min-w-0 flex-1">
         <span className="block text-xs font-semibold">
