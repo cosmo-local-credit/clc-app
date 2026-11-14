@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const WALLET = "0xA1a1A1a1A1A1A1a1A1a1a1a1a1a1A1A1A1a1A1a1";
@@ -120,8 +120,18 @@ beforeEach(() => {
   mocks.trackRelay.mockReset();
 });
 
+/** The receipt's collapsed Details: checked closed, then opened. */
+function openDetails(): HTMLDetailsElement {
+  const details = screen.getByText("Details", { selector: "summary" })
+    .parentElement as HTMLDetailsElement;
+  expect(details.open).toBe(false);
+  fireEvent.click(details.querySelector("summary")!);
+  expect(details.open).toBe(true);
+  return details;
+}
+
 describe("RoutedSwapReceiptPage", () => {
-  it("shows a settled two-hop exchange as one receipt with each hop's fees", async () => {
+  it("leads a settled exchange with its state and amounts, and folds the swaps into Details", async () => {
     mocks.routedSwap.mockResolvedValue(receipt(true));
     mocks.trackRelay.mockResolvedValue({
       ok: true,
@@ -132,17 +142,26 @@ describe("RoutedSwapReceiptPage", () => {
     expect(await screen.findByRole("heading", { name: "Exchanged" })).toBeTruthy();
     await waitFor(() => expect(document.body.textContent).toContain("You spent5.00 AAA"));
     expect(mocks.routedSwap).toHaveBeenCalledWith(TRACKING, expect.anything());
-    const text = document.body.textContent ?? "";
-    expect(text).toContain("You received5.00 CCC");
+    expect(document.body.textContent).toContain("You received5.00 CCC");
+    expect(screen.getByRole("button", { name: "Done" })).toBeTruthy();
+
+    const details = openDetails();
+    await waitFor(() => expect(details.textContent).toContain("Swap 1: AAA → BBB · Kilifi Pool"));
+    const text = details.textContent ?? "";
+    expect(text).toContain("Swap 2: BBB → CCC · Mombasa Pool");
+    expect(text).toContain("Protocol fee<0.01 BBB");
     expect(text).toContain("Minimum received5.00 CCC");
     expect(text).toContain("Left in your wallet0.00 BBB");
-    await waitFor(() => expect(document.body.textContent).toContain("Hop 1 · Kilifi Pool"));
-    expect(document.body.textContent).toContain("Hop 2 · Mombasa Pool");
-    expect(screen.getAllByText("0.00 BBB").length).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: "Done" })).toBeTruthy();
+    expect(text).toContain("Block number49254470");
+    expect(within(details).getByRole("button", { name: "Copy transaction hash" })).toBeTruthy();
+    expect(within(details).getByRole("button", { name: "Copy tracking ID" })).toBeTruthy();
+    // The headline carries the state; nothing technical sits outside Details.
+    const outside = document.body.textContent!.replace(text, "");
+    expect(outside).not.toContain("Swap 1");
+    expect(outside).not.toContain("Left in your wallet");
   });
 
-  it("shows every hop of a three-hop exchange, in order, as each settles", async () => {
+  it("shows every swap of a three-swap exchange, in order, as each settles", async () => {
     const two = receipt(false);
     mocks.routedSwap.mockResolvedValue({
       ...two,
@@ -157,22 +176,43 @@ describe("RoutedSwapReceiptPage", () => {
     mocks.trackRelay.mockResolvedValue({ ok: true, result: { otx: [] } });
     renderReceipt();
 
-    await waitFor(() => expect(document.body.textContent).toContain("Hop 3 · Malindi Pool"));
-    const text = document.body.textContent ?? "";
-    expect(text.indexOf("Hop 1 · Kilifi Pool")).toBeLessThan(text.indexOf("Hop 2 · Mombasa Pool"));
-    expect(text.indexOf("Hop 2 · Mombasa Pool")).toBeLessThan(text.indexOf("Hop 3 · Malindi Pool"));
-    expect(text).toContain("CCC → DDD");
-    expect(text).toContain("Minimum received4.99 DDD");
-    // Hops one and two have settled; the third is still on its way.
-    expect(screen.getAllByText("Settling…")).toHaveLength(1);
+    expect(await screen.findByRole("heading", { name: "Exchanging…" })).toBeTruthy();
+    // The last swap has not settled: what is received is the quoted amount.
+    await waitFor(() => expect(document.body.textContent).toContain("You received4.99 DDD"));
+    const details = openDetails();
+    await waitFor(() => expect(details.textContent).toContain("Swap 3: CCC → DDD · Malindi Pool"));
+    const text = details.textContent ?? "";
+    expect(text.indexOf("Swap 1: AAA → BBB · Kilifi Pool")).toBeLessThan(
+      text.indexOf("Swap 2: BBB → CCC · Mombasa Pool"),
+    );
+    expect(text.indexOf("Swap 2: BBB → CCC · Mombasa Pool")).toBeLessThan(
+      text.indexOf("Swap 3: CCC → DDD · Malindi Pool"),
+    );
+    // Swaps one and two have settled; the third is still on its way.
+    expect(within(details).getAllByText("Settling…")).toHaveLength(1);
   });
 
-  it("keeps a relayed exchange pending until its hops settle, without a Done to leave by", async () => {
+  it("keeps a relayed exchange pending until its swaps settle, without a Done to leave by", async () => {
     mocks.routedSwap.mockResolvedValue(receipt(false));
     mocks.trackRelay.mockResolvedValue({ ok: true, result: { otx: [] } });
     renderReceipt();
-    expect(await screen.findByRole("heading", { name: "Exchanging" })).toBeTruthy();
-    expect((await screen.findAllByText("Settling…")).length).toBe(2);
+    expect(await screen.findByRole("heading", { name: "Exchanging…" })).toBeTruthy();
+    await waitFor(() => expect(document.body.textContent).toContain("You spent5.00 AAA"));
+    expect(document.body.textContent).toContain("You received5.00 CCC");
+    expect(within(openDetails()).getAllByText("Settling…")).toHaveLength(2);
     expect(screen.queryByRole("button", { name: "Done" })).toBeNull();
+  });
+
+  it("says an exchange failed when its transaction reverted", async () => {
+    const failed = receipt(false);
+    mocks.routedSwap.mockResolvedValue({
+      ...failed,
+      swap: { ...failed.swap, txHash: TX, status: "REVERTED" },
+    });
+    mocks.trackRelay.mockResolvedValue({ ok: true, result: { otx: [] } });
+    renderReceipt();
+    expect(await screen.findByRole("heading", { name: "Exchange failed" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Done" })).toBeTruthy();
+    expect(within(openDetails()).getByText("Reverted")).toBeTruthy();
   });
 });

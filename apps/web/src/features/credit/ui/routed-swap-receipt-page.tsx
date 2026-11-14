@@ -9,6 +9,7 @@ import { useNavigate } from "@tanstack/react-router";
 
 import { Button } from "#/components/ui/button";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
+import { Spinner } from "#/components/ui/spinner";
 import { FailureCross, PendingClock, StatusPill, SuccessCheck } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
@@ -24,8 +25,10 @@ import { CreditFailureNotice } from "./credit-failure-notice";
 const relayerClient = createRelayerClient(RELAYER_URL);
 
 /**
- * One routed exchange as one receipt: the relay's dispatch status, then each
- * hop's settlement as the subscriber records it. Read from the server, so the
+ * One routed exchange as one receipt: its state, then what was spent and
+ * received, settled amounts once known and quoted ones until then. Each
+ * swap's amounts and fees and the transaction's technical data fold into
+ * Details. Read from the server and polled until every swap settles, so the
  * receipt survives a refresh and opens on another device.
  */
 export function RoutedSwapReceiptPage({ trackingId }: { trackingId: string }) {
@@ -58,12 +61,18 @@ export function RoutedSwapReceiptPage({ trackingId }: { trackingId: string }) {
     if (raw === null || label?.decimals === null || label?.decimals === undefined) return "—";
     return `${formatPoolSwapFee(raw, label.decimals, locale)} ${label.symbol}`;
   };
+  const symbol = (address: string) => labels.get(address.toLowerCase())?.symbol ?? "—";
+  const copy = (value: string) => void navigator.clipboard?.writeText(value);
 
   const outcome = tracking.outcome;
   const reverted = outcome.kind === "error" || swap?.status === "REVERTED";
   const confirmed = !reverted && (outcome.kind === "success" || swap?.status === "SUCCESS");
+  const firstHop = swap?.hops[0];
   const lastHop = swap?.hops.at(-1);
-  const received = lastHop?.amountOut ?? null;
+  // Settled amounts once the first and last swaps have their events; the quote's until then.
+  const spent = firstHop?.settledAmountIn ?? swap?.amountIn ?? null;
+  const received = lastHop?.settledAt ? lastHop.amountOut : (swap?.minAmountOut ?? null);
+  const block = swap?.hops.find((hop) => hop.block !== null)?.block ?? null;
   const txHash = swap?.txHash ?? (outcome.kind === "success" ? outcome.otx.txHash || null : null);
   const explorerUrl = txHash ? explorerTxUrl(CHAIN_INFO, txHash) : null;
   const done = () => void navigate({ to: "/", search: { tab: "activity" }, replace: true });
@@ -78,7 +87,7 @@ export function RoutedSwapReceiptPage({ trackingId }: { trackingId: string }) {
           ) : confirmed ? (
             <Trans>Exchanged</Trans>
           ) : (
-            <Trans>Exchanging</Trans>
+            <Trans>Exchanging…</Trans>
           )}
         </h1>
         {outcome.kind === "error" ? (
@@ -99,69 +108,88 @@ export function RoutedSwapReceiptPage({ trackingId }: { trackingId: string }) {
       {swap ? (
         <>
           <div className="mt-5 border border-border bg-card">
-            <ReceiptRow label={<Trans>You spent</Trans>}>
-              {amount(swap.tokenIn, swap.amountIn)}
-            </ReceiptRow>
-            <ReceiptRow label={<Trans>You received</Trans>}>
-              {received !== null ? amount(swap.tokenOut, received) : "—"}
-            </ReceiptRow>
-            <ReceiptRow label={<Trans>Minimum received</Trans>}>
-              {amount(swap.tokenOut, swap.minAmountOut)}
-            </ReceiptRow>
-            {receipt.data?.bridgeRemainder
-              .filter((entry) => BigInt(entry.amount) > 0n)
-              .map((entry) => (
-                <ReceiptRow key={entry.voucher} label={<Trans>Left in your wallet</Trans>}>
-                  {amount(entry.voucher, entry.amount)}
-                </ReceiptRow>
-              ))}
-            {txHash ? (
-              <ReceiptRow label={<Trans>Transaction</Trans>}>
-                <CopyableInfoValue
-                  value={txHash}
-                  label={t`Copy transaction hash`}
-                  onCopy={(value) => void navigator.clipboard?.writeText(value)}
-                />
-              </ReceiptRow>
-            ) : null}
-            <ReceiptRow label={<Trans>Status</Trans>} last>
-              <StatusPill
-                tone={reverted ? "error" : confirmed ? "success" : "pending"}
-                label={reverted ? t`Reverted` : confirmed ? t`Confirmed` : t`Pending`}
-              />
+            <ReceiptRow label={<Trans>You spent</Trans>}>{amount(swap.tokenIn, spent)}</ReceiptRow>
+            <ReceiptRow label={<Trans>You received</Trans>} last>
+              {amount(swap.tokenOut, received)}
             </ReceiptRow>
           </div>
 
-          {swap.hops.map((hop, index) => (
-            <div key={hop.index} className="mt-3 border border-border bg-card">
-              <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2">
-                <span className="min-w-0 truncate text-sm font-semibold">
-                  <Trans>
-                    Hop {index + 1} · {poolNames[index] ?? hop.pool}
-                  </Trans>
-                </span>
-                <span dir="ltr" className="shrink-0 font-mono text-xs font-semibold">
-                  {labels.get(hop.tokenIn.toLowerCase())?.symbol ?? "—"} →{" "}
-                  {labels.get(hop.tokenOut.toLowerCase())?.symbol ?? "—"}
-                </span>
-              </div>
-              <ReceiptRow label={<Trans>Sent</Trans>}>
-                {amount(hop.tokenIn, hop.settledAmountIn ?? hop.amountIn)}
+          <details className="mt-3 border border-border bg-card">
+            <summary className="flex min-h-11 cursor-pointer items-center px-3 font-semibold text-sm">
+              <Trans>Details</Trans>
+            </summary>
+            <div className="border-t border-border">
+              {swap.hops.map((hop, index) => {
+                const position = index + 1;
+                const path = `${symbol(hop.tokenIn)} → ${symbol(hop.tokenOut)}`;
+                const poolName = poolNames[index] ?? hop.pool;
+                return (
+                  <div key={hop.index} className="border-b border-border">
+                    <p className="px-3 pt-2.5 text-xs font-semibold">
+                      <Trans>
+                        Swap {position}: <span dir="ltr">{path}</span> · {poolName}
+                      </Trans>
+                    </p>
+                    <ReceiptRow label={<Trans>Sent</Trans>} last>
+                      {amount(hop.tokenIn, hop.settledAmountIn ?? hop.amountIn)}
+                    </ReceiptRow>
+                    <ReceiptRow label={<Trans>Pool fee</Trans>} last>
+                      {fee(hop.tokenOut, hop.poolFee)}
+                    </ReceiptRow>
+                    <ReceiptRow label={<Trans>Protocol fee</Trans>} last>
+                      {fee(hop.tokenOut, hop.protocolFee)}
+                    </ReceiptRow>
+                    <ReceiptRow label={<Trans>Received</Trans>} last>
+                      {hop.settledAt ? (
+                        amount(hop.tokenOut, hop.amountOut)
+                      ) : (
+                        <Trans>Settling…</Trans>
+                      )}
+                    </ReceiptRow>
+                  </div>
+                );
+              })}
+              <ReceiptRow label={<Trans>Minimum received</Trans>}>
+                {amount(swap.tokenOut, swap.minAmountOut)}
               </ReceiptRow>
-              <ReceiptRow label={<Trans>Pool fee</Trans>}>
-                {fee(hop.tokenOut, hop.poolFee)}
+              {receipt.data?.bridgeRemainder
+                .filter((entry) => BigInt(entry.amount) > 0n)
+                .map((entry) => (
+                  <ReceiptRow key={entry.voucher} label={<Trans>Left in your wallet</Trans>}>
+                    {amount(entry.voucher, entry.amount)}
+                  </ReceiptRow>
+                ))}
+              {txHash ? (
+                <ReceiptRow label={<Trans>Transaction</Trans>}>
+                  <CopyableInfoValue
+                    value={txHash}
+                    label={t`Copy transaction hash`}
+                    onCopy={copy}
+                  />
+                </ReceiptRow>
+              ) : null}
+              {block !== null ? (
+                <ReceiptRow label={<Trans>Block number</Trans>}>{block}</ReceiptRow>
+              ) : null}
+              <ReceiptRow label={<Trans>Tracking ID</Trans>}>
+                <CopyableInfoValue
+                  value={swap.trackingId}
+                  label={t`Copy tracking ID`}
+                  onCopy={copy}
+                />
               </ReceiptRow>
-              <ReceiptRow label={<Trans>Protocol fee</Trans>}>
-                {fee(hop.tokenOut, hop.protocolFee)}
-              </ReceiptRow>
-              <ReceiptRow label={<Trans>Received</Trans>} last>
-                {hop.settledAt ? amount(hop.tokenOut, hop.amountOut) : <Trans>Settling…</Trans>}
+              <ReceiptRow label={<Trans>Status</Trans>} last>
+                <StatusPill
+                  tone={reverted ? "error" : confirmed ? "success" : "pending"}
+                  label={reverted ? t`Reverted` : confirmed ? t`Confirmed` : t`Pending`}
+                />
               </ReceiptRow>
             </div>
-          ))}
+          </details>
         </>
       ) : receipt.isPending && wallet ? (
-        <p className="mt-5 text-sm text-muted-foreground" role="status">
+        <p className="mt-5 flex items-center gap-2 text-sm text-muted-foreground" role="status">
+          <Spinner />
           <Trans>Loading receipt…</Trans>
         </p>
       ) : null}
