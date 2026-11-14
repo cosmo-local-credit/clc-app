@@ -79,7 +79,8 @@ vi.mock("#/lib/api/credit-router", () => ({
         : mocks.verification.status === "loading"
           ? new Promise(() => {})
           : Promise.resolve({
-              depth: 2,
+              depth: 3,
+              maxHops: 3,
               asOfBlock: 1,
               graphVersion: 1,
               stale: false,
@@ -500,7 +501,7 @@ describe("MarketMapDesk Credit", () => {
     await waitFor(() =>
       expect(mocks.mapList.mock.calls.at(-1)?.[0]).toMatchObject({
         kinds: ["pool"],
-        credit: { depth: 2, wallet: MEMBER, digest: `0x${"ab".repeat(32)}` },
+        credit: { wallet: MEMBER, digest: `0x${"ab".repeat(32)}` },
       }),
     );
     expect(mocks.mapList.mock.calls.at(-1)?.[0].creditablePools).toBeUndefined();

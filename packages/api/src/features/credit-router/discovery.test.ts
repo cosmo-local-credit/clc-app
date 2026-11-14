@@ -13,12 +13,12 @@ import { wantKeys } from "../wants/queries";
 import type { CreditScope } from "./client";
 
 /**
- * The four list endpoints that narrow by Credit with `creditDepth` instead of
- * a pool list: the voucher catalog, offerings, Wants and curated catalogs.
+ * The four list endpoints that narrow by Credit with `creditDepth=max` instead
+ * of a pool list: the voucher catalog, offerings, Wants and curated catalogs.
  */
 
 const http = () => createHttpClient({ baseUrl: "https://api.test" });
-const ALICE: CreditScope = { depth: 2, wallet: `0x${"A1".repeat(20)}`, digest: "0xAB" };
+const ALICE: CreditScope = { wallet: `0x${"A1".repeat(20)}`, digest: "0xAB" };
 const POOL = { chainId: 100, address: `0x${"b".repeat(40)}` };
 
 function respond(result: unknown) {
@@ -66,21 +66,18 @@ const endpoints = [
   },
 ];
 
-describe.each(endpoints)("$name Credit depth", ({ path, body, call }) => {
-  it.each([1, 2] as const)(
-    "sends creditDepth=%i with the session cookie, uncached, and no pool list",
-    async (depth) => {
-      const fetcher = respond(body);
-      await call({ credit: { ...ALICE, depth } });
-      const [url, init] = fetcher.mock.calls[0]!;
-      const parsed = new URL(String(url));
-      expect(parsed.pathname).toBe(path);
-      expect(parsed.searchParams.get("creditDepth")).toBe(String(depth));
-      expect(parsed.searchParams.has("pools")).toBe(false);
-      expect(parsed.search).not.toContain(ALICE.wallet.slice(2));
-      expect(init).toMatchObject({ credentials: "include", cache: "no-store" });
-    },
-  );
+describe.each(endpoints)("$name Credit", ({ path, body, call }) => {
+  it("sends creditDepth=max with the session cookie, uncached, and no pool list", async () => {
+    const fetcher = respond(body);
+    await call({ credit: ALICE });
+    const [url, init] = fetcher.mock.calls[0]!;
+    const parsed = new URL(String(url));
+    expect(parsed.pathname).toBe(path);
+    expect(parsed.searchParams.get("creditDepth")).toBe("max");
+    expect(parsed.searchParams.has("pools")).toBe(false);
+    expect(parsed.search).not.toContain(ALICE.wallet.slice(2));
+    expect(init).toMatchObject({ credentials: "include", cache: "no-store" });
+  });
 
   it("refuses creditDepth together with pools before any request", async () => {
     const fetcher = respond(body);
@@ -97,9 +94,8 @@ describe.each(endpoints)("$name Credit depth", ({ path, body, call }) => {
   });
 });
 
-describe("Credit depth cache identity", () => {
+describe("Credit cache identity", () => {
   const bob: CreditScope = { ...ALICE, wallet: `0x${"b2".repeat(20)}` };
-  const shallower: CreditScope = { ...ALICE, depth: 1 };
   const moved: CreditScope = { ...ALICE, digest: "0xCD" };
   const sameWalletLower: CreditScope = { ...ALICE, wallet: ALICE.wallet.toLowerCase() };
 
@@ -111,9 +107,9 @@ describe("Credit depth cache identity", () => {
     ["offerings", (credit?: CreditScope) => offeringKeys.discovery({ perPage: 20, credit })],
     ["wants", (credit?: CreditScope) => wantKeys.list({ perPage: 20, credit })],
     ["catalogs", (credit?: CreditScope) => catalogKeys.list({ credit })],
-  ] as const)("keys %s on the wallet, the depth and the reach digest", (_, key) => {
+  ] as const)("keys %s on the wallet and the reach digest", (_, key) => {
     const alice = key(ALICE);
-    for (const other of [bob, shallower, moved, undefined]) {
+    for (const other of [bob, moved, undefined]) {
       expect(key(other)).not.toEqual(alice);
     }
     expect(key(sameWalletLower)).toEqual(alice);

@@ -1,17 +1,11 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 import { transientBackendReadQueryPolicy } from "../../client/errors";
-import type { CreditDepth, CreditRouterClient, CreditRoutesParams, CreditScope } from "./client";
+import type { CreditRouterClient, CreditRoutesParams, CreditScope } from "./client";
 
-/** A Credit filter's cache identity: never shared across wallets, depths or reach changes. */
+/** A Credit filter's cache identity: never shared across wallets or reach changes. */
 export function creditScopeKey(scope: CreditScope | undefined) {
-  return scope
-    ? {
-        depth: scope.depth,
-        wallet: scope.wallet.toLowerCase(),
-        digest: scope.digest.toLowerCase(),
-      }
-    : null;
+  return scope ? { wallet: scope.wallet.toLowerCase(), digest: scope.digest.toLowerCase() } : null;
 }
 
 /**
@@ -22,8 +16,7 @@ export function creditScopeKey(scope: CreditScope | undefined) {
 export const creditRouterKeys = {
   all: ["clc", "credit-router"] as const,
   wallet: (wallet: string) => ["clc", "credit-router", wallet.toLowerCase()] as const,
-  reach: (wallet: string, depth: CreditDepth) =>
-    ["clc", "credit-router", wallet.toLowerCase(), "reach", depth] as const,
+  reach: (wallet: string) => ["clc", "credit-router", wallet.toLowerCase(), "reach"] as const,
   routes: (wallet: string, params: Omit<CreditRoutesParams, "cursor">) =>
     [
       "clc",
@@ -32,7 +25,6 @@ export const creditRouterKeys = {
       "routes",
       {
         to: params.to.toLowerCase(),
-        depth: params.depth,
         from: params.from?.toLowerCase() ?? null,
         amount: params.amount ?? null,
         mode: params.amount ? (params.mode ?? "exactInput") : null,
@@ -45,20 +37,17 @@ export const creditRouterKeys = {
 };
 
 /**
- * The reach estimate. Disabled for a guest: the endpoint needs a session.
- * `router_unavailable` (503) is retried like any server fault and surfaces as
- * an error, never as an empty reach.
+ * The reach estimate at the router's maximum depth, one per wallet: the Credit
+ * filter and every swap count read it. Disabled for a guest: the endpoint
+ * needs a session. `router_unavailable` (503) is retried like any server fault
+ * and surfaces as an error, never as an empty reach.
  */
-export function creditReachQueryOptions(
-  client: CreditRouterClient,
-  wallet: string,
-  depth: CreditDepth,
-) {
+export function creditReachQueryOptions(client: CreditRouterClient, wallet: string) {
   return queryOptions({
-    queryKey: creditRouterKeys.reach(wallet, depth),
-    queryFn: ({ signal }) => client.reach(depth, signal),
+    queryKey: creditRouterKeys.reach(wallet),
+    queryFn: ({ signal }) => client.reach(signal),
     enabled: !!wallet,
-    staleTime: 15_000,
+    staleTime: 30_000,
     ...transientBackendReadQueryPolicy,
   });
 }

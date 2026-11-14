@@ -105,7 +105,8 @@ vi.mock("#/lib/api/credit-router", () => ({
         : creditableState.current.status === "loading"
           ? new Promise(() => {})
           : Promise.resolve({
-              depth: 2,
+              depth: 3,
+              maxHops: 3,
               asOfBlock: 1,
               graphVersion: 1,
               stale: false,

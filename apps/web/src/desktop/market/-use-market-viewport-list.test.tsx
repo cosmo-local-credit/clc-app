@@ -12,7 +12,7 @@ import { useMarketViewportList } from "./use-market-viewport-list";
 
 const BOUNDS = [{ minLng: 39.5, minLat: -4.2, maxLng: 39.8, maxLat: -3.9 }] as const;
 const POOL = "0x0000000000000000000000000000000000000001";
-const SCOPE = { depth: 2, wallet: "0x00000000000000000000000000000000000000aa", digest: "0x01" };
+const SCOPE = { wallet: "0x00000000000000000000000000000000000000aa", digest: "0x01" };
 
 function row(id: string): MarketplaceResult {
   return {

@@ -1,5 +1,5 @@
 /**
- * The credit router (clc-core API.md §14.13–§14.17): what the session wallet
+ * The credit router's endpoints under `/users/me`: what the session wallet
  * can reach with the vouchers it holds, the routes to one voucher, an
  * authoritative quote with the batch to sign, and grouped receipts.
  *
@@ -15,15 +15,18 @@ import { z } from "zod";
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
 
-export type CreditDepth = 1 | 2;
+/**
+ * The depth every discovery read asks for: the router's own maximum, so the
+ * Credit filter covers every pool the wallet's vouchers can reach.
+ */
+export const CREDIT_DISCOVERY_DEPTH = "max";
 
 /**
- * The server-resolved Credit filter a discovery read sends as `creditDepth`.
- * The response is private to the session wallet, so a cache key carries the
- * wallet and the reach digest the filter was resolved against, not the depth
- * alone.
+ * The server-resolved Credit filter a discovery read sends as
+ * `creditDepth=max`. The response is private to the session wallet, so a cache
+ * key carries the wallet and the reach digest the filter was resolved against.
  */
-export type CreditScope = { depth: CreditDepth; wallet: string; digest: string };
+export type CreditScope = { wallet: string; digest: string };
 
 const addressSchema = z
   .string()
@@ -47,13 +50,19 @@ const freshnessShape = {
   stale: z.boolean(),
 };
 
+/** The fewest swaps that reach an address; 0 for a voucher the wallet already holds. */
+const minHopsSchema = z.number().int().min(0);
+
 const reachSchema = z.object({
   ...freshnessShape,
-  depth: z.union([z.literal(1), z.literal(2)]),
+  /** The depth the reach was resolved at: the router's maximum when none is asked for. */
+  depth: z.number().int().min(1),
+  /** The most hops the router routes; no `minHops` exceeds it. */
+  maxHops: z.number().int().min(1),
   digest: hash32Schema,
   inputs: z.array(z.object({ voucher: addressSchema, balance: rawSchema })),
-  vouchers: z.array(z.object({ address: addressSchema, minHops: z.number().int().min(1) })),
-  pools: z.array(z.object({ address: addressSchema, minHops: z.number().int().min(1) })),
+  vouchers: z.array(z.object({ address: addressSchema, minHops: minHopsSchema })),
+  pools: z.array(z.object({ address: addressSchema, minHops: minHopsSchema })),
 });
 export type CreditReach = z.infer<typeof reachSchema>;
 
@@ -219,9 +228,9 @@ const receiptPageSchema = z.object({
 });
 export type RoutedSwapPage = z.infer<typeof receiptPageSchema>;
 
+/** Routes are listed at the router's maximum depth, which the server defaults to. */
 export type CreditRoutesParams = {
   to: string;
-  depth: CreditDepth;
   from?: string;
   amount?: string;
   mode?: CreditQuoteMode;
@@ -237,7 +246,7 @@ export type CreditQuoteRequest = {
   keyHash: `0x${string}`;
 };
 
-/** A refused route's constraint, from API.md §14.13. Unknown values pass through. */
+/** A refused route's constraint, as the router names it. Unknown values pass through. */
 type CreditRouteRefusal =
   | "not_allowed_in"
   | "not_allowed_out"
@@ -329,17 +338,17 @@ export function createCreditRouterClient(http: HttpClient) {
   }
 
   return {
-    /** `GET /users/me/credit`: the vouchers and pools the wallet can probably reach. */
-    reach(depth: CreditDepth, signal?: AbortSignal): Promise<CreditReach> {
-      return read(reachSchema, `/api/v2/users/me/credit?depth=${depth}`, {
-        method: "GET",
-        signal,
-      });
+    /**
+     * `GET /users/me/credit`: the vouchers and pools the wallet can probably
+     * reach, at the router's maximum depth, each with the fewest swaps to it.
+     */
+    reach(signal?: AbortSignal): Promise<CreditReach> {
+      return read(reachSchema, "/api/v2/users/me/credit", { method: "GET", signal });
     },
 
     /** `GET /users/me/credit/routes`: routes to one voucher, grouped by input voucher. */
     routes(params: CreditRoutesParams, signal?: AbortSignal): Promise<CreditRoutesPage> {
-      const query = new URLSearchParams({ to: params.to, depth: String(params.depth) });
+      const query = new URLSearchParams({ to: params.to });
       if (params.from) query.set("from", params.from);
       if (params.amount) {
         query.set("amount", params.amount);

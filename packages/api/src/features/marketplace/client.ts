@@ -9,7 +9,7 @@ import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import { type VoucherRef, serializeVoucherRef } from "@clc/core/features/catalog/logic";
 import type { PostTiming } from "@clc/core/features/reports/logic";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
-import type { CreditScope } from "../credit-router/client";
+import { CREDIT_DISCOVERY_DEPTH, type CreditScope } from "../credit-router/client";
 
 const tagFacetSchema = z.object({ tag: z.string(), count: z.number().int().nonnegative() });
 const marketplacePageSchema = z.object({
@@ -32,7 +32,7 @@ export type MarketplaceParams = {
   bounds?: readonly MarketBoundingBox[];
   pools?: readonly { chainId: number; address: string }[];
   /**
-   * The server-resolved Credit filter (`creditDepth`). Needs the session, so
+   * The server-resolved Credit filter (`creditDepth=max`). Needs the session, so
    * the request carries credentials; it cannot be combined with `pools`.
    */
   credit?: CreditScope;
@@ -64,7 +64,7 @@ export function createMarketplaceClient(http: HttpClient) {
       }
       if (params.pools?.length)
         query.set("pools", params.pools.map((pool) => `${pool.chainId}:${pool.address}`).join(","));
-      if (params.credit) query.set("creditDepth", String(params.credit.depth));
+      if (params.credit) query.set("creditDepth", CREDIT_DISCOVERY_DEPTH);
       if (params.postTiming) query.set("postTiming", params.postTiming);
       appendPostRelationships(
         query,

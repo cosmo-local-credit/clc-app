@@ -23,7 +23,7 @@ const mocks = vi.hoisted(() => ({
     enabled: false,
     verification: { status: "ready", pools: [], retry: vi.fn() },
     poolRefs: undefined as Array<{ chainId: number; address: string }> | undefined,
-    scope: undefined as { depth: 1 | 2; wallet: string; digest: string } | undefined,
+    scope: undefined as { wallet: string; digest: string } | undefined,
     blocksResults: false,
   },
   query: {
@@ -288,7 +288,7 @@ describe("OffersPage", () => {
       chainId: 100,
       address: `0x${index.toString(16).padStart(40, "0")}`,
     }));
-    mocks.credit.scope = { depth: 2, wallet: `0x${"A1".repeat(20)}`, digest: "0xAB" };
+    mocks.credit.scope = { wallet: `0x${"A1".repeat(20)}`, digest: "0xAB" };
 
     render(<OffersPage creditDepthSearch={1} />);
 
@@ -296,7 +296,7 @@ describe("OffersPage", () => {
       string,
       unknown
     >;
-    expect(key.credit).toEqual({ depth: 2, wallet: `0x${"a1".repeat(20)}`, digest: "0xab" });
+    expect(key.credit).toEqual({ wallet: `0x${"a1".repeat(20)}`, digest: "0xab" });
     expect(key.pools).toBeUndefined();
   });
 

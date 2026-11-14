@@ -14,7 +14,7 @@ import { type CaliburCall, computeEIP712Digest, type SignedBatch } from "../weba
 type Address = `0x${string}`;
 
 /** The most hops the product offers (the router engine is depth-generic). */
-export const CREDIT_ROUTER_MAX_HOPS = 2 as const;
+const CREDIT_ROUTER_MAX_HOPS = 2;
 
 /**
  * How far ahead a signed route may expire. The router quotes now + 300 s and

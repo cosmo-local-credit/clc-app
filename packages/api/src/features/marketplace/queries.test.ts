@@ -49,14 +49,13 @@ describe("marketplace cache", () => {
     ]);
   });
 
-  it("never shares a creditDepth page across wallets, depths or reach digests", () => {
-    const alice = { depth: 2 as const, wallet: `0x${"A1".repeat(20)}`, digest: "0xAB" };
+  it("never shares a Credit page across wallets or reach digests", () => {
+    const alice = { wallet: `0x${"A1".repeat(20)}`, digest: "0xAB" };
     const key = marketplaceKeys.list({ credit: alice });
-    expect(key[3].credit).toEqual({ depth: 2, wallet: alice.wallet.toLowerCase(), digest: "0xab" });
+    expect(key[3].credit).toEqual({ wallet: alice.wallet.toLowerCase(), digest: "0xab" });
     expect(
       marketplaceKeys.list({ credit: { ...alice, wallet: `0x${"b2".repeat(20)}` } }),
     ).not.toEqual(key);
-    expect(marketplaceKeys.list({ credit: { ...alice, depth: 1 } })).not.toEqual(key);
     expect(marketplaceKeys.list({ credit: { ...alice, digest: "0xcd" } })).not.toEqual(key);
     expect(marketplaceKeys.list({})).not.toEqual(key);
   });

@@ -141,19 +141,19 @@ describe("getFilteredReports", () => {
     );
   });
 
-  it("sends the server-resolved Credit depth with the session cookie", async () => {
+  it("sends creditDepth=max for Credit with the session cookie", async () => {
     const fetcher = mockFetch({ reports: [] });
     vi.stubGlobal("fetch", fetcher);
 
     await api.getFilteredReports({
       perPage: 20,
       filter: EMPTY_FILTER,
-      credit: { depth: 1, wallet: `0x${"a1".repeat(20)}`, digest: "0x01" },
+      credit: { wallet: `0x${"a1".repeat(20)}`, digest: "0x01" },
     });
 
     const [url, init] = fetcher.mock.calls[0]!;
     const search = new URL(String(url)).searchParams;
-    expect(search.get("creditDepth")).toBe("1");
+    expect(search.get("creditDepth")).toBe("max");
     expect(search.has("creditablePools")).toBe(false);
     expect(init).toMatchObject({ credentials: "include", cache: "no-store" });
   });
@@ -165,7 +165,7 @@ describe("getFilteredReports", () => {
       api.getFilteredReports({
         perPage: 20,
         filter: EMPTY_FILTER,
-        credit: { depth: 2, wallet: `0x${"a1".repeat(20)}`, digest: "0x01" },
+        credit: { wallet: `0x${"a1".repeat(20)}`, digest: "0x01" },
         creditablePools: [{ chainId: 100, address: `0x${"b".repeat(40)}` }],
       }),
     ).rejects.toThrow(/creditDepth/);

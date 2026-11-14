@@ -26,7 +26,7 @@ import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
-import type { CreditScope } from "../credit-router/client";
+import { CREDIT_DISCOVERY_DEPTH, type CreditScope } from "../credit-router/client";
 import {
   type HexAddress,
   isPresent,
@@ -217,7 +217,7 @@ export type FilteredReportsParams = {
   facets?: boolean;
   /** Posts directly linked to these pools or to vouchers they accept. */
   creditablePools?: readonly VoucherRef[];
-  /** The server-resolved Credit filter (`creditDepth`); replaces `creditablePools`. */
+  /** The server-resolved Credit filter (`creditDepth=max`); replaces `creditablePools`. */
   credit?: CreditScope;
   /** Created-at window. Omitted is 1 month; `all` is every approved post. */
   posted?: PostedWithin;
@@ -447,7 +447,7 @@ export function createReportsClient(http: HttpClient) {
       if (creditablePools?.length) {
         query.set("creditablePools", creditablePools.map(serializeVoucherRef).join(","));
       }
-      if (credit) query.set("creditDepth", String(credit.depth));
+      if (credit) query.set("creditDepth", CREDIT_DISCOVERY_DEPTH);
 
       const result = await http.request<BackendFilteredReportPage>(
         `/api/v2/reports?${query.toString()}`,

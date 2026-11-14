@@ -1,5 +1,4 @@
 import {
-  type CreditDepth,
   type CreditQuote,
   type CreditQuoteRequest,
   type CreditRoute,
@@ -11,10 +10,7 @@ import {
 } from "@clc/api/features/credit-router/queries";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { relayerHealthQueryOptions } from "@clc/api/features/relayer/queries";
-import {
-  CREDIT_ROUTER_MAX_HOPS,
-  type CreditQuoteMode,
-} from "@clc/core/features/credit-router/logic";
+import type { CreditQuoteMode } from "@clc/core/features/credit-router/logic";
 import { parseTokenAmount } from "@clc/core/features/wallet/logic";
 import {
   keepPreviousData,
@@ -66,20 +62,12 @@ type Review = {
 };
 
 /**
- * Obtaining one voucher through one pool or two: the routes from the wallet's
- * vouchers, an amount to get (exact output, the default) or to spend (exact
- * input), the authoritative quote, its review, and the checked, self-signed
- * relay.
+ * Obtaining one voucher through as many pools as the router routes: the routes
+ * from the wallet's vouchers, an amount to get (exact output, the default) or
+ * to spend (exact input), the authoritative quote, its review, and the
+ * checked, self-signed relay.
  */
-export function useCreditGet(
-  targetAddress: `0x${string}`,
-  /**
-   * The Credit depth the page was opened with: depth 1 lists one-hop routes
-   * only. Without Credit, every route the product offers (two hops).
-   */
-  creditDepth?: CreditDepth,
-) {
-  const routeDepth: CreditDepth = creditDepth ?? CREDIT_ROUTER_MAX_HOPS;
+export function useCreditGet(targetAddress: `0x${string}`) {
   const auth = useAuthStatus();
   const { connector } = useConnection();
   const navigate = useNavigate();
@@ -94,7 +82,7 @@ export function useCreditGet(
   const [problem, setProblem] = useState<string | null>(null);
   const [requoted, setRequoted] = useState(false);
 
-  const listingParams = { to: targetAddress, depth: routeDepth } as const;
+  const listingParams = { to: targetAddress } as const;
   const listing = useInfiniteQuery(
     creditRoutesInfiniteQueryOptions(creditRouterClient, wallet ?? "", listingParams),
   );

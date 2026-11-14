@@ -29,13 +29,17 @@ function stub(status: number, body: unknown, headers: Record<string, string> = {
 }
 
 const reach = {
-  depth: 2,
+  depth: 3,
+  maxHops: 3,
   asOfBlock: 49254469,
   graphVersion: 812,
   stale: false,
   digest: HASH,
   inputs: [{ voucher: VOUCHER_A, balance: "2500000" }],
-  vouchers: [{ address: VOUCHER_C, minHops: 2 }],
+  vouchers: [
+    { address: VOUCHER_A, minHops: 0 },
+    { address: VOUCHER_C, minHops: 3 },
+  ],
   pools: [{ address: POOL, minHops: 1 }],
 };
 
@@ -75,13 +79,19 @@ function routesPage(overrides: Record<string, unknown> = {}) {
 }
 
 describe("credit router client: results", () => {
-  it("reads the reach at the requested depth, privately", async () => {
+  it("reads the reach at the router's default depth, privately", async () => {
     const { client, fetcher } = stub(200, { ok: true, result: reach });
-    const result = await client.reach(2);
+    const result = await client.reach();
     expect(result.pools[0]!.address).toBe(getAddress(POOL));
     expect(result.inputs[0]).toEqual({ voucher: getAddress(VOUCHER_A), balance: "2500000" });
+    expect(result.maxHops).toBe(3);
+    // A held voucher is zero swaps away.
+    expect(result.vouchers).toEqual([
+      { address: getAddress(VOUCHER_A), minHops: 0 },
+      { address: getAddress(VOUCHER_C), minHops: 3 },
+    ]);
     const [url, init] = fetcher.mock.calls[0]!;
-    expect(String(url)).toBe("https://api.test/api/v2/users/me/credit?depth=2");
+    expect(String(url)).toBe("https://api.test/api/v2/users/me/credit");
     expect(init.cache).toBe("no-store");
     expect(init.credentials).toBe("include");
   });
@@ -91,14 +101,14 @@ describe("credit router client: results", () => {
       ok: true,
       result: { ...reach, inputs: [], vouchers: [], pools: [] },
     });
-    const result = await client.reach(1);
+    const result = await client.reach();
     expect(result.pools).toEqual([]);
     expect(result.stale).toBe(false);
   });
 
   it("surfaces a stale graph rather than hiding it", async () => {
     const { client } = stub(200, { ok: true, result: routesPage({ stale: true }) });
-    expect((await client.routes({ to: VOUCHER_C, depth: 2 })).stale).toBe(true);
+    expect((await client.routes({ to: VOUCHER_C })).stale).toBe(true);
   });
 
   it("asks for routes with an amount and mode, and reads an unknown maximum", async () => {
@@ -130,7 +140,6 @@ describe("credit router client: results", () => {
     });
     const page = await client.routes({
       to: VOUCHER_C,
-      depth: 2,
       amount: "5000000",
       mode: "exactOutput",
       cursor: "c1",
@@ -139,7 +148,6 @@ describe("credit router client: results", () => {
     expect(url.pathname).toBe("/api/v2/users/me/credit/routes");
     expect(Object.fromEntries(url.searchParams)).toEqual({
       to: VOUCHER_C,
-      depth: "2",
       amount: "5000000",
       mode: "exactOutput",
       cursor: "c1",
@@ -269,14 +277,19 @@ describe("credit router client: results", () => {
 
   it("reports a response that breaks the contract as a protocol error", async () => {
     const { client } = stub(200, { ok: true, result: { ...reach, pools: [{ address: "nope" }] } });
-    await expect(client.reach(2)).rejects.toMatchObject({ kind: "protocol" });
+    await expect(client.reach()).rejects.toMatchObject({ kind: "protocol" });
+    const negative = stub(200, {
+      ok: true,
+      result: { ...reach, vouchers: [{ address: VOUCHER_C, minHops: -1 }] },
+    });
+    await expect(negative.client.reach()).rejects.toMatchObject({ kind: "protocol" });
   });
 });
 
 describe("credit router client: failure states", () => {
   async function failure(status: number, body: unknown, headers?: Record<string, string>) {
     const { client } = stub(status, body, headers);
-    const error = await client.reach(2).catch((caught: unknown) => caught);
+    const error = await client.reach().catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(BackendApiError);
     return error as BackendApiError;
   }
@@ -345,22 +358,18 @@ describe("credit router client: failure states", () => {
 describe("credit router queries", () => {
   const client = createCreditRouterClient(createHttpClient({ baseUrl: "https://api.test" }));
 
-  it("never shares a reach across wallets or depths, and waits for a session", () => {
+  it("keeps one reach per wallet, never shared, and waits for a session", () => {
     const cache = new QueryClient();
-    const alice = creditReachQueryOptions(client, "0xAlice", 2);
+    const alice = creditReachQueryOptions(client, "0xAlice");
     cache.setQueryData(alice.queryKey, reach as never);
-    expect(
-      cache.getQueryData(creditReachQueryOptions(client, "0xBob", 2).queryKey),
-    ).toBeUndefined();
-    expect(
-      cache.getQueryData(creditReachQueryOptions(client, "0xAlice", 1).queryKey),
-    ).toBeUndefined();
-    expect(creditReachQueryOptions(client, "0xALICE", 2).queryKey).toEqual(alice.queryKey);
-    expect(creditReachQueryOptions(client, "", 2).enabled).toBe(false);
+    expect(cache.getQueryData(creditReachQueryOptions(client, "0xBob").queryKey)).toBeUndefined();
+    expect(creditReachQueryOptions(client, "0xALICE").queryKey).toEqual(alice.queryKey);
+    expect(alice.staleTime).toBe(30_000);
+    expect(creditReachQueryOptions(client, "").enabled).toBe(false);
   });
 
   it("keys routes on the wallet and every parameter except the cursor", () => {
-    const base = { to: VOUCHER_C, depth: 2 as const };
+    const base = { to: VOUCHER_C };
     expect(creditRouterKeys.routes("0xA", base)).not.toEqual(creditRouterKeys.routes("0xB", base));
     expect(
       creditRouterKeys.routes("0xA", { ...base, amount: "1", mode: "exactOutput" }),

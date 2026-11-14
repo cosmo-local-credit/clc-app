@@ -12,7 +12,7 @@ import {
 
 import type { HttpClient } from "../../client/http-client";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
-import type { CreditScope } from "../credit-router/client";
+import { CREDIT_DISCOVERY_DEPTH, type CreditScope } from "../credit-router/client";
 import {
   type CursorParams,
   type HexAddress,
@@ -122,7 +122,7 @@ export type FilteredMarketVouchersParams = MarketVouchersParams & {
   /** Vouchers accepted by at least one of these verified pools. */
   pools?: readonly { chainId: number; address: string }[];
   /**
-   * The server-resolved Credit filter (`creditDepth`): resources related to the
+   * The server-resolved Credit filter (`creditDepth=max`): resources related to the
    * pools the session wallet reaches. Needs the session, so the request carries
    * credentials and is never cached; it cannot be combined with `pools`.
    */
@@ -438,7 +438,7 @@ function formatFilteredMarketQuery({
       pools.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`).join(","),
     );
   }
-  if (credit) search.set("creditDepth", String(credit.depth));
+  if (credit) search.set("creditDepth", CREDIT_DISCOVERY_DEPTH);
   if (facets) search.set("facets", "true");
   if (nearby) search.set("nearby", "true");
   return `?${search.toString()}`;

@@ -12,7 +12,7 @@ import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
-import type { CreditScope } from "../credit-router/client";
+import { CREDIT_DISCOVERY_DEPTH, type CreditScope } from "../credit-router/client";
 
 const catalogPageSchema = z.object({
   catalogs: z.array(catalogSchema),
@@ -59,7 +59,7 @@ export function createCatalogsClient(http: HttpClient) {
         tagMatch?: "any" | "all";
         facets?: boolean;
         pools?: readonly { chainId: number; address: string }[];
-        /** The server-resolved Credit filter (`creditDepth`); cannot be combined with `pools`. */
+        /** The server-resolved Credit filter (`creditDepth=max`); cannot be combined with `pools`. */
         credit?: CreditScope;
       },
       signal?: AbortSignal,
@@ -77,7 +77,7 @@ export function createCatalogsClient(http: HttpClient) {
       if (params.facets) query.set("facets", "true");
       if (params.pools?.length)
         query.set("pools", params.pools.map((pool) => `${pool.chainId}:${pool.address}`).join(","));
-      if (params.credit) query.set("creditDepth", String(params.credit.depth));
+      if (params.credit) query.set("creditDepth", CREDIT_DISCOVERY_DEPTH);
       return read(catalogPageSchema, `/api/v2/catalogs?${query}`, {
         method: "GET",
         credentials: params.nearby || params.credit ? "include" : "omit",

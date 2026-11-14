@@ -93,8 +93,8 @@ describe("reportMapQueryOptions", () => {
     expect(base).not.toEqual(reportKeys.map(filter, bounds, creditablePools, "past", true));
   });
 
-  it("keys a creditDepth catalog on the wallet, the depth and the reach digest", () => {
-    const alice = { depth: 2 as const, wallet: `0x${"A1".repeat(20)}`, digest: "0x01" };
+  it("keys a Credit catalog on the wallet and the reach digest", () => {
+    const alice = { wallet: `0x${"A1".repeat(20)}`, digest: "0x01" };
     const base = reportKeys.map(filter, bounds, undefined, "future", true, alice);
     expect(base).not.toEqual(reportKeys.map(filter, bounds, undefined, "future", true));
     expect(base).not.toEqual(
@@ -104,7 +104,7 @@ describe("reportMapQueryOptions", () => {
       }),
     );
     expect(base).not.toEqual(
-      reportKeys.map(filter, bounds, undefined, "future", true, { ...alice, depth: 1 }),
+      reportKeys.map(filter, bounds, undefined, "future", true, { ...alice, digest: "0x02" }),
     );
     expect(base).toEqual(
       reportKeys.map(filter, bounds, undefined, "future", true, {

@@ -16,11 +16,10 @@ export const Route = createFileRoute("/_nav/get/$voucherAddress")({
 
 function CreditGetRoute() {
   const { voucherAddress } = Route.useParams();
-  const { creditDepth } = Route.useSearch();
   const address = parseVoucherAddress(voucherAddress);
   return (
     <AuthenticatedRoute>
-      {address ? <CreditGetPage voucherAddress={address} creditDepth={creditDepth} /> : null}
+      {address ? <CreditGetPage voucherAddress={address} /> : null}
     </AuthenticatedRoute>
   );
 }

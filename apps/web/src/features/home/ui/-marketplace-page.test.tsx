@@ -21,7 +21,7 @@ const mocks = vi.hoisted(() => ({
   credit: {
     enabled: false,
     poolRefs: undefined as Array<{ chainId: number; address: string }> | undefined,
-    scope: undefined as { depth: 1 | 2; wallet: string; digest: string } | undefined,
+    scope: undefined as { wallet: string; digest: string } | undefined,
     blocksResults: false,
   },
   query: {
@@ -341,7 +341,7 @@ describe("MarketplacePage", () => {
     };
     mocks.credit.enabled = true;
     mocks.credit.poolRefs = [{ chainId: 100, address: POOL }];
-    mocks.credit.scope = { depth: 2, wallet: WALLET, digest: "0xAB" };
+    mocks.credit.scope = { wallet: WALLET, digest: "0xAB" };
 
     render(<MarketplacePage creditDepthSearch={1} />);
 
@@ -355,7 +355,7 @@ describe("MarketplacePage", () => {
       facets: true,
       nearby: false,
       pools: undefined,
-      credit: { depth: 2, wallet: WALLET.toLowerCase(), digest: "0xab" },
+      credit: { wallet: WALLET.toLowerCase(), digest: "0xab" },
     });
   });
 

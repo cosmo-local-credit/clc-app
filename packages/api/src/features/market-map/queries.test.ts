@@ -15,21 +15,19 @@ const params: MarketMapParams = {
   creditablePools: [{ chainId: 100, address: `0x${"A".repeat(40)}` }],
 };
 
-const ALICE = { depth: 2 as const, wallet: `0x${"A1".repeat(20)}`, digest: `0x${"0F".repeat(32)}` };
+const ALICE = { wallet: `0x${"A1".repeat(20)}`, digest: `0x${"0F".repeat(32)}` };
 
 describe("market map Credit scope", () => {
-  it("keys a creditDepth response on the wallet, the depth and the reach digest", () => {
+  it("keys a Credit response on the wallet and the reach digest", () => {
     const credit = { kinds: params.kinds, filter: params.filter, credit: ALICE };
     const bob = { ...credit, credit: { ...ALICE, wallet: `0x${"b2".repeat(20)}` } };
-    const shallower = { ...credit, credit: { ...ALICE, depth: 1 as const } };
     const moved = { ...credit, credit: { ...ALICE, digest: `0x${"1e".repeat(32)}` } };
     const key = marketMapKeys.points(credit);
     expect(key[3].credit).toEqual({
-      depth: 2,
       wallet: ALICE.wallet.toLowerCase(),
       digest: ALICE.digest.toLowerCase(),
     });
-    for (const other of [bob, shallower, moved]) {
+    for (const other of [bob, moved]) {
       expect(marketMapKeys.points(other)).not.toEqual(key);
     }
     expect(

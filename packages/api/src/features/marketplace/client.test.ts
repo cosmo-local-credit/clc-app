@@ -64,14 +64,14 @@ function respond(result: unknown) {
 
 afterEach(() => vi.unstubAllGlobals());
 
-describe("marketplace Credit depth", () => {
-  const credit = { depth: 2 as const, wallet: `0x${"a1".repeat(20)}`, digest: "0x01" };
+describe("marketplace Credit", () => {
+  const credit = { wallet: `0x${"a1".repeat(20)}`, digest: "0x01" };
 
-  it("sends creditDepth with the session cookie and no pool list", async () => {
+  it("sends creditDepth=max with the session cookie and no pool list", async () => {
     const fetcher = respond({ results: [], nextCursor: null });
     await api.list({ kinds: ["voucher"], credit });
     const url = new URL(String(fetcher.mock.calls[0]?.[0]));
-    expect(url.searchParams.get("creditDepth")).toBe("2");
+    expect(url.searchParams.get("creditDepth")).toBe("max");
     expect(url.searchParams.has("pools")).toBe(false);
     expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ credentials: "include", cache: "no-store" });
   });

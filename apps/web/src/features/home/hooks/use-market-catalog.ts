@@ -132,7 +132,7 @@ export function useMarketCatalogVouchers(
 }
 
 function creditIdentity(credit: CreditScope | undefined): string {
-  return credit ? `${credit.depth}:${credit.wallet.toLowerCase()}:${credit.digest}` : "all";
+  return credit ? `${credit.wallet.toLowerCase()}:${credit.digest}` : "all";
 }
 
 function filterIdentity(filter: CatalogFilterControls): string {

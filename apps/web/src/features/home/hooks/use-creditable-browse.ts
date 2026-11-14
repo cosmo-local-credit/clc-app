@@ -25,7 +25,7 @@ export function useCreditableBrowse(value: PoolRouteSearch["creditDepth"]) {
   const depth = parsed.ok ? parsed.depth : null;
   const enabled = depth !== null;
   const wallet = enabled && auth.isAuthenticated ? (auth.address ?? "") : "";
-  const reach = useQuery(creditReachQueryOptions(creditRouterClient, wallet, depth ?? 1));
+  const reach = useQuery(creditReachQueryOptions(creditRouterClient, wallet));
   const ready = wallet !== "" && reach.isSuccess;
 
   const poolRefs = useMemo(
@@ -36,8 +36,8 @@ export function useCreditableBrowse(value: PoolRouteSearch["creditDepth"]) {
     [ready, reach.data],
   );
   const scope = useMemo<CreditScope | undefined>(
-    () => (ready && depth !== null ? { depth, wallet, digest: reach.data.digest } : undefined),
-    [ready, depth, wallet, reach.data],
+    () => (ready ? { wallet, digest: reach.data.digest } : undefined),
+    [ready, wallet, reach.data],
   );
 
   return {

@@ -16,14 +16,13 @@ afterEach(() => vi.unstubAllGlobals());
 
 const client = () => createMarketMapClient(createHttpClient({ baseUrl: "https://api.test" }));
 
-describe("market map Credit depth", () => {
+describe("market map Credit", () => {
   const credit = {
-    depth: 2 as const,
     wallet: `0x${"a1".repeat(20)}`,
     digest: `0x${"0f".repeat(32)}`,
   };
 
-  it("sends creditDepth for points and facets, with the session cookie", async () => {
+  it("sends creditDepth=max for points and facets, with the session cookie", async () => {
     const fetcher = respond({ points: [], truncated: false });
     await client().points({
       kinds: ["voucher"],
@@ -31,7 +30,7 @@ describe("market map Credit depth", () => {
       credit,
     });
     const points = new URL(fetcher.mock.calls[0]?.[0]);
-    expect(points.searchParams.get("creditDepth")).toBe("2");
+    expect(points.searchParams.get("creditDepth")).toBe("max");
     expect(points.searchParams.has("creditablePools")).toBe(false);
     expect(points.searchParams.toString()).not.toContain(credit.wallet);
     expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ credentials: "include", cache: "no-store" });
@@ -41,12 +40,12 @@ describe("market map Credit depth", () => {
     await client().facets({
       kinds: ["voucher"],
       filter: { term: "", tags: [], tagMatch: "any" },
-      credit: { ...credit, depth: 1 },
+      credit,
       bounds: [{ minLng: 35, minLat: -5, maxLng: 41, maxLat: 1 }],
     });
     const facets = new URL(facetsFetcher.mock.calls[0]?.[0] as string);
     expect(facets.pathname).toBe("/api/v2/market-map/facets");
-    expect(facets.searchParams.get("creditDepth")).toBe("1");
+    expect(facets.searchParams.get("creditDepth")).toBe("max");
   });
 
   it("refuses to send creditDepth together with creditablePools", async () => {

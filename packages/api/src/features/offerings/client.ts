@@ -4,7 +4,7 @@ import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
-import type { CreditScope } from "../credit-router/client";
+import { CREDIT_DISCOVERY_DEPTH, type CreditScope } from "../credit-router/client";
 import {
   type CursorParams,
   type HexAddress,
@@ -113,7 +113,7 @@ export type OfferingDiscoveryParams = {
   bounds?: readonly MarketBoundingBox[];
   pools?: readonly { chainId: number; address: string }[];
   /**
-   * The server-resolved Credit filter (`creditDepth`): resources related to the
+   * The server-resolved Credit filter (`creditDepth=max`): resources related to the
    * pools the session wallet reaches. Needs the session, so the request carries
    * credentials and is never cached; it cannot be combined with `pools`.
    */
@@ -456,7 +456,7 @@ function formatOfferingDiscoveryQuery(params: OfferingDiscoveryParams): string {
       params.pools.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`).join(","),
     );
   }
-  if (params.credit) query.set("creditDepth", String(params.credit.depth));
+  if (params.credit) query.set("creditDepth", CREDIT_DISCOVERY_DEPTH);
   return query.toString();
 }
 

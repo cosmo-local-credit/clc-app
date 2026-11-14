@@ -19,7 +19,7 @@ import {
 import type { z } from "zod";
 
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
-import type { CreditScope } from "../credit-router/client";
+import { CREDIT_DISCOVERY_DEPTH, type CreditScope } from "../credit-router/client";
 import type { HttpClient } from "../../client/http-client";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
 
@@ -29,7 +29,7 @@ export type MarketMapParams = {
   filter: Pick<CatalogFilter, "term" | "tags" | "tagMatch">;
   creditablePools?: readonly { chainId: number; address: string }[];
   /**
-   * The server-resolved Credit filter (`creditDepth`), for a signed-in wallet.
+   * The server-resolved Credit filter (`creditDepth=max`), for a signed-in wallet.
    * It replaces `creditablePools`; the two cannot be sent together.
    */
   credit?: CreditScope;
@@ -97,7 +97,7 @@ function filterQuery(params: MarketMapParams): URLSearchParams {
   for (const pool of params.creditablePools ?? []) {
     query.append("creditablePools", `${pool.chainId}:${pool.address}`);
   }
-  if (params.credit) query.set("creditDepth", String(params.credit.depth));
+  if (params.credit) query.set("creditDepth", CREDIT_DISCOVERY_DEPTH);
   query.set(
     "postTiming",
     serializePostTiming(params.postTiming ?? DEFAULT_POST_TIMING) ?? DEFAULT_POST_TIMING,
