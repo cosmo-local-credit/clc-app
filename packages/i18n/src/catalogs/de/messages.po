@@ -278,8 +278,8 @@ msgid "{completedCount} of {0} confirmed"
 msgstr "{completedCount} von {0} bestätigt"
 
 #: apps/web/src/components/activity/routed-swap-activity.tsx:9
-msgid "{count, plural, one {# hop} other {# hops}}"
-msgstr "{count, plural, one {# Schritt} other {# Schritte}}"
+#~ msgid "{count, plural, one {# hop} other {# hops}}"
+#~ msgstr "{count, plural, one {# Schritt} other {# Schritte}}"
 
 #: apps/web/src/components/ui/unread-count.tsx:33
 msgid "{count, plural, one {# new} other {# new}}"
@@ -335,7 +335,7 @@ msgstr "{failedCount, plural, one {# Transaktion ist fehlgeschlagen. Versuchen "
 msgid "{formattedStars} out of 5 stars"
 msgstr "{formattedStars} von 5 Sternen"
 
-#: apps/web/src/components/credit/credit-hops.tsx:78
+#: apps/web/src/components/credit/credit-hops.tsx:60
 msgid "{hops, plural, one {# swap} other {# swaps}}"
 msgstr "{hops, plural, one {# Tausch} other {# Tausche}}"
 
@@ -459,6 +459,14 @@ msgstr "Eine neue Version ist verfügbar"
 #~ msgstr "Der QR-Code einer Papiergeldbörse wurde gescannt. Diese Adresse "
 #~ "importieren?"
 
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:94
+msgid "A pool can't take more right now"
+msgstr "Ein Fonds kann gerade nicht mehr aufnehmen"
+
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:96
+msgid "A pool doesn't hold enough"
+msgstr "Ein Fonds hält nicht genug"
+
 #: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:197
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:126
@@ -467,23 +475,27 @@ msgid "A pool holds vouchers together so members can swap between them at a "
 msgstr "Ein Fonds hält Gutscheine zusammen, so dass Mitglieder zwischen ihnen "
 "zu einem veröffentlichten Wert tauschen können."
 
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:98
+msgid "A pool is retired"
+msgstr "Ein Fonds ist stillgelegt"
+
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:75
-msgid "A pool on this route can't take more of this voucher right now."
-msgstr "Ein Fonds auf dieser Route kann derzeit nicht mehr von diesem Gutschein "
-"aufnehmen."
+#~ msgid "A pool on this route can't take more of this voucher right now."
+#~ msgstr "Ein Fonds auf dieser Route kann derzeit nicht mehr von diesem Gutschein "
+#~ "aufnehmen."
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:77
-msgid "A pool on this route doesn't hold enough to pay this out."
-msgstr "Ein Fonds auf dieser Route hält nicht genug, um diesen Betrag "
-"auszuzahlen."
+#~ msgid "A pool on this route doesn't hold enough to pay this out."
+#~ msgstr "Ein Fonds auf dieser Route hält nicht genug, um diesen Betrag "
+#~ "auszuzahlen."
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:81
-msgid "A pool on this route is retired."
-msgstr "Ein Fonds auf dieser Route ist stillgelegt."
+#~ msgid "A pool on this route is retired."
+#~ msgstr "Ein Fonds auf dieser Route ist stillgelegt."
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:53
-msgid "A pool's price could not be confirmed."
-msgstr "Der Preis eines Fonds konnte nicht bestätigt werden."
+#~ msgid "A pool's price could not be confirmed."
+#~ msgstr "Der Preis eines Fonds konnte nicht bestätigt werden."
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:286
 #~ msgid "A service"
@@ -1005,7 +1017,7 @@ msgstr "Prüfen Sie vor dem Senden immer, ob Token und Netzwerk übereinstimmen.
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:445
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:549
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:618
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:91
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:168
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:127
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:405
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
@@ -1043,12 +1055,16 @@ msgid "Amount to collect"
 msgstr "Zu kassierender Betrag"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:97
-msgid "Amount to get"
-msgstr "Zu erhaltender Betrag"
+#~ msgid "Amount to get"
+#~ msgstr "Zu erhaltender Betrag"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:105
-msgid "Amount to spend"
-msgstr "Auszugebender Betrag"
+#~ msgid "Amount to spend"
+#~ msgstr "Auszugebender Betrag"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:773
+msgid "Amounts changed. Review again."
+msgstr "Beträge geändert. Bitte erneut prüfen."
 
 #: apps/web/src/components/retirement/retirement-request-form.tsx:112
 msgid "An admin will review your request. It will stay active until approval."
@@ -1182,8 +1198,12 @@ msgstr "Erneut um ein Gespräch bitten"
 
 #. placeholder {0}: symbolOf(labels, output)
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:348
-msgid "At least <0>{maxOut} {0}</0>"
-msgstr "Mindestens <0>{maxOut} {0}</0>"
+#~ msgid "At least <0>{maxOut} {0}</0>"
+#~ msgstr "Mindestens <0>{maxOut} {0}</0>"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:545
+msgid "At least <0>{maxOut} {outSymbol}</0>"
+msgstr "Mindestens <0>{maxOut} {outSymbol}</0>"
 
 #: apps/web/src/features/home/ui/report-page.tsx:528
 #~ msgid "Author"
@@ -1317,6 +1337,10 @@ msgstr "Biodiversität"
 msgid "Block"
 msgstr "Blockieren"
 
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:178
+msgid "Block number"
+msgstr "Blocknummer"
+
 #: apps/web/src/desktop/messaging/thread-menu-desk.tsx:138
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:90
 msgid "Block this person?"
@@ -1395,8 +1419,8 @@ msgid "Camera access denied."
 msgstr "Kamerazugriff verweigert."
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:396
-msgid "Can't carry this amount"
-msgstr "Kann diesen Betrag nicht abwickeln"
+#~ msgid "Can't carry this amount"
+#~ msgstr "Kann diesen Betrag nicht abwickeln"
 
 #: apps/web/src/components/account-retirement/retire-account-section.tsx:93
 #: apps/web/src/components/auth/sign-in-panel.tsx:167
@@ -1426,7 +1450,7 @@ msgstr "Kann diesen Betrag nicht abwickeln"
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:118
 #: apps/web/src/desktop/wants/want-form-desk.tsx:376
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:175
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:531
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:803
 #: apps/web/src/features/home/ui/settings-page.tsx:160
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:191
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:120
@@ -1447,7 +1471,7 @@ msgstr "Stornierung"
 msgid "Cancel request"
 msgstr "Antrag zurückziehen"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:356
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:553
 msgid "Capacity unknown"
 msgstr "Kapazität unbekannt"
 
@@ -1555,6 +1579,10 @@ msgstr "Feier"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:833
 msgid "Change"
 msgstr "Änderung"
+
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:46
+msgid "Change amount"
+msgstr "Betrag ändern"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:228
 #: apps/web/src/features/safe/hooks/use-multisig-signer-change.ts:58
@@ -2120,7 +2148,7 @@ msgid "Complete your profile"
 msgstr "Vervollständigen Sie Ihr Profil"
 
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:244
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:522
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:794
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:240
 msgid "Confirm"
 msgstr "Bestätigen"
@@ -2155,7 +2183,7 @@ msgstr "Bestätigen und veröffentlichen"
 msgid "Confirm and send"
 msgstr "Bestätigen und senden"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:488
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:760
 msgid "Confirm exchange"
 msgstr "Umtausch bestätigen"
 
@@ -2201,7 +2229,7 @@ msgstr "Bestätigen Sie mit Ihrem Passkey. Ihre alte Karte funktioniert danach "
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:223
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:361
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:105
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:130
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:197
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:46
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:72
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:257
@@ -2548,6 +2576,10 @@ msgstr "Absenderadresse kopieren"
 msgid "Copy supply creation transaction hash"
 msgstr "Hash der Transaktion zur Erstellung des Bestands kopieren"
 
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:184
+msgid "Copy tracking ID"
+msgstr "Tracking-ID kopieren"
+
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:105
 #: apps/web/src/desktop/activity/transactions-desk.tsx:715
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:178
@@ -2555,7 +2587,7 @@ msgstr "Hash der Transaktion zur Erstellung des Bestands kopieren"
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:255
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:201
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:669
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:122
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:172
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:169
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:126
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:244
@@ -2589,8 +2621,8 @@ msgstr "Cosmo-Local Credit hilft Menschen und Organisationen dabei, Waren und "
 #. placeholder {0}: amountOf(labels, input, route.amountIn, locale) ?? "—"
 #. placeholder {1}: symbolOf(labels, input)
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:378
-msgid "Costs about <0>{0} {1}</0>"
-msgstr "Kostet etwa <0>{0} {1}</0>"
+#~ msgid "Costs about <0>{0} {1}</0>"
+#~ msgstr "Kostet etwa <0>{0} {1}</0>"
 
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:22
 msgid "Could not be moved"
@@ -3817,6 +3849,7 @@ msgstr "Gutscheine werden vernichtet…"
 
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:93
 #: apps/web/src/desktop/ui/inspector.tsx:210
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:121
 msgid "Details"
 msgstr "Details"
 
@@ -3864,7 +3897,7 @@ msgstr "Der Anzeigename muss 120 Zeichen oder weniger sein."
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:351
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:408
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:296
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:173
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:214
 #: apps/web/src/features/key-rotation/ui/new-card-step.tsx:108
 #: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:74
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:240
@@ -4042,8 +4075,8 @@ msgid "Education"
 msgstr "Bildung"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:577
-msgid "Effective fee"
-msgstr "Effektive Gebühr"
+#~ msgid "Effective fee"
+#~ msgstr "Effektive Gebühr"
 
 #: apps/web/src/lib/category-label.ts:11
 msgid "Elders"
@@ -4283,14 +4316,18 @@ msgstr "Geben Sie Ihre Gnosis-Wallet-Adresse ein."
 msgid "Equal value"
 msgstr "Gleichwertiger Wert"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:335
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:593
 msgid "Estimate"
 msgstr "Schätzung"
 
 #. placeholder {0}: get.asOfBlock
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:142
-msgid "Estimated at block <0>{0}</0>"
-msgstr "Geschätzt bei Block <0>{0}</0>"
+#~ msgid "Estimated at block <0>{0}</0>"
+#~ msgstr "Geschätzt bei Block <0>{0}</0>"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:597
+msgid "Estimated at block <0>{asOfBlock}</0>"
+msgstr "Geschätzt bei Block <0>{asOfBlock}</0>"
 
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:161
 msgid "Event"
@@ -4315,8 +4352,8 @@ msgid "Every account has a sign-in card. Linking {providerLabel} adds another "
 msgstr "Jedes Konto verfügt über eine Anmeldekarte. Die Verknüpfung von "
 "{providerLabel} fügt eine weitere Möglichkeit hinzu, sich anzumelden."
 
-#: apps/web/src/components/activity/routed-swap-activity.tsx:20
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:77
+#: apps/web/src/components/activity/routed-swap-activity.tsx:15
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:88
 msgid "Exchange failed"
 msgstr "Umtausch fehlgeschlagen"
 
@@ -4329,15 +4366,31 @@ msgstr "Wechselkurs"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "Wechselkurs zum Standard-Gutschein ({unitSymbol})"
 
-#: apps/web/src/components/activity/routed-swap-activity.tsx:18
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:79
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:60
+msgid "Exchange unavailable"
+msgstr "Umtausch nicht verfügbar"
+
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:69
+msgid "Exchange would fail"
+msgstr "Umtausch würde fehlschlagen"
+
+#. placeholder {0}: failure.revert.reason
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:67
+msgid "Exchange would fail: {0}"
+msgstr "Umtausch würde fehlschlagen: {0}"
+
+#: apps/web/src/components/activity/routed-swap-activity.tsx:13
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:90
 msgid "Exchanged"
 msgstr "Umgetauscht"
 
-#: apps/web/src/components/activity/routed-swap-activity.tsx:22
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:81
+#: apps/web/src/components/activity/routed-swap-activity.tsx:17
 msgid "Exchanging"
 msgstr "Umtausch läuft"
+
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:92
+msgid "Exchanging…"
+msgstr "Umtausch läuft…"
 
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:251
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:247
@@ -4395,7 +4448,7 @@ msgstr "Ablaufend"
 #~ msgid "Export CSV"
 #~ msgstr "CSV exportieren"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:581
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:859
 msgid "Extra received"
 msgstr "Zusätzlich erhalten"
 
@@ -4436,9 +4489,14 @@ msgstr "Landwirtschaft"
 #~ msgid "fee"
 #~ msgstr "Gebühr"
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:529
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:863
+msgid "Fee"
+msgstr "Gebühr"
+
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:331
-msgid "Fee {fee}"
-msgstr "Gebühr {fee}"
+#~ msgid "Fee {fee}"
+#~ msgstr "Gebühr {fee}"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:139
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:286
@@ -4459,7 +4517,7 @@ msgstr "Gebühr % und Empfänger"
 msgid "Fee details unavailable."
 msgstr "Gebührendetails nicht verfügbar."
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:335
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:583
 msgid "Fee not confirmed"
 msgstr "Gebühr nicht bestätigt"
 
@@ -4618,9 +4676,13 @@ msgstr "Filter"
 msgid "Finding location"
 msgstr "Ort des Findens"
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:209
+msgid "Finding options…"
+msgstr "Optionen werden gesucht…"
+
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:171
-msgid "Finding routes…"
-msgstr "Routen werden gesucht…"
+#~ msgid "Finding routes…"
+#~ msgstr "Routen werden gesucht…"
 
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:122
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:204
@@ -4695,6 +4757,7 @@ msgstr "Zusammenkunft"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:336
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:119
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:129
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:174
 msgid "Get"
 msgstr "Bekommen"
 
@@ -4702,7 +4765,7 @@ msgstr "Bekommen"
 msgid "Get {symbol}"
 msgstr "{symbol} erhalten"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:88
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:154
 msgid "Get {targetSymbol}"
 msgstr "{targetSymbol} erhalten"
 
@@ -4718,8 +4781,8 @@ msgstr "Gutschein erhalten"
 #. placeholder {0}: amountOf(labels, output, route.amountOut, locale) ?? "—"
 #. placeholder {1}: symbolOf(labels, output)
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:385
-msgid "Gets about <0>{0} {1}</0>"
-msgstr "Ergibt etwa <0>{0} {1}</0>"
+#~ msgid "Gets about <0>{0} {1}</0>"
+#~ msgstr "Ergibt etwa <0>{0} {1}</0>"
 
 #: apps/web/src/components/nearby-catalog.tsx:255
 #: apps/web/src/components/visibility-selector.tsx:25
@@ -4839,8 +4902,8 @@ msgstr "Betriebe"
 #. placeholder {1}: poolNames[index] ?? hop.pool
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:598
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:139
-msgid "Hop {0} · {1}"
-msgstr "Schritt {0} · {1}"
+#~ msgid "Hop {0} · {1}"
+#~ msgstr "Schritt {0} · {1}"
 
 #: apps/web/src/desktop/posts/post-desk.tsx:177
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:425
@@ -5029,7 +5092,7 @@ msgstr "Im Fonds"
 #~ msgid "In this pool"
 #~ msgstr "In diesem Fonds"
 
-#: apps/web/src/components/credit/credit-hops.tsx:76
+#: apps/web/src/components/credit/credit-hops.tsx:80
 msgid "In your wallet"
 msgstr "In Ihrer Geldbörse"
 
@@ -5210,8 +5273,8 @@ msgstr "Leer lassen, um die Gesuch-Markierung anzuzeigen."
 msgid "Leave without saving?"
 msgstr "Ohne Speichern verlassen?"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:586
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:114
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:899
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:164
 msgid "Left in your wallet"
 msgstr "Verbleibt in Ihrer Geldbörse"
 
@@ -5261,16 +5324,16 @@ msgid "Limit reached. Ask an administrator to increase your allowance."
 msgstr "Limit erreicht. Bitten Sie einen Administrator, Ihr Limit zu erhöhen."
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:366
-msgid "limited by a pool's credit limit"
-msgstr "begrenzt durch das Kreditlimit eines Fonds"
+#~ msgid "limited by a pool's credit limit"
+#~ msgstr "begrenzt durch das Kreditlimit eines Fonds"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:371
-msgid "limited by pool liquidity"
-msgstr "begrenzt durch die Fondsliquidität"
+#~ msgid "limited by pool liquidity"
+#~ msgstr "begrenzt durch die Fondsliquidität"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:361
-msgid "limited by your balance"
-msgstr "begrenzt durch Ihr Guthaben"
+#~ msgid "limited by your balance"
+#~ msgstr "begrenzt durch Ihr Guthaben"
 
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:40
 msgid "Limits"
@@ -5456,7 +5519,7 @@ msgstr "Ältere Nachrichten laden"
 #: apps/web/src/desktop/wants/want-place-desk.tsx:406
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:110
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:214
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:252
 #: apps/web/src/features/home/ui/wallet-page.tsx:373
 #: apps/web/src/features/home/ui/wallet-page.tsx:489
 #: apps/web/src/features/pools/ui/pool-wants-panel.tsx:54
@@ -5623,7 +5686,7 @@ msgstr "Preisfeeds werden geladen…"
 msgid "Loading private attachment…"
 msgstr "Privater Anhang wird geladen…"
 
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:165
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:206
 msgid "Loading receipt…"
 msgstr "Beleg wird geladen…"
 
@@ -5944,6 +6007,8 @@ msgstr "Max."
 #~ msgstr "Max. {max}"
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:468
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:461
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:475
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:471
 msgid "Max {max} {symbol}"
 msgstr "Max. {max} {symbol}"
@@ -6000,8 +6065,8 @@ msgstr "Nachrichten sind nur für registrierte Cosmo-Benutzer verfügbar."
 msgid "Metre"
 msgstr "Meter"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:574
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:108
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:854
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:158
 msgid "Minimum received"
 msgstr "Mindestens erhalten"
 
@@ -6047,6 +6112,11 @@ msgstr "Monatlich"
 #: apps/web/src/desktop/market/market-search-field.tsx:351
 msgid "More"
 msgstr "Mehr"
+
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:92
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:442
+msgid "More than you have"
+msgstr "Mehr als Sie haben"
 
 #: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:48
 msgid "Move my passkey"
@@ -6743,8 +6813,8 @@ msgid "No reviews yet."
 msgstr "Noch keine Bewertungen."
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:419
-msgid "No route from your vouchers reaches {targetSymbol}."
-msgstr "Keine Route von Ihren Gutscheinen führt zu {targetSymbol}."
+#~ msgid "No route from your vouchers reaches {targetSymbol}."
+#~ msgstr "Keine Route von Ihren Gutscheinen führt zu {targetSymbol}."
 
 #: apps/web/src/desktop/wallet/send-desk.tsx:576
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:53
@@ -6874,6 +6944,10 @@ msgstr "Keine Gesuche gefunden."
 msgid "No Wants yet."
 msgstr "Noch keine Gesuche."
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:691
+msgid "No way to get {targetSymbol} with what you hold"
+msgstr "Mit dem, was Sie besitzen, lässt sich {targetSymbol} nicht bekommen"
+
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:230
 msgid "No website listed"
 msgstr "Keine Website angegeben"
@@ -6914,6 +6988,14 @@ msgstr "Keine Standard-Safaricom-Nummer. Fahren Sie nur fort, wenn sie portiert 
 #: apps/web/src/features/posts/ui/post-status-badge.tsx:21
 msgid "Not approved"
 msgstr "Nicht genehmigt"
+
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:102
+msgid "Not available for this amount"
+msgstr "Für diesen Betrag nicht verfügbar"
+
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:100
+msgid "Not available for this wallet"
+msgstr "Für diese Geldbörse nicht verfügbar"
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:539
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:580
@@ -7222,6 +7304,14 @@ msgstr "Fakultativ"
 msgid "Optional message"
 msgstr "Fakultative Meldung"
 
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:62
+msgid "Options changed. Reloading…"
+msgstr "Optionen geändert. Wird neu geladen…"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:201
+msgid "Options may be out of date."
+msgstr "Die Optionen sind möglicherweise nicht aktuell."
+
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:285
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:75
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:250
@@ -7260,6 +7350,10 @@ msgstr "Andere Konten halten <0>{amount} {symbol}</0> Ihres Gutscheins."
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:366
 msgid "Other cash options"
 msgstr "Weitere Bargeldoptionen"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:394
+msgid "Other ways"
+msgstr "Andere Wege"
 
 #: apps/web/src/features/pools/ui/pool-output-voucher-filter.tsx:115
 #~ msgid "Output voucher"
@@ -7448,10 +7542,14 @@ msgstr "Bezahlen Sie mich über CLC"
 msgid "Pay Out"
 msgstr "Auszahlung"
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:222
+msgid "Pay with"
+msgstr "Bezahlen mit"
+
 #. placeholder {0}: symbolOf(labels, group.voucher)
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:186
-msgid "Pay with {0}"
-msgstr "Mit {0} bezahlen"
+#~ msgid "Pay with {0}"
+#~ msgstr "Mit {0} bezahlen"
 
 #: apps/web/src/features/wallet/ui/collect-page.tsx:414
 msgid "Payment accepted — confirming"
@@ -7496,7 +7594,7 @@ msgstr "Zahlungsstatus unbekannt"
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:207
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:227
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:675
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:130
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:197
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:367
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:73
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:156
@@ -7749,8 +7847,9 @@ msgstr "Fondsdetails aktualisiert."
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:228
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:203
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:321
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:607
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:151
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:570
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:887
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:138
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:89
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:113
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:332
@@ -7911,7 +8010,7 @@ msgstr "Fonds, die Ihre Gutscheine akzeptieren"
 msgid "Pools list"
 msgstr "Liste der Fonds"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:424
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:696
 msgid "Pools that hold {targetSymbol}"
 msgstr "Fonds, die {targetSymbol} halten"
 
@@ -8138,6 +8237,10 @@ msgstr "Vorheriges Bild"
 msgid "Price"
 msgstr "Preis"
 
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:64
+msgid "Price couldn't be confirmed"
+msgstr "Preis konnte nicht bestätigt werden"
+
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:507
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:499
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:632
@@ -8293,8 +8396,9 @@ msgstr "Geschützt. Halten Sie das Passwort von der Karte getrennt."
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:232
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:218
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:321
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:608
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:154
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:576
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:892
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:143
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:104
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:126
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:341
@@ -8394,12 +8498,17 @@ msgstr "Frage"
 msgid "Queued"
 msgstr "Schlange"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:590
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:55
+msgid "Quote didn't match your request. Not signed."
+msgstr "Angebot entsprach nicht Ihrer Anfrage. Nicht signiert."
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:903
 msgid "Quote valid until"
 msgstr "Angebot gültig bis"
 
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:601
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:216
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:519
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:104
 msgid "Rate"
 msgstr "Satz"
@@ -8514,8 +8623,7 @@ msgstr "Empfang von Gutscheinen"
 #: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:961
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:76
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:611
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:157
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:148
 #: apps/web/src/features/home/ui/activity-page.tsx:500
 msgid "Received"
 msgstr "Empfangen"
@@ -9154,7 +9262,7 @@ msgstr "Tauschrichtung umkehren"
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:157
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:91
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:107
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:130
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:197
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:49
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:167
@@ -9163,7 +9271,7 @@ msgid "Reverted"
 msgstr "Zurückgesetzt"
 
 #: apps/web/src/desktop/wallet/send-desk.tsx:380
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:246
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:288
 msgid "Review"
 msgstr "Prüfen"
 
@@ -9200,13 +9308,17 @@ msgstr "Diese Unterhaltung widerrufen?"
 msgid "Route"
 msgstr "Route"
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:873
+msgid "Route details"
+msgstr "Routendetails"
+
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:152
-msgid "Routes may be out of date."
-msgstr "Die Routen sind möglicherweise nicht aktuell."
+#~ msgid "Routes may be out of date."
+#~ msgstr "Die Routen sind möglicherweise nicht aktuell."
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:49
-msgid "Routing is unavailable right now."
-msgstr "Die Routensuche ist derzeit nicht verfügbar."
+#~ msgid "Routing is unavailable right now."
+#~ msgstr "Die Routensuche ist derzeit nicht verfügbar."
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:98
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:113
@@ -9793,8 +9905,7 @@ msgstr "Versenden..."
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:960
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:78
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:89
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:606
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:148
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:133
 #: apps/web/src/features/home/ui/activity-page.tsx:502
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:193
 msgid "Sent"
@@ -9860,7 +9971,7 @@ msgstr "Ihre Geldbörse wird eingerichtet…"
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:158
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:152
 msgid "Settling…"
 msgstr "Wird abgewickelt…"
 
@@ -10169,7 +10280,7 @@ msgstr "Unterzeichnende und Zustimmungen"
 msgid "Signing out…"
 msgstr "Wird abgemeldet…"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:522
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:794
 msgid "Signing…"
 msgstr "Wird signiert…"
 
@@ -10226,7 +10337,7 @@ msgstr "Einige Fonds konnten nicht überprüft werden."
 #~ msgid "Some vouchers couldn't load."
 #~ msgstr "Einige Gutscheine konnten nicht geladen werden."
 
-#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:67
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:78
 msgid "Something went wrong."
 msgstr "Etwas ist schiefgelaufen."
 
@@ -10245,6 +10356,10 @@ msgstr "Sortiert innerhalb der {0} bisher geladenen Zeilen."
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:82
 msgid "Sound"
 msgstr "Ton"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:182
+msgid "Spend"
+msgstr "Ausgeben"
 
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:626
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:607
@@ -10311,7 +10426,7 @@ msgstr "Beginnt {starts}"
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:234
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:524
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:614
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:127
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:194
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:70
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:437
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
@@ -10440,6 +10555,11 @@ msgstr "SVG-Dateien werden nicht unterstützt. Verwenden Sie PNG, JPEG oder "
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:227
 msgid "Swap"
 msgstr "Tauschen"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:564
+#: apps/web/src/features/credit/ui/credit-swap-breakdown.tsx:25
+msgid "Swap {position}: <0>{path}</0> · {poolName}"
+msgstr "Tausch {position}: <0>{path}</0> · {poolName}"
 
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:324
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:183
@@ -10625,7 +10745,7 @@ msgstr "Foto aufnehmen"
 
 #. placeholder {0}: shown.join(", ")
 #. placeholder {1}: more > 0 ? ` +${more}` : ""
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:444
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:716
 msgid "Takes <0>{0}{1}</0>"
 msgstr "Akzeptiert <0>{0}{1}</0>"
 
@@ -10949,7 +11069,6 @@ msgstr "Der Fonds konnte nicht veröffentlicht werden."
 msgid "The pool doesn't hold that much {0}."
 msgstr "Der Fonds hält nicht so viel {0}."
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:501
 #: apps/web/src/features/pools/hooks/use-pool-swap-form.ts:329
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "Das Angebot wurde geändert. Überprüfen Sie die aktualisierten Beträge, "
@@ -10970,8 +11089,8 @@ msgstr "Die Anfrage ist ohne Antwort des Zahlungsdienstes abgelaufen. Prüfen "
 "Sie den Saldo des Kunden, bevor Sie die Karte erneut belasten."
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:51
-msgid "The routes changed. Loading them again."
-msgstr "Die Routen haben sich geändert. Sie werden neu geladen."
+#~ msgid "The routes changed. Loading them again."
+#~ msgstr "Die Routen haben sich geändert. Sie werden neu geladen."
 
 #: apps/web/src/features/pools/hooks/use-create-pool-form.ts:279
 msgid "The selected unit does not have a configured price feed."
@@ -11136,12 +11255,12 @@ msgstr "Dieses Gerät verfügt nicht über den Schlüssel Ihrer Anmeldekarte. "
 
 #. placeholder {0}: failure.revert.reason
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:56
-msgid "This exchange would fail: {0}."
-msgstr "Dieser Umtausch würde fehlschlagen: {0}."
+#~ msgid "This exchange would fail: {0}."
+#~ msgstr "Dieser Umtausch würde fehlschlagen: {0}."
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:58
-msgid "This exchange would fail."
-msgstr "Dieser Umtausch würde fehlschlagen."
+#~ msgid "This exchange would fail."
+#~ msgstr "Dieser Umtausch würde fehlschlagen."
 
 #: apps/web/src/features/key-rotation/ui/card-reader.tsx:35
 msgid "This is a different sign-in card."
@@ -11330,9 +11449,9 @@ msgid "This QR is a sign-in card. Scan a wallet address."
 msgstr "Dieser QR-Code ist eine Anmeldekarte. Scanne eine Wallet-Adresse."
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:44
-msgid "This quote didn't match what you asked for, so it was not signed."
-msgstr "Dieses Angebot entsprach nicht Ihrer Anfrage und wurde daher nicht "
-"signiert."
+#~ msgid "This quote didn't match what you asked for, so it was not signed."
+#~ msgstr "Dieses Angebot entsprach nicht Ihrer Anfrage und wurde daher nicht "
+#~ "signiert."
 
 #: apps/web/src/desktop/messaging/thread-desk.tsx:198
 #: apps/web/src/features/messaging/ui/thread-page.tsx:121
@@ -11344,8 +11463,8 @@ msgid "This resource is already retired."
 msgstr "Diese Ressource ist bereits stillgelegt."
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:85
-msgid "This route can't carry this amount right now."
-msgstr "Diese Route kann diesen Betrag derzeit nicht abwickeln."
+#~ msgid "This route can't carry this amount right now."
+#~ msgstr "Diese Route kann diesen Betrag derzeit nicht abwickeln."
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:256
 msgid "This sign-in card was replaced. Ask its owner for their new address."
@@ -11372,8 +11491,8 @@ msgstr "Die Dezimalstellen dieses Gutscheins sind unbekannt. Daher kann kein "
 "Limit festgelegt werden."
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:83
-msgid "This wallet can't use routes."
-msgstr "Diese Geldbörse kann keine Routen verwenden."
+#~ msgid "This wallet can't use routes."
+#~ msgstr "Diese Geldbörse kann keine Routen verwenden."
 
 #: apps/web/src/features/home/ui/post-timing-chips.tsx:52
 msgid "Time"
@@ -11459,6 +11578,10 @@ msgstr "Gesamtgebühren"
 msgid "Total value"
 msgstr "Gesamtwert"
 
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:180
+msgid "Tracking ID"
+msgstr "Tracking-ID"
+
 #: apps/web/src/lib/category-label.ts:22
 msgid "Training"
 msgstr "Schulung"
@@ -11470,7 +11593,7 @@ msgstr "Schulung"
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:251
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:196
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:664
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:119
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:169
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:166
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:243
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:214
@@ -11603,7 +11726,7 @@ msgstr "Reise"
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:576
 #: apps/web/src/desktop/wallet/wallet-parts.tsx:87
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:49
-#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:35
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:42
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:62
 #: apps/web/src/features/home/ui/activity-page.tsx:227
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:82
@@ -11807,8 +11930,12 @@ msgstr "Nicht verifiziert"
 
 #. placeholder {0}: symbolOf(labels, output)
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:341
-msgid "Up to <0>{maxOut} {0}</0>"
-msgstr "Bis zu <0>{maxOut} {0}</0>"
+#~ msgid "Up to <0>{maxOut} {0}</0>"
+#~ msgstr "Bis zu <0>{maxOut} {0}</0>"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:538
+msgid "Up to <0>{maxOut} {outSymbol}</0>"
+msgstr "Bis zu <0>{maxOut} {outSymbol}</0>"
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:124
 msgid "Update"
@@ -12058,9 +12185,14 @@ msgstr "Wert: {0} {1}"
 msgid "Value: {0} {1} of offerings"
 msgstr "Wert: {0} {1} von Angeboten"
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:512
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:651
+msgid "via {bridges}"
+msgstr "über {bridges}"
+
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:321
-msgid "via {pools}"
-msgstr "über {pools}"
+#~ msgid "via {pools}"
+#~ msgstr "über {pools}"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:471
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:87
@@ -12164,7 +12296,7 @@ msgstr "Gutschein"
 #: apps/web/src/desktop/wallet/send-desk.tsx:291
 #: apps/web/src/desktop/wallet/send-desk.tsx:421
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:201
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:86
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:152
 #: apps/web/src/features/home/ui/marketplace-page.tsx:428
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:13
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:135
@@ -12296,8 +12428,8 @@ msgid "Voucher tags"
 msgstr "Schlagwörter des Gutscheins"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:110
-msgid "Voucher to spend"
-msgstr "Auszugebender Gutschein"
+#~ msgid "Voucher to spend"
+#~ msgstr "Auszugebender Gutschein"
 
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:59
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:47
@@ -12796,11 +12928,11 @@ msgid "You don't hold any voucher this pool takes."
 msgstr "Sie besitzen keinen Gutschein, den dieser Fonds akzeptiert."
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:79
-msgid "You don't hold enough for this amount."
-msgstr "Sie besitzen nicht genug für diesen Betrag."
+#~ msgid "You don't hold enough for this amount."
+#~ msgstr "Sie besitzen nicht genug für diesen Betrag."
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:129
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:573
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:190
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:852
 msgid "You get"
 msgstr "Sie erhalten"
 
@@ -12845,7 +12977,7 @@ msgstr "Sie haben noch keine Beiträge verfasst."
 msgid "You receive"
 msgstr "Sie erhalten"
 
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:105
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:114
 msgid "You received"
 msgstr "Sie haben erhalten"
 
@@ -12858,12 +12990,12 @@ msgstr "Sie haben erhalten"
 msgid "You send"
 msgstr "Sie senden"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:129
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:572
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:190
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:851
 msgid "You spend"
 msgstr "Sie geben aus"
 
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:102
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:113
 msgid "You spent"
 msgstr "Sie haben ausgegeben"
 

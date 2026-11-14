@@ -277,8 +277,8 @@ msgid "{completedCount} of {0} confirmed"
 msgstr "已确认 {completedCount} / {0}"
 
 #: apps/web/src/components/activity/routed-swap-activity.tsx:9
-msgid "{count, plural, one {# hop} other {# hops}}"
-msgstr "{count, plural, other {# 步}}"
+#~ msgid "{count, plural, one {# hop} other {# hops}}"
+#~ msgstr "{count, plural, other {# 步}}"
 
 #: apps/web/src/components/ui/unread-count.tsx:33
 msgid "{count, plural, one {# new} other {# new}}"
@@ -329,7 +329,7 @@ msgstr "{failedCount, plural, other {# 笔交易失败。请再试一次以转�
 msgid "{formattedStars} out of 5 stars"
 msgstr "满分 5 星，获得 {formattedStars} 星"
 
-#: apps/web/src/components/credit/credit-hops.tsx:78
+#: apps/web/src/components/credit/credit-hops.tsx:60
 msgid "{hops, plural, one {# swap} other {# swaps}}"
 msgstr "{hops, plural, other {# 次兑换}}"
 
@@ -455,6 +455,14 @@ msgstr "有新版本可用"
 #~ msgid "A paper wallet QR was scanned. Import this address?"
 #~ msgstr "扫描了纸钱包 QR。导入这个地址？"
 
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:94
+msgid "A pool can't take more right now"
+msgstr "某个资金池目前无法再接受"
+
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:96
+msgid "A pool doesn't hold enough"
+msgstr "某个资金池余额不足"
+
 #: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:197
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:126
@@ -462,21 +470,25 @@ msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
 msgstr "资金池将代金券结合在一起，因此成员可以按已发布的值在它们之间兑换。"
 
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:98
+msgid "A pool is retired"
+msgstr "某个资金池已停用"
+
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:75
-msgid "A pool on this route can't take more of this voucher right now."
-msgstr "此路径上的某个资金池目前无法再接受此代金券。"
+#~ msgid "A pool on this route can't take more of this voucher right now."
+#~ msgstr "此路径上的某个资金池目前无法再接受此代金券。"
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:77
-msgid "A pool on this route doesn't hold enough to pay this out."
-msgstr "此路径上的某个资金池余额不足，无法支付此金额。"
+#~ msgid "A pool on this route doesn't hold enough to pay this out."
+#~ msgstr "此路径上的某个资金池余额不足，无法支付此金额。"
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:81
-msgid "A pool on this route is retired."
-msgstr "此路径上的某个资金池已停用。"
+#~ msgid "A pool on this route is retired."
+#~ msgstr "此路径上的某个资金池已停用。"
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:53
-msgid "A pool's price could not be confirmed."
-msgstr "无法确认某个资金池的价格。"
+#~ msgid "A pool's price could not be confirmed."
+#~ msgstr "无法确认某个资金池的价格。"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:286
 #~ msgid "A service"
@@ -979,7 +991,7 @@ msgstr "发送前请务必确认代币和网络相符。"
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:445
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:549
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:618
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:91
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:168
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:127
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:405
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
@@ -1017,12 +1029,16 @@ msgid "Amount to collect"
 msgstr "收取金额"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:97
-msgid "Amount to get"
-msgstr "获取金额"
+#~ msgid "Amount to get"
+#~ msgstr "获取金额"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:105
-msgid "Amount to spend"
-msgstr "花费金额"
+#~ msgid "Amount to spend"
+#~ msgstr "花费金额"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:773
+msgid "Amounts changed. Review again."
+msgstr "金额已更改。请重新检查。"
 
 #: apps/web/src/components/retirement/retirement-request-form.tsx:112
 msgid "An admin will review your request. It will stay active until approval."
@@ -1153,8 +1169,12 @@ msgstr "请求重新沟通"
 
 #. placeholder {0}: symbolOf(labels, output)
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:348
-msgid "At least <0>{maxOut} {0}</0>"
-msgstr "至少 <0>{maxOut} {0}</0>"
+#~ msgid "At least <0>{maxOut} {0}</0>"
+#~ msgstr "至少 <0>{maxOut} {0}</0>"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:545
+msgid "At least <0>{maxOut} {outSymbol}</0>"
+msgstr "至少 <0>{maxOut} {outSymbol}</0>"
 
 #: apps/web/src/features/home/ui/report-page.tsx:528
 #~ msgid "Author"
@@ -1288,6 +1308,10 @@ msgstr "生物多样性"
 msgid "Block"
 msgstr "屏蔽"
 
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:178
+msgid "Block number"
+msgstr "区块号"
+
 #: apps/web/src/desktop/messaging/thread-menu-desk.tsx:138
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:90
 msgid "Block this person?"
@@ -1366,8 +1390,8 @@ msgid "Camera access denied."
 msgstr "相机访问被拒绝。"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:396
-msgid "Can't carry this amount"
-msgstr "无法处理此金额"
+#~ msgid "Can't carry this amount"
+#~ msgstr "无法处理此金额"
 
 #: apps/web/src/components/account-retirement/retire-account-section.tsx:93
 #: apps/web/src/components/auth/sign-in-panel.tsx:167
@@ -1397,7 +1421,7 @@ msgstr "无法处理此金额"
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:118
 #: apps/web/src/desktop/wants/want-form-desk.tsx:376
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:175
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:531
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:803
 #: apps/web/src/features/home/ui/settings-page.tsx:160
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:191
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:120
@@ -1418,7 +1442,7 @@ msgstr "取消"
 msgid "Cancel request"
 msgstr "取消申请"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:356
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:553
 msgid "Capacity unknown"
 msgstr "容量未知"
 
@@ -1524,6 +1548,10 @@ msgstr "庆祝"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:833
 msgid "Change"
 msgstr "更改"
+
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:46
+msgid "Change amount"
+msgstr "更改金额"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:228
 #: apps/web/src/features/safe/hooks/use-multisig-signer-change.ts:58
@@ -2083,7 +2111,7 @@ msgid "Complete your profile"
 msgstr "完成您的个人资料"
 
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:244
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:522
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:794
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:240
 msgid "Confirm"
 msgstr "确认"
@@ -2117,7 +2145,7 @@ msgstr "确认并发布"
 msgid "Confirm and send"
 msgstr "确认并发送"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:488
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:760
 msgid "Confirm exchange"
 msgstr "确认兑换"
 
@@ -2161,7 +2189,7 @@ msgstr "请使用通行密钥确认。您的旧卡将无法再在任何设备上
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:223
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:361
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:105
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:130
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:197
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:46
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:72
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:257
@@ -2503,6 +2531,10 @@ msgstr "复制发送方地址"
 msgid "Copy supply creation transaction hash"
 msgstr "复制增发交易哈希"
 
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:184
+msgid "Copy tracking ID"
+msgstr "复制跟踪 ID"
+
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:105
 #: apps/web/src/desktop/activity/transactions-desk.tsx:715
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:178
@@ -2510,7 +2542,7 @@ msgstr "复制增发交易哈希"
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:255
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:201
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:669
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:122
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:172
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:169
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:126
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:244
@@ -2543,8 +2575,8 @@ msgstr "Cosmo-Local Credit 帮助人们和组织支持、共享和交换商品�
 #. placeholder {0}: amountOf(labels, input, route.amountIn, locale) ?? "—"
 #. placeholder {1}: symbolOf(labels, input)
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:378
-msgid "Costs about <0>{0} {1}</0>"
-msgstr "约花费 <0>{0} {1}</0>"
+#~ msgid "Costs about <0>{0} {1}</0>"
+#~ msgstr "约花费 <0>{0} {1}</0>"
 
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:22
 msgid "Could not be moved"
@@ -3745,6 +3777,7 @@ msgstr "正在销毁代金券…"
 
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:93
 #: apps/web/src/desktop/ui/inspector.tsx:210
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:121
 msgid "Details"
 msgstr "详情"
 
@@ -3792,7 +3825,7 @@ msgstr "显示名称不得超过 120 个字符"
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:351
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:408
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:296
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:173
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:214
 #: apps/web/src/features/key-rotation/ui/new-card-step.tsx:108
 #: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:74
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:240
@@ -3969,8 +4002,8 @@ msgid "Education"
 msgstr "教育"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:577
-msgid "Effective fee"
-msgstr "实际费率"
+#~ msgid "Effective fee"
+#~ msgstr "实际费率"
 
 #: apps/web/src/lib/category-label.ts:11
 msgid "Elders"
@@ -4206,14 +4239,18 @@ msgstr "请输入您的 Gnosis 钱包地址。"
 msgid "Equal value"
 msgstr "等值"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:335
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:593
 msgid "Estimate"
 msgstr "估算"
 
 #. placeholder {0}: get.asOfBlock
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:142
-msgid "Estimated at block <0>{0}</0>"
-msgstr "按区块 <0>{0}</0> 估算"
+#~ msgid "Estimated at block <0>{0}</0>"
+#~ msgstr "按区块 <0>{0}</0> 估算"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:597
+msgid "Estimated at block <0>{asOfBlock}</0>"
+msgstr "按区块 <0>{asOfBlock}</0> 估算"
 
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:161
 msgid "Event"
@@ -4236,8 +4273,8 @@ msgid "Every account has a sign-in card. Linking {providerLabel} adds another "
 "way to sign in."
 msgstr "每个账户都会获得一个登录卡。关联 {providerLabel} 可添加另一种登录方式。"
 
-#: apps/web/src/components/activity/routed-swap-activity.tsx:20
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:77
+#: apps/web/src/components/activity/routed-swap-activity.tsx:15
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:88
 msgid "Exchange failed"
 msgstr "兑换失败"
 
@@ -4250,15 +4287,31 @@ msgstr "汇率"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "相对于默认代金券 ({unitSymbol}) 的汇率"
 
-#: apps/web/src/components/activity/routed-swap-activity.tsx:18
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:79
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:60
+msgid "Exchange unavailable"
+msgstr "兑换不可用"
+
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:69
+msgid "Exchange would fail"
+msgstr "兑换将会失败"
+
+#. placeholder {0}: failure.revert.reason
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:67
+msgid "Exchange would fail: {0}"
+msgstr "兑换将会失败：{0}"
+
+#: apps/web/src/components/activity/routed-swap-activity.tsx:13
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:90
 msgid "Exchanged"
 msgstr "已兑换"
 
-#: apps/web/src/components/activity/routed-swap-activity.tsx:22
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:81
+#: apps/web/src/components/activity/routed-swap-activity.tsx:17
 msgid "Exchanging"
 msgstr "正在兑换"
+
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:92
+msgid "Exchanging…"
+msgstr "正在兑换…"
 
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:251
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:247
@@ -4316,7 +4369,7 @@ msgstr "即将到期"
 #~ msgid "Export CSV"
 #~ msgstr "导出 CSV"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:581
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:859
 msgid "Extra received"
 msgstr "额外收到"
 
@@ -4357,9 +4410,14 @@ msgstr "农业"
 #~ msgid "fee"
 #~ msgstr "费用"
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:529
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:863
+msgid "Fee"
+msgstr "费率"
+
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:331
-msgid "Fee {fee}"
-msgstr "费率 {fee}"
+#~ msgid "Fee {fee}"
+#~ msgstr "费率 {fee}"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:139
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:286
@@ -4381,7 +4439,7 @@ msgstr "费率和费用接收方"
 msgid "Fee details unavailable."
 msgstr "无法获取费用明细。"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:335
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:583
 msgid "Fee not confirmed"
 msgstr "费率未确认"
 
@@ -4540,9 +4598,13 @@ msgstr "筛选条件"
 msgid "Finding location"
 msgstr "正在查找位置"
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:209
+msgid "Finding options…"
+msgstr "正在查找选项…"
+
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:171
-msgid "Finding routes…"
-msgstr "正在查找路径…"
+#~ msgid "Finding routes…"
+#~ msgstr "正在查找路径…"
 
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:122
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:204
@@ -4617,6 +4679,7 @@ msgstr "聚会"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:336
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:119
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:129
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:174
 msgid "Get"
 msgstr "获取"
 
@@ -4624,7 +4687,7 @@ msgstr "获取"
 msgid "Get {symbol}"
 msgstr "获取 {symbol}"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:88
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:154
 msgid "Get {targetSymbol}"
 msgstr "获取 {targetSymbol}"
 
@@ -4640,8 +4703,8 @@ msgstr "获取代金券"
 #. placeholder {0}: amountOf(labels, output, route.amountOut, locale) ?? "—"
 #. placeholder {1}: symbolOf(labels, output)
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:385
-msgid "Gets about <0>{0} {1}</0>"
-msgstr "约可获得 <0>{0} {1}</0>"
+#~ msgid "Gets about <0>{0} {1}</0>"
+#~ msgstr "约可获得 <0>{0} {1}</0>"
 
 #: apps/web/src/components/nearby-catalog.tsx:255
 #: apps/web/src/components/visibility-selector.tsx:25
@@ -4763,8 +4826,8 @@ msgstr "持有的代金券"
 #. placeholder {1}: poolNames[index] ?? hop.pool
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:598
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:139
-msgid "Hop {0} · {1}"
-msgstr "第 {0} 步 · {1}"
+#~ msgid "Hop {0} · {1}"
+#~ msgstr "第 {0} 步 · {1}"
 
 #: apps/web/src/desktop/posts/post-desk.tsx:177
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:425
@@ -4948,7 +5011,7 @@ msgstr "池中"
 #~ msgid "In this pool"
 #~ msgstr "在这个资金池中"
 
-#: apps/web/src/components/credit/credit-hops.tsx:76
+#: apps/web/src/components/credit/credit-hops.tsx:80
 msgid "In your wallet"
 msgstr "在您的钱包中"
 
@@ -5127,8 +5190,8 @@ msgstr "留空以显示需求标记。"
 msgid "Leave without saving?"
 msgstr "不保存就离开？"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:586
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:114
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:899
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:164
 msgid "Left in your wallet"
 msgstr "留在您的钱包中"
 
@@ -5177,16 +5240,16 @@ msgid "Limit reached. Ask an administrator to increase your allowance."
 msgstr "已达到上限。请联系管理员提高您的额度。"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:366
-msgid "limited by a pool's credit limit"
-msgstr "受资金池信用额度限制"
+#~ msgid "limited by a pool's credit limit"
+#~ msgstr "受资金池信用额度限制"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:371
-msgid "limited by pool liquidity"
-msgstr "受资金池流动性限制"
+#~ msgid "limited by pool liquidity"
+#~ msgstr "受资金池流动性限制"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:361
-msgid "limited by your balance"
-msgstr "受您的余额限制"
+#~ msgid "limited by your balance"
+#~ msgstr "受您的余额限制"
 
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:40
 msgid "Limits"
@@ -5366,7 +5429,7 @@ msgstr "加载更早的消息"
 #: apps/web/src/desktop/wants/want-place-desk.tsx:406
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:110
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:214
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:252
 #: apps/web/src/features/home/ui/wallet-page.tsx:373
 #: apps/web/src/features/home/ui/wallet-page.tsx:489
 #: apps/web/src/features/pools/ui/pool-wants-panel.tsx:54
@@ -5533,7 +5596,7 @@ msgstr "正在加载价格源…"
 msgid "Loading private attachment…"
 msgstr "正在加载私密附件…"
 
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:165
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:206
 msgid "Loading receipt…"
 msgstr "正在加载收据…"
 
@@ -5857,6 +5920,8 @@ msgstr "最大值"
 #~ msgstr "最多 {max}"
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:468
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:461
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:475
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:471
 msgid "Max {max} {symbol}"
 msgstr "最大 {max} {symbol}"
@@ -5913,8 +5978,8 @@ msgstr "私信功能仅适用于已注册的 Cosmo 用户。"
 msgid "Metre"
 msgstr "米"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:574
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:108
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:854
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:158
 msgid "Minimum received"
 msgstr "最少收到"
 
@@ -5970,6 +6035,11 @@ msgstr "每月"
 #: apps/web/src/desktop/market/market-search-field.tsx:351
 msgid "More"
 msgstr "更多"
+
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:92
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:442
+msgid "More than you have"
+msgstr "超出您的余额"
 
 #: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:48
 msgid "Move my passkey"
@@ -6660,8 +6730,8 @@ msgid "No reviews yet."
 msgstr "暂无评价。"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:419
-msgid "No route from your vouchers reaches {targetSymbol}."
-msgstr "没有从您的代金券通往 {targetSymbol} 的路径。"
+#~ msgid "No route from your vouchers reaches {targetSymbol}."
+#~ msgstr "没有从您的代金券通往 {targetSymbol} 的路径。"
 
 #: apps/web/src/desktop/wallet/send-desk.tsx:576
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:53
@@ -6791,6 +6861,10 @@ msgstr "未找到需求。"
 msgid "No Wants yet."
 msgstr "还没有需求。"
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:691
+msgid "No way to get {targetSymbol} with what you hold"
+msgstr "无法用您持有的代金券获取 {targetSymbol}"
+
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:230
 msgid "No website listed"
 msgstr "未列出网站"
@@ -6831,6 +6905,14 @@ msgstr "这不是标准的 Safaricom 号码。仅当该号码已携号转网时�
 #: apps/web/src/features/posts/ui/post-status-badge.tsx:21
 msgid "Not approved"
 msgstr "未获批准"
+
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:102
+msgid "Not available for this amount"
+msgstr "此金额不可用"
+
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:100
+msgid "Not available for this wallet"
+msgstr "此钱包不可用"
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:539
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:580
@@ -7135,6 +7217,14 @@ msgstr "可选"
 msgid "Optional message"
 msgstr "可选留言"
 
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:62
+msgid "Options changed. Reloading…"
+msgstr "选项已更改。正在重新加载…"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:201
+msgid "Options may be out of date."
+msgstr "选项可能已过时。"
+
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:285
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:75
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:250
@@ -7173,6 +7263,10 @@ msgstr "其他账户持有您发行的代金券，共计 <0>{amount} {symbol}</0
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:366
 msgid "Other cash options"
 msgstr "其他现金选项"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:394
+msgid "Other ways"
+msgstr "其他方式"
 
 #: apps/web/src/features/pools/ui/pool-output-voucher-filter.tsx:115
 #~ msgid "Output voucher"
@@ -7354,10 +7448,14 @@ msgstr "通过 CLC 向我付款"
 msgid "Pay Out"
 msgstr "付款"
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:222
+msgid "Pay with"
+msgstr "支付方式"
+
 #. placeholder {0}: symbolOf(labels, group.voucher)
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:186
-msgid "Pay with {0}"
-msgstr "使用 {0} 支付"
+#~ msgid "Pay with {0}"
+#~ msgstr "使用 {0} 支付"
 
 #: apps/web/src/features/wallet/ui/collect-page.tsx:414
 msgid "Payment accepted — confirming"
@@ -7402,7 +7500,7 @@ msgstr "付款状态未知"
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:207
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:227
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:675
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:130
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:197
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:367
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:73
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:156
@@ -7650,8 +7748,9 @@ msgstr "资金池详细信息已更新。"
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:228
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:203
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:321
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:607
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:151
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:570
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:887
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:138
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:89
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:113
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:332
@@ -7812,7 +7911,7 @@ msgstr "接受您代金券的资金池"
 msgid "Pools list"
 msgstr "资金池列表"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:424
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:696
 msgid "Pools that hold {targetSymbol}"
 msgstr "持有 {targetSymbol} 的资金池"
 
@@ -8039,6 +8138,10 @@ msgstr "上一张图片"
 msgid "Price"
 msgstr "价格"
 
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:64
+msgid "Price couldn't be confirmed"
+msgstr "无法确认价格"
+
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:507
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:499
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:632
@@ -8193,8 +8296,9 @@ msgstr "登录卡受到保护。将密码与卡分开保存。"
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:232
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:218
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:321
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:608
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:154
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:576
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:892
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:143
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:104
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:126
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:341
@@ -8294,12 +8398,17 @@ msgstr "问题"
 msgid "Queued"
 msgstr "已排队"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:590
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:55
+msgid "Quote didn't match your request. Not signed."
+msgstr "报价与您的请求不符。未签名。"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:903
 msgid "Quote valid until"
 msgstr "报价有效期至"
 
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:601
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:216
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:519
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:104
 msgid "Rate"
 msgstr "汇率"
@@ -8413,8 +8522,7 @@ msgstr "接收代金券"
 #: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:961
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:76
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:611
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:157
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:148
 #: apps/web/src/features/home/ui/activity-page.tsx:500
 msgid "Received"
 msgstr "已收到"
@@ -9047,7 +9155,7 @@ msgstr "反转兑换方向"
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:157
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:91
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:107
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:130
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:197
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:49
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:167
@@ -9056,7 +9164,7 @@ msgid "Reverted"
 msgstr "已回滚"
 
 #: apps/web/src/desktop/wallet/send-desk.tsx:380
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:246
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:288
 msgid "Review"
 msgstr "核对"
 
@@ -9094,13 +9202,17 @@ msgstr "撤销此对话？"
 msgid "Route"
 msgstr "路径"
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:873
+msgid "Route details"
+msgstr "路径详情"
+
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:152
-msgid "Routes may be out of date."
-msgstr "路径可能已过时。"
+#~ msgid "Routes may be out of date."
+#~ msgstr "路径可能已过时。"
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:49
-msgid "Routing is unavailable right now."
-msgstr "目前无法查找路径。"
+#~ msgid "Routing is unavailable right now."
+#~ msgstr "目前无法查找路径。"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:98
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:113
@@ -9681,8 +9793,7 @@ msgstr "正在发送…"
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:960
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:78
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:89
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:606
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:148
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:133
 #: apps/web/src/features/home/ui/activity-page.tsx:502
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:193
 msgid "Sent"
@@ -9748,7 +9859,7 @@ msgstr "正在设置您的钱包…"
 msgid "Settings"
 msgstr "设置"
 
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:158
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:152
 msgid "Settling…"
 msgstr "正在结算…"
 
@@ -10053,7 +10164,7 @@ msgstr "签名者和批准"
 msgid "Signing out…"
 msgstr "正在退出…"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:522
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:794
 msgid "Signing…"
 msgstr "正在签名…"
 
@@ -10108,7 +10219,7 @@ msgstr "无法检查某些资金池。显示经过验证的结果。"
 #~ msgid "Some vouchers couldn't load."
 #~ msgstr "某些代金券无法加载。"
 
-#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:67
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:78
 msgid "Something went wrong."
 msgstr "出了点问题。"
 
@@ -10127,6 +10238,10 @@ msgstr "仅在目前已加载的 {0} 行内排序。"
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:82
 msgid "Sound"
 msgstr "声音"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:182
+msgid "Spend"
+msgstr "花费"
 
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:626
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:607
@@ -10193,7 +10308,7 @@ msgstr "{starts} 开始"
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:234
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:524
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:614
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:127
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:194
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:70
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:437
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
@@ -10321,6 +10436,11 @@ msgstr "不支持 SVG 文件。使用 PNG、JPEG 或 WebP。"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:227
 msgid "Swap"
 msgstr "兑换"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:564
+#: apps/web/src/features/credit/ui/credit-swap-breakdown.tsx:25
+msgid "Swap {position}: <0>{path}</0> · {poolName}"
+msgstr "第 {position} 次兑换：<0>{path}</0> · {poolName}"
 
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:324
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:183
@@ -10505,7 +10625,7 @@ msgstr "拍照"
 
 #. placeholder {0}: shown.join(", ")
 #. placeholder {1}: more > 0 ? ` +${more}` : ""
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:444
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:716
 msgid "Takes <0>{0}{1}</0>"
 msgstr "接受 <0>{0}{1}</0>"
 
@@ -10808,7 +10928,6 @@ msgstr "资金池无法发布。"
 msgid "The pool doesn't hold that much {0}."
 msgstr "资金池没有那么多 {0}。"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:501
 #: apps/web/src/features/pools/hooks/use-pool-swap-form.ts:329
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "报价已更改。确认前请检查更新的金额。"
@@ -10825,8 +10944,8 @@ msgid "The request expired without an answer from the relay. Check the "
 msgstr "请求已过期，中继服务未响应。再次向卡扣款前，请检查客户的余额。"
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:51
-msgid "The routes changed. Loading them again."
-msgstr "路径已更改。正在重新加载。"
+#~ msgid "The routes changed. Loading them again."
+#~ msgstr "路径已更改。正在重新加载。"
 
 #: apps/web/src/features/pools/hooks/use-create-pool-form.ts:279
 msgid "The selected unit does not have a configured price feed."
@@ -10975,12 +11094,12 @@ msgstr "此设备没有您的登录卡密钥。请在此使用登录卡登录或
 
 #. placeholder {0}: failure.revert.reason
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:56
-msgid "This exchange would fail: {0}."
-msgstr "此次兑换将会失败：{0}。"
+#~ msgid "This exchange would fail: {0}."
+#~ msgstr "此次兑换将会失败：{0}。"
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:58
-msgid "This exchange would fail."
-msgstr "此次兑换将会失败。"
+#~ msgid "This exchange would fail."
+#~ msgstr "此次兑换将会失败。"
 
 #: apps/web/src/features/key-rotation/ui/card-reader.tsx:35
 msgid "This is a different sign-in card."
@@ -11155,8 +11274,8 @@ msgid "This QR is a sign-in card. Scan a wallet address."
 msgstr "此二维码是登录卡。请扫描钱包地址。"
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:44
-msgid "This quote didn't match what you asked for, so it was not signed."
-msgstr "此报价与您的请求不符，因此未签名。"
+#~ msgid "This quote didn't match what you asked for, so it was not signed."
+#~ msgstr "此报价与您的请求不符，因此未签名。"
 
 #: apps/web/src/desktop/messaging/thread-desk.tsx:198
 #: apps/web/src/features/messaging/ui/thread-page.tsx:121
@@ -11168,8 +11287,8 @@ msgid "This resource is already retired."
 msgstr "此资源已停用。"
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:85
-msgid "This route can't carry this amount right now."
-msgstr "此路径目前无法处理此金额。"
+#~ msgid "This route can't carry this amount right now."
+#~ msgstr "此路径目前无法处理此金额。"
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:256
 msgid "This sign-in card was replaced. Ask its owner for their new address."
@@ -11193,8 +11312,8 @@ msgid "This voucher's decimals are unknown, so a limit can't be set."
 msgstr "此代金券的小数位数未知，因此无法设置限制。"
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:83
-msgid "This wallet can't use routes."
-msgstr "此钱包无法使用路径兑换。"
+#~ msgid "This wallet can't use routes."
+#~ msgstr "此钱包无法使用路径兑换。"
 
 #: apps/web/src/features/home/ui/post-timing-chips.tsx:52
 msgid "Time"
@@ -11279,6 +11398,10 @@ msgstr "总费用"
 msgid "Total value"
 msgstr "总价值"
 
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:180
+msgid "Tracking ID"
+msgstr "跟踪 ID"
+
 #: apps/web/src/lib/category-label.ts:22
 msgid "Training"
 msgstr "培训"
@@ -11290,7 +11413,7 @@ msgstr "培训"
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:251
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:196
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:664
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:119
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:169
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:166
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:243
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:214
@@ -11423,7 +11546,7 @@ msgstr "旅行"
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:576
 #: apps/web/src/desktop/wallet/wallet-parts.tsx:87
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:49
-#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:35
+#: apps/web/src/features/credit/ui/credit-failure-notice.tsx:42
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:62
 #: apps/web/src/features/home/ui/activity-page.tsx:227
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:82
@@ -11625,8 +11748,12 @@ msgstr "未验证"
 
 #. placeholder {0}: symbolOf(labels, output)
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:341
-msgid "Up to <0>{maxOut} {0}</0>"
-msgstr "最多 <0>{maxOut} {0}</0>"
+#~ msgid "Up to <0>{maxOut} {0}</0>"
+#~ msgstr "最多 <0>{maxOut} {0}</0>"
+
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:538
+msgid "Up to <0>{maxOut} {outSymbol}</0>"
+msgstr "最多 <0>{maxOut} {outSymbol}</0>"
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:124
 msgid "Update"
@@ -11871,9 +11998,14 @@ msgstr "价值：{0} {1}"
 msgid "Value: {0} {1} of offerings"
 msgstr "商品或服务项目价值：{0} {1}"
 
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:512
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:651
+msgid "via {bridges}"
+msgstr "经由 {bridges}"
+
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:321
-msgid "via {pools}"
-msgstr "经由 {pools}"
+#~ msgid "via {pools}"
+#~ msgstr "经由 {pools}"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:471
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:87
@@ -11977,7 +12109,7 @@ msgstr "代金券"
 #: apps/web/src/desktop/wallet/send-desk.tsx:291
 #: apps/web/src/desktop/wallet/send-desk.tsx:421
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:201
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:86
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:152
 #: apps/web/src/features/home/ui/marketplace-page.tsx:428
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:13
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:135
@@ -12109,8 +12241,8 @@ msgid "Voucher tags"
 msgstr "代金券标签"
 
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:110
-msgid "Voucher to spend"
-msgstr "要花费的代金券"
+#~ msgid "Voucher to spend"
+#~ msgstr "要花费的代金券"
 
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:59
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:47
@@ -12602,11 +12734,11 @@ msgid "You don't hold any voucher this pool takes."
 msgstr "您没有持有此资金池接受的代金券。"
 
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:79
-msgid "You don't hold enough for this amount."
-msgstr "您的余额不足以支付此金额。"
+#~ msgid "You don't hold enough for this amount."
+#~ msgstr "您的余额不足以支付此金额。"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:129
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:573
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:190
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:852
 msgid "You get"
 msgstr "您获得"
 
@@ -12649,7 +12781,7 @@ msgstr "您还没有写过任何帖子。"
 msgid "You receive"
 msgstr "您收到"
 
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:105
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:114
 msgid "You received"
 msgstr "您已收到"
 
@@ -12662,12 +12794,12 @@ msgstr "您已收到"
 msgid "You send"
 msgstr "您发送"
 
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:129
-#: apps/web/src/features/credit/ui/credit-get-page.tsx:572
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:190
+#: apps/web/src/features/credit/ui/credit-get-page.tsx:851
 msgid "You spend"
 msgstr "您花费"
 
-#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:102
+#: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:113
 msgid "You spent"
 msgstr "您已花费"
 
