@@ -109,7 +109,7 @@ describe("MarketBar", () => {
   });
 
   it("opens each list from its badge, carrying the search, tags and Credit", () => {
-    mocks.search = { q: "bike", tags: "Repair", creditDepth: 1, voucher: "0xabc" };
+    mocks.search = { q: "bike", tags: "Repair", credit: 1, voucher: "0xabc" };
     renderBar("map");
 
     const sections = screen.getByRole("navigation", { name: "Marketplace sections" });
@@ -125,17 +125,11 @@ describe("MarketBar", () => {
       "Posts",
       "Map",
     ]);
-    expect(links[0]?.getAttribute("href")).toBe(
-      "/market?q=bike&tags=Repair&creditDepth=1&scope=all",
-    );
-    expect(links[1]?.getAttribute("href")).toBe(
-      "/market?q=bike&tags=Repair&creditDepth=1&scope=offers",
-    );
+    expect(links[0]?.getAttribute("href")).toBe("/market?q=bike&tags=Repair&credit=1&scope=all");
+    expect(links[1]?.getAttribute("href")).toBe("/market?q=bike&tags=Repair&credit=1&scope=offers");
     expect(links[6]?.getAttribute("href")).toBe("/?tab=activity");
     expect(links[7]?.getAttribute("href")).toBe("/?tab=posts");
-    expect(links[8]?.getAttribute("href")).toBe(
-      "/market?q=bike&tags=Repair&creditDepth=1&scope=all",
-    );
+    expect(links[8]?.getAttribute("href")).toBe("/market?q=bike&tags=Repair&credit=1&scope=all");
     for (const link of links.slice(0, -1)) expect(link.getAttribute("aria-current")).toBeNull();
     expect(screen.getByRole("link", { name: "Map" }).getAttribute("aria-current")).toBe("page");
   });

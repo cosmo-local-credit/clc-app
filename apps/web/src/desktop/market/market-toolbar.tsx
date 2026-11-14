@@ -6,7 +6,7 @@ import { CATALOG_MAX_TAGS } from "@clc/core/features/catalog/logic";
 import type { PostTiming } from "@clc/core/features/reports/logic";
 import { RiCheckLine, RiCloseLine, RiFilter3Line } from "react-icons/ri";
 
-import { CreditDepthChecks, useCreditStateLabel } from "#/components/creditable-browse-control";
+import { useCreditStateLabel } from "#/components/creditable-browse-control";
 import { Button } from "#/components/ui/button";
 import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
 import { SectionHeading } from "#/components/ui/section-heading";
@@ -15,7 +15,6 @@ import { SelectableTagBadge } from "#/components/ui/tag-badge";
 import { Toggle } from "#/components/ui/toggle";
 import { useCatalogFilterDraft } from "#/components/use-catalog-filter-draft";
 import type { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
-import { type CreditDepthValue, nextCreditDepth } from "#/lib/navigation/pool-search";
 import type { MarketFilterControls } from "#/features/home/hooks/use-market-filter";
 import type { OutputVoucherBrowse } from "#/features/home/hooks/use-output-voucher-browse";
 import {
@@ -69,7 +68,8 @@ export function MarketDeskToolbar({
   filtersOpen: boolean;
   onFiltersOpenChange: (open: boolean) => void;
   credit: Credit;
-  onCredit: (depth: CreditDepthValue | undefined) => void;
+  /** The toggled Credit state: true turns it on. */
+  onCredit: (on: boolean) => void;
   output: OutputVoucherBrowse;
   onClearOutput: () => void;
   /** The map's resource types, only while the All scope draws them. */
@@ -341,16 +341,10 @@ function FiltersChip({
   );
 }
 
-/** The Credit filter as a chip: filled while on. Its notices render elsewhere. */
-function CreditChip({
-  credit,
-  onCredit,
-}: {
-  credit: Credit;
-  onCredit: (depth: CreditDepthValue | undefined) => void;
-}) {
-  const label = useCreditStateLabel(credit.depth);
-  if (!credit.parsed.ok || !credit.auth.isAuthenticated) return null;
+/** The Credit filter as a chip that toggles: filled while on. Its notices render elsewhere. */
+function CreditChip({ credit, onCredit }: { credit: Credit; onCredit: (on: boolean) => void }) {
+  const label = useCreditStateLabel(credit.enabled);
+  if (!credit.auth.isAuthenticated) return null;
   const checking = credit.enabled && credit.verification.status === "loading";
   return (
     <DeskChip on={credit.enabled}>
@@ -361,14 +355,10 @@ function CreditChip({
         aria-pressed={credit.enabled}
         aria-busy={checking}
         disabled={credit.auth.isLoading}
-        onClick={() => onCredit(nextCreditDepth(credit.depth))}
+        onClick={() => onCredit(!credit.enabled)}
         className="disabled:opacity-50"
       >
-        {checking ? (
-          <Spinner />
-        ) : credit.enabled ? (
-          <CreditDepthChecks depth={credit.depth} />
-        ) : null}
+        {checking ? <Spinner /> : credit.enabled ? <RiCheckLine aria-hidden="true" /> : null}
         <Trans>Credit</Trans>
       </button>
     </DeskChip>

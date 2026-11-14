@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { LayoutSwitch } from "#/desktop/switch";
 import { VoucherDetailPage } from "#/features/wallet/ui";
-import { creditDepthSearchParam } from "#/lib/navigation/credit-depth-search";
+import { creditSearch } from "#/lib/navigation/credit-search";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
 const VoucherDesk = lazy(() =>
@@ -18,13 +18,15 @@ const searchSchema = z.object({
   poolAddress: z.string().optional().catch(undefined),
   reportId: z.string().trim().min(1).optional().catch(undefined),
   wantId: z.string().trim().min(1).optional().catch(undefined),
-  creditDepth: creditDepthSearchParam,
 });
 
 export const Route = createFileRoute("/_nav/vouchers/$voucherAddress")({
   staticData: { navOwner: "voucher", desktop: "fill" },
-  validateSearch: searchSchema,
-  search: { middlewares: [retainSearchParams(["creditDepth"])] },
+  validateSearch: (search: Record<string, unknown>) => ({
+    ...searchSchema.parse(search),
+    ...creditSearch(search),
+  }),
+  search: { middlewares: [retainSearchParams(["credit"])] },
   component: VoucherDetailRoute,
 });
 

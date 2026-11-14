@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useCallback } from "react";
 
 import { CLEARED_CATALOG_SEARCH } from "#/lib/navigation/catalog-search";
+import { withCredit } from "#/lib/navigation/pool-search";
 
 /**
  * Drops, in one replace, everything that narrows the marketplace in the URL:
@@ -19,8 +20,7 @@ export function useClearMarketNarrowing() {
         search: (previous) => ({
           ...previous,
           ...CLEARED_CATALOG_SEARCH,
-          creditDepth: undefined,
-          creditable: undefined,
+          ...withCredit(false),
           out_voucher: undefined,
         }),
       }),

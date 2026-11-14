@@ -19,7 +19,6 @@ const mocks = vi.hoisted(() => ({
   },
   credit: {
     auth: { isAuthenticated: false, isLoading: false },
-    parsed: { ok: true, enabled: null },
     enabled: false,
     verification: { status: "ready", pools: [], retry: vi.fn() },
     poolRefs: undefined as Array<{ chainId: number; address: string }> | undefined,
@@ -92,18 +91,16 @@ vi.mock("#/components/creditable-browse-control", () => ({
   CreditableBrowseControl: ({
     part,
     onChange,
-    onClear,
   }: {
     part: "control" | "feedback";
-    onChange: (depth: 1 | 2 | undefined) => void;
-    onClear: () => void;
+    onChange: (on: boolean) => void;
   }) => (
     <div data-testid={`credit-${part}`}>
-      <button type="button" onClick={() => onChange(1)}>
+      <button type="button" onClick={() => onChange(true)}>
         {part} Credit on
       </button>
-      <button type="button" onClick={onClear}>
-        {part} Credit clear
+      <button type="button" onClick={() => onChange(false)}>
+        {part} Credit off
       </button>
     </div>
   ),
@@ -211,13 +208,13 @@ describe("OffersPage", () => {
     expect(screen.getByText("No offers match this search.")).toBeTruthy();
   });
 
-  it("writes and clears Credit from both shell and feedback controls", () => {
+  it("toggles Credit on and off from both shell and feedback controls", () => {
     render(<OffersPage />);
 
     fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "control Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "control Credit off" }));
     fireEvent.click(screen.getByRole("button", { name: "feedback Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "feedback Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit off" }));
 
     expect(mocks.navigate).toHaveBeenCalledTimes(4);
     const previous = { scope: "offers", q: "food", creditable: false };
@@ -227,18 +224,19 @@ describe("OffersPage", () => {
     expect(shellOn).toMatchObject({ to: "/market" });
     expect(shellOn.search(previous)).toEqual({
       ...previous,
-      creditDepth: 1,
+      credit: 1,
       creditable: undefined,
     });
-    expect(shellClear).toMatchObject({ to: "/market", replace: true });
+    expect(shellClear).toMatchObject({ to: "/market" });
+    expect(shellClear).not.toHaveProperty("replace");
     expect(shellClear.search(previous)).toEqual({ scope: "offers", q: "food" });
     expect(feedbackOn).toMatchObject({ to: "." });
     expect(feedbackOn.search(previous)).toEqual({
       ...previous,
-      creditDepth: 1,
+      credit: 1,
       creditable: undefined,
     });
-    expect(feedbackClear).toMatchObject({ to: ".", replace: true });
+    expect(feedbackClear).toMatchObject({ to: "." });
     expect(feedbackClear.search(previous)).toEqual({ scope: "offers", q: "food" });
   });
 
@@ -290,7 +288,7 @@ describe("OffersPage", () => {
     }));
     mocks.credit.scope = { wallet: `0x${"A1".repeat(20)}`, digest: "0xAB" };
 
-    render(<OffersPage creditDepthSearch={1} />);
+    render(<OffersPage creditOn />);
 
     const key = (mocks.queryOptions?.queryKey as unknown[] | undefined)?.[3] as Record<
       string,
@@ -305,7 +303,7 @@ describe("OffersPage", () => {
     mocks.credit.poolRefs = [];
     mocks.credit.blocksResults = true;
 
-    render(<OffersPage creditDepthSearch={1} />);
+    render(<OffersPage creditOn />);
 
     expect(mocks.queryOptions?.enabled).toBe(false);
     expect(screen.getByText("No offers are available through your Credit pools.")).toBeTruthy();

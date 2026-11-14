@@ -23,7 +23,7 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => a
 
 async function showMessage(surface: "map" | "list" = "list") {
   const initial =
-    "/market?scope=pools&q=food&tags=Repair&creditDepth=1&out_voucher=0x1111111111111111111111111111111111111111";
+    "/market?scope=pools&q=food&tags=Repair&credit=1&out_voucher=0x1111111111111111111111111111111111111111";
   const root = createRootRoute({ component: Outlet });
   const home = createRoute({
     getParentRoute: () => root,
@@ -106,7 +106,7 @@ describe("empty marketplace guidance", () => {
     expect(Object.fromEntries(new URLSearchParams(history.location.search))).toEqual({
       q: "food",
       tags: "Repair",
-      creditDepth: "1",
+      credit: "1",
       tab: "market",
       view: "map",
     });

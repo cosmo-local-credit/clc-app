@@ -40,7 +40,7 @@ vi.mock("@tanstack/react-router", () => ({
           q: "bread",
           tags: ["food"],
           tagMatch: "all",
-          creditDepth: 1,
+          credit: 1,
           scope: "offers",
           out_voucher: `0x${"1".repeat(40)}`,
         }),
@@ -84,6 +84,6 @@ it("links a bounded text search back to the map with only compatible search stat
     q: "bread",
     tags: ["food"],
     tagMatch: "all",
-    creditDepth: 1,
+    credit: 1,
   });
 });

@@ -28,14 +28,14 @@ export function MarketDesk({
   scope,
   urlView,
   isAuthenticated,
-  creditDepthSearch,
+  creditOn = false,
   outputVoucherSearch,
   locationOwner,
 }: {
   scope: MarketListScope | null;
   urlView: MarketView | undefined;
   isAuthenticated: boolean;
-  creditDepthSearch?: number | string | readonly (number | string)[];
+  creditOn?: boolean;
   outputVoucherSearch?: string | readonly string[];
   locationOwner: string;
 }) {
@@ -46,7 +46,7 @@ export function MarketDesk({
       <MarketListDesk
         key={scope}
         scope={scope}
-        creditDepthSearch={creditDepthSearch}
+        creditOn={creditOn}
         outputVoucherSearch={outputVoucherSearch}
         locationOwner={locationOwner}
       />
@@ -55,7 +55,7 @@ export function MarketDesk({
   return (
     <MarketMapDesk
       isAuthenticated={isAuthenticated}
-      creditDepthSearch={creditDepthSearch}
+      creditOn={creditOn}
       outputVoucherSearch={outputVoucherSearch}
       creditRoute="market"
     />

@@ -15,11 +15,7 @@ import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { CHAIN_ID } from "#/lib/chain";
-import {
-  parseCreditDepth,
-  parsePoolOutputVoucher,
-  withCreditDepth,
-} from "#/lib/navigation/pool-search";
+import { parsePoolOutputVoucher, withCredit } from "#/lib/navigation/pool-search";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { MarketBar } from "#/components/market-bar";
@@ -36,10 +32,10 @@ import { ListSkeleton } from "#/components/ui/list-skeleton";
 const POOL_ROW_TAG_LIMIT = 3;
 
 export function PoolsPage({
-  creditDepthSearch,
+  creditOn = false,
   outputVoucherSearch,
 }: {
-  creditDepthSearch?: number | string | readonly (number | string)[];
+  creditOn?: boolean;
   outputVoucherSearch?: string | readonly string[];
 }) {
   const { t, i18n } = useLingui();
@@ -51,13 +47,10 @@ export function PoolsPage({
   const outputVoucherAddress = outputVoucherResult.ok ? outputVoucherResult.address : null;
   const outputFilterActive = outputVoucherAddress !== null;
   const outputFilterInvalid = !outputVoucherResult.ok;
-  const credit = useCreditableBrowse(creditDepthSearch);
-  const creditableResult = parseCreditDepth(creditDepthSearch);
-  const creditFilterInvalid = !creditableResult.ok;
-  const specialFilterInvalid = outputFilterInvalid || creditFilterInvalid;
+  const credit = useCreditableBrowse(creditOn);
   const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_NAMES.pools, storageOwner, {
     voucherRelationships: false,
-    externalFilterActive: outputVoucherSearch !== undefined || creditDepthSearch !== undefined,
+    externalFilterActive: outputVoucherSearch !== undefined || creditOn,
   });
   const poolsQuery = useUserPoolsInfinite(
     undefined,
@@ -127,7 +120,7 @@ export function PoolsPage({
     [selectedSpecialPools],
   );
   const pools =
-    specialFilterInvalid || credit.blocksResults
+    outputFilterInvalid || credit.blocksResults
       ? []
       : specialFilterActive
         ? filter.isFiltered
@@ -135,7 +128,7 @@ export function PoolsPage({
           : selectedSpecialPools
         : catalog.pools;
   const hasMore =
-    !specialFilterActive && !specialFilterInvalid && !credit.blocksResults && catalog.hasMore;
+    !specialFilterActive && !outputFilterInvalid && !credit.blocksResults && catalog.hasMore;
   const isRefining =
     catalog.status === "refining" ||
     filter.isDebouncing ||
@@ -144,7 +137,7 @@ export function PoolsPage({
   const canShowResults =
     catalog.status === "ready" &&
     filter.result.ok &&
-    !specialFilterInvalid &&
+    !outputFilterInvalid &&
     !credit.blocksResults &&
     outputReady;
   const resultCountLabel = i18n._("{count, plural, one {# pool} other {# pools}}", {
@@ -181,17 +174,10 @@ export function PoolsPage({
           <CreditableBrowseControl
             part="control"
             state={credit}
-            onChange={(depth) =>
+            onChange={(on) =>
               void navigate({
                 to: "/market",
-                search: (previous) => ({ ...previous, ...withCreditDepth(depth) }),
-              })
-            }
-            onClear={() =>
-              void navigate({
-                to: "/market",
-                replace: true,
-                search: (previous) => ({ ...previous, ...withCreditDepth(undefined) }),
+                search: (previous) => ({ ...previous, ...withCredit(on) }),
               })
             }
           />
@@ -211,17 +197,10 @@ export function PoolsPage({
       <CreditableBrowseControl
         part="feedback"
         state={credit}
-        onChange={(depth) =>
+        onChange={(on) =>
           void navigate({
             to: "/market",
-            search: (previous) => ({ ...previous, ...withCreditDepth(depth) }),
-          })
-        }
-        onClear={() =>
-          void navigate({
-            to: "/market",
-            replace: true,
-            search: (previous) => ({ ...previous, ...withCreditDepth(undefined) }),
+            search: (previous) => ({ ...previous, ...withCredit(on) }),
           })
         }
       />

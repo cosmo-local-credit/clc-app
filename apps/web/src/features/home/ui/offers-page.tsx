@@ -1,5 +1,5 @@
 import { offeringsDiscoveryInfiniteQueryOptions } from "@clc/api/features/offerings/queries";
-import { withCreditDepth } from "#/lib/navigation/pool-search";
+import { withCredit } from "#/lib/navigation/pool-search";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -23,21 +23,21 @@ import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { offeringsClient } from "#/lib/api/offerings";
 
 export function OffersPage({
-  creditDepthSearch,
+  creditOn = false,
   locationOwner = GUEST_STORAGE_OWNER,
 }: {
-  creditDepthSearch?: number | string | readonly (number | string)[];
+  creditOn?: boolean;
   locationOwner?: string;
 }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const nearby = useNearbyCatalog();
   const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
-  const credit = useCreditableBrowse(creditDepthSearch);
+  const credit = useCreditableBrowse(creditOn);
   const filter = usePersistedCatalogFilter(
     CATALOG_FILTER_PREFERENCE_NAMES.offers,
     useStorageOwner(),
-    { externalFilterActive: creditDepthSearch !== undefined },
+    { externalFilterActive: creditOn },
   );
   const [filtersOpen, setFiltersOpen] = useState(false);
   const parsedFilter = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
@@ -103,17 +103,10 @@ export function OffersPage({
           <CreditableBrowseControl
             part="control"
             state={credit}
-            onChange={(depth) =>
+            onChange={(on) =>
               void navigate({
                 to: "/market",
-                search: (previous) => ({ ...previous, ...withCreditDepth(depth) }),
-              })
-            }
-            onClear={() =>
-              void navigate({
-                to: "/market",
-                replace: true,
-                search: (previous) => ({ ...previous, ...withCreditDepth(undefined) }),
+                search: (previous) => ({ ...previous, ...withCredit(on) }),
               })
             }
           />
@@ -135,17 +128,10 @@ export function OffersPage({
       <CreditableBrowseControl
         part="feedback"
         state={credit}
-        onChange={(depth) =>
+        onChange={(on) =>
           void navigate({
             to: ".",
-            search: (previous) => ({ ...previous, ...withCreditDepth(depth) }),
-          })
-        }
-        onClear={() =>
-          void navigate({
-            to: ".",
-            replace: true,
-            search: (previous) => ({ ...previous, ...withCreditDepth(undefined) }),
+            search: (previous) => ({ ...previous, ...withCredit(on) }),
           })
         }
       />

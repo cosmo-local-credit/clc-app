@@ -16,7 +16,7 @@ import {
   parseHomeSearch,
 } from "#/lib/navigation/home-tabs";
 import { canonicalPostTimingSearch } from "#/lib/navigation/post-timing-search";
-import { canonicalCreditSearch } from "#/lib/navigation/pool-search";
+import { canonicalCreditSearch, parseCredit } from "#/lib/navigation/pool-search";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { parseWantId } from "#/lib/navigation/want-sheet-search";
 import {
@@ -128,7 +128,7 @@ export const Route = createFileRoute("/_nav/")({
       voucherRelationships: search.tab === "posts",
       poolRelationships: search.tab === "posts",
     });
-    // A legacy `creditable` link becomes its depth; `creditDepth` is the canonical form.
+    // `credit=1` is the one form of Credit; older `creditDepth` and `creditable` links fold into it.
     const credit = canonicalCreditSearch(search);
     if (!postTiming && !next && !credit) return;
     throw redirect({
@@ -144,7 +144,8 @@ function IndexPage() {
   const auth = useAuthStatus();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
-  const { tab = "market", creditDepth } = search;
+  const { tab = "market" } = search;
+  const creditOn = parseCredit(search);
   const activity = parseActivitySearch(search);
 
   if (auth.isLoading) return <HomePageFallback />;
@@ -168,7 +169,7 @@ function IndexPage() {
       <HomePage
         activeTab={tab}
         isAuthenticated={auth.isAuthenticated}
-        creditDepthSearch={creditDepth}
+        creditOn={creditOn}
         activityQ={activity.q}
         activityTypes={activity.types}
         activitySection={parseActivitySection(search.section)}
@@ -199,7 +200,7 @@ function IndexPage() {
       <NearbyCatalog>
         <MarketMapDesk
           isAuthenticated={auth.isAuthenticated}
-          creditDepthSearch={creditDepth}
+          creditOn={creditOn}
           creditRoute="home"
         />
       </NearbyCatalog>

@@ -133,6 +133,7 @@ import {
   pickMarketplaceSearch,
   type MarketplaceRouteSearch,
 } from "#/lib/navigation/marketplace-search";
+import { parseCredit } from "#/lib/navigation/pool-search";
 import { WalletPage } from "#/features/home/ui/wallet-page";
 import { PoolDetailPage, PoolsPage } from "#/features/pools/ui";
 
@@ -172,14 +173,8 @@ function createTestRouter(initialEntry: string) {
       if (next) throw redirect({ to: "/market", search: next, replace: true });
     },
     component: () => {
-      const { creditDepth: creditDepthSearch, out_voucher: outputVoucherSearch } =
-        marketRoute.useSearch();
-      return (
-        <PoolsPage
-          creditDepthSearch={creditDepthSearch}
-          outputVoucherSearch={outputVoucherSearch}
-        />
-      );
+      const search: MarketplaceRouteSearch = marketRoute.useSearch();
+      return <PoolsPage creditOn={parseCredit(search)} outputVoucherSearch={search.out_voucher} />;
     },
   });
   const poolDetailRoute = createRoute({
@@ -292,54 +287,50 @@ describe("pools navigation", () => {
 });
 
 describe("pools filter canonicalization through the router", () => {
-  it("cycles Credit OFF, one hop, two hops, OFF and restores each through history", async () => {
+  it("toggles Credit on and off and restores each through history", async () => {
     const router = createTestRouter("/pools?creditable=false");
     render(withQueryClient(<RouterProvider router={router} />));
 
     fireEvent.click(await screen.findByRole("button", { name: "Credit: off" }));
-    await waitFor(() => expect(router.state.location.search.creditDepth).toBe(1));
-    fireEvent.click(await screen.findByRole("button", { name: "Credit: one hop" }));
-    await waitFor(() => expect(router.state.location.search.creditDepth).toBe(2));
-    fireEvent.click(await screen.findByRole("button", { name: "Credit: up to two hops" }));
-    await waitFor(() => expect(router.state.location.search.creditDepth).toBeUndefined());
+    await waitFor(() => expect(router.state.location.search.credit).toBe(1));
+    fireEvent.click(await screen.findByRole("button", { name: "Credit: on" }));
+    await waitFor(() => expect(router.state.location.search.credit).toBeUndefined());
     expect(await screen.findByRole("button", { name: "Credit: off" })).toBeTruthy();
     expect(router.state.location.search).not.toHaveProperty("creditable");
 
     await act(async () => router.history.back());
-    await waitFor(() => expect(router.state.location.search.creditDepth).toBe(2));
-    expect(await screen.findByRole("button", { name: "Credit: up to two hops" })).toBeTruthy();
+    await waitFor(() => expect(router.state.location.search.credit).toBe(1));
+    expect(await screen.findByRole("button", { name: "Credit: on" })).toBeTruthy();
     await act(async () => router.history.back());
-    await waitFor(() => expect(router.state.location.search.creditDepth).toBe(1));
-    expect(await screen.findByRole("button", { name: "Credit: one hop" })).toBeTruthy();
+    await waitFor(() => expect(router.state.location.search.credit).toBeUndefined());
+    expect(await screen.findByRole("button", { name: "Credit: off" })).toBeTruthy();
     await act(async () => router.history.forward());
-    await waitFor(() => expect(router.state.location.search.creditDepth).toBe(2));
+    await waitFor(() => expect(router.state.location.search.credit).toBe(1));
   });
 
   it.each([
     ["/pools?creditable=%20TRUE%20", 1],
     ["/pools?creditable=true", 1],
     ["/pools?creditable=false", undefined],
-    ["/pools?creditDepth=%222%22", 2],
-  ])("normalizes %s to its depth with a replace redirect", async (url, depth) => {
+    ["/pools?creditable=yes", undefined],
+    ["/pools?creditDepth=%222%22", 1],
+    ["/pools?creditDepth=3", 1],
+    ["/pools?creditDepth=max", 1],
+    ["/pools?creditDepth=1&creditDepth=2", undefined],
+    ["/pools?credit=1", 1],
+    ["/pools?credit=0", undefined],
+  ])("normalizes %s to credit=%s with a replace redirect", async (url, credit) => {
     const router = createTestRouter(url);
     render(withQueryClient(<RouterProvider router={router} />));
     await waitFor(() => expect(router.state.status).toBe("idle"));
 
     expect(router.state.location.pathname).toBe("/market");
-    expect(router.state.location.search.creditDepth).toBe(depth);
+    expect(router.state.location.search.credit).toBe(credit);
+    expect(router.state.location.search).not.toHaveProperty("creditDepth");
     expect(router.state.location.search).not.toHaveProperty("creditable");
     expect(router.history.length).toBe(1);
+    expect(screen.queryByText(/invalid Credit/)).toBeNull();
   });
-
-  it.each(["/pools?creditable=yes", "/pools?creditDepth=1&creditDepth=2", "/pools?creditDepth=3"])(
-    "keeps a malformed Credit link %s visible for explicit rejection",
-    async (url) => {
-      const router = createTestRouter(url);
-      render(withQueryClient(<RouterProvider router={router} />));
-      expect(await screen.findByText("This link contains an invalid Credit filter.")).toBeTruthy();
-      expect(router.state.location.search.creditDepth).toBeDefined();
-    },
-  );
 
   it("canonicalizes an output-voucher address without changing the path", async () => {
     const address = "0xd524d0ed7bc970185ed9c6c9a65a8a02e8897363";

@@ -4,18 +4,20 @@ import { isAddress } from "viem";
 
 export type PoolRouteSearch = CatalogRouteSearch & {
   out_voucher?: string | readonly string[];
-  /** The Credit filter's depth: 1 or 2 pool hops. Absent is off. */
-  creditDepth?: number | string | readonly (number | string)[];
-  /** The legacy boolean Credit link, normalized to `creditDepth` (on is depth 1). */
-  creditable?: boolean | string | readonly (boolean | string)[];
+  /** The Credit filter: `1` while on, absent while off. Any other value reads as off. */
+  credit?: unknown;
+  /** A legacy Credit link's depth: `1`, `2`, `3` or `max` read as on. */
+  creditDepth?: unknown;
+  /** The legacy boolean Credit link: `true` reads as on. */
+  creditable?: unknown;
 };
 
-/** How many pool hops the Credit filter reaches. Depth 2 includes depth 1. */
-export type CreditDepthValue = 1 | 2;
-
 export type PoolOutputVoucherResult = { ok: true; address: `0x${string}` | null } | { ok: false };
-type PoolCreditableResult = { ok: true; enabled: boolean | null } | { ok: false };
-export type PoolCreditResult = { ok: true; depth: CreditDepthValue | null } | { ok: false };
+
+type CreditSearch = Pick<PoolRouteSearch, "credit" | "creditDepth" | "creditable">;
+
+/** The depths an older Credit link could name; each now reads as Credit on. */
+const LEGACY_CREDIT_DEPTHS: ReadonlySet<string> = new Set(["1", "2", "3", "max"]);
 
 /** Pick the pool catalog's URL-owned search state without accepting unrelated keys. */
 export function pickPoolSearch(search: unknown): PoolRouteSearch {
@@ -37,35 +39,9 @@ export function pickPoolSearch(search: unknown): PoolRouteSearch {
     next.out_voucher = ["__invalid__"];
   }
 
-  const creditDepth = record.creditDepth;
-  if (typeof creditDepth === "number" || typeof creditDepth === "string") {
-    next.creditDepth = creditDepth;
-  } else if (Array.isArray(creditDepth)) {
-    if (creditDepth.length > 0) {
-      next.creditDepth = creditDepth.every(
-        (entry): entry is number | string => typeof entry === "number" || typeof entry === "string",
-      )
-        ? creditDepth
-        : ["__invalid__"];
-    }
-  } else if (creditDepth !== undefined) {
-    next.creditDepth = ["__invalid__"];
-  }
-
-  const creditable = record.creditable;
-  if (typeof creditable === "boolean" || typeof creditable === "string") {
-    next.creditable = creditable;
-  } else if (Array.isArray(creditable)) {
-    if (creditable.length > 0) {
-      next.creditable = creditable.every(
-        (entry): entry is boolean | string =>
-          typeof entry === "boolean" || typeof entry === "string",
-      )
-        ? creditable
-        : ["__invalid__"];
-    }
-  } else if (creditable !== undefined) {
-    next.creditable = ["__invalid__"];
+  // Kept as written: `canonicalCreditSearch` decides what each Credit value means.
+  for (const key of ["credit", "creditDepth", "creditable"] as const) {
+    if (record[key] !== undefined) next[key] = record[key];
   }
   return next;
 }
@@ -86,90 +62,48 @@ export function parsePoolOutputVoucher(
   return { ok: true, address: normalizedPrefix.toLowerCase() as `0x${string}` };
 }
 
-/** The legacy boolean Credit choice; absence leaves Credit off. */
-function parsePoolCreditable(value: PoolRouteSearch["creditable"]): PoolCreditableResult {
-  if (value === undefined) return { ok: true, enabled: null };
-  if (typeof value === "boolean") return { ok: true, enabled: value };
-  if (typeof value !== "string") return { ok: false };
-
-  const normalized = value.trim().toLowerCase();
-  if (normalized === "") return { ok: true, enabled: null };
-  if (normalized === "true") return { ok: true, enabled: true };
-  if (normalized === "false") return { ok: true, enabled: false };
-  return { ok: false };
+/** One URL value as trimmed lower-case text; a repeated or structured value matches nothing. */
+function searchScalar(value: unknown): string {
+  return typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+    ? String(value).trim().toLowerCase()
+    : "";
 }
 
-/** One explicit Credit depth, 1 or 2; repeated or other values are deliberately invalid. */
-export function parseCreditDepth(value: PoolRouteSearch["creditDepth"]): PoolCreditResult {
-  if (value === undefined) return { ok: true, depth: null };
-  if (typeof value === "number") {
-    return value === 1 || value === 2 ? { ok: true, depth: value } : { ok: false };
+/**
+ * Whether a URL turns Credit on: `credit=1`, or an older link's `creditDepth`
+ * (`1`, `2`, `3` or `max`) or `creditable=true`. `credit` decides when it is
+ * present; every other value, malformed or repeated, reads as off.
+ */
+export function parseCredit(search: CreditSearch): boolean {
+  if (search.credit !== undefined) return searchScalar(search.credit) === "1";
+  if (search.creditDepth !== undefined) {
+    return LEGACY_CREDIT_DEPTHS.has(searchScalar(search.creditDepth));
   }
-  if (typeof value !== "string") return { ok: false };
-  const trimmed = value.trim();
-  if (trimmed === "") return { ok: true, depth: null };
-  if (trimmed === "1") return { ok: true, depth: 1 };
-  if (trimmed === "2") return { ok: true, depth: 2 };
-  return { ok: false };
+  return searchScalar(search.creditable) === "true";
 }
 
 /**
- * The Credit state a URL names: its `creditDepth`, or a legacy `creditable`
- * link read as depth 1 (on) or off. A depth wins over the legacy flag.
+ * The search update that turns Credit on or off. It always drops the legacy
+ * keys, so an old link cannot resurrect a state the person changed.
  */
-export function parsePoolCredit(
-  search: Pick<PoolRouteSearch, "creditDepth" | "creditable">,
-): PoolCreditResult {
-  if (search.creditDepth !== undefined) return parseCreditDepth(search.creditDepth);
-  const legacy = parsePoolCreditable(search.creditable);
-  if (!legacy.ok) return { ok: false };
-  return { ok: true, depth: legacy.enabled ? 1 : null };
-}
-
-/** What a malformed legacy Credit link becomes, so the screen can reject it. */
-const INVALID_CREDIT_DEPTH = "invalid";
-
-/** OFF, then one hop, then two hops, then OFF again: the Credit control's cycle. */
-export function nextCreditDepth(current: CreditDepthValue | null): CreditDepthValue | undefined {
-  if (current === null) return 1;
-  if (current === 1) return 2;
-  return undefined;
-}
-
-/**
- * The search update that sets Credit to `depth` (undefined is off). It always
- * drops the legacy flag, so an old link cannot resurrect a state the person changed.
- */
-export function withCreditDepth(depth: CreditDepthValue | undefined): {
-  creditDepth: CreditDepthValue | undefined;
+export function withCredit(on: boolean): {
+  credit: 1 | undefined;
+  creditDepth: undefined;
   creditable: undefined;
 } {
-  return { creditDepth: depth, creditable: undefined };
+  return { credit: on ? 1 : undefined, creditDepth: undefined, creditable: undefined };
 }
 
 /**
- * The canonical Credit search for a URL, or null when it already is: a valid
- * depth as a number, off as absent, a legacy `creditable` folded into it. An
- * invalid depth is left alone, and a malformed legacy flag becomes one, so the
- * screen can say so and offer to clear it.
+ * The canonical Credit search for a URL, or null when it already is one:
+ * `credit=1` while on and nothing while off, with any legacy key folded in.
  */
-export function canonicalCreditSearch(
-  search: Pick<PoolRouteSearch, "creditDepth" | "creditable">,
-): {
-  creditDepth: CreditDepthValue | typeof INVALID_CREDIT_DEPTH | undefined;
-  creditable: undefined;
-} | null {
-  const credit = parsePoolCredit(search);
-  if (!credit.ok) {
-    // A malformed legacy flag still blocks results rather than broadening them:
-    // it becomes an invalid depth the screen rejects and offers to clear.
-    return search.creditDepth === undefined
-      ? { creditDepth: INVALID_CREDIT_DEPTH, creditable: undefined }
-      : null;
-  }
-  const canonical = credit.depth ?? undefined;
-  if (search.creditDepth === canonical && search.creditable === undefined) return null;
-  return withCreditDepth(canonical);
+export function canonicalCreditSearch(search: CreditSearch): ReturnType<typeof withCredit> | null {
+  const canonical =
+    (search.credit === undefined || search.credit === 1) &&
+    search.creditDepth === undefined &&
+    search.creditable === undefined;
+  return canonical ? null : withCredit(parseCredit(search));
 }
 
 /** Canonicalize catalog filters and the pool-only URL state in one replace redirect. */

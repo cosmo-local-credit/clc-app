@@ -6,24 +6,20 @@ import { useMemo } from "react";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { creditRouterClient } from "#/lib/api/credit-router";
 import { CHAIN_ID } from "#/lib/chain";
-import { parseCreditDepth, type PoolRouteSearch } from "#/lib/navigation/pool-search";
 
 /**
- * The Credit filter, resolved by the server for the session wallet at the
- * depth the URL names: one pool hop, or up to two (depth 2 includes depth 1).
- * Guests have no Credit filter: the router needs a session.
+ * The Credit filter, resolved by the server for the session wallet: every pool
+ * its vouchers reach, as far as the router routes. Guests have no Credit
+ * filter: the router needs a session.
  *
- * Every endpoint that narrows by Credit sends `scope` (`creditDepth`) and is
- * filtered before paging and clustering. `poolRefs` is the same reach as a
+ * Every endpoint that narrows by Credit sends `scope` (`creditDepth=max`) and
+ * is filtered before paging and clustering. `poolRefs` is the same reach as a
  * pool list, for the Pools page and for intersecting with an output voucher.
- * Both are keyed by wallet and depth, so cycling the depth can never show one
- * depth's answer as another's.
+ * Both are keyed by wallet and reach digest, and read the one reach the swap
+ * counts read, so turning Credit on asks the router nothing new.
  */
-export function useCreditableBrowse(value: PoolRouteSearch["creditDepth"]) {
+export function useCreditableBrowse(enabled: boolean) {
   const auth = useAuthStatus();
-  const parsed = parseCreditDepth(value);
-  const depth = parsed.ok ? parsed.depth : null;
-  const enabled = depth !== null;
   const wallet = enabled && auth.isAuthenticated ? (auth.address ?? "") : "";
   const reach = useQuery(creditReachQueryOptions(creditRouterClient, wallet));
   const ready = wallet !== "" && reach.isSuccess;
@@ -42,9 +38,7 @@ export function useCreditableBrowse(value: PoolRouteSearch["creditDepth"]) {
 
   return {
     auth,
-    parsed,
-    /** The selected depth, or null while Credit is off or the link is invalid. */
-    depth,
+    /** Credit is on in the URL. */
     enabled,
     verification: {
       status: ready ? "ready" : reach.isError ? "error" : "loading",
@@ -58,7 +52,6 @@ export function useCreditableBrowse(value: PoolRouteSearch["creditDepth"]) {
     poolRefs,
     /** The server-resolved filter for endpoints that accept `creditDepth`. */
     scope,
-    blocksResults:
-      !parsed.ok || (enabled && (!auth.isAuthenticated || !ready || poolRefs?.length === 0)),
+    blocksResults: enabled && (!auth.isAuthenticated || !ready || poolRefs?.length === 0),
   };
 }

@@ -13,6 +13,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { pickMarketplaceSearch } from "#/lib/navigation/marketplace-search";
+import { parseCredit } from "#/lib/navigation/pool-search";
 import type { MarketListScope } from "#/lib/navigation/marketplace-search";
 
 const VOUCHER = "0xd524d0ed7bc970185ed9c6c9a65a8a02e8897363";
@@ -125,7 +126,7 @@ function renderList(url: string, scope: MarketListScope = "pools") {
       return (
         <MarketListDesk
           scope={scope}
-          creditDepthSearch={search.creditDepth}
+          creditOn={parseCredit(search)}
           outputVoucherSearch={search.out_voucher}
         />
       );
@@ -252,7 +253,7 @@ describe("MarketListDesk no matches and Clear filters", () => {
     mocks.verification.pools = [{ chainId: 100, address: POOL_A }];
     mocks.list.mockResolvedValue(page([]));
     const router = renderList(
-      `/market?scope=pools&view=list&q=zzz&creditDepth=1&out_voucher=${VOUCHER}`,
+      `/market?scope=pools&view=list&q=zzz&credit=1&out_voucher=${VOUCHER}`,
     );
 
     expect(
@@ -326,7 +327,7 @@ describe("MarketListDesk requested output (Get a voucher)", () => {
     ];
     mocks.verification.pools = [{ chainId: 100, address: POOL_B }];
     mocks.list.mockResolvedValue(page([pool(POOL_B, "Kilifi Weavers")]));
-    renderList(`/market?scope=pools&view=list&creditDepth=1&out_voucher=${VOUCHER}`);
+    renderList(`/market?scope=pools&view=list&credit=1&out_voucher=${VOUCHER}`);
 
     expect(await screen.findByText("Kilifi Weavers")).toBeTruthy();
     expect(mocks.list.mock.calls[0]?.[0]).toMatchObject({
@@ -404,6 +405,23 @@ describe("MarketListDesk guest entry", () => {
     expect(await screen.findByRole("button", { name: /^Credit: / })).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
   });
+
+  it("toggles the Credit chip on and off through the URL", async () => {
+    signIn();
+    mocks.verification.pools = [{ chainId: 100, address: POOL_A }];
+    mocks.list.mockResolvedValue(page([pool(POOL_A, "Mombasa Bakers")]));
+    const router = renderList("/market?scope=pools&view=list");
+
+    const off = await screen.findByRole("button", { name: "Credit: off" });
+    expect(off.getAttribute("aria-pressed")).toBe("false");
+    fireEvent.click(off);
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ credit: 1 }));
+    const on = await screen.findByRole("button", { name: "Credit: on" });
+    expect(on.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(on);
+    await waitFor(() => expect(router.state.location.search).not.toHaveProperty("credit"));
+    expect(await screen.findByRole("button", { name: "Credit: off" })).toBeTruthy();
+  });
 });
 
 function hrefOf(link: HTMLElement) {
@@ -416,7 +434,7 @@ describe("MarketListDesk navigation keeps the person's view", () => {
     signIn();
     mocks.verification.pools = [{ chainId: 100, address: POOL_A }];
     mocks.list.mockResolvedValue(page([pool(POOL_A, "Mombasa Bakers")]));
-    renderList("/market?scope=pools&view=list&q=bake&creditDepth=1");
+    renderList("/market?scope=pools&view=list&q=bake&credit=1");
     await screen.findByText("Mombasa Bakers");
 
     expect(screen.queryByRole("navigation", { name: "Marketplace" })).toBeNull();

@@ -1,20 +1,16 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { RiCheckDoubleLine, RiCheckLine, RiHandCoinLine } from "react-icons/ri";
+import { RiCheckLine, RiHandCoinLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { Spinner } from "#/components/ui/spinner";
 import type { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
-import { type CreditDepthValue, nextCreditDepth } from "#/lib/navigation/pool-search";
 import { cn } from "#/lib/utils";
 
 type State = ReturnType<typeof useCreditableBrowse>;
 
 /** Which notice the feedback part shows, if any. */
-export function creditFeedback(
-  state: State,
-): "invalid" | "signin" | "checking" | "error" | "stale" | null {
-  if (!state.parsed.ok) return "invalid";
+export function creditFeedback(state: State): "signin" | "checking" | "error" | "stale" | null {
   if (!state.enabled) return null;
   if (state.auth.isLoading) return "checking";
   if (!state.auth.isAuthenticated) return "signin";
@@ -27,57 +23,26 @@ export function hasCreditFeedback(state: State): boolean {
   return creditFeedback(state) !== null;
 }
 
-/**
- * The Credit control's exact state as one localized label: off, one pool hop,
- * or up to two. The control cycles through them, so its name says which.
- */
-export function useCreditStateLabel(depth: CreditDepthValue | null): string {
+/** The Credit control's state as one localized label, since tapping it toggles. */
+export function useCreditStateLabel(on: boolean): string {
   const { t } = useLingui();
-  if (depth === 1) return t`Credit: one hop`;
-  if (depth === 2) return t`Credit: up to two hops`;
-  return t`Credit: off`;
-}
-
-/** One check for one hop, two for two: the depth at a glance. */
-export function CreditDepthChecks({ depth }: { depth: CreditDepthValue | null }) {
-  if (depth === 1) return <RiCheckLine aria-hidden="true" />;
-  if (depth === 2) return <RiCheckDoubleLine aria-hidden="true" />;
-  return <RiHandCoinLine aria-hidden="true" />;
+  return on ? t`Credit: on` : t`Credit: off`;
 }
 
 export function CreditableBrowseControl({
   state,
   onChange,
-  onClear,
   part = "all",
 }: {
   state: State;
-  /** The next depth in the OFF, one hop, two hops cycle; undefined is off. */
-  onChange: (depth: CreditDepthValue | undefined) => void;
-  onClear: () => void;
+  /** The toggled state: true turns Credit on. */
+  onChange: (on: boolean) => void;
   part?: "all" | "control" | "feedback";
 }) {
-  const label = useCreditStateLabel(state.depth);
+  const label = useCreditStateLabel(state.enabled);
   const showControl = part !== "feedback";
   const showFeedback = part !== "control";
   const checking = state.enabled && state.verification.status === "loading";
-
-  if (!state.parsed.ok) {
-    if (!showFeedback) return null;
-    return (
-      <div
-        className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
-        role="alert"
-      >
-        <p className="text-sm">
-          <Trans>This link contains an invalid Credit filter.</Trans>
-        </p>
-        <Button variant="outline" tap onClick={onClear}>
-          <Trans>Clear filter</Trans>
-        </Button>
-      </div>
-    );
-  }
 
   if (state.enabled && !state.auth.isLoading && !state.auth.isAuthenticated) {
     if (!showFeedback) return null;
@@ -121,9 +86,15 @@ export function CreditableBrowseControl({
           aria-pressed={state.enabled}
           aria-busy={checking}
           disabled={state.auth.isLoading}
-          onClick={() => onChange(nextCreditDepth(state.depth))}
+          onClick={() => onChange(!state.enabled)}
         >
-          {checking ? <Spinner /> : <CreditDepthChecks depth={state.depth} />}
+          {checking ? (
+            <Spinner />
+          ) : state.enabled ? (
+            <RiCheckLine aria-hidden="true" />
+          ) : (
+            <RiHandCoinLine aria-hidden="true" />
+          )}
           <Trans>Credit</Trans>
         </Button>
       ) : null}

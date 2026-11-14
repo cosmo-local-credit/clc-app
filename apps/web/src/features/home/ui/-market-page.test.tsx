@@ -199,7 +199,6 @@ vi.mock("wagmi", () => ({
 vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
   useCreditableBrowse: () => ({
     auth: { isAuthenticated: false, isLoading: false },
-    parsed: { ok: true, enabled: null },
     enabled: false,
     verification: { status: "idle", pools: [], retry: vi.fn() },
     poolRefs: undefined,
@@ -212,18 +211,16 @@ vi.mock("#/components/creditable-browse-control", () => ({
   CreditableBrowseControl: ({
     part,
     onChange,
-    onClear,
   }: {
     part: "control" | "feedback";
-    onChange: (depth: 1 | 2 | undefined) => void;
-    onClear: () => void;
+    onChange: (on: boolean) => void;
   }) => (
     <div data-testid={`credit-${part}`}>
-      <button type="button" onClick={() => onChange(1)}>
+      <button type="button" onClick={() => onChange(true)}>
         {part} Credit on
       </button>
-      <button type="button" onClick={onClear}>
-        {part} Credit clear
+      <button type="button" onClick={() => onChange(false)}>
+        {part} Credit off
       </button>
     </div>
   ),
@@ -640,26 +637,27 @@ describe("MarketPage location button", () => {
     expect(zoomOutAction).not.toHaveBeenCalled();
   });
 
-  it("writes and clears Credit without leaving the canonical map route", () => {
+  it("toggles Credit on and off without leaving the canonical map route", () => {
     authState.current = { ...authState.current, isAuthenticated: true };
     creditFeedback.current = true;
     renderPage();
 
     fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "control Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "control Credit off" }));
     fireEvent.click(screen.getByRole("button", { name: "feedback Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "feedback Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit off" }));
 
     expect(mockNavigate).toHaveBeenCalledTimes(4);
     const previous = { q: "food", creditable: false };
     for (const [index, [call]] of mockNavigate.mock.calls.entries()) {
-      expect(call).toMatchObject({ to: "/", ...(index % 2 === 1 ? { replace: true } : {}) });
-      // Writing sets the depth; clearing turns Credit off. Either drops the legacy flag.
+      expect(call).toMatchObject({ to: "/" });
+      expect(call).not.toHaveProperty("replace");
+      // On writes credit=1; off removes it. Either drops the legacy keys.
       expect(call.search(previous)).toEqual({
         q: "food",
         tab: "market",
         view: "map",
-        ...(index % 2 === 0 ? { creditDepth: 1 } : {}),
+        ...(index % 2 === 0 ? { credit: 1 } : {}),
       });
     }
   });

@@ -24,7 +24,6 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
 vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
   useCreditableBrowse: () => ({
     auth: { isAuthenticated: false, isLoading: false },
-    parsed: { ok: true, enabled: null },
     enabled: false,
     verification: { status: "loading", pools: [], retry: vi.fn() },
     poolRefs: undefined,
@@ -36,18 +35,16 @@ vi.mock("#/components/creditable-browse-control", () => ({
   CreditableBrowseControl: ({
     part,
     onChange,
-    onClear,
   }: {
     part: "control" | "feedback";
-    onChange: (depth: 1 | 2 | undefined) => void;
-    onClear: () => void;
+    onChange: (on: boolean) => void;
   }) => (
     <div data-testid={`credit-${part}`}>
-      <button type="button" onClick={() => onChange(1)}>
+      <button type="button" onClick={() => onChange(true)}>
         {part} Credit on
       </button>
-      <button type="button" onClick={onClear}>
-        {part} Credit clear
+      <button type="button" onClick={() => onChange(false)}>
+        {part} Credit off
       </button>
     </div>
   ),
@@ -234,13 +231,13 @@ it("guides an empty Vouchers area to Wallet and the map", () => {
 });
 
 describe("MarketListPage", () => {
-  it("writes and clears Credit from both shell and feedback controls", () => {
+  it("toggles Credit on and off from both shell and feedback controls", () => {
     render(<MarketListPage />);
 
     fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "control Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "control Credit off" }));
     fireEvent.click(screen.getByRole("button", { name: "feedback Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "feedback Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit off" }));
 
     expect(mocks.navigate).toHaveBeenCalledTimes(4);
     const previous = { scope: "vouchers", q: "art", creditable: false };
@@ -250,18 +247,19 @@ describe("MarketListPage", () => {
     expect(shellOn).toMatchObject({ to: "/market" });
     expect(shellOn.search(previous)).toEqual({
       ...previous,
-      creditDepth: 1,
+      credit: 1,
       creditable: undefined,
     });
-    expect(shellClear).toMatchObject({ to: "/market", replace: true });
+    expect(shellClear).toMatchObject({ to: "/market" });
+    expect(shellClear).not.toHaveProperty("replace");
     expect(shellClear.search(previous)).toEqual({ scope: "vouchers", q: "art" });
     expect(feedbackOn).toMatchObject({ to: "." });
     expect(feedbackOn.search(previous)).toEqual({
       ...previous,
-      creditDepth: 1,
+      credit: 1,
       creditable: undefined,
     });
-    expect(feedbackClear).toMatchObject({ to: ".", replace: true });
+    expect(feedbackClear).toMatchObject({ to: "." });
     expect(feedbackClear.search(previous)).toEqual({ scope: "vouchers", q: "art" });
   });
 

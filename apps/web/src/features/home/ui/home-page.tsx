@@ -18,7 +18,7 @@ import type { ActivityKind } from "@clc/api/features/accounts/client";
 export type HomePageProps = {
   activeTab?: HomeTab;
   isAuthenticated?: boolean;
-  creditDepthSearch?: number | string | readonly (number | string)[];
+  creditOn?: boolean;
   activityQ?: string;
   activityTypes?: readonly ActivityKind[];
   /** Activity's sub-tab; read only when messaging is on. */
@@ -30,7 +30,7 @@ export type HomePageProps = {
 export function HomePage({
   activeTab = "market",
   isAuthenticated = true,
-  creditDepthSearch,
+  creditOn = false,
   activityQ,
   activityTypes,
   activitySection = "transactions",
@@ -53,7 +53,7 @@ export function HomePage({
           <MarketPage
             isAuthenticated={isAuthenticated}
             locationOwner={locationOwner}
-            creditDepthSearch={creditDepthSearch}
+            creditOn={creditOn}
           />
         </NearbyCatalog>
       ) : (

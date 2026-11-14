@@ -49,23 +49,21 @@ vi.mock("#/components/creditable-browse-control", async (importOriginal) => {
     CreditableBrowseControl: (props: {
       part?: "all" | "control" | "feedback";
       state: unknown;
-      onChange: (depth: 1 | 2 | undefined) => void;
-      onClear: () => void;
+      onChange: (on: boolean) => void;
     }) =>
       creditControlHarness.current ? (
         <div>
-          <button type="button" onClick={() => props.onChange(1)}>
+          <button type="button" onClick={() => props.onChange(true)}>
             {props.part} Credit on
           </button>
-          <button type="button" onClick={props.onClear}>
-            {props.part} Credit clear
+          <button type="button" onClick={() => props.onChange(false)}>
+            {props.part} Credit off
           </button>
         </div>
       ) : (
         <actual.CreditableBrowseControl
           state={props.state as never}
           onChange={props.onChange}
-          onClear={props.onClear}
           part={props.part}
         />
       ),
@@ -443,29 +441,20 @@ describe("creditable pools", () => {
     await screen.findByText("Trade Pool");
 
     fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "control Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "control Credit off" }));
     fireEvent.click(screen.getByRole("button", { name: "feedback Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "feedback Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit off" }));
 
     expect(navigate).toHaveBeenCalledTimes(4);
-    const previous = { scope: "pools", q: "trade", creditable: false };
-    const [controlOn, controlClear, feedbackOn, feedbackClear] = navigate.mock.calls.map(
+    const previous = { scope: "pools", q: "trade", creditable: false, creditDepth: 2 };
+    const [controlOn, controlOff, feedbackOn, feedbackOff] = navigate.mock.calls.map(
       ([call]) => call,
     );
-    expect(controlOn.search(previous)).toEqual({
-      ...previous,
-      creditDepth: 1,
-      creditable: undefined,
-    });
-    expect(controlClear.search(previous)).toEqual({ scope: "pools", q: "trade" });
-    expect(controlClear).toMatchObject({ to: "/market", replace: true });
-    expect(feedbackOn.search(previous)).toEqual({
-      ...previous,
-      creditDepth: 1,
-      creditable: undefined,
-    });
-    expect(feedbackClear.search(previous)).toEqual({ scope: "pools", q: "trade" });
-    expect(feedbackClear).toMatchObject({ to: "/market", replace: true });
+    expect(controlOn.search(previous)).toEqual({ scope: "pools", q: "trade", credit: 1 });
+    expect(controlOff.search(previous)).toEqual({ scope: "pools", q: "trade" });
+    expect(controlOff).toMatchObject({ to: "/market" });
+    expect(feedbackOn.search(previous)).toEqual({ scope: "pools", q: "trade", credit: 1 });
+    expect(feedbackOff.search(previous)).toEqual({ scope: "pools", q: "trade" });
   });
 
   it("shows all pools with Credit off even when eligibility is not loaded", async () => {
@@ -506,21 +495,21 @@ describe("creditable pools", () => {
     const call = navigate.mock.calls.at(-1)?.[0] as {
       search: (previous: Record<string, unknown>) => Record<string, unknown>;
     };
-    expect(call.search({ q: "trade" })).toEqual({ q: "trade", creditDepth: 1 });
+    expect(call.search({ q: "trade" })).toEqual({ q: "trade", credit: 1 });
   });
 
   it("forces explicit Credit on even when the verified result is empty", async () => {
-    routeSearch.current = { creditDepth: 2 };
+    routeSearch.current = { credit: 1 };
     mockPoolsList();
-    renderWithQueryClient(<PoolsPage creditDepthSearch={2} />);
+    renderWithQueryClient(<PoolsPage creditOn />);
 
-    const credit = await screen.findByRole("button", { name: "Credit: up to two hops" });
+    const credit = await screen.findByRole("button", { name: "Credit: on" });
     await waitFor(() => expect(credit.getAttribute("aria-pressed")).toBe("true"));
     expect(await screen.findByText("No creditable pools are available.")).toBeTruthy();
     expect(screen.queryByText("Trade Pool")).toBeNull();
   });
 
-  it("keeps Credit off when the URL names no depth, even with creditable pools", async () => {
+  it("keeps Credit off when the URL does not turn it on, even with creditable pools", async () => {
     routeSearch.current = {};
     creditableState.current = { ...creditableState.current, pools: [POOLS[0]!] };
     mockPoolsList();
@@ -549,23 +538,8 @@ describe("creditable pools", () => {
     expect(call.search({ q: "trade", out_voucher: OUTPUT_VOUCHER })).toEqual({
       q: "trade",
       out_voucher: OUTPUT_VOUCHER,
-      creditDepth: 1,
+      credit: 1,
     });
-  });
-
-  it("rejects an invalid Credit URL without showing the normal catalog", async () => {
-    routeSearch.current = { creditDepth: "invalid" };
-    mockPoolsList();
-    renderWithQueryClient(<PoolsPage creditDepthSearch="invalid" />);
-
-    const alert = await screen.findByRole("alert");
-    expect(alert.textContent).toContain("This link contains an invalid Credit filter.");
-    expect(screen.queryByText("Trade Pool")).toBeNull();
-    fireEvent.click(within(alert).getByRole("button", { name: "Clear filter" }));
-    const call = navigate.mock.calls.at(-1)?.[0] as {
-      search: (previous: Record<string, unknown>) => Record<string, unknown>;
-    };
-    expect(call.search({ q: "trade", creditDepth: "invalid" })).toEqual({ q: "trade" });
   });
 
   it("does not restore saved facets over an explicit Credit deep link", async () => {
@@ -578,23 +552,23 @@ describe("creditable pools", () => {
         voucherMatch: "any",
       }),
     );
-    routeSearch.current = { creditDepth: 1 };
+    routeSearch.current = { credit: 1 };
     creditableState.current = { ...creditableState.current, pools: [POOLS[1]!] };
     mockPoolsList();
-    renderWithQueryClient(<PoolsPage creditDepthSearch={1} />);
+    renderWithQueryClient(<PoolsPage creditOn />);
 
     expect(await screen.findByText("Solo Pool")).toBeTruthy();
     expect(navigate).not.toHaveBeenCalled();
   });
 
   it("keeps an explicit Credit choice when verified data refreshes", async () => {
-    routeSearch.current = { creditDepth: 1 };
+    routeSearch.current = { credit: 1 };
     creditableState.current = { ...creditableState.current, pools: [POOLS[0]!] };
     mockPoolsList();
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
       <QueryClientProvider client={queryClient}>
-        <PoolsPage creditDepthSearch={1} />
+        <PoolsPage creditOn />
       </QueryClientProvider>,
     );
 
@@ -603,7 +577,7 @@ describe("creditable pools", () => {
     expect(await screen.findByText("Trade Pool")).toBeTruthy();
     expect(screen.queryByText("Solo Pool")).toBeNull();
 
-    // The reach refreshes for the same wallet and depth and now names one more pool.
+    // The reach refreshes for the same wallet and now names one more pool.
     creditableState.current = { ...creditableState.current, pools: [POOLS[0]!, POOLS[1]!] };
     await queryClient.invalidateQueries({ queryKey: ["clc", "credit-router"] });
     expect(credit.getAttribute("aria-pressed")).toBe("true");
@@ -611,10 +585,10 @@ describe("creditable pools", () => {
   });
 
   it("intersects Credit with the current search result", async () => {
-    routeSearch.current = { q: "trade", creditDepth: 1 };
+    routeSearch.current = { q: "trade", credit: 1 };
     creditableState.current = { ...creditableState.current, pools: [POOLS[0]!, POOLS[2]!] };
     mockPoolsList();
-    renderWithQueryClient(<PoolsPage creditDepthSearch={1} />);
+    renderWithQueryClient(<PoolsPage creditOn />);
 
     const credit = await screen.findByRole("button", { name: /^Credit: / });
     await waitFor(() => expect(credit.getAttribute("aria-pressed")).toBe("true"));
@@ -625,10 +599,10 @@ describe("creditable pools", () => {
 
   it("blocks the normal catalog and offers Retry when enabled Credit verification fails", async () => {
     const retry = vi.fn();
-    routeSearch.current = { creditDepth: 1 };
+    routeSearch.current = { credit: 1 };
     creditableState.current = { ...creditableState.current, status: "error", retry };
     mockPoolsList();
-    renderWithQueryClient(<PoolsPage creditDepthSearch={1} />);
+    renderWithQueryClient(<PoolsPage creditOn />);
 
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toContain("Couldn't check creditable pools.");
@@ -640,14 +614,14 @@ describe("creditable pools", () => {
   });
 
   it("discloses pools whose rows could not be read while retaining the others", async () => {
-    routeSearch.current = { creditDepth: 1 };
+    routeSearch.current = { credit: 1 };
     creditableState.current = {
       ...creditableState.current,
       pools: [POOLS[0]!],
       hasVerificationGaps: true,
     };
     mockPoolsList();
-    renderWithQueryClient(<PoolsPage creditDepthSearch={1} />);
+    renderWithQueryClient(<PoolsPage creditOn />);
 
     expect(
       await screen.findByText("Some pools couldn't be checked. Showing verified results."),
@@ -674,7 +648,7 @@ describe("output voucher availability", () => {
   });
 
   it("intersects Credit and output availability, then intersects the catalog search", async () => {
-    routeSearch.current = { q: "trade", creditDepth: 1 };
+    routeSearch.current = { q: "trade", credit: 1 };
     creditableState.current = {
       ...creditableState.current,
       pools: [POOLS[0]!, POOLS[2]!],
@@ -685,7 +659,7 @@ describe("output voucher availability", () => {
       pools: [POOLS[0]!, POOLS[1]!],
     };
     mockPoolsList();
-    renderWithQueryClient(<PoolsPage creditDepthSearch={1} outputVoucherSearch={OUTPUT_VOUCHER} />);
+    renderWithQueryClient(<PoolsPage creditOn outputVoucherSearch={OUTPUT_VOUCHER} />);
 
     const credit = await screen.findByRole("button", { name: /^Credit: / });
     await waitFor(() => expect(credit.getAttribute("aria-pressed")).toBe("true"));
@@ -696,7 +670,7 @@ describe("output voucher availability", () => {
   });
 
   it("keeps explicit Credit enabled while the output voucher changes", async () => {
-    routeSearch.current = { creditDepth: 1 };
+    routeSearch.current = { credit: 1 };
     creditableState.current = { ...creditableState.current, pools: [POOLS[0]!] };
     outputState.current = {
       ...outputState.current,
@@ -707,7 +681,7 @@ describe("output voucher availability", () => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const view = render(
       <QueryClientProvider client={queryClient}>
-        <PoolsPage creditDepthSearch={1} outputVoucherSearch={OUTPUT_VOUCHER} />
+        <PoolsPage creditOn outputVoucherSearch={OUTPUT_VOUCHER} />
       </QueryClientProvider>,
     );
 
@@ -717,7 +691,7 @@ describe("output voucher availability", () => {
     outputState.current = { ...outputState.current, pools: [POOLS[0]!] };
     view.rerender(
       <QueryClientProvider client={queryClient}>
-        <PoolsPage creditDepthSearch={1} outputVoucherSearch={OTHER_VOUCHER} />
+        <PoolsPage creditOn outputVoucherSearch={OTHER_VOUCHER} />
       </QueryClientProvider>,
     );
     await waitFor(() => expect(credit.getAttribute("aria-pressed")).toBe("true"));

@@ -63,7 +63,7 @@ beforeEach(() => {
 
 describe("useCreditableBrowse", () => {
   it("leaves absent Credit off without blocking public results or asking the router", () => {
-    const { result } = renderCredit(undefined);
+    const { result } = renderCredit(false);
     expect(result.current.enabled).toBe(false);
     expect(result.current.blocksResults).toBe(false);
     expect(result.current.scope).toBeUndefined();
@@ -71,7 +71,7 @@ describe("useCreditableBrowse", () => {
   });
 
   it("blocks an explicit guest Credit link instead of broadening it, without a request", () => {
-    const { result } = renderCredit("1");
+    const { result } = renderCredit(true);
     expect(result.current.enabled).toBe(true);
     expect(result.current.poolRefs).toBeUndefined();
     expect(result.current.blocksResults).toBe(true);
@@ -81,7 +81,7 @@ describe("useCreditableBrowse", () => {
   it("blocks results while the reach is loading", () => {
     signIn();
     mocks.reach.mockReturnValue(new Promise(() => {}));
-    const { result } = renderCredit(1);
+    const { result } = renderCredit(true);
     expect(result.current.verification.status).toBe("loading");
     expect(result.current.blocksResults).toBe(true);
   });
@@ -91,19 +91,19 @@ describe("useCreditableBrowse", () => {
     mocks.reach.mockRejectedValue(
       new BackendApiError(503, "router_unavailable", "E27", { retryAfterMs: 0 }),
     );
-    const { result } = renderCredit(1);
+    const { result } = renderCredit(true);
     await waitFor(() => expect(result.current.verification.status).toBe("error"));
     expect(result.current.poolRefs).toBeUndefined();
     expect(result.current.blocksResults).toBe(true);
   });
 
-  it("resolves the server's reach into a creditDepth scope and the same pools as a list", async () => {
+  it("resolves the server's reach into a Credit scope and the same pools as a list", async () => {
     signIn();
     mocks.reach.mockResolvedValue(reach([POOL]));
-    const { result } = renderCredit(1);
+    const { result } = renderCredit(true);
     await waitFor(() => expect(result.current.verification.status).toBe("ready"));
+    // No depth: the router answers at its maximum.
     expect(mocks.reach).toHaveBeenCalledWith(expect.anything());
-    expect(result.current.depth).toBe(1);
     expect(result.current.scope).toEqual({
       wallet: WALLET,
       digest: `0x${"ab".repeat(32)}`,
@@ -116,33 +116,51 @@ describe("useCreditableBrowse", () => {
   it("surfaces a stale graph", async () => {
     signIn();
     mocks.reach.mockResolvedValue(reach([POOL], { stale: true }));
-    const { result } = renderCredit(1);
+    const { result } = renderCredit(true);
     await waitFor(() => expect(result.current.verification.stale).toBe(true));
   });
 
-  it("blocks the checked empty reach and rejects malformed URL state", async () => {
+  it("blocks the checked empty reach", async () => {
     signIn();
     mocks.reach.mockResolvedValue(reach([]));
-    const empty = renderCredit(1);
+    const empty = renderCredit(true);
     await waitFor(() => expect(empty.result.current.poolRefs).toEqual([]));
     expect(empty.result.current.blocksResults).toBe(true);
-    empty.unmount();
+  });
 
-    const invalid = renderCredit(["1", "2"]);
-    expect(invalid.result.current.parsed).toEqual({ ok: false });
-    expect(invalid.result.current.blocksResults).toBe(true);
+  it("reads the reach a signed-in screen already fetched when Credit turns on", async () => {
+    signIn();
+    mocks.reach.mockResolvedValue(reach([POOL]));
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const view = renderHook(({ on }) => useCreditableBrowse(on), {
+      wrapper,
+      initialProps: { on: true },
+    });
+    await waitFor(() => expect(view.result.current.verification.status).toBe("ready"));
+
+    view.rerender({ on: false });
+    expect(view.result.current.enabled).toBe(false);
+    expect(view.result.current.scope).toBeUndefined();
+    expect(view.result.current.blocksResults).toBe(false);
+
+    view.rerender({ on: true });
+    expect(view.result.current.scope?.wallet).toBe(WALLET);
+    expect(mocks.reach).toHaveBeenCalledTimes(1);
   });
 
   it("never reuses one wallet's reach for another wallet on the same cache", async () => {
     signIn(WALLET);
     mocks.reach.mockResolvedValueOnce(reach([POOL]));
-    const first = renderCredit(1);
+    const first = renderCredit(true);
     await waitFor(() => expect(first.result.current.verification.status).toBe("ready"));
     first.unmount();
 
     signIn(OTHER_WALLET);
     mocks.reach.mockReturnValueOnce(new Promise(() => {}));
-    const second = renderCredit(1, first.queryClient);
+    const second = renderCredit(true, first.queryClient);
     expect(second.result.current.poolRefs).toBeUndefined();
     expect(second.result.current.blocksResults).toBe(true);
     expect(mocks.reach).toHaveBeenCalledTimes(2);

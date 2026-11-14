@@ -63,24 +63,9 @@ export function MarketFilterNotice({
   );
 }
 
-/** What the Credit filter has to say: an invalid link, sign in, checking, or a failed check. */
-export function MarketCreditNotice({ credit, onClear }: { credit: Credit; onClear: () => void }) {
+/** What the Credit filter has to say: sign in, checking, out of date, or a failed check. */
+export function MarketCreditNotice({ credit }: { credit: Credit }) {
   const feedback = creditFeedback(credit);
-  if (feedback === "invalid") {
-    return (
-      <NoticeRow
-        tone="destructive"
-        role="alert"
-        action={
-          <Button variant="outline" onClick={onClear}>
-            <Trans>Clear filter</Trans>
-          </Button>
-        }
-      >
-        <Trans>This link contains an invalid Credit filter.</Trans>
-      </NoticeRow>
-    );
-  }
   if (feedback === "signin") {
     return (
       <NoticeRow
@@ -235,7 +220,6 @@ export function MarketMapNotice({
   status,
   credit,
   narrowed,
-  onClearCredit,
   onClearFilters,
   onResetLayers,
 }: {
@@ -243,14 +227,12 @@ export function MarketMapNotice({
   credit: Credit;
   /** Search, tags, Credit or a requested output narrow what the map shows. */
   narrowed: boolean;
-  onClearCredit: () => void;
   /** Clears every narrowing at once: search, tags, Credit and the requested output. */
   onClearFilters: () => void;
   onResetLayers: () => void;
 }) {
   if (status === null) return null;
-  if (status.kind === "credit")
-    return <MarketCreditNotice credit={credit} onClear={onClearCredit} />;
+  if (status.kind === "credit") return <MarketCreditNotice credit={credit} />;
   if (status.kind === "notice") return <MarketFilterNotice notice={status.notice} />;
   if (status.kind === "no-kinds") {
     return (

@@ -12,7 +12,6 @@ import { useMarketList } from "./use-market-list";
 
 const POOL = "0x0000000000000000000000000000000000000001";
 const SCOPE = {
-  depth: 2 as const,
   wallet: "0x00000000000000000000000000000000000000aa",
   digest: "0x01",
 };
@@ -38,7 +37,7 @@ type Props = {
     blocksResults: boolean;
     enabled?: boolean;
     poolRefs?: { chainId: number; address: string }[];
-    scope?: { depth: 1 | 2; wallet: string; digest: string };
+    scope?: { wallet: string; digest: string };
   };
   output?: {
     active?: boolean;
@@ -192,7 +191,7 @@ describe("useMarketList", () => {
     expect(mocks.list.mock.calls[0]?.[0]).not.toHaveProperty("credit");
   });
 
-  it("lets the server resolve Credit alone through creditDepth", async () => {
+  it("lets the server resolve Credit alone through creditDepth=max", async () => {
     mocks.list.mockResolvedValueOnce(page([5]));
     const { result } = setup({
       credit: {

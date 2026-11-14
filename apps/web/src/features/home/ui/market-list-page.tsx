@@ -1,5 +1,5 @@
 import { haversineMeters } from "@clc/core/lib/geo/distance";
-import { withCreditDepth } from "#/lib/navigation/pool-search";
+import { withCredit } from "#/lib/navigation/pool-search";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -26,16 +26,16 @@ const MARKET_LIST_BATCH_SIZE = 20;
 
 export function MarketListPage({
   locationOwner = GUEST_STORAGE_OWNER,
-  creditDepthSearch,
+  creditOn = false,
 }: {
   locationOwner?: string;
-  creditDepthSearch?: number | string | readonly (number | string)[];
+  creditOn?: boolean;
 }) {
   const { t, i18n } = useLingui();
   const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
   const navigate = useNavigate();
-  const credit = useCreditableBrowse(creditDepthSearch);
-  const filter = useMarketFilter(useStorageOwner(), creditDepthSearch !== undefined);
+  const credit = useCreditableBrowse(creditOn);
+  const filter = useMarketFilter(useStorageOwner(), creditOn);
   const [filtersOpen, setFiltersOpen] = useState(false);
   // Latched rather than tracking `filtersOpen`, so reopening the sheet reuses the cached vocabulary
   // instead of flashing an empty facet list on every open.
@@ -133,17 +133,10 @@ export function MarketListPage({
             <CreditableBrowseControl
               part="control"
               state={credit}
-              onChange={(depth) =>
+              onChange={(on) =>
                 void navigate({
                   to: "/market",
-                  search: (previous) => ({ ...previous, ...withCreditDepth(depth) }),
-                })
-              }
-              onClear={() =>
-                void navigate({
-                  to: "/market",
-                  replace: true,
-                  search: (previous) => ({ ...previous, ...withCreditDepth(undefined) }),
+                  search: (previous) => ({ ...previous, ...withCredit(on) }),
                 })
               }
             />
@@ -165,17 +158,10 @@ export function MarketListPage({
           <CreditableBrowseControl
             part="feedback"
             state={credit}
-            onChange={(depth) =>
+            onChange={(on) =>
               void navigate({
                 to: ".",
-                search: (previous) => ({ ...previous, ...withCreditDepth(depth) }),
-              })
-            }
-            onClear={() =>
-              void navigate({
-                to: ".",
-                replace: true,
-                search: (previous) => ({ ...previous, ...withCreditDepth(undefined) }),
+                search: (previous) => ({ ...previous, ...withCredit(on) }),
               })
             }
           />
