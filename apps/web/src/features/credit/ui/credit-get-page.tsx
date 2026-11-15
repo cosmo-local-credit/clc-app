@@ -186,7 +186,7 @@ export function CreditGetPage({
                 onValueChange={(voucher) => {
                   if (typeof voucher === "string") get.selectVoucher(voucher);
                 }}
-                className="gap-0 border border-border bg-card"
+                className="grid-cols-1 gap-0 border border-border bg-card"
               >
                 {get.options.map((option) => (
                   <CreditPayRow key={option.voucher} option={option} radio {...rowProps} />
