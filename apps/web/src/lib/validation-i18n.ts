@@ -421,6 +421,18 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Enter a credit limit greater than zero",
         message: "Enter a credit limit greater than zero",
       });
+    case "Enter a credit limit of zero or more":
+      return i18n._({
+        id: "Enter a credit limit of zero or more",
+        message: "Enter a credit limit of zero or more",
+      });
+    case "Choose a price feed":
+      return i18n._({ id: "Choose a price feed", message: "Choose a price feed" });
+    case "Enter a valid feed address":
+      return i18n._({
+        id: "Enter a valid feed address",
+        message: "Enter a valid feed address",
+      });
     default:
       return error;
   }

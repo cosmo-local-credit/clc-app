@@ -1,4 +1,5 @@
 import type { Offering } from "@clc/api/features/offerings/client";
+import { withCredit } from "#/lib/navigation/pool-search";
 import type { MarketplaceResult } from "@clc/core/features/marketplace/logic";
 import { formatOfferingPrice, formatOfferingQuantity } from "@clc/core/features/market/logic";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
@@ -6,6 +7,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { MarketEmptyMessage } from "#/components/market-empty-message";
 import {
   resolveOfferingDisplayPrice,
@@ -50,12 +52,12 @@ import { type MarketListPhase, useMarketList } from "#/desktop/market/use-market
 
 export function MarketListDesk({
   scope,
-  creditableSearch,
+  creditOn = false,
   outputVoucherSearch,
   locationOwner = GUEST_STORAGE_OWNER,
 }: {
   scope: MarketListScope;
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditOn?: boolean;
   /** The link's requested output voucher; it narrows the Pools list to pools that can pay it out. */
   outputVoucherSearch?: string | readonly string[];
   locationOwner?: string;
@@ -64,7 +66,7 @@ export function MarketListDesk({
   const navigate = useNavigate();
   useRememberMarketView("list");
   const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
-  const credit = useCreditableBrowse(creditableSearch);
+  const credit = useCreditableBrowse(creditOn);
   const output = useOutputVoucherBrowse(outputVoucherSearch, credit);
   // Offers and Pools remember their own filters, as the phone's Offers and
   // Pools pages do; the other lists share the market's.
@@ -77,7 +79,7 @@ export function MarketListDesk({
     useStorageOwner(),
     {
       ...(scope === "pools" ? { voucherRelationships: false } : {}),
-      externalFilterActive: creditableSearch !== undefined || outputVoucherSearch !== undefined,
+      externalFilterActive: creditOn || outputVoucherSearch !== undefined,
     },
   );
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -120,16 +122,10 @@ export function MarketListDesk({
     return () => observer.disconnect();
   }, [hasMore, nextFailed, nextLoading, load]);
 
-  const changeCredit = (checked: boolean) =>
+  const changeCredit = (on: boolean) =>
     void navigate({
       to: "/market",
-      search: (previous) => ({ ...previous, creditable: checked }),
-    });
-  const clearCredit = () =>
-    void navigate({
-      to: "/market",
-      replace: true,
-      search: (previous) => ({ ...previous, creditable: undefined }),
+      search: (previous) => ({ ...previous, ...withCredit(on) }),
     });
 
   const distanceOf = (row: MarketplaceResult) => {
@@ -177,7 +173,7 @@ export function MarketListDesk({
               </p>
             ) : null}
             <div className="grid gap-2 empty:hidden">
-              <MarketCreditNotice credit={credit} onClear={clearCredit} />
+              <MarketCreditNotice credit={credit} />
               <MarketOutputNotice
                 output={output}
                 credit={credit}
@@ -414,18 +410,25 @@ function MarketResultTile({
           <MarketKindBadge kind={kind} />
         </span>
         <span className="min-h-4 truncate text-xs text-muted-foreground">{meta.join(" · ")}</span>
-        {row.tags.length > 0 ? (
-          <span className="flex min-w-0 gap-1 overflow-hidden">
-            {row.tags.slice(0, 2).map((tag) => (
-              <TagBadge key={tag} tag={tag} size="sm" />
-            ))}
-            {row.tags.length > 2 ? (
-              <Badge size="sm" variant="outline">
-                +{row.tags.length - 2}
-              </Badge>
-            ) : null}
-          </span>
-        ) : null}
+        {/* Hidden while empty: a row with no swap count and no tags draws no chip line. */}
+        <span className="flex min-w-0 gap-1 overflow-hidden empty:hidden">
+          {row.kind === "pool" ? (
+            <CreditHopsBadge kind="pool" address={row.address} />
+          ) : row.kind === "voucher" || row.kind === "offering" ? (
+            <CreditHopsBadge
+              kind="voucher"
+              address={row.kind === "offering" ? row.voucherAddress : row.address}
+            />
+          ) : null}
+          {row.tags.slice(0, 2).map((tag) => (
+            <TagBadge key={tag} tag={tag} size="sm" />
+          ))}
+          {row.tags.length > 2 ? (
+            <Badge size="sm" variant="outline">
+              +{row.tags.length - 2}
+            </Badge>
+          ) : null}
+        </span>
       </span>
     </>
   );
@@ -616,6 +619,11 @@ function OfferTile({
           </span>
         )}
         <span className="min-h-4 truncate text-xs text-muted-foreground">{meta.join(" · ")}</span>
+        <CreditHopsBadge
+          kind="voucher"
+          address={offering.voucherAddress}
+          className="mt-1 justify-self-start"
+        />
       </span>
     </Link>
   );

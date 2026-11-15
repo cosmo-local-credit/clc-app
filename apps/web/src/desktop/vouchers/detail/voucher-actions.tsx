@@ -106,7 +106,19 @@ export function VoucherActionCells({
     );
   };
 
-  const get = (
+  // A signed-in wallet gets the voucher through one pool or two; a guest, who
+  // has no Credit, browses the pools that hold it.
+  const get = auth.isAuthenticated ? (
+    <Link
+      key="get"
+      to="/get/$voucherAddress"
+      params={{ voucherAddress: address }}
+      className={cn(cell, LIVE)}
+    >
+      <RiHandCoinLine className={icon} aria-hidden="true" />
+      <Trans>Get</Trans>
+    </Link>
+  ) : (
     <Link
       key="get"
       to="/market"

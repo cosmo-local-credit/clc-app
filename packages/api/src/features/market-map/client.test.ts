@@ -16,6 +16,52 @@ afterEach(() => vi.unstubAllGlobals());
 
 const client = () => createMarketMapClient(createHttpClient({ baseUrl: "https://api.test" }));
 
+describe("market map Credit", () => {
+  const credit = {
+    wallet: `0x${"a1".repeat(20)}`,
+    digest: `0x${"0f".repeat(32)}`,
+  };
+
+  it("sends creditDepth=max for points and facets, with the session cookie", async () => {
+    const fetcher = respond({ points: [], truncated: false });
+    await client().points({
+      kinds: ["voucher"],
+      filter: { term: "", tags: [], tagMatch: "any" },
+      credit,
+    });
+    const points = new URL(fetcher.mock.calls[0]?.[0]);
+    expect(points.searchParams.get("creditDepth")).toBe("max");
+    expect(points.searchParams.has("creditablePools")).toBe(false);
+    expect(points.searchParams.toString()).not.toContain(credit.wallet);
+    expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ credentials: "include", cache: "no-store" });
+
+    respond({ tagFacets: [], postVoucherFacets: [], postPoolFacets: [] });
+    const facetsFetcher = vi.mocked(globalThis.fetch);
+    await client().facets({
+      kinds: ["voucher"],
+      filter: { term: "", tags: [], tagMatch: "any" },
+      credit,
+      bounds: [{ minLng: 35, minLat: -5, maxLng: 41, maxLat: 1 }],
+    });
+    const facets = new URL(facetsFetcher.mock.calls[0]?.[0] as string);
+    expect(facets.pathname).toBe("/api/v2/market-map/facets");
+    expect(facets.searchParams.get("creditDepth")).toBe("max");
+  });
+
+  it("refuses to send creditDepth together with creditablePools", async () => {
+    const fetcher = respond({ points: [], truncated: false });
+    await expect(
+      client().points({
+        kinds: ["voucher"],
+        filter: { term: "", tags: [], tagMatch: "any" },
+        credit,
+        creditablePools: [{ chainId: 100, address: `0x${"a".repeat(40)}` }],
+      }),
+    ).rejects.toThrow(/creditDepth/);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+});
+
 describe("market map points HTTP contract", () => {
   it("serializes kinds, filters and Credit, and never a viewport or zoom", async () => {
     const fetcher = respond({

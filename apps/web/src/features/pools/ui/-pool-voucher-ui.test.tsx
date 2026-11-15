@@ -166,6 +166,7 @@ const USDC_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
 const TTX_ADDRESS = "0x2222222222222222222222222222222222222222";
 const RAMBO_ADDRESS = "0x5555555555555555555555555555555555555555";
 const PLANK_ADDRESS = "0x6666666666666666666666666666666666666666";
+const PENDING_ADDRESS = "0x8888888888888888888888888888888888888888";
 const REGISTRY_ADDRESS = "0x7777777777777777777777777777777777777777";
 const LIMITER_ADDRESS = "0x3333333333333333333333333333333333333333";
 const QUOTER_ADDRESS = "0x4444444444444444444444444444444444444444";
@@ -184,6 +185,7 @@ function mockPoolRequests({
   withUnheldVoucher = false,
   catalogFails = false,
   usdcTokenLimit = "40000000",
+  withPendingDeposit = false,
 }: {
   usdcBalance?: string;
   usdcSymbol?: string;
@@ -193,6 +195,7 @@ function mockPoolRequests({
   catalogFails?: boolean;
   /** What the catalog records as USDC's cap, which the chain may contradict. */
   usdcTokenLimit?: string;
+  withPendingDeposit?: boolean;
 } = {}) {
   holderBalances.value = {
     [USDC_ADDRESS.toLowerCase()]: BigInt(usdcBalance),
@@ -234,6 +237,8 @@ function mockPoolRequests({
                 voucherValue: "1",
                 tokenLimit: usdcTokenLimit,
                 iconUrl: "https://pool.example/usdc.png",
+                active: true,
+                managerClosure: { state: "CLOSED", closesAt: null },
               },
               {
                 id: 2,
@@ -276,6 +281,20 @@ function mockPoolRequests({
                 iconUrl: "https://wallet.example/ttx.png",
                 lastDateBlock: "2026-07-24T00:00:00Z",
               },
+              ...(withPendingDeposit
+                ? [
+                    {
+                      id: 13,
+                      tokenAddress: PENDING_ADDRESS,
+                      tokenSymbol: "WAIT",
+                      tokenName: "Waiting Token",
+                      tokenDecimals: 6,
+                      balance: "5000000",
+                      iconUrl: null,
+                      lastDateBlock: "2026-07-23T00:00:00Z",
+                    },
+                  ]
+                : []),
             ],
           }),
         );
@@ -545,15 +564,20 @@ afterEach(() => {
 });
 
 describe("pool voucher UI", () => {
-  it("renders wallet image logos for pool vouchers instead of text glyphs", async () => {
+  it("renders catalog image logos for accepted holdings instead of text glyphs", async () => {
     mockPoolRequests();
-    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="vouchers" />);
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="holdings" />);
 
     expect(await screen.findByText("USD Coin")).toBeTruthy();
     await waitFor(() => {
-      expect(document.querySelector('img[src="https://wallet.example/usdc.png"]')).toBeTruthy();
-      expect(document.querySelector('img[src="https://wallet.example/ttx.png"]')).toBeTruthy();
+      expect(document.querySelector('img[src="https://pool.example/usdc.png"]')).toBeTruthy();
+      expect(document.querySelector('img[src="https://pool.example/ttx.png"]')).toBeTruthy();
     });
+    expect(
+      screen.getByText(
+        "The account managing this voucher has closed. This voucher remains active.",
+      ),
+    ).toBeTruthy();
   });
 
   it("lists every pool offering and shows the voucher symbol each one is priced in", async () => {
@@ -596,9 +620,12 @@ describe("pool voucher UI", () => {
     expect(within(dialog).queryByText("Quantity")).toBeNull();
     expect(within(dialog).queryByText("Total")).toBeNull();
     expect(within(dialog).getByText("Open voucher page")).toBeTruthy();
+    expect(within(dialog).getByRole("link", { name: "Swap" }).getAttribute("href")).toBe(
+      `/pools/${POOL_ADDRESS}/swap?receive=${USDC_ADDRESS.toLowerCase()}`,
+    );
   });
 
-  it("puts offerings first and links the vouchers tab without stacking history", async () => {
+  it("puts offerings first without a duplicate Vouchers tab", async () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="offerings" />);
 
@@ -606,7 +633,6 @@ describe("pool voucher UI", () => {
     expect(tabs.map((tab) => tab.textContent)).toEqual([
       "Offerings",
       "Wants",
-      "Vouchers",
       "Holdings",
       "Credit",
       "Activity",
@@ -616,7 +642,6 @@ describe("pool voucher UI", () => {
     expect(tabs.map((tab) => tab.getAttribute("aria-controls"))).toEqual([
       "pool-panel-offerings",
       "pool-panel-wants",
-      "pool-panel-vouchers",
       "pool-panel-holdings",
       "pool-panel-credit",
       "pool-panel-activity",
@@ -642,11 +667,11 @@ describe("pool voucher UI", () => {
     expect(within(panel).getByText("30 TTX")).toBeTruthy();
 
     // Rows are named, not tickered, with the pool's rate for the voucher under
-    // the name — the same line the vouchers tab prints.
+    // the name.
     expect(within(panel).getByText("USD Coin")).toBeTruthy();
     expect(within(panel).getByText("Trade Token")).toBeTruthy();
-    expect(within(panel).getByText("1 USDC = 2 USD")).toBeTruthy();
-    expect(within(panel).getByText("1 TTX = 2 USD")).toBeTruthy();
+    expect(within(panel).getByText("1 USDC = 2.00 USD")).toBeTruthy();
+    expect(within(panel).getByText("1 TTX = 2.00 USD")).toBeTruthy();
 
     // Credit has a tab of its own; a row about what the pool holds says
     // nothing about what it will take.
@@ -663,6 +688,22 @@ describe("pool voucher UI", () => {
     expect(holding.getAttribute("href")).toBe(
       `/vouchers/${TTX_ADDRESS}?poolAddress=${POOL_ADDRESS}`,
     );
+  });
+
+  it("separates a positive unaccepted deposit from accepted vouchers", async () => {
+    poolTreasuryState.balances[PENDING_ADDRESS.toLowerCase()] = 5_000_000n;
+    mockPoolRequests({ withPendingDeposit: true });
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="holdings" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    const accepted = await within(panel).findByRole("region", { name: "Accepted vouchers" });
+    const waiting = await within(panel).findByRole("region", { name: "Pending vouchers" });
+    expect(within(accepted).getByText("USD Coin")).toBeTruthy();
+    expect(within(accepted).queryByText("Waiting Token")).toBeNull();
+    expect(within(waiting).getByText("Waiting Token")).toBeTruthy();
+    expect(within(waiting).getByText("5 WAIT")).toBeTruthy();
+    expect(within(waiting).getByText("Pending approval")).toBeTruthy();
+    expect(within(waiting).queryByText(/1 WAIT =/)).toBeNull();
   });
 
   it("draws each holding as a bar measured against the largest one", async () => {
@@ -715,7 +756,7 @@ describe("pool voucher UI", () => {
     expect(await within(panel).findByText("20.00 of 80.00 USD available credit")).toBeTruthy();
     expect(within(panel).getByText("Credit limit unknown")).toBeTruthy();
     // The same identity line as the holdings tab, without its amounts.
-    expect(within(panel).getByText("1 USDC = 2 USD")).toBeTruthy();
+    expect(within(panel).getByText("1 USDC = 2.00 USD")).toBeTruthy();
     expect(within(panel).queryByText("60.00 USD")).toBeNull();
   });
 

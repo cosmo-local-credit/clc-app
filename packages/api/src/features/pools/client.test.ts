@@ -250,6 +250,39 @@ describe("pools client", () => {
     );
   });
 
+  it("keeps an unregistered aggregator's address, checksummed, with no feed name", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        ok: true,
+        result: {
+          vouchers: [
+            {
+              id: 10,
+              address: "0x4444444444444444444444444444444444444444",
+              name: "Market Credit",
+              symbol: "MKT",
+              decimals: 6,
+              oracleFeedId: null,
+              oracleName: null,
+              oracleAddress: "0xab70bcb260073d036d1660201e9d5405f5829b7a",
+            },
+          ],
+        },
+      }),
+    );
+
+    const page = await api.getPoolVouchers("0x1111111111111111111111111111111111111111", {
+      perPage: 20,
+    });
+
+    expect(page.vouchers[0]).toMatchObject({
+      oracleFeedId: null,
+      oracleName: null,
+      oracleAddress: "0xab70BCB260073d036d1660201e9d5405F5829b7a",
+    });
+  });
+
   it("loads the complete owner recovery catalog and forwards pagination", async () => {
     const address = "0x1111111111111111111111111111111111111111";
     const fetcher = mockFetch({

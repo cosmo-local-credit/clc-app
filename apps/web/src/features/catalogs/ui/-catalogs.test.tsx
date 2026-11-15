@@ -64,7 +64,6 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => m
 vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
   useCreditableBrowse: () => ({
     auth: mocks.auth,
-    parsed: { ok: true, enabled: null },
     enabled: false,
     verification: { status: "idle", pools: [], retry: vi.fn() },
     poolRefs: undefined,
@@ -75,18 +74,16 @@ vi.mock("#/components/creditable-browse-control", () => ({
   CreditableBrowseControl: ({
     part,
     onChange,
-    onClear,
   }: {
     part: "control" | "feedback";
-    onChange: (checked: boolean) => void;
-    onClear: () => void;
+    onChange: (on: boolean) => void;
   }) => (
     <div data-testid={`credit-${part}`}>
       <button type="button" onClick={() => onChange(true)}>
         {part} Credit on
       </button>
-      <button type="button" onClick={onClear}>
-        {part} Credit clear
+      <button type="button" onClick={() => onChange(false)}>
+        {part} Credit off
       </button>
     </div>
   ),
@@ -550,14 +547,14 @@ describe("catalog curation", () => {
   });
 });
 describe("catalog discovery", () => {
-  it("writes and clears Credit from both shell and feedback controls", async () => {
+  it("toggles Credit on and off from both shell and feedback controls", async () => {
     mount(<CatalogsPage />);
     await screen.findByText("Local makers");
 
     fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "control Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "control Credit off" }));
     fireEvent.click(screen.getByRole("button", { name: "feedback Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "feedback Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit off" }));
 
     expect(mocks.navigate).toHaveBeenCalledTimes(4);
     const previous = { scope: "catalogs", q: "local", creditable: false };
@@ -565,12 +562,21 @@ describe("catalog discovery", () => {
       ([call]) => call,
     );
     expect(shellOn).toMatchObject({ to: "/market" });
-    expect(shellOn.search(previous)).toEqual({ ...previous, creditable: true });
-    expect(shellClear).toMatchObject({ to: "/market", replace: true });
+    expect(shellOn.search(previous)).toEqual({
+      ...previous,
+      credit: 1,
+      creditable: undefined,
+    });
+    expect(shellClear).toMatchObject({ to: "/market" });
+    expect(shellClear).not.toHaveProperty("replace");
     expect(shellClear.search(previous)).toEqual({ scope: "catalogs", q: "local" });
     expect(feedbackOn).toMatchObject({ to: "/market" });
-    expect(feedbackOn.search(previous)).toEqual({ ...previous, creditable: true });
-    expect(feedbackClear).toMatchObject({ to: "/market", replace: true });
+    expect(feedbackOn.search(previous)).toEqual({
+      ...previous,
+      credit: 1,
+      creditable: undefined,
+    });
+    expect(feedbackClear).toMatchObject({ to: "/market" });
     expect(feedbackClear.search(previous)).toEqual({ scope: "catalogs", q: "local" });
   });
 

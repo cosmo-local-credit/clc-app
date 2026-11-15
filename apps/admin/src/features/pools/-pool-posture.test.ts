@@ -14,7 +14,7 @@ import {
 
 const POOL_ADDRESS = "0xdD97a5282D11e55d7271d466C80963d6793B276f" as const;
 const LIMITER = "0x4d9000000000000000000000000000000000a1c7" as const;
-const AGGREGATOR = "0x0826000000000000000000000000000000005e9D" as const;
+const AGGREGATOR = "0x0826000000000000000000000000000000005e9d" as const;
 
 function pool(overrides: Partial<UserPool> = {}): UserPool {
   return {
@@ -101,11 +101,20 @@ describe("poolDepositCap", () => {
 });
 
 describe("groupPoolFeeds", () => {
+  const OTHER = "0x9a48d9b0AF457eF040281A9Af3867bc65522Fecd" as const;
+  const UNREGISTERED = "0xab70BCB260073d036d1660201e9d5405F5829b7a" as const;
+
   it("groups by aggregator, largest first, with the unpriced row last", () => {
     const groups = groupPoolFeeds([
       voucher({ id: "1" }),
       voucher({ id: "2", symbol: "MUMO" }),
-      voucher({ id: "3", symbol: "USDm", oracleFeedId: "9", oracleName: "USDT / USD" }),
+      voucher({
+        id: "3",
+        symbol: "USDm",
+        oracleFeedId: "9",
+        oracleName: "USDT / USD",
+        oracleAddress: OTHER,
+      }),
       voucher({
         id: "4",
         symbol: "GRTV",
@@ -115,13 +124,36 @@ describe("groupPoolFeeds", () => {
       }),
     ]);
 
-    expect(groups.map((group) => group.key)).toEqual(["7", "9", "unpriced"]);
+    expect(groups.map((group) => group.key)).toEqual([AGGREGATOR, OTHER, "unpriced"]);
     expect(groups[0]?.vouchers).toHaveLength(2);
     expect(groups[2]?.vouchers.map((entry) => entry.symbol)).toEqual(["GRTV"]);
   });
 
+  it("keeps an unregistered aggregator as its own group, not with the unpriced", () => {
+    const groups = groupPoolFeeds([
+      voucher({ id: "1", oracleFeedId: null, oracleName: null, oracleAddress: UNREGISTERED }),
+      voucher({ id: "2", oracleFeedId: null, oracleName: null, oracleAddress: null }),
+    ]);
+
+    expect(groups).toEqual([
+      expect.objectContaining({ key: UNREGISTERED, name: null, address: UNREGISTERED }),
+      expect.objectContaining({ key: "unpriced" }),
+    ]);
+  });
+
+  it("treats two registry names on one aggregator as one feed", () => {
+    const groups = groupPoolFeeds([
+      voucher({ id: "1", oracleFeedId: "7", oracleName: "KES" }),
+      voucher({ id: "2", oracleFeedId: "8", oracleName: "KESm" }),
+    ]);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0]).toMatchObject({ key: AGGREGATOR, name: "KES" });
+    expect(groups[0]?.vouchers).toHaveLength(2);
+  });
+
   it("omits the unpriced row when every voucher is mapped", () => {
-    expect(groupPoolFeeds([voucher()]).map((group) => group.key)).toEqual(["7"]);
+    expect(groupPoolFeeds([voucher()]).map((group) => group.key)).toEqual([AGGREGATOR]);
   });
 });
 
@@ -130,7 +162,13 @@ describe("poolComposition", () => {
     const composition = poolComposition(pool({ voucherCount: 3 }), [
       voucher({ id: "1" }),
       voucher({ id: "2", tokenLimit: "0" }),
-      voucher({ id: "3", oracleFeedId: null, offerCount: 1, availableOfferCount: 0 }),
+      voucher({
+        id: "3",
+        oracleFeedId: null,
+        oracleAddress: null,
+        offerCount: 1,
+        availableOfferCount: 0,
+      }),
     ]);
 
     expect(composition).toEqual({
@@ -144,6 +182,14 @@ describe("poolComposition", () => {
       offers: 25,
       liveOffers: 6,
     });
+  });
+
+  it("counts a voucher on an unregistered aggregator as priced", () => {
+    const composition = poolComposition(pool(), [
+      voucher({ oracleFeedId: null, oracleName: null }),
+    ]);
+
+    expect(composition).toMatchObject({ priced: 1, unpriced: 0, feeds: 1 });
   });
 });
 
@@ -186,7 +232,7 @@ describe("poolAdvisories", () => {
 
   it("reports unpriced vouchers and zero caps, worst first", () => {
     const composition = poolComposition(pool(), [
-      voucher({ id: "1", oracleFeedId: null }),
+      voucher({ id: "1", oracleFeedId: null, oracleAddress: null }),
       voucher({ id: "2", tokenLimit: "0" }),
     ]);
     const ids = poolAdvisories(pool(), composition, { vouchersAvailable: true }).map(
@@ -297,7 +343,9 @@ describe("poolActivitySeries", () => {
 for (const quoterType of ["relative", "decimal", null] as const) {
   it(`does not infer oracle faults for ${quoterType ?? "unknown"} pricing`, () => {
     const record = pool({ quoterType });
-    const composition = poolComposition(record, [voucher({ oracleFeedId: null })]);
+    const composition = poolComposition(record, [
+      voucher({ oracleFeedId: null, oracleAddress: null }),
+    ]);
     expect(composition.unpriced).toBe(0);
     expect(
       poolAdvisories(record, composition, { vouchersAvailable: true }).some(

@@ -1,13 +1,15 @@
 import type { AccountActivityItem, ActivityKind } from "@clc/api/features/accounts/client";
+import type { RoutedSwapReceipt } from "@clc/api/features/credit-router/client";
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { RiChat1Line, RiCloseLine, RiExternalLinkLine, RiSearchLine } from "react-icons/ri";
 
 import { formatActivityLegAmount } from "#/components/activity/swap-activity";
+import { SwapCount } from "#/components/credit/credit-hops";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -23,6 +25,7 @@ import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
 import { DeskKV } from "#/desktop/ui/kv";
 import { DeskCanvas, DeskEyebrow } from "#/desktop/ui/page";
 import { DeskChip } from "#/desktop/ui/segment";
+import { useRoutedSwaps } from "#/features/credit/hooks/use-routed-swaps";
 import { useSendShare } from "#/features/wallet/hooks/use-send-share";
 import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { useActivityVisit } from "#/features/wallet/hooks/use-activity-unseen";
@@ -143,6 +146,7 @@ export function TransactionsDesk({
     [activityQuery.data],
   );
   const vouchers = useMemo(() => activityVouchers(loaded), [loaded]);
+  const routed = useRoutedSwaps(address);
   // The window is measured from when the range was picked, not every render.
   const rangeStart = useMemo(() => activityRangeStart(filters.range, Date.now()), [filters.range]);
   const activity = useMemo(
@@ -564,6 +568,7 @@ export function TransactionsDesk({
           tx ? (
             <ActivityInspector
               item={selected}
+              route={selected ? routed.byTxHash.get(selected.txHash.toLowerCase()) : undefined}
               missing={!activityQuery.isPending && !selected && !seekingLinked}
               failed={activityQuery.isError}
               onClose={closeInspector}
@@ -615,11 +620,14 @@ function ActivityType({ item }: { item: AccountActivityItem }) {
 
 function ActivityInspector({
   item,
+  route,
   missing,
   failed,
   onClose,
 }: {
   item: AccountActivityItem | null;
+  /** The routed exchange a swap was, whose grouped receipt shows its hops. */
+  route?: RoutedSwapReceipt;
   missing: boolean;
   /** The feed failed to load, rather than loading without this row. */
   failed: boolean;
@@ -629,7 +637,7 @@ function ActivityInspector({
   return (
     <DeskInspector title={<Trans>Transfer details</Trans>} onClose={onClose}>
       {item?.kind === "swapped" ? (
-        <SwapInspector item={item} />
+        <SwapInspector item={item} route={route} />
       ) : item ? (
         <TransferInspector item={item} />
       ) : missing ? (
@@ -792,7 +800,13 @@ function TransferInspector({ item }: { item: Exclude<AccountActivityItem, { kind
   );
 }
 
-function SwapInspector({ item }: { item: Extract<AccountActivityItem, { kind: "swapped" }> }) {
+function SwapInspector({
+  item,
+  route,
+}: {
+  item: Extract<AccountActivityItem, { kind: "swapped" }>;
+  route?: RoutedSwapReceipt;
+}) {
   const { i18n, t } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
   return (
@@ -835,6 +849,19 @@ function SwapInspector({ item }: { item: Extract<AccountActivityItem, { kind: "s
                 <span key="fee" dir="ltr">
                   {formatActivityLegAmount(item.protocolFee, locale)}
                 </span>,
+              ]
+            : null,
+          route
+            ? [
+                t`Route`,
+                <Link
+                  key="route"
+                  to="/routed-swaps/$trackingId"
+                  params={{ trackingId: route.swap.trackingId }}
+                  className="underline underline-offset-2"
+                >
+                  <SwapCount hops={route.swap.hopCount} />
+                </Link>,
               ]
             : null,
           [

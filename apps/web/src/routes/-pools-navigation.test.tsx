@@ -35,6 +35,13 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
 }));
 
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
+  useAllAccountTokens: () => ({
+    tokens: [],
+    isPending: false,
+    isError: false,
+    isFetching: false,
+    refetch: vi.fn(),
+  }),
   useAccountTokensInfinite: () => ({
     data: { pages: [{ tokens: [] }] },
     isPending: false,
@@ -93,18 +100,21 @@ vi.mock("#/features/pools/hooks/use-pool-vouchers", () => ({
   }),
 }));
 
-vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({
-  usePoolVoucherTokens: () => [],
-}));
-
-vi.mock("#/features/pools/hooks/use-creditable-pools", () => ({
-  useCreditablePools: () => ({
-    pools: [],
-    status: "ready",
-    isRefreshing: false,
-    hasVerificationGaps: false,
-    retry: vi.fn(),
-  }),
+vi.mock("#/lib/api/credit-router", () => ({
+  creditRouterClient: {
+    reach: () =>
+      Promise.resolve({
+        depth: 3,
+        maxHops: 3,
+        asOfBlock: 1,
+        graphVersion: 1,
+        stale: false,
+        digest: `0x${"ab".repeat(32)}`,
+        inputs: [],
+        vouchers: [],
+        pools: [],
+      }),
+  },
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-output-availability", () => ({
@@ -123,6 +133,7 @@ import {
   pickMarketplaceSearch,
   type MarketplaceRouteSearch,
 } from "#/lib/navigation/marketplace-search";
+import { parseCredit } from "#/lib/navigation/pool-search";
 import { WalletPage } from "#/features/home/ui/wallet-page";
 import { PoolDetailPage, PoolsPage } from "#/features/pools/ui";
 
@@ -162,11 +173,8 @@ function createTestRouter(initialEntry: string) {
       if (next) throw redirect({ to: "/market", search: next, replace: true });
     },
     component: () => {
-      const { creditable: creditableSearch, out_voucher: outputVoucherSearch } =
-        marketRoute.useSearch();
-      return (
-        <PoolsPage creditableSearch={creditableSearch} outputVoucherSearch={outputVoucherSearch} />
-      );
+      const search: MarketplaceRouteSearch = marketRoute.useSearch();
+      return <PoolsPage creditOn={parseCredit(search)} outputVoucherSearch={search.out_voucher} />;
     },
   });
   const poolDetailRoute = createRoute({
@@ -174,7 +182,7 @@ function createTestRouter(initialEntry: string) {
     path: "/pools/$poolAddress",
     component: () => {
       const { poolAddress } = poolDetailRoute.useParams();
-      return <PoolDetailPage poolAddress={poolAddress} activeTab="vouchers" />;
+      return <PoolDetailPage poolAddress={poolAddress} activeTab="holdings" />;
     },
   });
   // Stubbed: this asserts where Deposit goes and that Back comes home, not what
@@ -279,62 +287,49 @@ describe("pools navigation", () => {
 });
 
 describe("pools filter canonicalization through the router", () => {
-  it("writes manual Credit changes and restores them through browser history", async () => {
+  it("toggles Credit on and off and restores each through history", async () => {
     const router = createTestRouter("/pools?creditable=false");
     render(withQueryClient(<RouterProvider router={router} />));
 
-    const credit = await screen.findByRole("button", { name: "Credit" });
-    expect(credit.getAttribute("aria-pressed")).toBe("false");
-    fireEvent.click(credit);
+    fireEvent.click(await screen.findByRole("button", { name: "Credit: off" }));
+    await waitFor(() => expect(router.state.location.search.credit).toBe(1));
+    fireEvent.click(await screen.findByRole("button", { name: "Credit: on" }));
+    await waitFor(() => expect(router.state.location.search.credit).toBeUndefined());
+    expect(await screen.findByRole("button", { name: "Credit: off" })).toBeTruthy();
+    expect(router.state.location.search).not.toHaveProperty("creditable");
 
-    await waitFor(() => {
-      expect(router.state.location.search.creditable).toBe(true);
-      expect(credit.getAttribute("aria-pressed")).toBe("true");
-    });
-
-    await act(async () => {
-      router.history.back();
-    });
-    await waitFor(() => {
-      expect(router.state.location.search.creditable).toBe(false);
-      expect(credit.getAttribute("aria-pressed")).toBe("false");
-    });
-
-    await act(async () => {
-      router.history.forward();
-    });
-    await waitFor(() => {
-      expect(router.state.location.search.creditable).toBe(true);
-      expect(credit.getAttribute("aria-pressed")).toBe("true");
-    });
+    await act(async () => router.history.back());
+    await waitFor(() => expect(router.state.location.search.credit).toBe(1));
+    expect(await screen.findByRole("button", { name: "Credit: on" })).toBeTruthy();
+    await act(async () => router.history.back());
+    await waitFor(() => expect(router.state.location.search.credit).toBeUndefined());
+    expect(await screen.findByRole("button", { name: "Credit: off" })).toBeTruthy();
+    await act(async () => router.history.forward());
+    await waitFor(() => expect(router.state.location.search.credit).toBe(1));
   });
 
-  it("canonicalizes explicit Credit state without changing the path", async () => {
-    const router = createTestRouter("/pools?creditable=%20TRUE%20");
+  it.each([
+    ["/pools?creditable=%20TRUE%20", 1],
+    ["/pools?creditable=true", 1],
+    ["/pools?creditable=false", undefined],
+    ["/pools?creditable=yes", undefined],
+    ["/pools?creditDepth=%222%22", 1],
+    ["/pools?creditDepth=3", 1],
+    ["/pools?creditDepth=max", 1],
+    ["/pools?creditDepth=1&creditDepth=2", undefined],
+    ["/pools?credit=1", 1],
+    ["/pools?credit=0", undefined],
+  ])("normalizes %s to credit=%s with a replace redirect", async (url, credit) => {
+    const router = createTestRouter(url);
     render(withQueryClient(<RouterProvider router={router} />));
     await waitFor(() => expect(router.state.status).toBe("idle"));
 
     expect(router.state.location.pathname).toBe("/market");
-    expect(router.state.location.search.creditable).toBe(true);
+    expect(router.state.location.search.credit).toBe(credit);
+    expect(router.state.location.search).not.toHaveProperty("creditDepth");
+    expect(router.state.location.search).not.toHaveProperty("creditable");
     expect(router.history.length).toBe(1);
-  });
-
-  it("keeps malformed and repeated Credit values visible for explicit rejection", async () => {
-    const malformed = createTestRouter("/pools?creditable=yes");
-    const first = render(withQueryClient(<RouterProvider router={malformed} />));
-    expect(await screen.findByText("This link contains an invalid Credit filter.")).toBeTruthy();
-    expect(malformed.state.location.search.creditable).toBe("yes");
-    first.unmount();
-
-    const repeated = createTestRouter("/pools?creditable=true&creditable=false");
-    const second = render(withQueryClient(<RouterProvider router={repeated} />));
-    expect(await screen.findByText("This link contains an invalid Credit filter.")).toBeTruthy();
-    expect(repeated.state.location.search.creditable).toEqual([true, false]);
-    second.unmount();
-
-    const numeric = createTestRouter("/pools?creditable=1");
-    render(withQueryClient(<RouterProvider router={numeric} />));
-    expect(await screen.findByText("This link contains an invalid Credit filter.")).toBeTruthy();
+    expect(screen.queryByText(/invalid Credit/)).toBeNull();
   });
 
   it("canonicalizes an output-voucher address without changing the path", async () => {

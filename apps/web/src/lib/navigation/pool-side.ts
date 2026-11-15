@@ -123,24 +123,29 @@ export function parsePoolApproveSeed(search: unknown): PoolApproveSeed | null {
  * The URL's panel params for one request; the others are cleared, the approve
  * seeds included: an approve panel opened inside the app carries none.
  */
-function poolSideSearch(request: PoolSideRequest | null) {
+function poolSideSearch(
+  request: PoolSideRequest | null,
+  approveSeed: PoolApproveSeed | null = null,
+) {
   return {
     [TOOL]: request?.kind === "tool" ? TOOL_PARAM[request.tool] : undefined,
     [MANAGE]: request?.kind === "voucher" ? request.address : undefined,
     [ENTRY_PARAM]: request?.kind === "activity" ? request.key : undefined,
-    [CANDIDATE]: undefined,
-    [EXCHANGE_RATE]: undefined,
-    [CREDIT_LIMIT]: undefined,
+    [CANDIDATE]: approveSeed?.candidate,
+    [EXCHANGE_RATE]: approveSeed?.exchangeRate,
+    [CREDIT_LIMIT]: approveSeed?.creditLimit,
   };
 }
 
-function requestKey(request: PoolSideRequest | null) {
+function requestKey(request: PoolSideRequest | null, approveSeed: PoolApproveSeed | null = null) {
   if (!request) return "";
-  return request.kind === "tool"
-    ? `tool:${request.tool}`
-    : request.kind === "voucher"
-      ? `voucher:${request.address}`
-      : `activity:${request.key}`;
+  const base =
+    request.kind === "tool"
+      ? `tool:${request.tool}`
+      : request.kind === "voucher"
+        ? `voucher:${request.address}`
+        : `activity:${request.key}`;
+  return approveSeed ? `${base}:${approveSeed.candidate}` : base;
 }
 
 /**
@@ -157,7 +162,8 @@ export function usePoolSideNavigation() {
   const navigate = useNavigate();
   const router = useRouter();
   const request = parsePoolSideRequest(search);
-  const key = requestKey(request);
+  const approveSeed = parsePoolApproveSeed(search);
+  const key = requestKey(request, approveSeed);
 
   // The URL lags the call that changes it by a render. Two opens in that gap
   // (a row's focus, then its click) must not push two entries, nor two closes
@@ -167,9 +173,9 @@ export function usePoolSideNavigation() {
     pending.current = null;
   }, [key]);
 
-  const open = useCallback(
-    (next: PoolSideRequest) => {
-      const nextKey = requestKey(next);
+  const openRequest = useCallback(
+    (next: PoolSideRequest, seed: PoolApproveSeed | null) => {
+      const nextKey = requestKey(next, seed);
       if (nextKey === key || nextKey === pending.current) return;
       const opened = key !== "" || pending.current !== null;
       pending.current = nextKey;
@@ -177,7 +183,7 @@ export function usePoolSideNavigation() {
         to: ".",
         search: ((previous: Record<string, unknown>) => ({
           ...previous,
-          ...poolSideSearch(next),
+          ...poolSideSearch(next, seed),
         })) as never,
         replace: opened,
         // A replace keeps whatever mark the entry carries; a push is marked.
@@ -186,6 +192,19 @@ export function usePoolSideNavigation() {
       });
     },
     [key, navigate],
+  );
+
+  const open = useCallback((next: PoolSideRequest) => openRequest(next, null), [openRequest]);
+
+  const openApprove = useCallback(
+    (candidate?: string) => {
+      const seed =
+        candidate && isAddress(candidate, { strict: false })
+          ? ({ candidate: getAddress(candidate) } satisfies PoolApproveSeed)
+          : null;
+      openRequest({ kind: "tool", tool: "approve" }, seed);
+    },
+    [openRequest],
   );
 
   const close = useCallback(() => {
@@ -206,5 +225,5 @@ export function usePoolSideNavigation() {
     });
   }, [key, navigate, router]);
 
-  return { request, approveSeed: parsePoolApproveSeed(search), open, close };
+  return { request, approveSeed, open, openApprove, close };
 }

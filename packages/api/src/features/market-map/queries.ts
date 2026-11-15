@@ -1,6 +1,7 @@
 import { backendRetryDelayMs, BackendApiError } from "../../client/errors";
 import { queryOptions } from "@tanstack/react-query";
 import type { MarketMapClient, MarketMapFacetsParams, MarketMapParams } from "./client";
+import { creditScopeKey } from "../credit-router/queries";
 
 function filterIdentity(params: MarketMapParams) {
   return {
@@ -13,6 +14,7 @@ function filterIdentity(params: MarketMapParams) {
     creditablePools: params.creditablePools?.map(
       (pool) => `${pool.chainId}:${pool.address.toLowerCase()}`,
     ),
+    credit: creditScopeKey(params.credit),
     postTiming: params.postTiming ?? "future",
     postVouchers: params.postVouchers?.map(
       (voucher) => `${voucher.chainId}:${voucher.address.toLowerCase()}`,

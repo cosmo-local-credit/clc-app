@@ -1,6 +1,8 @@
 import type { AccountActivityItem, ActivityKind } from "@clc/api/features/accounts/client";
+import type { RoutedSwapReceipt } from "@clc/api/features/credit-router/client";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
+import { Link } from "@tanstack/react-router";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
   RiArrowLeftDownLine,
@@ -14,7 +16,12 @@ import {
 
 import { AccountSwapDetailsSheet } from "#/components/activity/account-swap-details-sheet";
 import { ActivityFilterSheet } from "#/components/activity/activity-filter-sheet";
+import {
+  RoutedSwapPendingTitle,
+  RoutedSwapSpent,
+} from "#/components/activity/routed-swap-activity";
 import { SwapActivityAmounts, SwapActivityTitle } from "#/components/activity/swap-activity";
+import { SwapCount } from "#/components/credit/credit-hops";
 import { MarketFeedBar } from "#/components/market-bar";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -22,6 +29,8 @@ import { ListSkeleton } from "#/components/ui/list-skeleton";
 import { UnreadDot } from "#/components/ui/unread-count";
 import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
+import { useRoutedSwaps } from "#/features/credit/hooks/use-routed-swaps";
+import { useVoucherLabels } from "#/features/credit/hooks/use-voucher-labels";
 import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { useActivityVisit } from "#/features/wallet/hooks/use-activity-unseen";
 import {
@@ -71,6 +80,19 @@ export function ActivityPage({
   const isFiltered = settled !== "" || types.length > 0;
   const isNew = useActivityVisit(
     searchReady && activityQuery.isSuccess && !isFiltered ? activity : undefined,
+  );
+  const routed = useRoutedSwaps(address);
+  const entries = useMemo(
+    () =>
+      activityEntries({
+        activity,
+        receipts: isFiltered ? [] : routed.receipts,
+        complete: !activityQuery.hasNextPage,
+      }),
+    [activity, routed.receipts, isFiltered, activityQuery.hasNextPage],
+  );
+  const pendingLabels = useVoucherLabels(
+    entries.flatMap((entry) => (entry.kind === "routed" ? [entry.receipt.swap.tokenIn] : [])),
   );
 
   useEffect(() => setDraftQuery(query), [query]);
@@ -206,19 +228,30 @@ export function ActivityPage({
                 </Button>
               </div>
             ) : null}
-            {activity.map((item, index) => (
-              <ActivityRow
-                key={`${item.txHash}-${item.id}`}
-                item={item}
-                isNew={isNew(item)}
-                isLast={index === activity.length - 1}
-                locale={i18n.locales?.[0] ?? i18n.locale}
-                onOpen={() => {
-                  if (item.kind === "swapped") setSelectedSwap(item);
-                  else setSelectedTransfer(toTransferDetails(item));
-                }}
-              />
-            ))}
+            {entries.map((entry, index) =>
+              entry.kind === "routed" ? (
+                <RoutedSwapRow
+                  key={`routed-${entry.receipt.swap.trackingId}`}
+                  receipt={entry.receipt}
+                  isLast={index === entries.length - 1}
+                  locale={i18n.locales?.[0] ?? i18n.locale}
+                  label={pendingLabels.get(entry.receipt.swap.tokenIn.toLowerCase())}
+                />
+              ) : (
+                <ActivityRow
+                  key={`${entry.item.txHash}-${entry.item.id}`}
+                  item={entry.item}
+                  route={entry.route}
+                  isNew={isNew(entry.item)}
+                  isLast={index === entries.length - 1}
+                  locale={i18n.locales?.[0] ?? i18n.locale}
+                  onOpen={() => {
+                    if (entry.item.kind === "swapped") setSelectedSwap(entry.item);
+                    else setSelectedTransfer(toTransferDetails(entry.item));
+                  }}
+                />
+              ),
+            )}
             <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
             {activityQuery.isFetchingNextPage ? (
               <div className="p-3 text-center text-muted-foreground text-xs">
@@ -249,19 +282,157 @@ export function ActivityPage({
   );
 }
 
+type ActivityEntry =
+  | { kind: "activity"; item: AccountActivityItem; route?: RoutedSwapReceipt }
+  | { kind: "routed"; receipt: RoutedSwapReceipt };
+
+/**
+ * Activity with the wallet's routed exchanges folded in. An indexed swap that
+ * a routed exchange produced becomes that exchange's entry, with its hops;
+ * the index already reports a route as one swap, but a second row for the
+ * same transaction is dropped all the same. An exchange the index has not
+ * listed yet takes its place by time, but only within the loaded window, so
+ * it never lands below rows a later page will push it above.
+ */
+function activityEntries({
+  activity,
+  receipts,
+  complete,
+}: {
+  activity: readonly AccountActivityItem[];
+  receipts: readonly RoutedSwapReceipt[];
+  complete: boolean;
+}): ActivityEntry[] {
+  const byTx = new Map<string, RoutedSwapReceipt>();
+  for (const receipt of receipts) {
+    if (receipt.swap.txHash) byTx.set(receipt.swap.txHash.toLowerCase(), receipt);
+  }
+  const indexed = new Set(activity.map((item) => item.txHash.toLowerCase()));
+  const oldest = activity.at(-1)?.dateBlock;
+  const unlisted = receipts.filter(
+    (receipt) =>
+      !(receipt.swap.txHash && indexed.has(receipt.swap.txHash.toLowerCase())) &&
+      (complete || !oldest || Date.parse(receipt.swap.createdAt) >= Date.parse(oldest)),
+  );
+
+  const entries: ActivityEntry[] = [];
+  const shown = new Set<string>();
+  let next = 0;
+  for (const item of activity) {
+    const at = Date.parse(item.dateBlock);
+    while (next < unlisted.length && Date.parse(unlisted[next]!.swap.createdAt) >= at) {
+      entries.push({ kind: "routed", receipt: unlisted[next]! });
+      next += 1;
+    }
+    const tx = item.txHash.toLowerCase();
+    const route = item.kind === "swapped" ? byTx.get(tx) : undefined;
+    if (route) {
+      if (shown.has(tx)) continue;
+      shown.add(tx);
+    }
+    entries.push({ kind: "activity", item, route });
+  }
+  for (; next < unlisted.length; next += 1) {
+    entries.push({ kind: "routed", receipt: unlisted[next]! });
+  }
+  return entries;
+}
+
+function RoutedSwapRow({
+  receipt,
+  isLast,
+  locale,
+  label,
+}: {
+  receipt: RoutedSwapReceipt;
+  isLast: boolean;
+  locale: string;
+  label: { symbol: string; decimals: number | null } | undefined;
+}) {
+  return (
+    <Link
+      to="/routed-swaps/$trackingId"
+      params={{ trackingId: receipt.swap.trackingId }}
+      className={`flex w-full items-center gap-2.5 p-3 text-start ${isLast ? "" : "border-b border-border"}`}
+    >
+      <span className="flex size-7 shrink-0 items-center justify-center bg-muted text-foreground">
+        <RiArrowLeftRightLine className="size-3.5" aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium">
+          <RoutedSwapPendingTitle receipt={receipt} />
+        </p>
+        <p className="truncate text-muted-foreground text-xs">
+          <SwapCount hops={receipt.swap.hopCount} />
+        </p>
+      </div>
+      <span className="shrink-0 text-end">
+        <RoutedSwapSpent
+          receipt={receipt}
+          symbol={label?.symbol}
+          decimals={label?.decimals}
+          locale={locale}
+        />
+      </span>
+    </Link>
+  );
+}
+
 function ActivityRow({
   item,
+  route,
   isNew,
   isLast,
   locale,
   onOpen,
 }: {
   item: AccountActivityItem;
+  /** The routed exchange this swap was, whose receipt shows its hops. */
+  route?: RoutedSwapReceipt;
   isNew: boolean;
   isLast: boolean;
   locale: string;
   onOpen: () => void;
 }) {
+  if (item.kind === "swapped" && route) {
+    const date = formatTransferDate(item.dateBlock);
+    return (
+      <Link
+        to="/routed-swaps/$trackingId"
+        params={{ trackingId: route.swap.trackingId }}
+        className={`flex w-full items-center gap-2.5 p-3 text-start ${isLast ? "" : "border-b border-border"}`}
+      >
+        <span className="flex size-7 shrink-0 items-center justify-center bg-muted text-foreground">
+          <RiArrowLeftRightLine className="size-3.5" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-1.5 text-sm font-medium">
+            <SwapActivityTitle symbols={[item.received.tokenSymbol, item.sent.tokenSymbol]} />
+            {isNew ? <UnreadDot /> : null}
+          </p>
+          <p className="truncate text-muted-foreground text-xs">
+            <SwapCount hops={route.swap.hopCount} />
+            {date ? (
+              <>
+                <span aria-hidden="true"> · </span>
+                <time dateTime={item.dateBlock}>{date}</time>
+              </>
+            ) : null}
+          </p>
+        </div>
+        <span className="shrink-0 text-end">
+          <SwapActivityAmounts
+            outgoing={item.sent}
+            incoming={item.received}
+            protocolFee={item.protocolFee}
+            locale={locale}
+            incomingFirst
+          />
+        </span>
+      </Link>
+    );
+  }
+
   if (item.kind === "swapped") {
     const date = formatTransferDate(item.dateBlock);
     return (

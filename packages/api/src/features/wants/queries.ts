@@ -4,11 +4,18 @@ import { marketplaceKeys } from "../marketplace/queries";
 import { resourceLimitKeys } from "../resource-limits/queries";
 import type { WantWrite } from "@clc/core/features/wants/logic";
 import type { WantsClient, WantsParams } from "./client";
+import { creditScopeKey } from "../credit-router/queries";
 import { transientBackendReadQueryPolicy } from "../../client/errors";
 
 export const wantKeys = {
   all: ["clc", "wants"] as const,
-  list: (params: Omit<WantsParams, "cursor" | "next">) => ["clc", "wants", "list", params] as const,
+  list: (params: Omit<WantsParams, "cursor" | "next">) =>
+    [
+      "clc",
+      "wants",
+      "list",
+      params.credit ? { ...params, credit: creditScopeKey(params.credit) } : params,
+    ] as const,
   detail: (id: string) => ["clc", "wants", "detail", id] as const,
   contact: (id: string, viewer: string) =>
     ["clc", "wants", "contact", id, viewer.toLowerCase()] as const,

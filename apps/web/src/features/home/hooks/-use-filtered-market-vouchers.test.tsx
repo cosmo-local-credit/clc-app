@@ -149,6 +149,29 @@ describe("filtered catalog atomicity", () => {
   });
 });
 
+describe("filtered catalog Credit", () => {
+  it("sends creditDepth on every page and never shares the catalog across wallets", async () => {
+    getFilteredMarketVouchers.mockResolvedValue(page([2499]));
+    const client = newClient();
+    const alice = { depth: 2 as const, wallet: `0x${"a1".repeat(20)}`, digest: "0x01" };
+    const active = filter({ tags: ["Art"] });
+    const first = renderHook(() => useFilteredMarketVouchers(active, undefined, alice), {
+      wrapper: wrapper(client),
+    });
+    await waitFor(() => expect(first.result.current.isSuccess).toBe(true));
+    expect(getFilteredMarketVouchers.mock.calls[0]?.[0]).toMatchObject({ credit: alice });
+    expect(getFilteredMarketVouchers.mock.calls[0]?.[0]).not.toHaveProperty("pools");
+
+    const bob = { ...alice, wallet: `0x${"b2".repeat(20)}` };
+    const second = renderHook(() => useFilteredMarketVouchers(active, undefined, bob), {
+      wrapper: wrapper(client),
+    });
+    await waitFor(() => expect(second.result.current.isSuccess).toBe(true));
+    expect(getFilteredMarketVouchers).toHaveBeenCalledTimes(2);
+    expect(getFilteredMarketVouchers.mock.calls[1]?.[0]).toMatchObject({ credit: bob });
+  });
+});
+
 describe("filtered catalog walk termination", () => {
   it("stops on a short page", async () => {
     getFilteredMarketVouchers.mockResolvedValueOnce(page([3000, 2999]));

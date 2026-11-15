@@ -262,26 +262,30 @@ export function CreatePoolFlow({
                             title={t`Equal value`}
                             description={t`Vouchers swap one for one`}
                           />
-                          {hasOracle ? (
-                            <PricingOption
-                              value="oracle"
-                              title={t`Oracle pricing`}
-                              description={t`Follows live price feeds for the selected currency`}
-                              disabled={
-                                !hasPoolOracleBaseCurrency(
-                                  form.getFieldValue("unitOfAccount"),
-                                  activeChainId,
-                                )
-                              }
-                            />
-                          ) : null}
-                          {!findUnitOfAccountOption(form.getFieldValue("unitOfAccount")) ? (
-                            <p className="text-muted-foreground text-xs">
-                              <Trans>
-                                Custom units have no price feed. Relative pricing is used instead.
-                              </Trans>
-                            </p>
-                          ) : null}
+                          {/* Subscribed rather than read: this field renders on its own
+                              changes, so a plain read would keep the unit it first saw. */}
+                          <form.Subscribe selector={(state) => state.values.unitOfAccount}>
+                            {(unit) => (
+                              <>
+                                {hasOracle ? (
+                                  <PricingOption
+                                    value="oracle"
+                                    title={t`Oracle pricing`}
+                                    description={t`Follows live price feeds for the selected currency`}
+                                    disabled={!hasPoolOracleBaseCurrency(unit, activeChainId)}
+                                  />
+                                ) : null}
+                                {!findUnitOfAccountOption(unit) ? (
+                                  <p className="text-muted-foreground text-xs">
+                                    <Trans>
+                                      Custom units have no price feed. Relative pricing is used
+                                      instead.
+                                    </Trans>
+                                  </p>
+                                ) : null}
+                              </>
+                            )}
+                          </form.Subscribe>
                         </RadioGroup>
                       </div>
                     )}

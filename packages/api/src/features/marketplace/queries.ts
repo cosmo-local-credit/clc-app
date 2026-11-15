@@ -1,6 +1,7 @@
 import { infiniteQueryOptions } from "@tanstack/react-query";
 import type { MarketplaceClient, MarketplaceParams } from "./client";
 import { discoveryRetryDelayMs, isRetryableDiscoveryError } from "../market-map/queries";
+import { creditScopeKey } from "../credit-router/queries";
 
 export const marketplaceKeys = {
   all: ["clc", "marketplace"] as const,
@@ -15,6 +16,7 @@ export const marketplaceKeys = {
         tags: [...(params.tags ?? [])],
         kinds: [...(params.kinds ?? [])],
         pools: params.pools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`),
+        credit: creditScopeKey(params.credit),
         postVouchers: params.postVouchers?.map(
           (voucher) => `${voucher.chainId}:${voucher.address.toLowerCase()}`,
         ),

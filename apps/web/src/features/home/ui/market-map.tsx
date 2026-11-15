@@ -139,6 +139,13 @@ export type MarketFitBounds = {
   north: number;
 };
 
+export type MarketMapZoomControls = {
+  zoomIn: () => void;
+  zoomOut: () => void;
+  canZoomIn: boolean;
+  canZoomOut: boolean;
+};
+
 const FILTER_FIT_MAX_ZOOM = 14;
 
 const FILTER_FIT_PADDING = { top: 96, bottom: 160, left: 48, right: 48 };
@@ -175,6 +182,7 @@ type MarketMapProps = {
    */
   bottomInset?: number;
   onViewportSettled?: (viewport: MarketViewport) => void;
+  onZoomControlsChange?: (controls: MarketMapZoomControls | null) => void;
   onSatelliteUnavailable?: () => void;
   className?: string;
 };
@@ -587,6 +595,7 @@ export function MarketMap({
   onUserPan,
   bottomInset = 0,
   onViewportSettled,
+  onZoomControlsChange,
   onSatelliteUnavailable,
   className,
 }: MarketMapProps) {
@@ -642,6 +651,8 @@ export function MarketMap({
   onUserPanRef.current = onUserPan;
   const onViewportSettledRef = useRef(onViewportSettled);
   onViewportSettledRef.current = onViewportSettled;
+  const onZoomControlsChangeRef = useRef(onZoomControlsChange);
+  onZoomControlsChangeRef.current = onZoomControlsChange;
   const onSatelliteUnavailableRef = useRef(onSatelliteUnavailable);
   onSatelliteUnavailableRef.current = onSatelliteUnavailable;
   // Seed each map instance from the current camera without rebuilding it when
@@ -730,6 +741,25 @@ export function MarketMap({
     mapRef.current = map;
     let settleTimer: ReturnType<typeof setTimeout> | undefined;
     let removeLabelEdgeListeners: (() => void) | undefined;
+    let lastZoomAvailability: string | null = null;
+
+    const zoomIn = () => {
+      userHasInteractedRef.current = true;
+      map.zoomIn();
+    };
+    const zoomOut = () => {
+      userHasInteractedRef.current = true;
+      map.zoomOut();
+    };
+    function publishZoomControls() {
+      if (!loadedRef.current) return;
+      const canZoomIn = map.getZoom() < map.getMaxZoom() - 0.001;
+      const canZoomOut = map.getZoom() > map.getMinZoom() + 0.001;
+      const availability = `${canZoomIn}:${canZoomOut}`;
+      if (availability === lastZoomAvailability) return;
+      lastZoomAvailability = availability;
+      onZoomControlsChangeRef.current?.({ zoomIn, zoomOut, canZoomIn, canZoomOut });
+    }
 
     function handleMouseMove(event: MapMouseEvent) {
       const hover = onHoverRef.current;
@@ -864,6 +894,7 @@ export function MarketMap({
     function handleZoomEnd() {
       const explodedAt = explodedAtRef.current;
       if (explodedAt !== null && map.getZoom() < explodedAt) restoreClustering(map, explodedAtRef);
+      publishZoomControls();
     }
 
     function handleMoveEnd() {
@@ -879,8 +910,8 @@ export function MarketMap({
 
     function handleResize() {
       const nextMinZoom = marketMinimumZoom(map.getCanvas().clientWidth);
-      if (map.getMinZoom() === nextMinZoom) return;
-      map.setMinZoom(nextMinZoom);
+      if (map.getMinZoom() !== nextMinZoom) map.setMinZoom(nextMinZoom);
+      publishZoomControls();
     }
 
     function restoreStyle() {
@@ -899,6 +930,7 @@ export function MarketMap({
       loadedRef.current = true;
       setLoaded(true);
       setStyleRevision((current) => current + 1);
+      publishZoomControls();
     }
 
     function handleLoad() {
@@ -948,6 +980,7 @@ export function MarketMap({
       cancelAnimationFrame(initialFrame);
       clearTimeout(settleTimer);
       removeLabelEdgeListeners?.();
+      onZoomControlsChangeRef.current?.(null);
       map.off("load", handleLoad);
       map.off("style.load", handleStyleLoad);
       map.off("error", handleError);

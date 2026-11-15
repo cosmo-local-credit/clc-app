@@ -37,10 +37,11 @@ vi.mock("@tanstack/react-router", () => ({
   }),
 }));
 
+const wallet = vi.hoisted(() => ({ chainId: 42220 }));
 vi.mock("wagmi", () => ({
   useConnection: () => ({
     address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
-    chainId: 42220,
+    chainId: wallet.chainId,
   }),
 }));
 
@@ -419,6 +420,32 @@ describe("CreatePoolFlow", () => {
     await waitFor(() =>
       expect((currency as HTMLInputElement).value).toBe("TZS - Tanzanian Shilling"),
     );
+  });
+
+  it("offers oracle pricing on Gnosis for a currency, and re-checks it as the unit changes", async () => {
+    wallet.chainId = 100;
+    try {
+      renderFlow(<CreatePoolFlow step="pool" />);
+      fireEvent.click(screen.getByText("Advanced"));
+      const oracle = () => screen.getByRole("radio", { name: /Oracle pricing/ });
+      const unit = screen.getByRole("combobox", { name: "Unit of Account" });
+      fireEvent.click(unit);
+      fireEvent.change(unit, { target: { value: "Kenyan" } });
+      fireEvent.click(await screen.findByRole("option", { name: /^KES/ }));
+      await waitFor(() => expect(oracle().hasAttribute("data-disabled")).toBe(false));
+
+      fireEvent.click(unit);
+      fireEvent.change(unit, { target: { value: "Hour" } });
+      fireEvent.click(await screen.findByRole("option", { name: /^HOUR/ }));
+      await waitFor(() => expect(oracle().hasAttribute("data-disabled")).toBe(true));
+
+      fireEvent.click(unit);
+      fireEvent.change(unit, { target: { value: "Tanzanian" } });
+      fireEvent.click(await screen.findByRole("option", { name: /^TZS/ }));
+      await waitFor(() => expect(oracle().hasAttribute("data-disabled")).toBe(false));
+    } finally {
+      wallet.chainId = 42220;
+    }
   });
 
   it("switches oracle pricing to relative when a custom unit is added", async () => {

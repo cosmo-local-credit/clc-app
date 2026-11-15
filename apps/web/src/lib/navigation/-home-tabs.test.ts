@@ -79,7 +79,7 @@ describe("isAtHomeTabRoot", () => {
   it("does not treat a filtered map as the root", () => {
     expect(isAtHomeTabRoot({ tab: "market", view: "map", q: "art" })).toBe(false);
     expect(isAtHomeTabRoot({ tab: "market", view: "map", tags: "Art" })).toBe(false);
-    expect(isAtHomeTabRoot({ tab: "market", view: "map", creditable: true })).toBe(false);
+    expect(isAtHomeTabRoot({ tab: "market", view: "map", credit: 1 })).toBe(false);
   });
 
   it("does not treat an over-limit filter as the root either", () => {

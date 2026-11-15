@@ -15,6 +15,29 @@ const params: MarketMapParams = {
   creditablePools: [{ chainId: 100, address: `0x${"A".repeat(40)}` }],
 };
 
+const ALICE = { wallet: `0x${"A1".repeat(20)}`, digest: `0x${"0F".repeat(32)}` };
+
+describe("market map Credit scope", () => {
+  it("keys a Credit response on the wallet and the reach digest", () => {
+    const credit = { kinds: params.kinds, filter: params.filter, credit: ALICE };
+    const bob = { ...credit, credit: { ...ALICE, wallet: `0x${"b2".repeat(20)}` } };
+    const moved = { ...credit, credit: { ...ALICE, digest: `0x${"1e".repeat(32)}` } };
+    const key = marketMapKeys.points(credit);
+    expect(key[3].credit).toEqual({
+      wallet: ALICE.wallet.toLowerCase(),
+      digest: ALICE.digest.toLowerCase(),
+    });
+    for (const other of [bob, moved]) {
+      expect(marketMapKeys.points(other)).not.toEqual(key);
+    }
+    expect(
+      marketMapKeys.points({ ...credit, credit: { ...ALICE, wallet: ALICE.wallet.toLowerCase() } }),
+    ).toEqual(key);
+    expect(marketMapKeys.points({ kinds: params.kinds, filter: params.filter })).not.toEqual(key);
+    expect(marketMapKeys.facets({ ...credit, bounds: [] })[3].credit).toEqual(key[3].credit);
+  });
+});
+
 describe("market map points query", () => {
   it("is keyed by filters, kinds and canonical pool addresses only", () => {
     expect(marketMapKeys.points(params)).toEqual([
@@ -25,6 +48,7 @@ describe("market map points query", () => {
         kinds: ["voucher", "want"],
         filter: { term: "market", tags: ["Food"], tagMatch: "any" },
         creditablePools: [`100:0x${"a".repeat(40)}`],
+        credit: null,
         postTiming: "future",
         postVouchers: undefined,
         postVoucherMatch: "any",

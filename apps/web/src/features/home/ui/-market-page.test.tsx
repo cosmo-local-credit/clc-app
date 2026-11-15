@@ -7,6 +7,7 @@ import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { MarketLocation } from "./market-data";
 import type { MarketCamera } from "./market-map";
+import type { MarketMapZoomControls } from "./market-map";
 
 type MarketPoolLocation = MarketLocation & { kind: "pool"; address: `0x${string}` };
 
@@ -36,6 +37,7 @@ type MapProps = {
     zoom: number;
     userInitiated: boolean;
   }) => void;
+  onZoomControlsChange?: (controls: MarketMapZoomControls | null) => void;
 };
 
 const {
@@ -197,7 +199,6 @@ vi.mock("wagmi", () => ({
 vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
   useCreditableBrowse: () => ({
     auth: { isAuthenticated: false, isLoading: false },
-    parsed: { ok: true, enabled: null },
     enabled: false,
     verification: { status: "idle", pools: [], retry: vi.fn() },
     poolRefs: undefined,
@@ -210,18 +211,16 @@ vi.mock("#/components/creditable-browse-control", () => ({
   CreditableBrowseControl: ({
     part,
     onChange,
-    onClear,
   }: {
     part: "control" | "feedback";
-    onChange: (checked: boolean) => void;
-    onClear: () => void;
+    onChange: (on: boolean) => void;
   }) => (
     <div data-testid={`credit-${part}`}>
       <button type="button" onClick={() => onChange(true)}>
         {part} Credit on
       </button>
-      <button type="button" onClick={onClear}>
-        {part} Credit clear
+      <button type="button" onClick={() => onChange(false)}>
+        {part} Credit off
       </button>
     </div>
   ),
@@ -597,35 +596,68 @@ beforeEach(() => {
 });
 
 describe("MarketPage location button", () => {
-  it("shows only the location control and ignores a legacy Satellite preference", () => {
+  it("shows the location and zoom controls in order and ignores a legacy Satellite preference", () => {
     window.localStorage.setItem("clc.market-map-mode", "satellite");
     renderPage();
 
     expect(screen.queryByRole("button", { name: "Satellite view" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Use current location" })).toBeTruthy();
+    const location = screen.getByRole("button", { name: "Use current location" });
+    const zoomIn = screen.getByRole("button", { name: "Zoom in" });
+    const zoomOut = screen.getByRole("button", { name: "Zoom out" });
+    expect(
+      location.compareDocumentPosition(zoomIn) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(zoomIn.compareDocumentPosition(zoomOut) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect((zoomIn as HTMLButtonElement).disabled).toBe(true);
+    expect((zoomOut as HTMLButtonElement).disabled).toBe(true);
     expect(lastMapProps.current?.mode).toBeUndefined();
     expect(window.localStorage.getItem("clc.market-map-mode")).toBe("satellite");
   });
 
-  it("writes and clears Credit without leaving the canonical map route", () => {
+  it("uses the current map controller and reflects its zoom boundaries", () => {
+    const zoomInAction = vi.fn();
+    const zoomOutAction = vi.fn();
+    renderPage();
+
+    act(() => {
+      lastMapProps.current?.onZoomControlsChange?.({
+        zoomIn: zoomInAction,
+        zoomOut: zoomOutAction,
+        canZoomIn: true,
+        canZoomOut: false,
+      });
+    });
+
+    const zoomIn = screen.getByRole("button", { name: "Zoom in" }) as HTMLButtonElement;
+    const zoomOut = screen.getByRole("button", { name: "Zoom out" }) as HTMLButtonElement;
+    expect(zoomIn.disabled).toBe(false);
+    expect(zoomOut.disabled).toBe(true);
+    fireEvent.click(zoomIn);
+    expect(zoomInAction).toHaveBeenCalledOnce();
+    expect(zoomOutAction).not.toHaveBeenCalled();
+  });
+
+  it("toggles Credit on and off without leaving the canonical map route", () => {
     authState.current = { ...authState.current, isAuthenticated: true };
     creditFeedback.current = true;
     renderPage();
 
     fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "control Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "control Credit off" }));
     fireEvent.click(screen.getByRole("button", { name: "feedback Credit on" }));
-    fireEvent.click(screen.getByRole("button", { name: "feedback Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit off" }));
 
     expect(mockNavigate).toHaveBeenCalledTimes(4);
     const previous = { q: "food", creditable: false };
     for (const [index, [call]] of mockNavigate.mock.calls.entries()) {
-      expect(call).toMatchObject({ to: "/", ...(index % 2 === 1 ? { replace: true } : {}) });
+      expect(call).toMatchObject({ to: "/" });
+      expect(call).not.toHaveProperty("replace");
+      // On writes credit=1; off removes it. Either drops the legacy keys.
       expect(call.search(previous)).toEqual({
         q: "food",
         tab: "market",
         view: "map",
-        creditable: index % 2 === 0 ? true : false,
+        ...(index % 2 === 0 ? { credit: 1 } : {}),
       });
     }
   });
@@ -1121,7 +1153,11 @@ describe("MarketPage voucher card", () => {
     fireEvent.click(screen.getByTestId("marker-1"));
 
     const location = screen.getByRole("button", { name: "Use current location" });
+    const zoomIn = screen.getByRole("button", { name: "Zoom in" });
+    const zoomOut = screen.getByRole("button", { name: "Zoom out" });
     expect(screen.getByRole("dialog").contains(location)).toBe(true);
+    expect(screen.getByRole("dialog").contains(zoomIn)).toBe(true);
+    expect(screen.getByRole("dialog").contains(zoomOut)).toBe(true);
     expect(screen.queryByRole("button", { name: "Satellite view" })).toBeNull();
   });
 

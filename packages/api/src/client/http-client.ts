@@ -20,6 +20,7 @@ type ApiErr = {
   ok: false;
   description?: string;
   code?: string;
+  result?: unknown;
 };
 
 export type HttpClient = {
@@ -104,7 +105,7 @@ export function createHttpClient({
         res.status,
         errBody?.description ?? (res.statusText || "Request failed"),
         errBody?.code,
-        { retryAfterMs },
+        { retryAfterMs, result: errBody?.result },
       );
     }
 
@@ -113,6 +114,7 @@ export function createHttpClient({
       if (!envelope.ok) {
         throw new BackendApiError(200, envelope.description ?? "Request failed", envelope.code, {
           retryAfterMs,
+          result: envelope.result,
         });
       }
       return envelope.result;

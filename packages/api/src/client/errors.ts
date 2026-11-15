@@ -83,12 +83,19 @@ export type BackendApiErrorOptions = {
   kind?: BackendErrorKind;
   /** From `Retry-After`, when the backend said how long to wait. */
   retryAfterMs?: number;
+  /**
+   * The error envelope's `result`, for the few errors that carry
+   * machine-readable detail (a refused route's reason and hop, a decoded
+   * revert). Untyped: the resource module that knows the route parses it.
+   */
+  result?: unknown;
   cause?: unknown;
 };
 
 export class BackendApiError extends Error {
   readonly kind: BackendErrorKind;
   readonly retryAfterMs?: number;
+  readonly result?: unknown;
 
   constructor(
     public readonly status: number,
@@ -100,6 +107,7 @@ export class BackendApiError extends Error {
     this.name = "BackendApiError";
     this.kind = options.kind ?? classifyBackendError(status, code);
     this.retryAfterMs = options.retryAfterMs;
+    this.result = options.result;
   }
 }
 

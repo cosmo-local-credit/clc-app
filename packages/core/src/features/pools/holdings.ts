@@ -8,6 +8,7 @@ type HoldingVoucher = {
   decimals: number | null;
   iconUrl: string | null;
   tokenLimit: string | null;
+  active?: boolean;
 };
 
 type IndexedHoldingToken = {
@@ -17,6 +18,7 @@ type IndexedHoldingToken = {
   tokenDecimals: number;
   balance: string;
   iconUrl: string | null;
+  catalogActive?: boolean;
 };
 
 /** What a pool holds of one voucher, and how much more it will take. */
@@ -27,6 +29,8 @@ export type PoolHolding = {
   symbol: string;
   decimals: number | null;
   iconUrl: string | null;
+  /** Absent when the deposited token has no local Voucher catalog record. */
+  catalogActive?: boolean;
   /** Gross on-chain balance. The limiter checks this figure. */
   balanceRaw: string;
   /**
@@ -116,6 +120,42 @@ export type BuildPoolHoldingsInput = {
   requireRates?: boolean;
 };
 
+export type PoolHoldingGroups = {
+  accepted: PoolHolding[];
+  pending: PoolHolding[];
+};
+
+/**
+ * Accepted membership is supplied by the Pool's authoritative registry. A
+ * positive balance outside it is a deposit waiting for approval; an old zero
+ * balance outside it is history, not a pending task.
+ */
+export function partitionPoolHoldings(
+  holdings: readonly PoolHolding[],
+  acceptedAddresses: readonly string[],
+): PoolHoldingGroups {
+  const acceptedSet = new Set(acceptedAddresses.map((address) => address.toLowerCase()));
+  const accepted: PoolHolding[] = [];
+  const pending: PoolHolding[] = [];
+
+  for (const holding of holdings) {
+    if (acceptedSet.has(holding.tokenAddress.toLowerCase())) {
+      accepted.push(holding);
+      continue;
+    }
+    try {
+      if (BigInt(holding.balanceRaw) > 0n) pending.push(holding);
+    } catch {
+      // An invalid indexed amount is neither displayed nor actionable.
+    }
+  }
+
+  pending.sort(
+    (left, right) => left.name.localeCompare(right.name) || left.symbol.localeCompare(right.symbol),
+  );
+  return { accepted, pending };
+}
+
 /**
  * One row per voucher the pool holds or lists, richest source winning per field.
  *
@@ -156,6 +196,7 @@ export function buildPoolHoldings({
         symbol: voucher.symbol,
         decimals: voucher.decimals,
         iconUrl: voucher.iconUrl,
+        catalogActive: voucher.active,
         balanceRaw: tokenTreasury?.balanceRaw ?? null,
         liquidityRaw: tokenTreasury?.withdrawableRaw ?? null,
         feesRaw: tokenTreasury?.feesRaw ?? null,
@@ -192,6 +233,7 @@ export function buildPoolHoldings({
         symbol: token.tokenSymbol,
         decimals: token.tokenDecimals,
         iconUrl: token.iconUrl,
+        catalogActive: token.catalogActive,
         balanceRaw: tokenTreasury?.balanceRaw ?? token.balance,
         liquidityRaw: tokenTreasury?.withdrawableRaw ?? null,
         feesRaw: tokenTreasury?.feesRaw ?? null,
@@ -224,6 +266,7 @@ function holding(input: {
   symbol: string;
   decimals: number | null;
   iconUrl: string | null;
+  catalogActive?: boolean;
   balanceRaw: string | null;
   liquidityRaw: string | null;
   feesRaw: string | null;
@@ -243,6 +286,7 @@ function holding(input: {
     symbol: input.symbol,
     decimals: input.decimals,
     iconUrl: input.iconUrl,
+    catalogActive: input.catalogActive,
     balanceRaw,
     liquidityRaw: input.liquidityRaw,
     unitValueRaw: null,

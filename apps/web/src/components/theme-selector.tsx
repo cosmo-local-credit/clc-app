@@ -19,7 +19,7 @@ function useThemeToggle() {
   };
 }
 
-export function ThemeToggle({ className }: { className?: string }) {
+export function ThemeToggle({ className, label: name }: { className?: string; label?: string }) {
   const { accessibleLabel, Icon, isDark, label, toggleTheme } = useThemeToggle();
 
   return (
@@ -31,7 +31,8 @@ export function ThemeToggle({ className }: { className?: string }) {
       onClick={toggleTheme}
     >
       <Icon className="size-4" aria-hidden="true" />
-      {label}
+      {name ? <span>{name}</span> : null}
+      <span className={cn(name && "ms-auto")}>{label}</span>
     </Button>
   );
 }
@@ -53,13 +54,14 @@ export function ThemeSettingsRow() {
   );
 }
 
-export function ThemeSettingsButton() {
+export function ThemeSettingsButton({ className }: { className?: string } = {}) {
   const { accessibleLabel, Icon, isDark, toggleTheme } = useThemeToggle();
   return (
     <Button
       variant="outline"
       size="icon"
       tap
+      className={className}
       aria-label={accessibleLabel}
       aria-pressed={isDark}
       onClick={toggleTheme}

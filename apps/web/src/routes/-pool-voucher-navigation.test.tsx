@@ -48,7 +48,7 @@ describe("pool voucher navigation", () => {
       component: () => {
         const { poolAddress } = useParams({ strict: false });
         return poolAddress ? (
-          <PoolDetailPage poolAddress={poolAddress} activeTab="vouchers" />
+          <PoolDetailPage poolAddress={poolAddress} activeTab="holdings" />
         ) : null;
       },
     });
@@ -121,7 +121,7 @@ describe("pool voucher navigation", () => {
       component: () => {
         const { poolAddress } = useParams({ strict: false });
         return poolAddress ? (
-          <PoolDetailPage poolAddress={poolAddress} activeTab="vouchers" />
+          <PoolDetailPage poolAddress={poolAddress} activeTab="holdings" />
         ) : null;
       },
     });

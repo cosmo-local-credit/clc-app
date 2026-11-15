@@ -27,6 +27,7 @@ export function PoolOfferingsPanel({
       aria-labelledby="pool-tab-offerings"
       query={query}
       showVoucher
+      poolSwapAddress={poolAddress}
       resolveVoucherRate={(offering) => {
         const voucher = vouchers.find(
           (candidate) =>

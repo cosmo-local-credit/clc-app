@@ -5,6 +5,7 @@ import type {
   OfferingReadOverrides,
   OfferingsClient,
 } from "./client";
+import { creditScopeKey } from "../credit-router/queries";
 
 /**
  * Canonical query identity and base options for offerings.
@@ -24,6 +25,7 @@ export const offeringKeys = {
         q: params.q?.trim() ?? "",
         tags: [...(params.tags ?? [])],
         pools: params.pools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`),
+        ...(params.credit ? { credit: creditScopeKey(params.credit) } : {}),
       },
     ] as const,
 

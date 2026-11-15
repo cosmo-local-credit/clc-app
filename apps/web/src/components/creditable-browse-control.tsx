@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { RiCheckLine, RiHandCoinLine } from "react-icons/ri";
 
@@ -10,12 +10,12 @@ import { cn } from "#/lib/utils";
 type State = ReturnType<typeof useCreditableBrowse>;
 
 /** Which notice the feedback part shows, if any. */
-export function creditFeedback(state: State): "invalid" | "signin" | "checking" | "error" | null {
-  if (!state.parsed.ok) return "invalid";
+export function creditFeedback(state: State): "signin" | "checking" | "error" | "stale" | null {
   if (!state.enabled) return null;
   if (state.auth.isLoading) return "checking";
   if (!state.auth.isAuthenticated) return "signin";
-  return state.verification.status === "error" ? "error" : null;
+  if (state.verification.status === "error") return "error";
+  return state.verification.stale ? "stale" : null;
 }
 
 /** Whether the feedback part has anything to say, so a screen can give it the one notice slot. */
@@ -23,37 +23,26 @@ export function hasCreditFeedback(state: State): boolean {
   return creditFeedback(state) !== null;
 }
 
+/** The Credit control's state as one localized label, since tapping it toggles. */
+export function useCreditStateLabel(on: boolean): string {
+  const { t } = useLingui();
+  return on ? t`Credit: on` : t`Credit: off`;
+}
+
 export function CreditableBrowseControl({
   state,
   onChange,
-  onClear,
   part = "all",
 }: {
   state: State;
-  onChange: (checked: boolean) => void;
-  onClear: () => void;
+  /** The toggled state: true turns Credit on. */
+  onChange: (on: boolean) => void;
   part?: "all" | "control" | "feedback";
 }) {
+  const label = useCreditStateLabel(state.enabled);
   const showControl = part !== "feedback";
   const showFeedback = part !== "control";
   const checking = state.enabled && state.verification.status === "loading";
-
-  if (!state.parsed.ok) {
-    if (!showFeedback) return null;
-    return (
-      <div
-        className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
-        role="alert"
-      >
-        <p className="text-sm">
-          <Trans>This link contains an invalid Credit filter.</Trans>
-        </p>
-        <Button variant="outline" tap onClick={onClear}>
-          <Trans>Clear filter</Trans>
-        </Button>
-      </div>
-    );
-  }
 
   if (state.enabled && !state.auth.isLoading && !state.auth.isAuthenticated) {
     if (!showFeedback) return null;
@@ -92,6 +81,8 @@ export function CreditableBrowseControl({
             "font-semibold hover:bg-success/90",
             state.enabled && "shadow-[inset_0_0_0_2px_var(--color-success-foreground)]",
           )}
+          aria-label={label}
+          title={label}
           aria-pressed={state.enabled}
           aria-busy={checking}
           disabled={state.auth.isLoading}
@@ -106,6 +97,14 @@ export function CreditableBrowseControl({
           )}
           <Trans>Credit</Trans>
         </Button>
+      ) : null}
+      {showFeedback && state.enabled && state.verification.stale ? (
+        <div
+          className="border border-border bg-card p-3 text-sm text-muted-foreground"
+          role="status"
+        >
+          <Trans>Credit may be out of date.</Trans>
+        </div>
       ) : null}
       {showFeedback && state.enabled && state.verification.status === "error" ? (
         <div

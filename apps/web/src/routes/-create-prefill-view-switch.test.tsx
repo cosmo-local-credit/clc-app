@@ -383,15 +383,26 @@ describe("pool prefill", () => {
     render(
       <PoolWizard
         step="pool"
-        prefill={{ name: "Kibera Growers", unitOfAccount: "EUR", pricing: "oracle" }}
+        prefill={{ name: "Kibera Growers", unitOfAccount: "HOUR", pricing: "oracle" }}
       />,
     );
 
     expect(saved("pool-create")).toMatchObject({
       name: "Kibera Growers",
-      unitOfAccount: "EUR",
+      unitOfAccount: "HOUR",
       pricing: "relative",
     });
+  });
+
+  it("keeps oracle pricing for any currency", () => {
+    render(
+      <PoolWizard
+        step="pool"
+        prefill={{ name: "Kibera Growers", unitOfAccount: "EUR", pricing: "oracle" }}
+      />,
+    );
+
+    expect(saved("pool-create")).toMatchObject({ unitOfAccount: "EUR", pricing: "oracle" });
   });
 
   it("drops feesDecoupled without a fee, and seeds the fee recipient to the wallet with one", async () => {

@@ -16,10 +16,12 @@ function SelectValue({
 function SelectTrigger({
   className,
   size = "default",
+  showIndicator = true,
   children,
   ...props
 }: React.ComponentProps<typeof Select.Trigger> & {
   size?: "sm" | "default";
+  showIndicator?: boolean;
 }) {
   return (
     <Select.Trigger
@@ -38,9 +40,11 @@ function SelectTrigger({
       {...props}
     >
       {children}
-      <Select.Icon className="size-4 opacity-50">
-        <ChevronDownIcon className="size-4" />
-      </Select.Icon>
+      {showIndicator ? (
+        <Select.Icon className="size-4 opacity-50">
+          <ChevronDownIcon className="size-4" />
+        </Select.Icon>
+      ) : null}
     </Select.Trigger>
   );
 }

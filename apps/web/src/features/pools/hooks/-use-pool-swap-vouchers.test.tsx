@@ -45,7 +45,7 @@ vi.mock("./use-pool-registry", async (importOriginal) => ({
   },
 }));
 
-import { usePoolSwapVouchers } from "./use-pool-swap-vouchers";
+import { usePoolAcceptedVouchers, usePoolSwapVouchers } from "./use-pool-swap-vouchers";
 
 const REGISTRY = "0x7777777777777777777777777777777777777777" as const;
 const KAW = "0xaaa0000000000000000000000000000000000001";
@@ -105,6 +105,18 @@ describe("usePoolSwapVouchers", () => {
 
     expect(result.current.isError).toBe(true);
     expect(result.current.vouchers).toEqual([]);
+  });
+
+  it("retains a previously verified membership set after a failed refresh", () => {
+    const catalogVoucher = voucher(KAW, "KAW");
+    registry.value.data = [KAW];
+    registry.value.isError = true;
+
+    const { result } = renderHook(() => usePoolAcceptedVouchers(pool(), [catalogVoucher]));
+
+    expect(result.current.verified).toBe(true);
+    expect(result.current.isError).toBe(true);
+    expect(result.current.vouchers).toEqual([catalogVoucher]);
   });
 
   it("uses the catalog alone for a pool with no registry", () => {

@@ -229,6 +229,19 @@ const routePolicy = [
     source: "_nav/pools/$poolAddress/swap/receipt.tsx",
     navOwner: "wallet",
   },
+  // Getting a voucher through the credit router, and its grouped receipt.
+  {
+    id: "/_nav/get/$voucherAddress",
+    fullPath: "/get/$voucherAddress",
+    source: "_nav/get/$voucherAddress.tsx",
+    navOwner: "voucher",
+  },
+  {
+    id: "/_nav/routed-swaps/$trackingId",
+    fullPath: "/routed-swaps/$trackingId",
+    source: "_nav/routed-swaps/$trackingId.tsx",
+    navOwner: "wallet",
+  },
 ] satisfies RoutePolicy[];
 
 function interfaceKeys(source: string, interfaceName: string): string[] {

@@ -4,6 +4,7 @@ import { useSearch } from "@tanstack/react-router";
 import { useId } from "react";
 import { useConnection } from "wagmi";
 
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
@@ -196,6 +197,7 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
                       </>
                     )}
                     <VoucherRatingLine address={address} place={place} stars={false} wrapPlace />
+                    <CreditHopsBadge kind="voucher" address={address} />
                     {detail?.tags?.length
                       ? detail.tags
                           .slice(0, 3)

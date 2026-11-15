@@ -1,5 +1,7 @@
 import type { NearbyRequest } from "@clc/core/features/catalog/nearby";
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import type { CreditScope } from "../credit-router/client";
+import { creditScopeKey } from "../credit-router/queries";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import type {
   MarketBoundingBox,
@@ -73,6 +75,7 @@ export const voucherKeys = {
     filter: CatalogFilter | null,
     perPage: number,
     pools?: readonly { chainId: number; address: string }[],
+    credit?: CreditScope,
   ) =>
     [
       "clc",
@@ -82,6 +85,7 @@ export const voucherKeys = {
         filter,
         perPage,
         pools: pools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`),
+        ...(credit ? { credit: creditScopeKey(credit) } : {}),
       },
     ] as const,
 

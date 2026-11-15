@@ -1,9 +1,11 @@
 import { haversineMeters } from "@clc/core/lib/geo/distance";
+import { withCredit } from "#/lib/navigation/pool-search";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RiArrowRightSLine } from "react-icons/ri";
 
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
 import { MarketEmptyMessage } from "#/components/market-empty-message";
@@ -25,16 +27,16 @@ const MARKET_LIST_BATCH_SIZE = 20;
 
 export function MarketListPage({
   locationOwner = GUEST_STORAGE_OWNER,
-  creditableSearch,
+  creditOn = false,
 }: {
   locationOwner?: string;
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditOn?: boolean;
 }) {
   const { t, i18n } = useLingui();
   const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
   const navigate = useNavigate();
-  const credit = useCreditableBrowse(creditableSearch);
-  const filter = useMarketFilter(useStorageOwner(), creditableSearch !== undefined);
+  const credit = useCreditableBrowse(creditOn);
+  const filter = useMarketFilter(useStorageOwner(), creditOn);
   const [filtersOpen, setFiltersOpen] = useState(false);
   // Latched rather than tracking `filtersOpen`, so reopening the sheet reuses the cached vocabulary
   // instead of flashing an empty facet list on every open.
@@ -44,7 +46,7 @@ export function MarketListPage({
     [],
     !filter.isRestoringPreference && !credit.blocksResults,
     filtersEverOpened,
-    credit.enabled ? credit.poolRefs : undefined,
+    credit.enabled ? credit.scope : undefined,
   );
   const { vouchers, isCatalogComplete, error, retry, retrying } = catalog;
   const [visibleCount, setVisibleCount] = useState(MARKET_LIST_BATCH_SIZE);
@@ -132,17 +134,10 @@ export function MarketListPage({
             <CreditableBrowseControl
               part="control"
               state={credit}
-              onChange={(checked) =>
+              onChange={(on) =>
                 void navigate({
                   to: "/market",
-                  search: (previous) => ({ ...previous, creditable: checked }),
-                })
-              }
-              onClear={() =>
-                void navigate({
-                  to: "/market",
-                  replace: true,
-                  search: (previous) => ({ ...previous, creditable: undefined }),
+                  search: (previous) => ({ ...previous, ...withCredit(on) }),
                 })
               }
             />
@@ -164,17 +159,10 @@ export function MarketListPage({
           <CreditableBrowseControl
             part="feedback"
             state={credit}
-            onChange={(checked) =>
+            onChange={(on) =>
               void navigate({
                 to: ".",
-                search: (previous) => ({ ...previous, creditable: checked }),
-              })
-            }
-            onClear={() =>
-              void navigate({
-                to: ".",
-                replace: true,
-                search: (previous) => ({ ...previous, creditable: undefined }),
+                search: (previous) => ({ ...previous, ...withCredit(on) }),
               })
             }
           />
@@ -279,6 +267,7 @@ function MarketVoucherRow({
           <Badge variant="muted" size="sm">
             {kindLabel}
           </Badge>
+          <CreditHopsBadge kind="voucher" address={voucher.address} />
           {distanceLabel ? (
             <span className="truncate text-muted-foreground text-xs">{distanceLabel}</span>
           ) : voucher.locationName ? (

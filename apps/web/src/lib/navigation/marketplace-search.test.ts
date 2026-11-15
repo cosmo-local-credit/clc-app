@@ -41,14 +41,14 @@ describe("marketplace route search", () => {
       scope: "pools",
       q: "bike",
       tags: "Repair",
-      creditable: true,
+      credit: 1,
       out_voucher: `0x${"a".repeat(40)}`,
     });
     expect(marketplaceSearchForScope(previous, "all")).toMatchObject({
       scope: "all",
       q: "bike",
       tags: "Repair",
-      creditable: true,
+      credit: 1,
       out_voucher: undefined,
     });
   });
@@ -58,14 +58,14 @@ describe("marketplace route search", () => {
       scope: "pools",
       q: "bike",
       tags: "Repair",
-      creditable: true,
+      credit: 1,
       out_voucher: `0x${"a".repeat(40)}`,
     });
     expect(marketplaceSearchForScope(previous, "offers")).toMatchObject({
       scope: "offers",
       q: "bike",
       tags: "Repair",
-      creditable: true,
+      credit: 1,
       out_voucher: undefined,
     });
   });
@@ -94,10 +94,15 @@ describe("marketplace route search", () => {
         q: "bike",
         tags: "Repair",
         tagMatch: "all",
-        creditable: true,
+        credit: 1,
         out_voucher: `0x${"a".repeat(40)}`,
       }),
-    ).toEqual({ q: "bike", tags: "Repair", tagMatch: "all", creditable: true });
+    ).toEqual({ q: "bike", tags: "Repair", tagMatch: "all", credit: 1 });
+    // An older Credit link arrives at the map as credit=1, and anything else as off.
+    expect(mapSearchFrom({ creditable: true })).toEqual({ credit: 1 });
+    expect(mapSearchFrom({ creditDepth: "max" })).toEqual({ credit: 1 });
+    expect(mapSearchFrom({ creditDepth: "9" })).toEqual({});
+    expect(mapSearchFrom({ credit: "yes" })).toEqual({});
   });
 
   it("carries non-default Post timing to the map", () => {
@@ -116,7 +121,7 @@ describe("marketplace route search", () => {
         q: "  bike   repair  ",
         tags: ["Repair, Food", "Repair"],
         tagMatch: "all",
-        creditable: "TRUE",
+        creditDepth: "2",
         out_voucher: `0x${"a".repeat(40)}`,
         vouchers: `100:0x${"b".repeat(40)}`,
         voucherMatch: "all",
@@ -126,7 +131,7 @@ describe("marketplace route search", () => {
       q: "bike repair",
       tags: "Food,Repair",
       tagMatch: "all",
-      creditable: true,
+      credit: 1,
     });
   });
 
@@ -149,6 +154,6 @@ describe("marketplace route search", () => {
         tags: Array.from({ length: 13 }, (_, index) => `Tag ${index}`),
         creditable: "true",
       }),
-    ).toEqual({ q: "bike", creditable: true });
+    ).toEqual({ q: "bike", credit: 1 });
   });
 });

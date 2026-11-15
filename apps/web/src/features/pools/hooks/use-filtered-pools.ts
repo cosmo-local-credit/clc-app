@@ -157,7 +157,7 @@ function useFilteredPools(filter: CatalogFilter | null, perPage = POOLS_FILTER_P
   });
 }
 
-export function usePoolFacetVocabulary(enabled: boolean, bounded = true) {
+function usePoolFacetVocabulary(enabled: boolean, bounded = true) {
   const nearby = useNearbyCatalog();
   const discovery = bounded ? nearby : undefined;
   return useQuery({

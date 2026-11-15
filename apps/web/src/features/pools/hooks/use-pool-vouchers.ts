@@ -59,6 +59,8 @@ export function usePoolVouchersWithStatus(
 
   return {
     vouchers: query.data?.pages.flatMap((page) => page.vouchers) ?? [],
+    /** Distinguishes an initial failure from a failed refresh of verified data. */
+    hasData: query.data !== undefined,
     // Still draining counts as pending: a short list presented as final is the
     // bug this option exists to close.
     isPending: query.isPending || (all && (hasNextPage || isFetchingNextPage)),

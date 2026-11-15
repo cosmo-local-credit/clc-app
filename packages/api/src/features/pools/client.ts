@@ -5,6 +5,7 @@ import {
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
 import { POOL_QUOTER_TYPES, type PoolQuoterType } from "@clc/core/features/pools/logic";
+import { getAddress } from "viem";
 
 import type { HttpClient } from "../../client/http-client";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
@@ -201,8 +202,15 @@ export type PoolVoucher = {
    * would exceed the limit, so a recorded zero accepts nothing.
    */
   tokenLimit: string | null;
+  /** The voucher's feed in clc-core's registry. Null when the aggregator is not a verified feed. */
   oracleFeedId: string | null;
+  /** The registry name of that feed, null on the same terms. */
   oracleName: string | null;
+  /**
+   * The aggregator the pool's OracleQuoter maps this voucher to, EIP-55.
+   * Does not imply a registered feed: an address with a null `oracleFeedId` is
+   * a feed set outside the registry, which the UI shows as unverified.
+   */
   oracleAddress: HexAddress | null;
   offerCount: number;
   availableOfferCount: number;
@@ -583,6 +591,7 @@ function normalizePoolVoucher(voucher: BackendPoolVoucher): PoolVoucher | null {
   if (!tokenAddress) return null;
   const name = normalizeText(voucher.name) ?? "Community Voucher";
   const symbol = normalizeText(voucher.symbol) ?? "VOUCHER";
+  const oracleAddress = normalizeHex(voucher.oracleAddress);
   return {
     id: String(voucher.id ?? tokenAddress),
     managerClosure: normalizeManagerClosure(voucher.managerClosure),
@@ -605,7 +614,8 @@ function normalizePoolVoucher(voucher: BackendPoolVoucher): PoolVoucher | null {
     tokenLimit: normalizeRawAmount(voucher.tokenLimit),
     oracleFeedId: normalizeID(voucher.oracleFeedId),
     oracleName: normalizeText(voucher.oracleName),
-    oracleAddress: normalizeHex(voucher.oracleAddress),
+    // The indexer stores the address as the event emitted it; the app compares EIP-55 exactly.
+    oracleAddress: oracleAddress ? getAddress(oracleAddress) : null,
     offerCount: normalizeNumber(voucher.offerCount) ?? 0,
     availableOfferCount: normalizeNumber(voucher.availableOfferCount) ?? 0,
     tags: normalizeStringArray(voucher.tags),

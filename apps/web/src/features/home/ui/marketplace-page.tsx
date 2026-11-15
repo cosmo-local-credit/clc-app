@@ -1,4 +1,5 @@
 import { marketplaceInfiniteQueryOptions } from "@clc/api/features/marketplace/queries";
+import { withCredit } from "#/lib/navigation/pool-search";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import type {
   MarketplaceKind,
@@ -13,6 +14,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { RiArrowRightSLine, RiArticleLine } from "react-icons/ri";
 
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
 import { MarketEmptyMessage } from "#/components/market-empty-message";
@@ -46,10 +48,10 @@ const KIND_SCOPE: Record<Exclude<MarketplaceKind, "post">, MarketplaceScope> = {
 
 /** All: offers, vouchers, pools and catalogs in one list, under the same search as the map. */
 export function MarketplacePage({
-  creditableSearch,
+  creditOn = false,
   locationOwner = GUEST_STORAGE_OWNER,
 }: {
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditOn?: boolean;
   locationOwner?: string;
 }) {
   const { t } = useLingui();
@@ -57,8 +59,8 @@ export function MarketplacePage({
   const headingId = useId();
   const nearby = useNearbyCatalog();
   const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
-  const credit = useCreditableBrowse(creditableSearch);
-  const filter = useMarketFilter(useStorageOwner(), creditableSearch !== undefined);
+  const credit = useCreditableBrowse(creditOn);
+  const filter = useMarketFilter(useStorageOwner(), creditOn);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const parsed = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
   const query = useInfiniteQuery({
@@ -71,7 +73,7 @@ export function MarketplacePage({
       nearby: nearby?.nearby === true,
       scope: nearby?.scope,
       bounds: nearby?.bounds,
-      ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
+      ...(credit.enabled && credit.scope ? { credit: credit.scope } : {}),
     }),
     enabled:
       filter.result.ok &&
@@ -110,17 +112,10 @@ export function MarketplacePage({
           <CreditableBrowseControl
             part="control"
             state={credit}
-            onChange={(checked) =>
+            onChange={(on) =>
               void navigate({
                 to: "/market",
-                search: (previous) => ({ ...previous, creditable: checked }),
-              })
-            }
-            onClear={() =>
-              void navigate({
-                to: "/market",
-                replace: true,
-                search: (previous) => ({ ...previous, creditable: undefined }),
+                search: (previous) => ({ ...previous, ...withCredit(on) }),
               })
             }
           />
@@ -142,17 +137,10 @@ export function MarketplacePage({
       <CreditableBrowseControl
         part="feedback"
         state={credit}
-        onChange={(checked) =>
+        onChange={(on) =>
           void navigate({
             to: ".",
-            search: (previous) => ({ ...previous, creditable: checked }),
-          })
-        }
-        onClear={() =>
-          void navigate({
-            to: ".",
-            replace: true,
-            search: (previous) => ({ ...previous, creditable: undefined }),
+            search: (previous) => ({ ...previous, ...withCredit(on) }),
           })
         }
       />
@@ -318,6 +306,14 @@ function MarketplaceResultRow({
             <Icon className="size-3" aria-hidden="true" />
             <ResultKind kind={row.kind} />
           </Badge>
+          {row.kind === "pool" ? (
+            <CreditHopsBadge kind="pool" address={row.address} />
+          ) : row.kind === "voucher" || row.kind === "offering" ? (
+            <CreditHopsBadge
+              kind="voucher"
+              address={row.kind === "offering" ? row.voucherAddress : row.address}
+            />
+          ) : null}
           {row.tags.slice(0, ROW_TAG_LIMIT).map((tag) => (
             <TagBadge key={tag} tag={tag} size="sm" />
           ))}

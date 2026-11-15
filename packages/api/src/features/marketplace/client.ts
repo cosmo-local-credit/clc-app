@@ -9,6 +9,7 @@ import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import { type VoucherRef, serializeVoucherRef } from "@clc/core/features/catalog/logic";
 import type { PostTiming } from "@clc/core/features/reports/logic";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
+import { CREDIT_DISCOVERY_DEPTH, type CreditScope } from "../credit-router/client";
 
 const tagFacetSchema = z.object({ tag: z.string(), count: z.number().int().nonnegative() });
 const marketplacePageSchema = z.object({
@@ -30,6 +31,11 @@ export type MarketplaceParams = {
   sort?: "nearest";
   bounds?: readonly MarketBoundingBox[];
   pools?: readonly { chainId: number; address: string }[];
+  /**
+   * The server-resolved Credit filter (`creditDepth=max`). Needs the session, so
+   * the request carries credentials; it cannot be combined with `pools`.
+   */
+  credit?: CreditScope;
   postTiming?: PostTiming;
   postVouchers?: readonly VoucherRef[];
   postVoucherMatch?: "any" | "all";
@@ -53,8 +59,12 @@ export function createMarketplaceClient(http: HttpClient) {
       if (params.nearby) query.set("nearby", "true");
       if (params.sort) query.set("sort", params.sort);
       appendMarketBounds(query, params.bounds);
+      if (params.credit && params.pools?.length) {
+        throw new Error("creditDepth cannot be combined with pools; send one or the other.");
+      }
       if (params.pools?.length)
         query.set("pools", params.pools.map((pool) => `${pool.chainId}:${pool.address}`).join(","));
+      if (params.credit) query.set("creditDepth", CREDIT_DISCOVERY_DEPTH);
       if (params.postTiming) query.set("postTiming", params.postTiming);
       appendPostRelationships(
         query,
@@ -74,7 +84,7 @@ export function createMarketplaceClient(http: HttpClient) {
         await http.request<unknown>(`/api/v2/marketplace?${query}`, {
           method: "GET",
           cache: "no-store",
-          credentials: params.nearby || params.sort ? "include" : "omit",
+          credentials: params.nearby || params.sort || params.credit ? "include" : "omit",
           signal,
         }),
       );

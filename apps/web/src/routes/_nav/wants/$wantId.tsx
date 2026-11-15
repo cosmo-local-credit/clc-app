@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, retainSearchParams } from "@tanstack/react-router";
 import { lazy } from "react";
 import { z } from "zod";
+import { creditSearch } from "#/lib/navigation/credit-search";
 import { LayoutSwitch } from "#/desktop/switch";
 import { WantDetailPage } from "#/features/wants/ui/want-detail-page";
 
@@ -17,7 +18,11 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/_nav/wants/$wantId")({
   staticData: { navOwner: "market", desktop: "fill" },
-  validateSearch: searchSchema,
+  validateSearch: (search: Record<string, unknown>) => ({
+    ...searchSchema.parse(search),
+    ...creditSearch(search),
+  }),
+  search: { middlewares: [retainSearchParams(["credit"])] },
   component: WantRoute,
 });
 

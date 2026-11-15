@@ -77,9 +77,6 @@ vi.mock("#/desktop/pools/detail/pool-info-desk", () => ({
 vi.mock("#/desktop/pools/detail/pool-tab-bodies", () => ({
   PoolOfferingsGrid: () => <p>offerings body</p>,
   PoolWantsTable: () => <p>wants body</p>,
-  PoolVouchersTable: ({ figures }: { figures: boolean }) => (
-    <p>{figures ? "vouchers body with figures" : "vouchers body"}</p>
-  ),
   PoolHoldingsTable: () => <p>holdings body</p>,
   PoolCreditTable: () => <p>credit body</p>,
   PoolActivityTable: ({
@@ -364,7 +361,6 @@ describe("pool tabs", () => {
     expect(tabs.map((entry) => entry.textContent)).toEqual([
       "Offerings",
       "Wants",
-      "Vouchers",
       "Holdings",
       "Credit",
       "Activity",
@@ -395,10 +391,10 @@ describe("pool tabs", () => {
     expect(screen.queryByText("offerings body")).toBeNull();
 
     fireEvent.keyDown(tab("Wants"), { key: "ArrowRight" });
-    await waitFor(() => expect(tab("Vouchers").getAttribute("aria-selected")).toBe("true"));
-    expect(document.activeElement).toBe(tab("Vouchers"));
+    await waitFor(() => expect(tab("Holdings").getAttribute("aria-selected")).toBe("true"));
+    expect(document.activeElement).toBe(tab("Holdings"));
 
-    fireEvent.keyDown(tab("Vouchers"), { key: "ArrowLeft" });
+    fireEvent.keyDown(tab("Holdings"), { key: "ArrowLeft" });
     await waitFor(() => expect(tab("Wants").getAttribute("aria-selected")).toBe("true"));
     expect(document.activeElement).toBe(tab("Wants"));
   });
@@ -441,7 +437,7 @@ describe("pool tabs", () => {
       within(list)
         .getAllByRole("tab")
         .map((entry) => entry.textContent),
-    ).toEqual(["Offerings", "Wants", "Vouchers", "Info"]);
+    ).toEqual(["Offerings", "Wants", "Holdings", "Info"]);
     expect(tab("Offerings").getAttribute("aria-selected")).toBe("true");
     expect(screen.queryByText("credit body")).toBeNull();
   });
@@ -662,21 +658,21 @@ describe("pool header", () => {
     expect(screen.getByText("0x5c4e18…735aaa")).toBeTruthy();
   });
 
-  it("keeps the pool's holdings figures from a guest, as the phone hides Holdings and Credit", async () => {
+  it("keeps financial header figures private while making Holdings public", async () => {
     refs.holdings.current = {
       holdings: [{ unitValueRaw: "1000000" }],
       unit: "KES",
       isPending: false,
     };
     setModel({ authenticated: false, owner: false });
-    const guest = mount(`/pools/${POOL}?tab=vouchers`);
-    expect(await screen.findByText("vouchers body")).toBeTruthy();
+    const guest = mount(`/pools/${POOL}?tab=holdings`);
+    expect(await screen.findByText("holdings body")).toBeTruthy();
     expect(screen.queryByText("Liquidity")).toBeNull();
     guest.unmount();
 
     setModel();
-    mount(`/pools/${POOL}?tab=vouchers`);
-    expect(await screen.findByText("vouchers body with figures")).toBeTruthy();
+    mount(`/pools/${POOL}?tab=holdings`);
+    expect(await screen.findByText("holdings body")).toBeTruthy();
     expect(screen.getByText("Liquidity")).toBeTruthy();
   });
 });

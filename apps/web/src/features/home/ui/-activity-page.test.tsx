@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, within, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 
@@ -63,26 +63,41 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => ADDRESS.toLowerCase(),
 }));
 
+const routedMocks = vi.hoisted(() => ({
+  routedSwaps: vi.fn(),
+  getMarketVoucher: vi.fn(),
+}));
+
+vi.mock("#/lib/api/credit-router", () => ({
+  creditRouterClient: { routedSwaps: routedMocks.routedSwaps },
+}));
+
+vi.mock("#/lib/api/market", () => ({
+  marketClient: { getMarketVoucher: routedMocks.getMarketVoucher },
+}));
+
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
     children,
     params,
     search,
-    to: _to,
+    to,
     ...props
   }: {
     children: React.ReactNode;
-    params?: { voucherAddress: string };
-    search: { from: string };
+    params?: { voucherAddress?: string; trackingId?: string };
+    search?: { from: string };
     to: string;
     "aria-label"?: string;
     className?: string;
   }) => (
     <a
       href={
-        params
-          ? `/vouchers/${params.voucherAddress}?${new URLSearchParams(search).toString()}`
-          : "/"
+        params?.trackingId
+          ? to.replace("$trackingId", params.trackingId)
+          : params?.voucherAddress
+            ? `/vouchers/${params.voucherAddress}?${new URLSearchParams(search).toString()}`
+            : "/"
       }
       {...props}
     >
@@ -90,6 +105,13 @@ vi.mock("@tanstack/react-router", () => ({
     </a>
   ),
 }));
+
+beforeEach(() => {
+  routedMocks.routedSwaps.mockReset();
+  routedMocks.routedSwaps.mockResolvedValue({ items: [], cursor: null });
+  routedMocks.getMarketVoucher.mockReset();
+  routedMocks.getMarketVoucher.mockRejectedValue(new Error("not in this test"));
+});
 
 function renderWithQueryClient(ui: React.ReactElement) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -220,6 +242,126 @@ describe("ActivityPage", () => {
 
     fireEvent.keyDown(document, { key: "Escape" });
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  describe("routed exchanges", () => {
+    const TRACKING = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+    const PENDING_TRACKING = "6f1c0a52-8d4e-4b87-9f3a-2d1b7c5e9a10";
+    const SWAP_TX = `0x${"55".repeat(32)}`;
+    const leg = (address: string, symbol: string, amount: string) => ({
+      tokenAddress: address,
+      tokenName: symbol,
+      tokenSymbol: symbol,
+      tokenDecimals: 6,
+      amount,
+    });
+    const receipt = (
+      trackingId: string,
+      txHash: string | null,
+      createdAt: string,
+      hopCount = 2,
+    ) => ({
+      swap: {
+        trackingId,
+        chainId: 100,
+        wallet: ADDRESS,
+        recipient: ADDRESS,
+        tokenIn: "0x1111111111111111111111111111111111111111",
+        tokenOut: "0x2222222222222222222222222222222222222222",
+        amountIn: "1000000",
+        minAmountOut: "1990000",
+        hopCount,
+        bounded: true,
+        deadline: 1794567890,
+        createdAt,
+        txHash,
+        status: txHash ? "SUCCESS" : null,
+        hops: [],
+      },
+      settled: txHash !== null,
+      bridgeRemainder: [],
+    });
+    const swapped = {
+      kind: "swapped",
+      id: 4000010,
+      txHash: SWAP_TX,
+      dateBlock: "2026-10-20T08:00:00Z",
+      success: true,
+      sent: leg("0x1111111111111111111111111111111111111111", "MY3R", "1000000"),
+      received: leg("0x2222222222222222222222222222222222222222", "KNSM2", "2000000"),
+      poolAddresses: [
+        "0x3333333333333333333333333333333333333333",
+        "0x4444444444444444444444444444444444444444",
+      ],
+    };
+
+    function stubActivity(activity: unknown[]) {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({
+          ok: true,
+          status: 200,
+          statusText: "",
+          text: async () => JSON.stringify({ ok: true, result: { activity } }),
+        }),
+      );
+    }
+
+    it("shows a routed swap as one entry with its swap count that opens its grouped receipt", async () => {
+      stubActivity([swapped]);
+      routedMocks.routedSwaps.mockResolvedValue({
+        items: [receipt(TRACKING, SWAP_TX, "2026-10-20T07:59:58Z")],
+        cursor: null,
+      });
+      renderWithQueryClient(<ActivityPage address={ADDRESS} />);
+
+      const entry = await screen.findByRole("link", { name: /swapped knsm2 for my3r/i });
+      expect(entry.getAttribute("href")).toBe(`/routed-swaps/${TRACKING}`);
+      expect(entry.textContent).toContain("2 swaps");
+      expect(screen.queryByRole("button", { name: /swapped knsm2 for my3r/i })).toBeNull();
+    });
+
+    it("counts every swap of a longer routed swap", async () => {
+      stubActivity([swapped]);
+      routedMocks.routedSwaps.mockResolvedValue({
+        items: [receipt(TRACKING, SWAP_TX, "2026-10-20T07:59:58Z", 3)],
+        cursor: null,
+      });
+      renderWithQueryClient(<ActivityPage address={ADDRESS} />);
+
+      const entry = await screen.findByRole("link", { name: /swapped knsm2 for my3r/i });
+      expect(entry.textContent).toContain("3 swaps");
+    });
+
+    it("lists an exchange the index has not seen yet, from the server, by time", async () => {
+      stubActivity([swapped]);
+      routedMocks.getMarketVoucher.mockResolvedValue({ symbol: "MY3R", decimals: 6 });
+      routedMocks.routedSwaps.mockResolvedValue({
+        items: [receipt(PENDING_TRACKING, null, "2026-10-21T08:00:00Z")],
+        cursor: null,
+      });
+      renderWithQueryClient(<ActivityPage address={ADDRESS} />);
+
+      const pending = await screen.findByRole("link", { name: /exchanging/i });
+      expect(pending.getAttribute("href")).toBe(`/routed-swaps/${PENDING_TRACKING}`);
+      expect(pending.textContent).toContain("2 swaps");
+      await waitFor(() => expect(pending.textContent).toContain("1.00 MY3R"));
+      // Newer than the indexed swap, so it leads the list.
+      const rows = screen.getByRole("region", { name: "Activity" }).querySelectorAll("a, button");
+      expect(rows[0]).toBe(pending);
+      expect(rows[1]?.textContent).toMatch(/Swapped KNSM2 for MY3R/);
+    });
+
+    it("keeps routed entries out of a filtered search", async () => {
+      stubActivity([]);
+      routedMocks.routedSwaps.mockResolvedValue({
+        items: [receipt(PENDING_TRACKING, null, "2026-10-21T08:00:00Z")],
+        cursor: null,
+      });
+      renderWithQueryClient(<ActivityPage address={ADDRESS} query="my3r" />);
+      expect(await screen.findByText("No activity matches these filters.")).toBeTruthy();
+      expect(screen.queryByRole("link", { name: /exchanging/i })).toBeNull();
+    });
   });
 
   it("stages type filters and applies their canonical order", async () => {

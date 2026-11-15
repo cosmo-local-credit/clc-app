@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RiArrowRightSLine } from "react-icons/ri";
 
+import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Button } from "#/components/ui/button";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
@@ -10,11 +11,12 @@ import { PoolLogo } from "#/components/wallet";
 import type { UserPool } from "@clc/api/features/pools/client";
 import { usePoolCatalog } from "#/features/pools/hooks/use-filtered-pools";
 import { usePoolOutputAvailability } from "#/features/pools/hooks/use-pool-output-availability";
+import { useReachablePools } from "#/features/pools/hooks/use-reachable-pools";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { CHAIN_ID } from "#/lib/chain";
-import { parsePoolCreditable, parsePoolOutputVoucher } from "#/lib/navigation/pool-search";
+import { parsePoolOutputVoucher, withCredit } from "#/lib/navigation/pool-search";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { MarketBar } from "#/components/market-bar";
@@ -31,10 +33,10 @@ import { ListSkeleton } from "#/components/ui/list-skeleton";
 const POOL_ROW_TAG_LIMIT = 3;
 
 export function PoolsPage({
-  creditableSearch,
+  creditOn = false,
   outputVoucherSearch,
 }: {
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditOn?: boolean;
   outputVoucherSearch?: string | readonly string[];
 }) {
   const { t, i18n } = useLingui();
@@ -46,13 +48,10 @@ export function PoolsPage({
   const outputVoucherAddress = outputVoucherResult.ok ? outputVoucherResult.address : null;
   const outputFilterActive = outputVoucherAddress !== null;
   const outputFilterInvalid = !outputVoucherResult.ok;
-  const credit = useCreditableBrowse(creditableSearch);
-  const creditableResult = parsePoolCreditable(creditableSearch);
-  const creditFilterInvalid = !creditableResult.ok;
-  const specialFilterInvalid = outputFilterInvalid || creditFilterInvalid;
+  const credit = useCreditableBrowse(creditOn);
   const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_NAMES.pools, storageOwner, {
     voucherRelationships: false,
-    externalFilterActive: outputVoucherSearch !== undefined || creditableSearch !== undefined,
+    externalFilterActive: outputVoucherSearch !== undefined || creditOn,
   });
   const poolsQuery = useUserPoolsInfinite(
     undefined,
@@ -78,7 +77,7 @@ export function PoolsPage({
     },
     filtersEverOpened,
   );
-  const creditable = credit.verification;
+  const creditable = useReachablePools(credit.poolRefs);
   const outputAvailability = usePoolOutputAvailability(
     outputVoucherAddress ? { chainId: CHAIN_ID, address: outputVoucherAddress } : undefined,
   );
@@ -103,6 +102,7 @@ export function PoolsPage({
   const specialPools = outputFilterActive ? creditableOutputPools : filteredCreditablePools;
   const creditReady =
     auth.isAuthenticated &&
+    credit.verification.status === "ready" &&
     creditable.status === "ready" &&
     (!outputFilterActive || outputAvailability.status === "ready") &&
     !outputFilterInvalid &&
@@ -121,7 +121,7 @@ export function PoolsPage({
     [selectedSpecialPools],
   );
   const pools =
-    specialFilterInvalid || credit.blocksResults
+    outputFilterInvalid || credit.blocksResults
       ? []
       : specialFilterActive
         ? filter.isFiltered
@@ -129,7 +129,7 @@ export function PoolsPage({
           : selectedSpecialPools
         : catalog.pools;
   const hasMore =
-    !specialFilterActive && !specialFilterInvalid && !credit.blocksResults && catalog.hasMore;
+    !specialFilterActive && !outputFilterInvalid && !credit.blocksResults && catalog.hasMore;
   const isRefining =
     catalog.status === "refining" ||
     filter.isDebouncing ||
@@ -138,7 +138,7 @@ export function PoolsPage({
   const canShowResults =
     catalog.status === "ready" &&
     filter.result.ok &&
-    !specialFilterInvalid &&
+    !outputFilterInvalid &&
     !credit.blocksResults &&
     outputReady;
   const resultCountLabel = i18n._("{count, plural, one {# pool} other {# pools}}", {
@@ -175,17 +175,10 @@ export function PoolsPage({
           <CreditableBrowseControl
             part="control"
             state={credit}
-            onChange={(checked) =>
+            onChange={(on) =>
               void navigate({
                 to: "/market",
-                search: (previous) => ({ ...previous, creditable: checked }),
-              })
-            }
-            onClear={() =>
-              void navigate({
-                to: "/market",
-                replace: true,
-                search: (previous) => ({ ...previous, creditable: undefined }),
+                search: (previous) => ({ ...previous, ...withCredit(on) }),
               })
             }
           />
@@ -205,17 +198,10 @@ export function PoolsPage({
       <CreditableBrowseControl
         part="feedback"
         state={credit}
-        onChange={(checked) =>
+        onChange={(on) =>
           void navigate({
             to: "/market",
-            search: (previous) => ({ ...previous, creditable: checked }),
-          })
-        }
-        onClear={() =>
-          void navigate({
-            to: "/market",
-            replace: true,
-            search: (previous) => ({ ...previous, creditable: undefined }),
+            search: (previous) => ({ ...previous, ...withCredit(on) }),
           })
         }
       />
@@ -276,7 +262,7 @@ export function PoolsPage({
         </div>
       ) : null}
 
-      {(creditable.status === "ready" && creditable.hasVerificationGaps) ||
+      {(credit.enabled && creditable.status === "ready" && creditable.hasGaps) ||
       (outputFilterActive &&
         outputAvailability.status === "ready" &&
         outputAvailability.hasVerificationGaps) ? (
@@ -407,13 +393,16 @@ function PoolRow({
           active={pool.active}
           compact
         />
-        <p className="mt-1 text-primary text-xs font-semibold">
-          {pool.voucherCount === 1 ? (
-            <Trans>1 voucher</Trans>
-          ) : (
-            <Trans>{pool.voucherCount} vouchers</Trans>
-          )}
-        </p>
+        <div className="mt-1 flex items-center gap-2">
+          <p className="text-primary text-xs font-semibold">
+            {pool.voucherCount === 1 ? (
+              <Trans>1 voucher</Trans>
+            ) : (
+              <Trans>{pool.voucherCount} vouchers</Trans>
+            )}
+          </p>
+          <CreditHopsBadge kind="pool" address={pool.address} />
+        </div>
         {pool.locationName || distanceLabel ? (
           <p className="mt-1 truncate text-xs text-muted-foreground">
             {[pool.locationName, distanceLabel].filter(Boolean).join(" · ")}

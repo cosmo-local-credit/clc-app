@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, retainSearchParams } from "@tanstack/react-router";
 import { lazy } from "react";
+import { creditSearch } from "#/lib/navigation/credit-search";
 import { LayoutSwitch } from "#/desktop/switch";
 import { CatalogDetailPage } from "#/features/catalogs/ui/catalog-detail-page";
 import { useCatalogEditor } from "#/features/catalogs/hooks/use-catalog-editor";
@@ -11,8 +12,11 @@ const CatalogDesk = lazy(() =>
 export const Route = createFileRoute("/_nav/catalogs/$catalogId")({
   staticData: { navOwner: "wallet", desktop: "fill" },
   // `?edit` opens the editor in either layout, so Back closes it.
-  validateSearch: (search: Record<string, unknown>): { edit?: true } =>
-    search.edit === true || search.edit === "true" ? { edit: true } : {},
+  validateSearch: (search: Record<string, unknown>): { edit?: true; credit?: 1 } => ({
+    ...(search.edit === true || search.edit === "true" ? { edit: true as const } : {}),
+    ...creditSearch(search),
+  }),
+  search: { middlewares: [retainSearchParams(["credit"])] },
   component: CatalogDetailRoute,
 });
 function CatalogDetailRoute() {

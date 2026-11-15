@@ -109,6 +109,40 @@ describe("the collapsed rail", () => {
   });
 });
 
+describe("desktop app preferences", () => {
+  it("shows the app utilities directly in the expanded sidebar", async () => {
+    await renderInShell(<DesktopSidebar />, "/?tab=market");
+    const utilities = screen.getByRole("group", { name: "App preferences" });
+
+    const about = within(utilities).getByRole("link", { name: "About" });
+    const terms = within(utilities).getByRole("link", { name: "Terms of Service" });
+    expect(about.getAttribute("target")).toBe("_blank");
+    expect(about.getAttribute("rel")).toBe("noopener noreferrer");
+    expect(terms.getAttribute("target")).toBe("_blank");
+    expect(within(utilities).getByRole("combobox", { name: "Language" }).textContent).toContain(
+      "Language",
+    );
+    expect(within(utilities).getByRole("button", { name: "Dark mode" }).textContent).toContain(
+      "Theme",
+    );
+    expect(screen.queryByRole("button", { name: "Open menu" })).toBeNull();
+  });
+
+  it("keeps every utility accessible in the collapsed rail", async () => {
+    window.localStorage.setItem("clc.desktop.sidebar", "collapsed");
+    await renderInShell(<DesktopSidebar />, "/?tab=market");
+    const utilities = screen.getByRole("group", { name: "App preferences" });
+
+    expect(within(utilities).getByRole("link", { name: "About" }).textContent).toBe("");
+    expect(within(utilities).getByRole("combobox", { name: "Language" }).title).toBe("Language");
+    expect(within(utilities).getByRole("button", { name: "Dark mode" })).toBeTruthy();
+    expect(within(utilities).getByRole("link", { name: "Terms of Service" }).textContent).toBe("");
+    expect(
+      await tooltipFor(within(utilities).getByRole("link", { name: "About" }), "About"),
+    ).toBeTruthy();
+  });
+});
+
 describe("the Activity unread count", () => {
   it("sits beside the label in the expanded sidebar", async () => {
     unread.count = 2;
@@ -182,10 +216,7 @@ describe("top-level marketplace destinations", () => {
   });
 
   it("keeps the shared search while it changes the list", async () => {
-    const { link } = await scopeLink(
-      "/market?scope=offers&view=list&q=tea&creditable=true",
-      "Wants",
-    );
+    const { link } = await scopeLink("/market?scope=offers&view=list&q=tea&credit=1", "Wants");
     const href = new URL(link.getAttribute("href") ?? "", "http://x");
     expect(Object.fromEntries(href.searchParams)).toMatchObject({
       scope: "wants",

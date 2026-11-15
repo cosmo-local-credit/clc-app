@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, retainSearchParams } from "@tanstack/react-router";
 import { lazy } from "react";
 import { z } from "zod";
 
 import { LayoutSwitch } from "#/desktop/switch";
 import { VoucherDetailPage } from "#/features/wallet/ui";
+import { creditSearch } from "#/lib/navigation/credit-search";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
 const VoucherDesk = lazy(() =>
@@ -21,7 +22,11 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/_nav/vouchers/$voucherAddress")({
   staticData: { navOwner: "voucher", desktop: "fill" },
-  validateSearch: searchSchema,
+  validateSearch: (search: Record<string, unknown>) => ({
+    ...searchSchema.parse(search),
+    ...creditSearch(search),
+  }),
+  search: { middlewares: [retainSearchParams(["credit"])] },
   component: VoucherDetailRoute,
 });
 

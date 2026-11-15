@@ -17,6 +17,7 @@ import {
   pickMarketplaceSearch,
   type MarketplaceRouteSearch,
 } from "#/lib/navigation/marketplace-search";
+import { parseCredit } from "#/lib/navigation/pool-search";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { parseWantId } from "#/lib/navigation/want-sheet-search";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
@@ -143,7 +144,7 @@ function MarketListRoute() {
         scope={scope}
         urlView={search.view}
         isAuthenticated={auth.isAuthenticated}
-        creditableSearch={search.creditable}
+        creditOn={parseCredit(search)}
         outputVoucherSearch={search.out_voucher}
         locationOwner={owner}
       />
@@ -182,29 +183,26 @@ function MarketMobile({
     return <Navigate to="/wants/$wantId" params={{ wantId }} search={{ from: "market" }} replace />;
   }
   if (scope === "catalogs") {
-    return <CatalogsPage creditableSearch={search.creditable} />;
+    return <CatalogsPage creditOn={parseCredit(search)} />;
   }
   if (scope === "wants") {
     return (
       <NearbyCatalog>
-        <WantsPage creditableSearch={search.creditable} />
+        <WantsPage creditOn={parseCredit(search)} />
       </NearbyCatalog>
     );
   }
   return (
     <NearbyCatalog>
       {scope === "offers" ? (
-        <OffersPage creditableSearch={search.creditable} locationOwner={owner} />
+        <OffersPage creditOn={parseCredit(search)} locationOwner={owner} />
       ) : scope === "vouchers" ? (
-        <MarketListPage creditableSearch={search.creditable} locationOwner={owner} />
+        <MarketListPage creditOn={parseCredit(search)} locationOwner={owner} />
       ) : scope === "all" ? (
-        <MarketplacePage creditableSearch={search.creditable} locationOwner={owner} />
+        <MarketplacePage creditOn={parseCredit(search)} locationOwner={owner} />
       ) : (
         <div className="min-h-[100svh] bg-background px-4 pb-bottom-nav text-foreground">
-          <PoolsPage
-            creditableSearch={search.creditable}
-            outputVoucherSearch={search.out_voucher}
-          />
+          <PoolsPage creditOn={parseCredit(search)} outputVoucherSearch={search.out_voucher} />
         </div>
       )}
     </NearbyCatalog>

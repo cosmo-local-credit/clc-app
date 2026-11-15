@@ -76,6 +76,10 @@ const knownErrors = [
   "Enter an amount greater than zero.",
   "Enter an amount this voucher supports.",
   "Amount exceeds your balance",
+  // Pool voucher pricing on an OracleQuoter.
+  "Choose a price feed",
+  "Enter a valid feed address",
+  "Enter a credit limit of zero or more",
 ] as const;
 
 describe("translateValidationError", () => {

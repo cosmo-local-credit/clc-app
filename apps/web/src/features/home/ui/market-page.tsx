@@ -10,16 +10,18 @@ import { useMarketScreen } from "#/features/home/hooks/use-market-screen";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { cn } from "#/lib/utils";
 import { MarketFilterSheet } from "./market-filter-ui";
+import { MarketMapControls } from "./market-map-controls";
+import type { MarketMapZoomControls } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
 
 export function MarketPage({
   isAuthenticated = false,
   locationOwner = GUEST_STORAGE_OWNER,
-  creditableSearch,
+  creditOn = false,
 }: {
   isAuthenticated?: boolean;
   locationOwner?: string;
-  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  creditOn?: boolean;
 }) {
   const { t } = useLingui();
   const {
@@ -54,8 +56,9 @@ export function MarketPage({
     locationButton,
     mapNotice,
     changeCredit,
-    clearCredit,
-  } = useMarketScreen({ isAuthenticated, locationOwner, creditableSearch });
+  } = useMarketScreen({ isAuthenticated, locationOwner, creditOn });
+  const [zoomControls, setZoomControls] = useState<MarketMapZoomControls | null>(null);
+  const mapControls = <MarketMapControls location={locationButton} zoom={zoomControls} />;
 
   return (
     <main className="relative h-[100svh] overflow-hidden bg-card">
@@ -80,6 +83,7 @@ export function MarketPage({
             onUserPan={handleUserPan}
             bottomInset={isCardOpen ? sheetInset : 0}
             onViewportSettled={handleViewportSettled}
+            onZoomControlsChange={setZoomControls}
             className="absolute inset-0 h-full w-full"
           />
         </Suspense>
@@ -96,14 +100,7 @@ export function MarketPage({
         mapResources={mapResources}
         progress={<MarketMapLoading loading={isFetching} />}
         searchLabel={t`Search the marketplace`}
-        credit={
-          <CreditableBrowseControl
-            part="control"
-            state={credit}
-            onChange={changeCredit}
-            onClear={clearCredit}
-          />
-        }
+        credit={<CreditableBrowseControl part="control" state={credit} onChange={changeCredit} />}
         filters={
           <MarketFilterSheet
             filter={filter}
@@ -138,7 +135,7 @@ export function MarketPage({
       {/* With a card open, the location control stays available and rides the sheet. */}
       {isCardOpen ? null : (
         <div className="pointer-events-none absolute inset-x-0 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20 flex flex-col gap-2 px-4">
-          <div className="flex justify-end">{locationButton}</div>
+          <div className="flex justify-end">{mapControls}</div>
         </div>
       )}
 
@@ -149,7 +146,7 @@ export function MarketPage({
         snap={snap}
         onSnapChange={setSnap}
         onCoveredHeightChange={handleCoveredHeightChange}
-        floating={locationButton}
+        floating={mapControls}
         bottomNavigationVisible
       />
       <WantSheet
@@ -157,7 +154,7 @@ export function MarketPage({
         snap={snap}
         onSnapChange={setSnap}
         onCoveredHeightChange={handleCoveredHeightChange}
-        floating={locationButton}
+        floating={mapControls}
       />
     </main>
   );

@@ -18,10 +18,8 @@ import {
  */
 export function PoolCreditPanel({ pool, vouchers }: { pool: UserPool; vouchers: PoolVoucher[] }) {
   const { t } = useLingui();
-  const { holdings, unit, isPending, capsPending, isError, isFetching, refetch } = usePoolHoldings(
-    pool,
-    vouchers,
-  );
+  const { holdings, feeds, unit, isPending, capsPending, isError, isFetching, refetch } =
+    usePoolHoldings(pool, vouchers);
 
   return (
     <PoolHoldingListPanel
@@ -46,7 +44,11 @@ export function PoolCreditPanel({ pool, vouchers }: { pool: UserPool; vouchers: 
           isLast={index === list.length - 1}
         >
           <div className="flex items-center gap-3">
-            <PoolHoldingIdentity holding={holding} unit={unit} />
+            <PoolHoldingIdentity
+              holding={holding}
+              unit={unit}
+              feed={feeds?.get(holding.tokenAddress)}
+            />
           </div>
           <CreditLine holding={holding} unit={unit} />
         </PoolHoldingRowButton>
