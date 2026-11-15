@@ -3,7 +3,7 @@ import type {
   CreditQuote,
   CreditRoute,
 } from "@clc/api/features/credit-router/client";
-import { formatCreditRate, formatFeePpm } from "@clc/core/features/credit-router/logic";
+import { formatFeePpm } from "@clc/core/features/credit-router/logic";
 import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
@@ -29,91 +29,25 @@ import { Toggle } from "#/components/ui/toggle";
 import { WalletAmountInput } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { CreditQuoteRefusedError } from "#/features/credit/api/relay-credit-quote";
-import { type CreditGet, useCreditGet } from "#/features/credit/hooks/use-credit-get";
-import { type VoucherLabel, useVoucherLabels } from "#/features/credit/hooks/use-voucher-labels";
+import { type CreditGet } from "#/features/credit/hooks/use-credit-get";
+import { useVoucherLabels } from "#/features/credit/hooks/use-voucher-labels";
 import {
   type CreditPayOption,
   creditRouteKey,
   creditRouteShortfall,
   creditRouteVouchers,
 } from "#/features/credit/logic/credit-routes";
+import {
+  amountOf,
+  figureOf,
+  rateOf,
+  symbolOf,
+  type Labels,
+} from "#/features/credit/logic/credit-display";
 import { formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
 import { cn } from "#/lib/utils";
 import { CreditFailureNotice, CreditRefusal } from "./credit-failure-notice";
 import { CreditSwapBreakdown } from "./credit-swap-breakdown";
-
-type Labels = Map<string, VoucherLabel>;
-
-function symbolOf(labels: Labels, address: string): string {
-  return labels.get(address.toLowerCase())?.symbol ?? `${address.slice(0, 6)}…`;
-}
-
-function amountOf(labels: Labels, address: string, raw: string, locale: string): string | null {
-  const decimals = labels.get(address.toLowerCase())?.decimals;
-  if (decimals === null || decimals === undefined) return null;
-  return formatTokenAmountFixed(raw, decimals, 2, locale);
-}
-
-/**
- * "1 CCC ≈ 1.02 AAA" when getting, "1 AAA ≈ 0.98 CCC" when spending: one
- * whole unit of the voucher the amount is counted in. Null when the rate or
- * a voucher's decimals is unknown.
- */
-function rateOf(
-  route: CreditRoute,
-  mode: CreditGet["mode"],
-  labels: Labels,
-  locale: string,
-): string | null {
-  const vouchers = creditRouteVouchers(route);
-  const input = vouchers[0]!;
-  const output = vouchers.at(-1)!;
-  const decimalsIn = labels.get(input.toLowerCase())?.decimals;
-  const decimalsOut = labels.get(output.toLowerCase())?.decimals;
-  if (!route.rate || decimalsIn == null || decimalsOut == null) return null;
-  const [from, to] = mode === "exactOutput" ? [output, input] : [input, output];
-  const rate =
-    mode === "exactOutput"
-      ? formatCreditRate({
-          amountIn: route.rate.amountOut,
-          amountOut: route.rate.amountIn,
-          decimalsIn: decimalsOut,
-          decimalsOut: decimalsIn,
-          locale,
-        })
-      : formatCreditRate({
-          amountIn: route.rate.amountIn,
-          amountOut: route.rate.amountOut,
-          decimalsIn,
-          decimalsOut,
-          locale,
-        });
-  if (!rate) return null;
-  const one = formatTokenAmountFixed("1", 0, 0, locale);
-  return `${one} ${symbolOf(labels, from)} ≈ ${rate} ${symbolOf(labels, to)}`;
-}
-
-/**
- * What a route costs at the entered amount when getting, or what it pays out
- * when spending, as an estimate; the rate before an amount is priced.
- */
-function figureOf(
-  route: CreditRoute,
-  priced: boolean,
-  mode: CreditGet["mode"],
-  labels: Labels,
-  locale: string,
-): string | null {
-  const vouchers = creditRouteVouchers(route);
-  const counted =
-    mode === "exactOutput"
-      ? { voucher: vouchers[0]!, raw: route.amountIn }
-      : { voucher: vouchers.at(-1)!, raw: route.amountOut };
-  const amount =
-    priced && counted.raw ? amountOf(labels, counted.voucher, counted.raw, locale) : null;
-  if (amount) return `≈ ${amount} ${symbolOf(labels, counted.voucher)}`;
-  return rateOf(route, mode, labels, locale);
-}
 
 /**
  * Get a voucher with the vouchers the wallet already holds, through as many
@@ -123,10 +57,15 @@ function figureOf(
  * priced by an authoritative quote, checked against the request and the
  * review, and signed by the app over its own digest.
  */
-export function CreditGetPage({ voucherAddress }: { voucherAddress: `0x${string}` }) {
+export function CreditGetPage({
+  voucherAddress,
+  get,
+}: {
+  voucherAddress: `0x${string}`;
+  get: CreditGet;
+}) {
   const { t, i18n } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
-  const get = useCreditGet(voucherAddress);
   const amountInput = useRef<HTMLInputElement>(null);
   const payWithId = useId();
   const unitHintId = useId();

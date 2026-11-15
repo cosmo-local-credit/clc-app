@@ -80,7 +80,13 @@ vi.mock("@clc/api/features/relayer/client", async (importOriginal) => ({
 }));
 
 import { creditQuoteFixture, FIXTURE } from "#/features/credit/api/-credit-quote-fixture";
+import { useCreditGet } from "#/features/credit/hooks/use-credit-get";
 import { CreditGetPage } from "./credit-get-page";
+
+function GetPage({ voucherAddress }: { voucherAddress: `0x${string}` }) {
+  const get = useCreditGet(voucherAddress);
+  return <CreditGetPage voucherAddress={voucherAddress} get={get} />;
+}
 
 const VOUCHER_D = getAddress(`0x${"d4".repeat(20)}`);
 /** A voucher counted in 18 decimals, as an external token would be. */
@@ -248,7 +254,7 @@ function renderPage(voucherAddress: `0x${string}` = FIXTURE.voucherC) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <CreditGetPage voucherAddress={voucherAddress} />
+      <GetPage voucherAddress={voucherAddress} />
     </QueryClientProvider>,
   );
 }
