@@ -37,8 +37,13 @@ const SCOPES: readonly DesktopScopeId[] = ["offers", "wants", "vouchers", "pools
 const FOOTER_ICON =
   "flex size-8 shrink-0 items-center justify-center text-muted-foreground outline-none hover:bg-sidebar-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
-const UTILITY_LINK =
-  "flex h-9 items-center gap-2 px-2 text-sm text-muted-foreground outline-none hover:bg-sidebar-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground [&_svg]:size-4 [&_svg]:shrink-0";
+const UTILITY_CONTROL =
+  "w-full gap-2 border-transparent bg-sidebar px-2 text-xs font-medium text-muted-foreground hover:bg-sidebar-accent hover:text-foreground";
+
+const UTILITY_LINK = cn(
+  UTILITY_CONTROL,
+  "flex h-9 items-center outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground [&_svg]:size-4 [&_svg]:shrink-0",
+);
 
 function initials(name: string | undefined, address: string | undefined) {
   const trimmed = name?.trim();
@@ -318,14 +323,8 @@ export function DesktopSidebar() {
               <span>{aboutLabel}</span>
               <RiExternalLinkLine className="ms-auto rtl:-scale-x-100" aria-hidden="true" />
             </a>
-            <LanguageSelector
-              label={languageLabel}
-              triggerClassName="w-full border-transparent bg-sidebar px-2 hover:bg-sidebar-accent"
-            />
-            <ThemeToggle
-              label={themeLabel}
-              className="w-full border-transparent bg-sidebar px-2 text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
-            />
+            <LanguageSelector label={languageLabel} triggerClassName={UTILITY_CONTROL} />
+            <ThemeToggle label={themeLabel} className={UTILITY_CONTROL} />
             <a
               href={PLATFORM_TERMS_URL}
               target="_blank"
