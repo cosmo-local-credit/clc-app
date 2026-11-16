@@ -13,10 +13,11 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { parseActivitySection } from "#/lib/navigation/activity-search";
+import { parseActivityMessageTo, parseActivitySection } from "#/lib/navigation/activity-search";
 
 const VIEWER = "0x2a986F40d29fc7e1Bded626542d4b8f1Ca0A82f6";
 const AMINA = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
+const JUMA = "0x9b2E18f7329bb8b533E5Be0D8B176eE1ed735600";
 
 const mocks = vi.hoisted(() => ({
   client: {
@@ -27,6 +28,7 @@ const mocks = vi.hoisted(() => ({
   },
   search: vi.fn(),
   inbox: vi.fn(),
+  owner: vi.fn(),
 }));
 
 vi.mock("#/lib/messaging-config", () => ({ MESSAGING_ENABLED: true }));
@@ -34,6 +36,7 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({ isAuthenticated: true, address: VIEWER, session: { address: VIEWER } }),
 }));
 vi.mock("#/lib/api/messaging", () => ({ messagingClient: mocks.client }));
+vi.mock("#/lib/api/safe", () => ({ safeClient: { owner: mocks.owner } }));
 vi.mock("#/features/wallet/hooks/use-activity-unseen", () => ({
   useActivityUnseen: () => ({ count: 2 }),
 }));
@@ -84,10 +87,23 @@ function mountAt(entry: string) {
     validateSearch: (search: Record<string, unknown>) => ({
       tab: typeof search.tab === "string" ? search.tab : undefined,
       section: typeof search.section === "string" ? search.section : undefined,
+      messageTo: typeof search.messageTo === "string" ? search.messageTo : undefined,
     }),
     component: function Home() {
-      const { section } = home.useSearch();
-      return <ActivityInbox section={parseActivitySection(section)} />;
+      const search = home.useSearch() as unknown as { section?: string; messageTo?: string };
+      const navigate = home.useNavigate();
+      return (
+        <ActivityInbox
+          section={parseActivitySection(search.section)}
+          messageTo={parseActivityMessageTo(search.messageTo)}
+          onMessageToConsumed={() =>
+            void navigate({
+              search: (previous) => ({ ...previous, messageTo: undefined }),
+              replace: true,
+            })
+          }
+        />
+      );
     },
   });
   const thread = createRoute({
@@ -114,6 +130,11 @@ beforeEach(() => {
   mocks.client.list.mockResolvedValue({ items: [], nextCursor: null });
   mocks.search.mockReturnValue({ data: undefined, isDebouncing: false, isFetching: false });
   mocks.inbox.mockResolvedValue([]);
+  mocks.owner.mockResolvedValue({
+    kind: "eoa",
+    owner: AMINA,
+    messageTargets: [{ address: AMINA, username: "amina", avatar: null }],
+  });
 });
 
 describe("Activity sub-tabs", () => {
@@ -211,7 +232,7 @@ describe("Messages section", () => {
     );
     const { router } = mountAt("/?tab=activity&section=messages");
     fireEvent.click(await screen.findByRole("button", { name: "New message" }));
-    fireEvent.change(await screen.findByPlaceholderText("Username or phone number"), {
+    fireEvent.change(await screen.findByPlaceholderText("Username, address, or phone number"), {
       target: { value: "amina" },
     });
     const results = await screen.findByRole("list", { name: "Matching people" });
@@ -226,6 +247,76 @@ describe("Messages section", () => {
       recipientAddress: AMINA,
       intro: "Hello from the market",
     });
+  });
+
+  it("opens from a resource contact, prefills its eligible owner, and clears the URL seed", async () => {
+    mocks.client.request.mockResolvedValue(
+      conversation(8, { status: "pending", requestedBySelf: true }),
+    );
+    const { router } = mountAt(
+      `/?tab=activity&section=messages&messageTo=${encodeURIComponent(AMINA)}`,
+    );
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(within(sheet).getByText("amina")).toBeTruthy();
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({ tab: "activity", section: "messages" }),
+    );
+    fireEvent.click(within(sheet).getByRole("button", { name: "Send request" }));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/messages/8"));
+    expect(mocks.client.request).toHaveBeenCalledWith({ recipientAddress: AMINA });
+  });
+
+  it("retries a failed resource-owner lookup", async () => {
+    mocks.owner.mockRejectedValueOnce(new Error("offline"));
+    mountAt(`/?tab=activity&section=messages&messageTo=${encodeURIComponent(AMINA)}`);
+
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(within(sheet).getByText("Couldn't load recipients.")).toBeTruthy();
+    fireEvent.click(within(sheet).getByRole("button", { name: "Retry" }));
+
+    expect(await within(sheet).findByText("amina")).toBeTruthy();
+    expect(mocks.owner).toHaveBeenCalledTimes(2);
+  });
+
+  it("lets the viewer choose an eligible signer when a resource owner is a Safe", async () => {
+    mocks.owner.mockResolvedValue({
+      kind: "safe",
+      owner: AMINA,
+      signers: [AMINA, JUMA],
+      threshold: 2,
+      messageTargets: [
+        { address: AMINA, username: "amina", avatar: null },
+        { address: JUMA, username: "juma", avatar: null },
+      ],
+    });
+    const { router } = mountAt(
+      `/?tab=activity&section=messages&messageTo=${encodeURIComponent(AMINA)}`,
+    );
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(within(sheet).getByText("Choose who to message.")).toBeTruthy();
+    expect(within(sheet).getAllByRole("button", { name: "Message" })).toHaveLength(2);
+    fireEvent.click(within(sheet).getAllByRole("button", { name: "Message" })[1]!);
+    expect(within(sheet).getByText("juma")).toBeTruthy();
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({ tab: "activity", section: "messages" }),
+    );
+  });
+
+  it("rejects an exact-address search for the current account before creating a request", async () => {
+    mocks.search.mockReturnValue({
+      data: [{ kind: "user", name: VIEWER, alias: VIEWER, address: VIEWER, chainId: 0 }],
+      isDebouncing: false,
+      isFetching: false,
+      isSuccess: true,
+    });
+    mountAt("/?tab=activity&section=messages");
+    fireEvent.click(await screen.findByRole("button", { name: "New message" }));
+    fireEvent.change(await screen.findByPlaceholderText("Username, address, or phone number"), {
+      target: { value: VIEWER },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Message" }));
+    expect(await screen.findByText("You can't message yourself.")).toBeTruthy();
+    expect(mocks.client.request).not.toHaveBeenCalled();
   });
 });
 

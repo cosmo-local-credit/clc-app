@@ -14,6 +14,7 @@ import {
 } from "react-icons/ri";
 
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
+import { ResourceOwnerContact } from "#/components/messaging/resource-owner-contact";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { LocationMap } from "#/components/ui/location-map.lazy";
@@ -197,6 +198,9 @@ function WantPlaceBody({
       </PlaceSection>
 
       <PlaceSection title={<Trans>Contact</Trans>}>
+        {want.ownerAddress ? (
+          <ResourceOwnerContact ownerAddress={want.ownerAddress} className="mb-3" />
+        ) : null}
         <AuthenticatedDetailsGate>
           <WantContact wantId={want.id} />
         </AuthenticatedDetailsGate>
