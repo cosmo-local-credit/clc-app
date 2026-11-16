@@ -3,7 +3,7 @@ import type { OwnerMessageTarget } from "@clc/core/features/safe/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { RiChat3Line } from "react-icons/ri";
+import { RiMailLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { Skeleton } from "#/components/ui/skeleton";
@@ -26,6 +26,10 @@ export function ResourceOwnerContact({
   const auth = useAuthStatus();
   const query = useQuery({ ...ownerInfoQueryOptions(safeClient, ownerAddress), retry: false });
   const targets = query.data?.messageTargets ?? [];
+  const available = hasAvailableTarget(
+    targets,
+    auth.isAuthenticated ? auth.session?.address : undefined,
+  );
 
   return (
     <div
@@ -39,7 +43,7 @@ export function ResourceOwnerContact({
         {query.isPending ? (
           <Skeleton className="mt-1 h-4 w-32 rounded-none" />
         ) : (
-          <OwnerIdentity ownerAddress={ownerAddress} targets={targets} />
+          <OwnerIdentity ownerAddress={ownerAddress} targets={targets} messageable={available} />
         )}
         {query.isError ? (
           <Button
@@ -64,6 +68,52 @@ export function ResourceOwnerContact({
   );
 }
 
+/** Owner identity and message action for an existing Info/Details value cell. */
+export function ResourceOwnerContactValue({
+  ownerAddress,
+  className,
+}: {
+  ownerAddress: string;
+  className?: string;
+}) {
+  const auth = useAuthStatus();
+  const query = useQuery({ ...ownerInfoQueryOptions(safeClient, ownerAddress), retry: false });
+  const targets = query.data?.messageTargets ?? [];
+  const available = hasAvailableTarget(
+    targets,
+    auth.isAuthenticated ? auth.session?.address : undefined,
+  );
+
+  return (
+    <div className={cn("min-w-0", className)}>
+      {query.isPending ? (
+        <Skeleton className="h-4 w-32 rounded-none" />
+      ) : (
+        <OwnerIdentity ownerAddress={ownerAddress} targets={targets} messageable={available} />
+      )}
+      {query.isError ? (
+        <Button
+          variant="outline"
+          tap
+          className="mt-2"
+          pending={query.isFetching}
+          onClick={() => void query.refetch()}
+        >
+          <Trans>Retry</Trans>
+        </Button>
+      ) : null}
+      {query.isSuccess ? (
+        <OwnerMessageButton
+          ownerAddress={ownerAddress}
+          targets={targets}
+          excludeAddress={auth.isAuthenticated ? auth.session?.address : undefined}
+          className="mt-2"
+        />
+      ) : null}
+    </div>
+  );
+}
+
 /** Compact message action for places that already display the counterparty. */
 export function OwnerMessageButton({
   ownerAddress,
@@ -82,14 +132,13 @@ export function OwnerMessageButton({
     retry: false,
   });
   const targets = suppliedTargets ?? query.data?.messageTargets ?? [];
-  const excluded = excludeAddress?.toLowerCase();
-  const available = targets.some((target) => target.address.toLowerCase() !== excluded);
+  const available = hasAvailableTarget(targets, excludeAddress);
   if (!available) return null;
 
   return (
     <Button asChild variant="outline" tap className={className}>
       <Link to="/" search={{ tab: "activity", section: "messages", messageTo: ownerAddress }}>
-        <RiChat3Line aria-hidden="true" />
+        <RiMailLine aria-hidden="true" />
         <Trans>Message</Trans>
       </Link>
     </Button>
@@ -99,13 +148,14 @@ export function OwnerMessageButton({
 function OwnerIdentity({
   ownerAddress,
   targets,
+  messageable,
 }: {
   ownerAddress: string;
   targets: readonly OwnerMessageTarget[];
+  messageable: boolean;
 }) {
   const first = targets[0];
-  if (!first) return <EllipsizedAddress address={ownerAddress} className="mt-1 block" />;
-  return (
+  const identity = first ? (
     <div className="mt-1 flex min-w-0 items-center gap-2">
       {first.avatar ? (
         <img
@@ -123,5 +173,23 @@ function OwnerIdentity({
         </span>
       ) : null}
     </div>
+  ) : (
+    <EllipsizedAddress address={ownerAddress} className="mt-1 block" />
   );
+
+  if (!messageable) return identity;
+  return (
+    <Link
+      to="/"
+      search={{ tab: "activity", section: "messages", messageTo: ownerAddress }}
+      className="block min-w-0 underline-offset-2 focus-visible:outline-2 focus-visible:outline-primary hover:underline"
+    >
+      {identity}
+    </Link>
+  );
+}
+
+function hasAvailableTarget(targets: readonly OwnerMessageTarget[], excludeAddress?: string) {
+  const excluded = excludeAddress?.toLowerCase();
+  return targets.some((target) => target.address.toLowerCase() !== excluded);
 }

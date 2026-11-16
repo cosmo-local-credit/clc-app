@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { RiNavigationLine } from "react-icons/ri";
 import { toast } from "sonner";
 
+import { ResourceOwnerContactValue } from "#/components/messaging/resource-owner-contact";
 import { Button } from "#/components/ui/button";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { InfoRow } from "#/components/ui/info-row";
@@ -49,6 +50,9 @@ export function PoolInfoPanel({ pool }: { pool: UserPool }) {
           />
         </InfoRow>
         <InfoRow label={t`Unit of account`}>{pool.unitOfAccount ?? "—"}</InfoRow>
+        <InfoRow label={t`Owner`}>
+          {pool.ownerAddress ? <ResourceOwnerContactValue ownerAddress={pool.ownerAddress} /> : "—"}
+        </InfoRow>
         {pool.email ? (
           <InfoRow label={t`Email`}>
             <a

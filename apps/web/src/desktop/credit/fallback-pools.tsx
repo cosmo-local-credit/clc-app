@@ -5,6 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { DeskTable } from "#/desktop/ui/data-table";
 import { amountOf, symbolOf, type Labels } from "#/features/credit/logic/credit-display";
+import { CreditPoolLink } from "#/features/credit/ui/credit-pool-link";
 
 export function CreditFallbackPoolsDesk({
   pools,
@@ -34,21 +35,18 @@ export function CreditFallbackPoolsDesk({
             label={t`Pools that hold ${targetSymbol}`}
             rows={pools}
             rowKey={(pool) => pool.address}
-            renderRow={(pool, props, cells) => (
-              <Link
-                {...props}
-                to="/pools/$poolAddress/swap"
-                params={{ poolAddress: pool.address }}
-                search={{ receive: targetAddress }}
-              >
-                {cells}
-              </Link>
-            )}
+            renderRow={(_pool, props, cells) => <div {...props}>{cells}</div>}
             columns={[
               {
                 id: "pool",
                 header: t`Pool`,
-                cell: (pool) => <span className="font-semibold">{pool.name}</span>,
+                cell: (pool) => (
+                  <CreditPoolLink
+                    address={pool.address}
+                    name={pool.name}
+                    className="font-semibold"
+                  />
+                ),
               },
               {
                 id: "accepts",
@@ -71,6 +69,22 @@ export function CreditFallbackPoolsDesk({
                   <span className="font-mono text-xs font-semibold">
                     {amountOf(labels, targetAddress, pool.liquidity, locale) ?? "—"} {targetSymbol}
                   </span>
+                ),
+              },
+              {
+                id: "action",
+                header: "",
+                width: "4rem",
+                align: "end",
+                cell: (pool) => (
+                  <Link
+                    to="/pools/$poolAddress/swap"
+                    params={{ poolAddress: pool.address }}
+                    search={{ receive: targetAddress }}
+                    className="text-primary text-xs font-semibold underline underline-offset-2"
+                  >
+                    <Trans>Swap</Trans>
+                  </Link>
                 ),
               },
             ]}

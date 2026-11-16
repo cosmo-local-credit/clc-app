@@ -102,15 +102,6 @@ export function RetirementControl({
                   ) : null}
                 </>
               )}
-              <Button
-                type="button"
-                variant="outline"
-                tap
-                className="w-full"
-                onClick={() => setOpen(false)}
-              >
-                <Trans>Close</Trans>
-              </Button>
             </div>
           </SheetContent>
         </SheetPortal>

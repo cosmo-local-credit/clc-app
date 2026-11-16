@@ -407,11 +407,19 @@ describe("CreditGetPage", () => {
     expect(within(row("AAA")).getByRole("heading", { name: "Other ways" })).toBeTruthy();
     const other = within(row("AAA")).getByRole("button", { name: /1 swap.*Malindi Pool/ });
     expect(other.textContent).toContain("1 CCC ≈ 1.10 AAA");
-    fireEvent.click(other);
+    expect(
+      within(row("AAA")).getByRole("link", { name: "Malindi Pool" }).getAttribute("href"),
+    ).toBe(`/pools/${FIXTURE.pool3}`);
 
-    // The direct route now stands for AAA, and the one through BBB is the other way.
-    await waitFor(() => expect(row("AAA").textContent).toContain("1 CCC ≈ 1.10 AAA"));
-    expect(within(row("AAA")).getByRole("button", { name: "1 swap" })).toBeTruthy();
+    fireEvent.click(within(row("AAA")).getByRole("button", { name: "Max 8.18 CCC" }));
+    expect((screen.getByLabelText("You get") as HTMLInputElement).value).toBe("8.181818");
+    await pricedAt("8181818", "exactOutput");
+
+    // Using Max on an alternate route chooses it; the direct route now stands for
+    // AAA, and the one through BBB is the other way.
+    await waitFor(() =>
+      expect(within(row("AAA")).getByRole("button", { name: "1 swap" })).toBeTruthy(),
+    );
     expect(within(row("AAA")).getByRole("button", { name: /2 swaps · via BBB/ })).toBeTruthy();
     expect(screen.getByRole("radio", { name: /^AAA/ }).hasAttribute("data-checked")).toBe(true);
   });
@@ -478,7 +486,7 @@ describe("CreditGetPage", () => {
             voucher: FIXTURE.voucherA,
             walletBalance: "9000000",
             routes: [
-              BigInt(params.amount ?? "0") > 3_000_000n
+              BigInt(params.amount ?? "0") > 3_004_000n
                 ? priced(TWO_HOP, params, { reason: "liquidity", maxAmountOut: "3004000" })
                 : priced(TWO_HOP, params),
             ],
@@ -504,8 +512,8 @@ describe("CreditGetPage", () => {
     expect(screen.getByRole("button", { name: "Review" }).hasAttribute("disabled")).toBe(true);
 
     fireEvent.click(max);
-    expect((screen.getByLabelText("You get") as HTMLInputElement).value).toBe("3.00");
-    await pricedAt("3000000", "exactOutput");
+    expect((screen.getByLabelText("You get") as HTMLInputElement).value).toBe("3.004");
+    await pricedAt("3004000", "exactOutput");
     await waitFor(() => expect(row("AAA").textContent).toContain("≈ 3.06 AAA"));
     expect(screen.getByRole("radio", { name: /^AAA/ }).hasAttribute("data-checked")).toBe(true);
     await waitFor(() =>
@@ -638,6 +646,14 @@ describe("CreditGetPage", () => {
     expect(text).toContain("via BBB, CCC");
     expect(text).toContain("Rate1 AAA ≈ 0.99 FFF");
     expect(text).toContain("At least 8.99 FFF");
+    expect(
+      within(document.getElementById(toggle.getAttribute("aria-controls")!)!).queryByRole(
+        "button",
+        {
+          name: "Max 8.99 FFF",
+        },
+      ),
+    ).toBeNull();
     expect(text).toContain("Fee0.06%");
     expect(text).toContain("Swap 3: CCC → FFF · Malindi Pool");
   });
@@ -752,12 +768,14 @@ describe("CreditGetPage", () => {
     expect(none.getAttribute("role")).toBe("status");
     expect(screen.queryByRole("alert")).toBeNull();
     expect(screen.queryByRole("heading", { name: "Pay with" })).toBeNull();
-    const pool = screen.getByRole("link", { name: /Mombasa Pool/ });
-    expect(pool.getAttribute("href")).toBe(
+    const pool = screen.getByRole("link", { name: "Mombasa Pool" });
+    expect(pool.getAttribute("href")).toBe(`/pools/${FIXTURE.pool2}`);
+    const swap = screen.getByRole("link", { name: "Swap" });
+    expect(swap.getAttribute("href")).toBe(
       `/pools/${FIXTURE.pool2}/swap?receive=${FIXTURE.voucherC}`,
     );
-    await waitFor(() => expect(pool.textContent).toContain("Takes BBB, DDD"));
-    expect(pool.textContent).toContain("2,799.00 CCC");
+    await waitFor(() => expect(screen.getByText(/Takes/).textContent).toContain("BBB, DDD"));
+    expect(screen.getByText(/2,799.00 CCC/)).toBeTruthy();
   });
 
   it("treats an unavailable router as Exchange unavailable with a retry, never as no options", async () => {
@@ -829,6 +847,12 @@ describe("CreditGetPage", () => {
     const route = openRouteDetails(sheet, "Route details · 2 swaps");
     expect(route.textContent).toContain("Swap 1: AAA → BBB · Kilifi Pool");
     expect(route.textContent).toContain("Swap 2: BBB → CCC · Mombasa Pool");
+    expect(within(route).getByRole("link", { name: "Kilifi Pool" }).getAttribute("href")).toBe(
+      `/pools/${FIXTURE.pool1}`,
+    );
+    expect(within(route).getByRole("link", { name: "Mombasa Pool" }).getAttribute("href")).toBe(
+      `/pools/${FIXTURE.pool2}`,
+    );
     expect(route.textContent).toContain("Protocol fee<0.01 BBB");
     expect(route.textContent).toContain("Quote valid until");
 

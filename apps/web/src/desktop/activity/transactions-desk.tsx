@@ -9,6 +9,7 @@ import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "
 import { RiChat1Line, RiCloseLine, RiExternalLinkLine, RiSearchLine } from "react-icons/ri";
 
 import { formatActivityLegAmount } from "#/components/activity/swap-activity";
+import { SwapPoolOwnerContacts } from "#/components/activity/swap-pool-owner-contacts";
 import { SwapCount } from "#/components/credit/credit-hops";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
@@ -890,6 +891,7 @@ function SwapInspector({
           [t`Transaction`, <TransactionValue key="tx" txHash={item.txHash} />],
         ]}
       />
+      <SwapPoolOwnerContacts poolAddresses={item.poolAddresses} />
       <ExplorerButton txHash={item.txHash} />
     </>
   );

@@ -88,7 +88,7 @@ describe("PasskeySettingsSection", () => {
     expect(screen.queryByText("Linked")).toBeNull();
     const sheet = await openSheet();
     expect(sheet.getByText(/this can take a minute/i)).toBeTruthy();
-    expect(sheet.queryByRole("button")).toBeNull();
+    expect(sheet.getByRole("button", { name: "Close" })).toBeTruthy();
   });
 
   it("offers a retry rather than 'not linked' when status cannot be read", async () => {

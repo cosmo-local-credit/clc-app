@@ -77,7 +77,6 @@ export function CatalogDetailPage({ id, editor }: { id: string; editor?: Catalog
               {catalog.description}
             </p>
           ) : null}
-          <ResourceOwnerContact ownerAddress={catalog.ownerAddress} />
           {catalog.tags.length > 0 ? (
             <div className="flex flex-wrap gap-2" aria-label={t`Tags`}>
               {catalog.tags.map((tag) => (
@@ -96,6 +95,7 @@ export function CatalogDetailPage({ id, editor }: { id: string; editor?: Catalog
           ) : null}
           <CatalogMembers catalogId={id} kind="pool" canEdit={owner} />
           <CatalogMembers catalogId={id} kind="voucher" canEdit={owner} />
+          <ResourceOwnerContact ownerAddress={catalog.ownerAddress} />
           {owner ? (
             <SheetRoot
               open={editing}

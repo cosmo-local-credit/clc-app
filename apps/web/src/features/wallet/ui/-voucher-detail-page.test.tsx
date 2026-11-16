@@ -6,6 +6,9 @@ vi.mock("#/features/ownership/hooks/use-asset-owner", () => ({
 }));
 vi.mock("#/components/messaging/resource-owner-contact", () => ({
   ResourceOwnerContact: () => null,
+  ResourceOwnerContactValue: ({ ownerAddress }: { ownerAddress: string }) => (
+    <span>{`issuer:${ownerAddress}`}</span>
+  ),
   OwnerMessageButton: () => null,
 }));
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
@@ -820,8 +823,9 @@ describe("VoucherDetailPage", () => {
     // Redundant with the voucher itself.
     expect(within(dialog).queryByText("Kangemi Market")).toBeNull();
     expect(within(dialog).queryByText("Seller")).toBeNull();
-    // Tapping outside dismisses, so the only close control is screen-reader only.
-    expect(within(dialog).getByText("Close").className).toContain("sr-only");
+    expect(within(dialog).getByRole("button", { name: "Close" }).className).not.toContain(
+      "sr-only",
+    );
   });
 
   it("shows the voucher rating, at most three tags, and the location fallback", () => {
@@ -1087,6 +1091,7 @@ describe("VoucherDetailPage", () => {
 
     const labels = Array.from(panel.querySelectorAll("dt"), (node) => node.textContent);
     expect(labels).toEqual(["Contract address", "Email", "Website", "Phone", "Terms", "Issuer"]);
+    expect(within(panel).getAllByText("Issuer")).toHaveLength(1);
     expect(
       Array.from(panel.querySelectorAll("dl > div")).every((row) => row.className.includes("h-12")),
     ).toBe(true);

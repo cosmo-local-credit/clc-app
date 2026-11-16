@@ -228,8 +228,13 @@ describe("desktop Get", () => {
     expect(payRow("AAA").textContent).toContain("9.00");
     expect(payRow("DDD").textContent).toContain("9.00");
     const details = screen.getByRole("table", { name: "Route details" });
-    expect(within(details).getByText("Kilifi Pool")).toBeTruthy();
-    expect(within(details).getByText("Mombasa Pool")).toBeTruthy();
+    expect(within(details).getByRole("link", { name: "Kilifi Pool" }).getAttribute("href")).toBe(
+      `/pools/${FIXTURE.pool1}`,
+    );
+    expect(within(details).getByRole("link", { name: "Mombasa Pool" }).getAttribute("href")).toBe(
+      `/pools/${FIXTURE.pool2}`,
+    );
+    expect(within(payRow("AAA")).getByRole("button", { name: "Max 8.00 CCC" })).toBeTruthy();
     expect(screen.getAllByText("Fee not confirmed")[0]).toBeTruthy();
     expect(screen.getByRole("button", { name: "Review" }).hasAttribute("disabled")).toBe(true);
     expect(document.querySelector("summary")).toBeNull();
@@ -248,8 +253,12 @@ describe("desktop Get", () => {
     expect(mocks.quote).toHaveBeenCalledWith(
       expect.objectContaining({ amount: "5000000", mode: "exactOutput" }),
     );
-    expect(within(dialog).getByText(/Kilifi Pool/)).toBeTruthy();
-    expect(within(dialog).getByText(/Mombasa Pool/)).toBeTruthy();
+    expect(within(dialog).getByRole("link", { name: "Kilifi Pool" }).getAttribute("href")).toBe(
+      `/pools/${FIXTURE.pool1}`,
+    );
+    expect(within(dialog).getByRole("link", { name: "Mombasa Pool" }).getAttribute("href")).toBe(
+      `/pools/${FIXTURE.pool2}`,
+    );
     expect(within(dialog).getByText("Quote valid until")).toBeTruthy();
     expect(dialog.querySelector("summary")).toBeNull();
     expect(mocks.relay).not.toHaveBeenCalled();
@@ -323,7 +332,10 @@ describe("desktop Get", () => {
     renderPage();
     const table = await screen.findByRole("table", { name: "Pools that hold CCC" });
     expect(within(table).getByText("12.00 CCC")).toBeTruthy();
-    expect(within(table).getByRole("link").getAttribute("href")).toBe(
+    expect(within(table).getByRole("link", { name: "Kilifi Pool" }).getAttribute("href")).toBe(
+      `/pools/${FIXTURE.pool1}`,
+    );
+    expect(within(table).getByRole("link", { name: "Swap" }).getAttribute("href")).toBe(
       `/pools/${FIXTURE.pool1}/swap?receive=${FIXTURE.voucherC}`,
     );
     expect(screen.getByRole("button", { name: "Review" }).hasAttribute("disabled")).toBe(true);

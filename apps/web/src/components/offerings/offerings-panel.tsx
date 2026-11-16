@@ -10,7 +10,6 @@ import { Spinner } from "#/components/ui/spinner";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import {
   SheetBackdrop,
-  SheetClose,
   SheetContent,
   SheetFooter,
   SheetPortal,
@@ -477,10 +476,8 @@ function offeringDistanceLabel(
  * a private order belongs to a confirmed owner-directed transfer, not to a
  * public marketplace preview.
  *
- * Dismissal is the backdrop, not a labelled button. Base UI closes a dialog on
- * an outside press by default (`disablePointerDismissal` is false), so the only
- * close control left is a screen-reader one — a modal dialog traps focus, and
- * touch screen readers cannot reach the backdrop to escape it.
+ * The shared sheet supplies a visible close action in addition to backdrop,
+ * swipe, Escape and Android Back dismissal.
  */
 function OfferingDetailsSheet({
   offering,
@@ -508,10 +505,6 @@ function OfferingDetailsSheet({
       <SheetPortal>
         <SheetBackdrop />
         <SheetContent>
-          <SheetClose className="sr-only">
-            <Trans>Close</Trans>
-          </SheetClose>
-
           {/* A wide, shallow crop leaves room for long descriptions on a phone. */}
           <span
             data-slot="offering-media"

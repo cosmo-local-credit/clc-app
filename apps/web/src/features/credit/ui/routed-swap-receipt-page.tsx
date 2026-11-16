@@ -131,6 +131,7 @@ export function RoutedSwapReceiptPage({ trackingId }: { trackingId: string }) {
                   position={formatTokenAmountFixed(String(index + 1), 0, 0, locale)}
                   path={`${symbol(hop.tokenIn)} → ${symbol(hop.tokenOut)}`}
                   poolName={poolNames[index] ?? hop.pool}
+                  poolAddress={hop.pool}
                   lines={[
                     {
                       key: "sent",

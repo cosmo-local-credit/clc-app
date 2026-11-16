@@ -24,7 +24,6 @@ import {
 import { Input } from "#/components/ui/input";
 import {
   SheetBackdrop,
-  SheetClose,
   SheetContent,
   SheetFooter,
   SheetHeader,
@@ -233,18 +232,10 @@ export function CatalogFilterSheet({
       <SheetRoot open={open} onOpenChange={changeOpen}>
         <SheetPortal>
           <SheetBackdrop />
-          <SheetContent>
+          <SheetContent closeButtonLabel={t`Close filters`}>
             {showHeader ? (
-              <SheetHeader className="flex-row items-center justify-between gap-3 px-4 pt-4 pb-3">
+              <SheetHeader className="px-4 pt-4 pb-3">
                 <SheetTitle>{title}</SheetTitle>
-                <Button
-                  variant="outline"
-                  size="icon-lg"
-                  aria-label={t`Close filters`}
-                  onClick={() => changeOpen(false)}
-                >
-                  <RiCloseLine className="size-5" aria-hidden="true" />
-                </Button>
               </SheetHeader>
             ) : (
               <SheetTitle className="sr-only">{title}</SheetTitle>
@@ -529,11 +520,6 @@ export function CatalogFilterSheet({
                 <Trans>Reset</Trans>
               </Button>
             </SheetFooter>
-            {!showHeader ? (
-              <SheetClose className="sr-only">
-                <Trans>Close filters</Trans>
-              </SheetClose>
-            ) : null}
           </SheetContent>
         </SheetPortal>
       </SheetRoot>

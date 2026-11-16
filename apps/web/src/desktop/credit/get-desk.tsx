@@ -21,6 +21,7 @@ import { useVoucherLabels } from "#/features/credit/hooks/use-voucher-labels";
 import { amountOf, figureOf, symbolOf } from "#/features/credit/logic/credit-display";
 import { creditRouteVouchers } from "#/features/credit/logic/credit-routes";
 import { CreditFailureNotice } from "#/features/credit/ui/credit-failure-notice";
+import { CreditRouteCapacity } from "#/features/credit/ui/credit-route-capacity";
 
 /** A desktop exchange workspace. The route keeps the transaction state across view changes. */
 export function CreditGetDesk({
@@ -135,6 +136,20 @@ export function CreditGetDesk({
                 </span>
               )}
             </div>
+            {selected ? (
+              <div className="flex justify-end">
+                <CreditRouteCapacity
+                  route={selected.route}
+                  mode={get.mode}
+                  inputVoucher={selected.voucher}
+                  outputVoucher={voucherAddress}
+                  labels={labels}
+                  locale={locale}
+                  onMax={() => get.fillRouteMax(selected.voucher, selected.route)}
+                  compact
+                />
+              </div>
+            ) : null}
           </div>
           <dl className="grid gap-3 border-border border-t pt-4 text-xs">
             <div className="flex items-center justify-between gap-3">
@@ -287,6 +302,24 @@ export function CreditGetDesk({
                           ) ?? "—"}
                         </span>
                       ),
+                  },
+                  {
+                    id: "max",
+                    header: t`Max`,
+                    width: "minmax(8rem,1.2fr)",
+                    align: "end",
+                    cell: (option) => (
+                      <CreditRouteCapacity
+                        route={option.route}
+                        mode={get.mode}
+                        inputVoucher={option.voucher}
+                        outputVoucher={voucherAddress}
+                        labels={labels}
+                        locale={locale}
+                        onMax={() => get.fillRouteMax(option.voucher, option.route)}
+                        compact
+                      />
+                    ),
                   },
                   {
                     id: "swaps",

@@ -1,16 +1,14 @@
-import { Trans, useLingui } from "@lingui/react/macro";
+import { Trans } from "@lingui/react/macro";
 import { type ReactNode, useEffect, useState } from "react";
 import { create } from "zustand";
 
 import {
   DialogBackdrop,
-  DialogClose,
   DialogContent,
   DialogPortal,
   DialogRoot,
   DialogTitle,
 } from "#/components/ui/dialog";
-import { Button } from "#/components/ui/button";
 import { Switch } from "#/components/ui/switch";
 import { useCharacterShortcuts } from "#/desktop/shell/shortcut-state";
 import { DeskKbd } from "#/desktop/ui/kbd";
@@ -50,7 +48,6 @@ function Row({ keys, children }: { keys: ReactNode; children: ReactNode }) {
  * Ctrl/⌘ K and Escape are not character keys and stay on.
  */
 export function ShortcutHelp() {
-  const { t } = useLingui();
   const open = useShortcutHelp((state) => state.open);
   const setOpen = useShortcutHelp((state) => state.setOpen);
   const { enabled, setEnabled } = useCharacterShortcuts();
@@ -140,9 +137,6 @@ export function ShortcutHelp() {
               <Trans>Show these shortcuts</Trans>
             </Row>
           </dl>
-          <div className="mt-6 flex justify-end">
-            <DialogClose render={<Button variant="outline">{t`Close`}</Button>} />
-          </div>
         </DialogContent>
       </DialogPortal>
     </DialogRoot>

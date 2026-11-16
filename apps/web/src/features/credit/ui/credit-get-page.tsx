@@ -34,7 +34,6 @@ import { useVoucherLabels } from "#/features/credit/hooks/use-voucher-labels";
 import {
   type CreditPayOption,
   creditRouteKey,
-  creditRouteShortfall,
   creditRouteVouchers,
 } from "#/features/credit/logic/credit-routes";
 import {
@@ -47,6 +46,8 @@ import {
 import { formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
 import { cn } from "#/lib/utils";
 import { CreditFailureNotice, CreditRefusal } from "./credit-failure-notice";
+import { CreditPoolLink, CreditPoolLinks } from "./credit-pool-link";
+import { CreditRouteCapacity } from "./credit-route-capacity";
 import { CreditSwapBreakdown } from "./credit-swap-breakdown";
 
 /**
@@ -80,6 +81,9 @@ export function CreditGetPage({
     ? amountOf(labels, voucherAddress, get.heldBalance, locale)
     : null;
   const noRoutes = !get.routesPending && !get.routesError && get.options.length === 0;
+  const selectedOption = get.options.find(
+    (option) => option.voucher.toLowerCase() === get.selectedVoucher,
+  );
   const rowProps = {
     get,
     labels,
@@ -129,7 +133,20 @@ export function CreditGetPage({
         </Toggle>
       </div>
 
-      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+      {selectedOption ? (
+        <div className="mt-2 flex justify-end">
+          <CreditRouteCapacity
+            route={selectedOption.route}
+            mode={get.mode}
+            inputVoucher={selectedOption.voucher}
+            outputVoucher={voucherAddress}
+            labels={labels}
+            locale={locale}
+            onMax={() => get.fillRouteMax(selectedOption.voucher, selectedOption.route)}
+          />
+        </div>
+      ) : null}
+      <div className="mt-1 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         <WalletAmountInput
           ref={amountInput}
           id="credit-amount"
@@ -322,17 +339,25 @@ function CreditPayRow({
             aria-hidden="true"
           />
         </button>
-        {option.state === "refused" ? (
-          <CreditShortfall
+        <span className="flex min-w-0 flex-wrap items-center justify-end gap-x-2 gap-y-1">
+          {option.state === "refused" ? (
+            <span className="text-xs text-destructive">
+              <CreditRefusal
+                reason={option.route.refusal?.reason ?? option.route.limitedBy ?? ""}
+              />
+            </span>
+          ) : null}
+          <CreditRouteCapacity
             route={option.route}
-            voucher={option.voucher}
-            onMax={() => get.fillMax(option)}
             mode={get.mode}
+            inputVoucher={option.voucher}
+            outputVoucher={target}
             labels={labels}
             locale={locale}
-            target={target}
+            onMax={() => get.fillRouteMax(option.voucher, option.route)}
+            compact
           />
-        ) : null}
+        </span>
       </div>
       {open ? (
         <div id={detailsId} className="space-y-3 border-t border-border px-3 py-3">
@@ -341,6 +366,9 @@ function CreditPayRow({
             asOfBlock={get.asOfBlock}
             labels={labels}
             locale={locale}
+            mode={get.mode}
+            inputVoucher={option.voucher}
+            outputVoucher={target}
           />
           {option.others.length > 0 ? (
             <section className="space-y-1">
@@ -353,6 +381,7 @@ function CreditPayRow({
                   route={route}
                   priced={option.state === "carries" || option.state === "refused"}
                   onChoose={() => get.chooseRoute(option.voucher, route)}
+                  onMax={() => get.fillRouteMax(option.voucher, route)}
                   mode={get.mode}
                   labels={labels}
                   locale={locale}
@@ -368,72 +397,6 @@ function CreditPayRow({
 }
 
 /**
- * Why a route does not take the entered amount: more than the wallet holds,
- * or a pool's stock or credit limit, which offers the most it takes.
- */
-function CreditShortfall({
-  route,
-  voucher,
-  onMax,
-  mode,
-  labels,
-  locale,
-  target,
-}: {
-  route: CreditRoute;
-  voucher: `0x${string}`;
-  /** Absent where the shortfall is only read, as inside another control. */
-  onMax?: () => void;
-  mode: CreditGet["mode"];
-  labels: Labels;
-  locale: string;
-  target: `0x${string}`;
-}) {
-  const shortfall = creditRouteShortfall(route);
-  if (shortfall === "wallet") {
-    return (
-      <span className="text-xs text-destructive">
-        <Trans>More than you have</Trans>
-      </span>
-    );
-  }
-  // The most the route takes, in the voucher the amount is counted in.
-  const raw = mode === "exactOutput" ? route.maxAmountOut : route.maxAmountIn;
-  const counted = mode === "exactOutput" ? target : voucher;
-  const max = shortfall === "pool" && raw !== null ? amountOf(labels, counted, raw, locale) : null;
-  if (raw === null || max === null) {
-    return (
-      <span className="text-xs text-destructive">
-        <CreditRefusal reason={route.refusal?.reason ?? route.limitedBy ?? ""} />
-      </span>
-    );
-  }
-  const symbol = symbolOf(labels, counted);
-  if (!onMax) {
-    return (
-      <span dir="ltr" className="font-mono text-xs font-semibold text-destructive">
-        <Trans>
-          Max {max} {symbol}
-        </Trans>
-      </span>
-    );
-  }
-  return (
-    <Button
-      variant="outline"
-      tap
-      disabled={BigInt(raw) === 0n}
-      onClick={onMax}
-      className="font-mono font-semibold"
-    >
-      <Trans>
-        Max {max} {symbol}
-      </Trans>
-    </Button>
-  );
-}
-
-/**
  * A route's swaps in order, each with its pool and fees, and the route's
  * rate, capacity and fee, all as estimates.
  */
@@ -442,22 +405,25 @@ function CreditRouteDetails({
   asOfBlock,
   labels,
   locale,
+  mode,
+  inputVoucher,
+  outputVoucher,
 }: {
   route: CreditRoute;
   asOfBlock: number | undefined;
   labels: Labels;
   locale: string;
+  mode: CreditGet["mode"];
+  inputVoucher: `0x${string}`;
+  outputVoucher: `0x${string}`;
 }) {
   const vouchers = creditRouteVouchers(route);
-  const output = vouchers.at(-1)!;
   const bridgeSymbols = vouchers.slice(1, -1).map((voucher) => symbolOf(labels, voucher));
   const bridges = new Intl.ListFormat(locale, { type: "unit", style: "short" }).format(
     bridgeSymbols,
   );
   const rate = rateOf(route, "exactInput", labels, locale);
   const fee = formatFeePpm(route.effectiveFeePpm, locale);
-  const maxOut = route.maxAmountOut ? amountOf(labels, output, route.maxAmountOut, locale) : null;
-  const outSymbol = symbolOf(labels, output);
 
   return (
     <>
@@ -486,38 +452,24 @@ function CreditRouteDetails({
           </div>
         ) : null}
       </dl>
-      <p className="text-xs text-muted-foreground">
-        {maxOut ? (
-          route.maxIsExact ? (
-            <Trans>
-              Up to{" "}
-              <span dir="ltr" className="font-mono font-semibold text-foreground">
-                {maxOut} {outSymbol}
-              </span>
-            </Trans>
-          ) : (
-            <Trans>
-              At least{" "}
-              <span dir="ltr" className="font-mono font-semibold text-foreground">
-                {maxOut} {outSymbol}
-              </span>
-            </Trans>
-          )
-        ) : (
-          <Trans>Capacity unknown</Trans>
-        )}
-      </p>
+      <CreditRouteCapacity
+        route={route}
+        mode={mode}
+        inputVoucher={inputVoucher}
+        outputVoucher={outputVoucher}
+        labels={labels}
+        locale={locale}
+      />
       <ol className="space-y-2">
         {route.hops.map((hop, index) => {
           const position = formatTokenAmountFixed(String(index + 1), 0, 0, locale);
           const path = `${symbolOf(labels, hop.tokenIn)} → ${symbolOf(labels, hop.tokenOut)}`;
-          const poolName = hop.pool.name;
           return (
             <li key={`${hop.pool.address}-${index}`} className="space-y-0.5">
-              <p className="text-xs font-semibold">
-                <Trans>
-                  Swap {position}: <span dir="ltr">{path}</span> · {poolName}
-                </Trans>
+              <p className="flex flex-wrap items-center gap-x-1 text-xs font-semibold">
+                <Trans>Swap {position}:</Trans> <span dir="ltr">{path}</span>
+                {" · "}
+                <CreditPoolLink address={hop.pool.address} name={hop.pool.name} />
               </p>
               <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                 <span>
@@ -566,6 +518,7 @@ function CreditOtherWay({
   route,
   priced,
   onChoose,
+  onMax,
   mode,
   labels,
   locale,
@@ -574,6 +527,7 @@ function CreditOtherWay({
   route: CreditRoute;
   priced: boolean;
   onChoose: () => void;
+  onMax: () => void;
   mode: CreditGet["mode"];
   labels: Labels;
   locale: string;
@@ -584,45 +538,56 @@ function CreditOtherWay({
   const bridges = new Intl.ListFormat(locale, { type: "unit", style: "short" }).format(
     bridgeSymbols,
   );
-  const pools = new Intl.ListFormat(locale, { type: "unit", style: "short" }).format(
-    route.hops.map((hop) => hop.pool.name),
-  );
   const refused = priced && route.carriesAmount === false;
   const figure = refused ? null : figureOf(route, priced, mode, labels, locale);
 
   return (
-    <button
-      type="button"
-      onClick={onChoose}
-      className="flex min-h-11 w-full items-center gap-3 border-t border-border py-2 text-start active:bg-muted"
-    >
-      <span className="min-w-0 flex-1">
-        <span className="block text-xs font-semibold">
-          <SwapCount hops={route.hops.length} />
-          {bridgeSymbols.length > 0 ? (
-            <>
-              {" · "}
-              <Trans>via {bridges}</Trans>
-            </>
-          ) : null}
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 border-t border-border py-2">
+      <button
+        type="button"
+        onClick={onChoose}
+        className="col-span-2 flex min-h-11 min-w-0 items-center justify-between gap-3 text-start active:bg-muted"
+      >
+        <span className="min-w-0 text-xs font-semibold">
+          <span className="block">
+            <SwapCount hops={route.hops.length} />
+            {bridgeSymbols.length > 0 ? (
+              <>
+                {" · "}
+                <Trans>via {bridges}</Trans>
+              </>
+            ) : null}
+          </span>
+          <span className="sr-only">
+            {" · "}
+            {route.hops.map((hop) => hop.pool.name).join(" → ")}
+          </span>
         </span>
-        <span className="block truncate text-xs text-muted-foreground">{pools}</span>
-      </span>
-      {refused ? (
-        <CreditShortfall
-          route={route}
-          voucher={vouchers[0]!}
-          mode={mode}
-          labels={labels}
-          locale={locale}
-          target={target}
-        />
-      ) : figure ? (
-        <span dir="ltr" className="shrink-0 font-mono text-xs font-semibold">
-          {figure}
-        </span>
-      ) : null}
-    </button>
+        {refused ? (
+          <span className="text-xs text-destructive">
+            <CreditRefusal reason={route.refusal?.reason ?? route.limitedBy ?? ""} />
+          </span>
+        ) : figure ? (
+          <span dir="ltr" className="shrink-0 font-mono text-xs font-semibold">
+            {figure}
+          </span>
+        ) : null}
+      </button>
+      <CreditPoolLinks
+        pools={route.hops.map((hop) => hop.pool)}
+        className="min-w-0 text-xs text-muted-foreground"
+      />
+      <CreditRouteCapacity
+        route={route}
+        mode={mode}
+        inputVoucher={vouchers[0]!}
+        outputVoucher={target}
+        labels={labels}
+        locale={locale}
+        onMax={onMax}
+        compact
+      />
+    </div>
   );
 }
 
@@ -654,18 +619,19 @@ function CreditFallbackPools({
               const shown = pool.accepts.slice(0, 4).map((voucher) => symbolOf(labels, voucher));
               const more = pool.accepts.length - shown.length;
               return (
-                <Link
+                <div
                   key={pool.address}
-                  to="/pools/$poolAddress/swap"
-                  params={{ poolAddress: pool.address }}
-                  search={{ receive: targetAddress }}
                   className={cn(
                     "flex items-center justify-between gap-3 px-3 py-2.5",
                     index > 0 && "border-t border-border",
                   )}
                 >
                   <span className="min-w-0">
-                    <span className="block truncate text-sm font-semibold">{pool.name}</span>
+                    <CreditPoolLink
+                      address={pool.address}
+                      name={pool.name}
+                      className="block truncate text-sm font-semibold"
+                    />
                     <span className="block truncate text-xs text-muted-foreground">
                       <Trans>
                         Takes{" "}
@@ -676,10 +642,21 @@ function CreditFallbackPools({
                       </Trans>
                     </span>
                   </span>
-                  <span dir="ltr" className="shrink-0 font-mono text-xs font-semibold">
-                    {amountOf(labels, targetAddress, pool.liquidity, locale) ?? "—"} {targetSymbol}
+                  <span className="grid shrink-0 justify-items-end gap-1">
+                    <span dir="ltr" className="font-mono text-xs font-semibold">
+                      {amountOf(labels, targetAddress, pool.liquidity, locale) ?? "—"}{" "}
+                      {targetSymbol}
+                    </span>
+                    <Link
+                      to="/pools/$poolAddress/swap"
+                      params={{ poolAddress: pool.address }}
+                      search={{ receive: targetAddress }}
+                      className="text-primary text-xs font-semibold underline underline-offset-2"
+                    >
+                      <Trans>Swap</Trans>
+                    </Link>
                   </span>
-                </Link>
+                </div>
               );
             })}
           </div>
@@ -708,7 +685,7 @@ function CreditReviewSheet({
     >
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="[&>div:first-child]:hidden">
+        <SheetContent closeButtonDisabled={get.relaying} className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
             <SheetTitle>
               <Trans>Confirm exchange</Trans>
@@ -717,7 +694,7 @@ function CreditReviewSheet({
           {quote && get.review ? (
             <CreditReviewBody
               quote={quote}
-              poolNames={get.review.route.hops.map((hop) => hop.pool.name)}
+              pools={get.review.route.hops.map((hop) => hop.pool)}
               labels={labels}
               locale={locale}
             />
@@ -770,12 +747,12 @@ function CreditReviewSheet({
  */
 function CreditReviewBody({
   quote,
-  poolNames,
+  pools,
   labels,
   locale,
 }: {
   quote: CreditQuote;
-  poolNames: string[];
+  pools: { address: string; name: string }[];
   labels: Labels;
   locale: string;
 }) {
@@ -840,7 +817,8 @@ function CreditReviewBody({
               key={`${hop.pool}-${index}`}
               position={formatTokenAmountFixed(String(index + 1), 0, 0, locale)}
               path={`${symbolOf(labels, hop.tokenIn)} → ${symbolOf(labels, hop.tokenOut)}`}
-              poolName={poolNames[index] ?? hop.pool}
+              poolName={pools[index]?.name ?? hop.pool}
+              poolAddress={pools[index]?.address ?? hop.pool}
               lines={[
                 {
                   key: "pool",

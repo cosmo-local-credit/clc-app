@@ -147,7 +147,7 @@ export async function showForegroundNotification(
       id,
       // A filled info surface sets an incoming notification apart from feedback the
       // user triggered. Sonner joins class names unmerged, so the overrides are important.
-      className: "border-info! bg-info! pe-3.5!",
+      className: "border-info! bg-info! pe-12!",
       // Longer than feedback toasts: the user did not ask for this one and may act on it.
       duration: 6000,
       onDismiss: () => {
