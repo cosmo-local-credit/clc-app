@@ -3,6 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import {
   creditPayOption,
+  creditRouteCapacity,
   creditRouteHopRefs,
   creditRouteKey,
   creditRouteShortfall,
@@ -134,5 +135,30 @@ describe("credit routes", () => {
       creditRouteShortfall({ refusal: { reason: "retired", hop: 0 }, limitedBy: "wallet" }),
     ).toBe("other");
     expect(creditRouteShortfall({ limitedBy: null })).toBe("other");
+  });
+
+  it("counts route capacity in the amount unit for Get and Spend", () => {
+    const capacity = {
+      ...route("capacity", [hop(P1, A, C)]),
+      maxAmountIn: "2500001",
+      maxAmountOut: "2499501",
+      maxIsExact: true,
+    };
+    expect(creditRouteCapacity(capacity, "exactOutput", A, C)).toEqual({
+      raw: "2499501",
+      voucher: C,
+      exact: true,
+    });
+    expect(creditRouteCapacity(capacity, "exactInput", A, C)).toEqual({
+      raw: "2500001",
+      voucher: A,
+      exact: true,
+    });
+    expect(
+      creditRouteCapacity({ ...capacity, maxAmountOut: null }, "exactOutput", A, C),
+    ).toBeNull();
+    expect(creditRouteCapacity({ ...capacity, maxIsExact: false }, "exactInput", A, C)?.exact).toBe(
+      false,
+    );
   });
 });

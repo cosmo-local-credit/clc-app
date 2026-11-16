@@ -1,6 +1,9 @@
 import { Drawer } from "@base-ui/react/drawer";
+import { useLingui } from "@lingui/react/macro";
 import type * as React from "react";
+import { RiCloseLine } from "react-icons/ri";
 
+import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils.ts";
 
 /**
@@ -18,7 +21,10 @@ export const SheetClose = Drawer.Close;
 /** Every sheet title is the 16px section heading; a call site adds layout only. */
 function SheetTitle({ className, ...props }: React.ComponentProps<typeof Drawer.Title>) {
   return (
-    <Drawer.Title className={cn("font-heading text-base font-semibold", className)} {...props} />
+    <Drawer.Title
+      className={cn("pe-10 font-heading text-base font-semibold", className)}
+      {...props}
+    />
   );
 }
 
@@ -40,11 +46,21 @@ function SheetBackdrop({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+type SheetContentProps = React.ComponentProps<typeof Drawer.Popup> & {
+  showCloseButton?: boolean;
+  closeButtonDisabled?: boolean;
+  closeButtonLabel?: string;
+};
+
 function SheetContent({
   className,
   children,
+  showCloseButton = true,
+  closeButtonDisabled = false,
+  closeButtonLabel,
   ...props
-}: React.ComponentProps<typeof Drawer.Popup>) {
+}: SheetContentProps) {
+  const { t } = useLingui();
   return (
     // The viewport covers the screen but takes no input, so a tap beside the
     // sheet lands on the backdrop and closes it. The swipe is tracked here.
@@ -65,13 +81,31 @@ function SheetContent({
       >
         <div className="mx-auto mt-3 h-1 w-10 shrink-0 bg-muted-foreground/30" />
         {children}
+        {showCloseButton ? (
+          <Drawer.Close
+            disabled={closeButtonDisabled}
+            render={
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                tap
+                aria-label={closeButtonLabel ?? t`Close`}
+                title={closeButtonLabel ?? t`Close`}
+                className="absolute top-2 end-2 z-10"
+              >
+                <RiCloseLine aria-hidden="true" />
+              </Button>
+            }
+          />
+        ) : null}
       </Drawer.Popup>
     </Drawer.Viewport>
   );
 }
 
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("flex flex-col gap-1.5 px-4 pt-4 pb-3", className)} {...props} />;
+  return <div className={cn("flex flex-col gap-1.5 px-4 pt-4 pe-14 pb-3", className)} {...props} />;
 }
 
 function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {

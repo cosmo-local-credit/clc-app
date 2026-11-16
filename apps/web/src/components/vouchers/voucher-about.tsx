@@ -4,10 +4,10 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 
+import { ResourceOwnerContactValue } from "#/components/messaging/resource-owner-contact";
 import { InfoRow } from "#/components/ui/info-row";
 import { MarkdownContent } from "#/components/ui/markdown-content";
 import { EllipsizedAddress } from "#/components/wallet";
-import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
 
 /**
@@ -135,7 +135,7 @@ export function VoucherAbout({
         <InfoRow label={t`Issuer`}>
           {issuerAddress ? (
             <div className="min-w-0 space-y-1">
-              <RecipientIdentityLabel address={issuerAddress} />
+              <ResourceOwnerContactValue ownerAddress={issuerAddress} />
               <MultisigOwnerNotice info={ownerInfo} />
             </div>
           ) : (

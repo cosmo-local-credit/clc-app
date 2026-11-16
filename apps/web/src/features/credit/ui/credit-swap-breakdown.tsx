@@ -1,6 +1,8 @@
 import { Trans } from "@lingui/react/macro";
 import type { ReactNode } from "react";
 
+import { CreditPoolLink } from "./credit-pool-link";
+
 /**
  * One swap of a routed exchange, "Swap 1: AAA → BBB · Kilifi Pool", with its
  * amounts or fees as compact lines beneath. The review's route details and
@@ -10,6 +12,7 @@ export function CreditSwapBreakdown({
   position,
   path,
   poolName,
+  poolAddress,
   lines,
 }: {
   /** The swap's place in the route, already in the locale's digits. */
@@ -17,14 +20,15 @@ export function CreditSwapBreakdown({
   /** "AAA → BBB". */
   path: string;
   poolName: string;
+  poolAddress: string;
   lines: { key: string; label: ReactNode; value: ReactNode }[];
 }) {
   return (
     <div className="space-y-1 border-b border-border px-3 py-2.5">
-      <p className="text-xs font-semibold">
-        <Trans>
-          Swap {position}: <span dir="ltr">{path}</span> · {poolName}
-        </Trans>
+      <p className="flex flex-wrap items-center gap-x-1 text-xs font-semibold">
+        <Trans>Swap {position}:</Trans> <span dir="ltr">{path}</span>
+        {" · "}
+        <CreditPoolLink address={poolAddress} name={poolName} />
       </p>
       {lines.map((line) => (
         <div key={line.key} className="flex items-center justify-between gap-3 text-xs">

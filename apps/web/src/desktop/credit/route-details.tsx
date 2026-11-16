@@ -2,25 +2,19 @@ import { formatFeePpm } from "@clc/core/features/credit-router/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 
 import { Badge } from "#/components/ui/badge";
-import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { DeskTable } from "#/desktop/ui/data-table";
 import { DeskKV } from "#/desktop/ui/kv";
 import type { CreditGet } from "#/features/credit/hooks/use-credit-get";
-import {
-  amountOf,
-  figureOf,
-  rateOf,
-  symbolOf,
-  type Labels,
-} from "#/features/credit/logic/credit-display";
+import { figureOf, rateOf, symbolOf, type Labels } from "#/features/credit/logic/credit-display";
 import {
   type CreditPayOption,
   creditRouteKey,
-  creditRouteShortfall,
   creditRouteVouchers,
 } from "#/features/credit/logic/credit-routes";
 import { CreditRefusal } from "#/features/credit/ui/credit-failure-notice";
+import { CreditPoolLink, CreditPoolLinks } from "#/features/credit/ui/credit-pool-link";
+import { CreditRouteCapacity } from "#/features/credit/ui/credit-route-capacity";
 
 export function CreditRouteDetailsDesk({
   option,
@@ -37,15 +31,6 @@ export function CreditRouteDetailsDesk({
 }) {
   const { t } = useLingui();
   const { route } = option;
-  const rawMax = get.mode === "exactOutput" ? route.maxAmountOut : route.maxAmountIn;
-  const counted = get.mode === "exactOutput" ? targetAddress : option.voucher;
-  const max = rawMax !== null ? amountOf(labels, counted, rawMax, locale) : null;
-  const symbol = symbolOf(labels, counted);
-  const maxOut =
-    route.maxAmountOut !== null
-      ? amountOf(labels, targetAddress, route.maxAmountOut, locale)
-      : null;
-  const outSymbol = symbolOf(labels, targetAddress);
   const vouchers = creditRouteVouchers(route);
 
   return (
@@ -61,18 +46,16 @@ export function CreditRouteDetailsDesk({
           <span className="text-sm">
             <CreditRefusal reason={route.refusal?.reason ?? route.limitedBy ?? ""} />
           </span>
-          {creditRouteShortfall(route) === "pool" && max !== null && rawMax !== null ? (
-            <Button
-              variant="outline"
-              disabled={BigInt(rawMax) === 0n}
-              onClick={() => get.fillMax(option)}
-              className="font-mono font-semibold"
-            >
-              <Trans>
-                Max {max} {symbol}
-              </Trans>
-            </Button>
-          ) : null}
+          <CreditRouteCapacity
+            route={route}
+            mode={get.mode}
+            inputVoucher={option.voucher}
+            outputVoucher={targetAddress}
+            labels={labels}
+            locale={locale}
+            onMax={() => get.fillRouteMax(option.voucher, route)}
+            compact
+          />
         </div>
       ) : null}
       <DeskKV
@@ -82,27 +65,15 @@ export function CreditRouteDetailsDesk({
           [<Trans key="label">Fee</Trans>, formatFeePpm(route.effectiveFeePpm, locale) ?? "—"],
           [
             <Trans key="label">Available</Trans>,
-            maxOut ? (
-              route.maxIsExact ? (
-                <Trans>
-                  Up to{" "}
-                  <span dir="ltr">
-                    {maxOut} {outSymbol}
-                  </span>
-                </Trans>
-              ) : (
-                <Trans>
-                  At least{" "}
-                  <span dir="ltr">
-                    {maxOut} {outSymbol}
-                  </span>
-                </Trans>
-              )
-            ) : (
-              <span className="font-sans font-normal">
-                <Trans>Capacity unknown</Trans>
-              </span>
-            ),
+            <CreditRouteCapacity
+              key="capacity"
+              route={route}
+              mode={get.mode}
+              inputVoucher={option.voucher}
+              outputVoucher={targetAddress}
+              labels={labels}
+              locale={locale}
+            />,
           ],
         ]}
       />
@@ -117,9 +88,11 @@ export function CreditRouteDetailsDesk({
             header: t`Pool`,
             width: "minmax(0,1.5fr)",
             cell: (hop) => (
-              <span title={hop.pool.name} className="font-semibold">
-                {hop.pool.name}
-              </span>
+              <CreditPoolLink
+                address={hop.pool.address}
+                name={hop.pool.name}
+                className="font-semibold"
+              />
             ),
           },
           {
@@ -198,12 +171,10 @@ export function CreditRouteDetailsDesk({
                 header: t`Pool`,
                 width: "minmax(0,2fr)",
                 cell: (other) => (
-                  <span
-                    title={other.hops.map((hop) => hop.pool.name).join(" → ")}
+                  <CreditPoolLinks
+                    pools={other.hops.map((hop) => hop.pool)}
                     className="text-xs font-semibold"
-                  >
-                    {other.hops.map((hop) => hop.pool.name).join(" → ")}
-                  </span>
+                  />
                 ),
               },
               {
@@ -235,6 +206,24 @@ export function CreditRouteDetailsDesk({
                       ) ?? "—"}
                     </span>
                   ),
+              },
+              {
+                id: "max",
+                header: t`Max`,
+                width: "minmax(8rem,1.2fr)",
+                align: "end",
+                cell: (other) => (
+                  <CreditRouteCapacity
+                    route={other}
+                    mode={get.mode}
+                    inputVoucher={option.voucher}
+                    outputVoucher={targetAddress}
+                    labels={labels}
+                    locale={locale}
+                    onMax={() => get.fillRouteMax(option.voucher, other)}
+                    compact
+                  />
+                ),
               },
             ]}
           />

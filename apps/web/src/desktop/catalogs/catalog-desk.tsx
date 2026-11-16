@@ -108,11 +108,11 @@ export function CatalogDesk({ id, editor }: { id: string; editor?: CatalogEditor
               ) : null}
             </div>
           ) : null}
-          <ResourceOwnerContact ownerAddress={catalog.ownerAddress} />
           <div className="grid grid-cols-1 items-start gap-4 @min-[44rem]:grid-cols-2">
             <CatalogMembersDesk catalogId={id} kind="pool" canEdit={owner} />
             <CatalogMembersDesk catalogId={id} kind="voucher" canEdit={owner} />
           </div>
+          <ResourceOwnerContact ownerAddress={catalog.ownerAddress} />
         </>
       ) : null}
     </DeskCanvas>

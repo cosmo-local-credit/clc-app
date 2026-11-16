@@ -45,6 +45,11 @@ vi.mock("#/components/catalogs/add-to-catalog-button", () => ({
       </button>
     ) : null,
 }));
+vi.mock("#/components/messaging/resource-owner-contact", () => ({
+  ResourceOwnerContactValue: ({ ownerAddress }: { ownerAddress: string }) => (
+    <span>{`issuer:${ownerAddress}`}</span>
+  ),
+}));
 
 vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
   useVoucherSheetSelection: () => ({ voucher: VOUCHER, open: vi.fn(), close: mocks.close }),

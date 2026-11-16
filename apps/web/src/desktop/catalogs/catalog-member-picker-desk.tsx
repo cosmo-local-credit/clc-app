@@ -55,7 +55,10 @@ export function CatalogMemberPickerDesk({
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <DialogBackdrop />
-        <DialogContent className="flex max-h-[min(640px,calc(100dvh-4rem))] max-w-[520px] flex-col rounded-none border border-border bg-card p-0 shadow-none">
+        <DialogContent
+          showCloseButton={false}
+          className="flex max-h-[min(640px,calc(100dvh-4rem))] max-w-[520px] flex-col rounded-none border border-border bg-card p-0 shadow-none"
+        >
           <div className="flex h-13 shrink-0 items-center justify-between gap-3 border-border border-b px-4">
             <DialogTitle>{title}</DialogTitle>
             <DialogClose

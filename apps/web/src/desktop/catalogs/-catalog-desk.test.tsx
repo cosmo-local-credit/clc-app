@@ -40,6 +40,11 @@ vi.mock("#/components/ui/location-picker", () => ({
 vi.mock("#/components/auth/authenticated-details-gate", () => ({
   AuthenticatedDetailsGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
+vi.mock("#/components/messaging/resource-owner-contact", () => ({
+  ResourceOwnerContact: ({ ownerAddress }: { ownerAddress: string }) => (
+    <div data-testid="catalog-owner-contact">{ownerAddress}</div>
+  ),
+}));
 
 import { CatalogDesk } from "./catalog-desk";
 
@@ -94,6 +99,17 @@ afterEach(() => {
 });
 
 describe("CatalogDesk edit inspector", () => {
+  it("places the owner contact after both member sections", async () => {
+    mountAt("/catalogs/7");
+    const owner = await screen.findByTestId("catalog-owner-contact");
+    const pools = (await screen.findByRole("heading", { name: "Pools" })).closest("section");
+    const vouchers = (await screen.findByRole("heading", { name: "Vouchers" })).closest("section");
+    if (!pools || !vouchers) throw new Error("expected Catalog member sections");
+
+    expect(pools.compareDocumentPosition(owner) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+    expect(vouchers.compareDocumentPosition(owner) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+  });
+
   it("opens as ?edit, takes focus, and Back closes it", async () => {
     const router = mountAt("/catalogs/7");
     const edit = await screen.findByRole("button", { name: "Edit catalog" });

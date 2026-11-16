@@ -29,6 +29,9 @@ vi.mock("#/features/wallet/hooks/use-activity-unseen", () => ({
 vi.mock("#/features/wallet/hooks/use-send-share", () => ({
   useSendShare: () => ({ data: undefined, isPending: false, isError: false, fetchStatus: "idle" }),
 }));
+vi.mock("#/components/activity/swap-pool-owner-contacts", () => ({
+  SwapPoolOwnerContacts: () => null,
+}));
 
 import { ActivityDesk } from "./activity-desk";
 import { activityAmountSortValue, activityRowKey } from "./transactions-desk";

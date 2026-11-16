@@ -19,7 +19,7 @@ describe("AppToaster", () => {
     localeState.locale = "en";
   });
 
-  it("shows app-styled notifications from the top-right edge without close-button chrome", async () => {
+  it("shows app-styled notifications from the top-right edge with a dismiss button", async () => {
     render(<AppToaster />);
 
     act(() => {
@@ -44,7 +44,12 @@ describe("AppToaster", () => {
       expect(className).toContain("border-s-primary");
     });
 
-    expect(screen.queryByLabelText(/close toast/i)).toBeNull();
+    const dismiss = screen.getByRole("button", { name: "Dismiss" });
+    expect(dismiss.className).toContain("end-1.5");
+    expect(dismiss.querySelector("svg")).toBeTruthy();
+
+    act(() => dismiss.click());
+    await waitFor(() => expect(screen.queryByText("Address copied")).toBeNull());
   });
 
   it("uses the inline-start edge and swipe direction in Arabic", async () => {

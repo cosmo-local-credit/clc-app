@@ -356,7 +356,7 @@ describe("pools list", () => {
     expect(within(sheet).getByRole("heading", { name: "Filter pools" }).className).toContain(
       "sr-only",
     );
-    expect(within(sheet).getByRole("button", { name: "Close filters" }).className).toContain(
+    expect(within(sheet).getByRole("button", { name: "Close filters" }).className).not.toContain(
       "sr-only",
     );
     expect(within(sheet).queryByLabelText("Search voucher filters")).toBeNull();

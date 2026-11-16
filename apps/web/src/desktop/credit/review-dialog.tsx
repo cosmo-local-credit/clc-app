@@ -15,6 +15,7 @@ import { CreditQuoteRefusedError } from "#/features/credit/api/relay-credit-quot
 import type { CreditGet } from "#/features/credit/hooks/use-credit-get";
 import { amountOf, symbolOf, type Labels } from "#/features/credit/logic/credit-display";
 import { CreditFailureNotice } from "#/features/credit/ui/credit-failure-notice";
+import { CreditPoolLink } from "#/features/credit/ui/credit-pool-link";
 import { formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
 
 export function CreditReviewDialog({
@@ -46,8 +47,11 @@ export function CreditReviewDialog({
     >
       <DialogPortal>
         <DialogBackdrop />
-        <DialogContent className="flex max-h-[calc(100dvh-3rem)] max-w-[720px] flex-col gap-0 rounded-none border border-border bg-card p-0 shadow-none">
-          <div className="shrink-0 border-border border-b px-5 py-4">
+        <DialogContent
+          closeButtonDisabled={get.relaying}
+          className="flex max-h-[calc(100dvh-3rem)] max-w-[720px] flex-col gap-0 rounded-none border border-border bg-card p-0 shadow-none"
+        >
+          <div className="shrink-0 border-border border-b px-5 py-4 pe-14">
             <DialogTitle>
               <Trans>Confirm exchange</Trans>
             </DialogTitle>
@@ -91,7 +95,10 @@ export function CreditReviewDialog({
                         <span className="font-mono">
                           {new Intl.NumberFormat(locale).format(index + 1)}.
                         </span>{" "}
-                        {review.route.hops[index]?.pool.name ?? hop.pool}
+                        <CreditPoolLink
+                          address={review.route.hops[index]?.pool.address ?? hop.pool}
+                          name={review.route.hops[index]?.pool.name ?? hop.pool}
+                        />
                         {" · "}
                         <span dir="ltr" className="font-mono text-xs">
                           {symbolOf(labels, hop.tokenIn)} → {symbolOf(labels, hop.tokenOut)}

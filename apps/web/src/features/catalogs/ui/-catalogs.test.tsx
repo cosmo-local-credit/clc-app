@@ -110,6 +110,11 @@ vi.mock("#/features/home/hooks/use-ip-camera", () => ({
 }));
 vi.mock("sonner", () => ({ toast: { success: mocks.success, error: mocks.error } }));
 vi.mock("#/components/wallet", () => ({ BackChevron: () => <a href="/">Back</a> }));
+vi.mock("#/components/messaging/resource-owner-contact", () => ({
+  ResourceOwnerContact: ({ ownerAddress }: { ownerAddress: string }) => (
+    <div data-testid="catalog-owner-contact">{ownerAddress}</div>
+  ),
+}));
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mocks.navigate,
   useSearch: () => ({}),
@@ -482,6 +487,15 @@ describe("catalog curation", () => {
     expect(screen.queryByRole("button", { name: "Add a pool" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Add a voucher" })).toBeNull();
     expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
+  });
+  it("places the owner contact after both member sections", async () => {
+    mount(<CatalogDetailPage id="7" />);
+    const owner = await screen.findByTestId("catalog-owner-contact");
+    const pools = await screen.findByRole("region", { name: "Pools" });
+    const vouchers = await screen.findByRole("region", { name: "Vouchers" });
+
+    expect(pools.compareDocumentPosition(owner) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+    expect(vouchers.compareDocumentPosition(owner) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
   });
   it("gates the Catalog location for guests without hiding public content", async () => {
     mocks.auth.isAuthenticated = false;

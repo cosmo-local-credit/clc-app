@@ -1,7 +1,7 @@
 import type { ActivityKind } from "@clc/api/features/accounts/client";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
-import { RiCloseLine, RiFilter3Line } from "react-icons/ri";
+import { RiFilter3Line } from "react-icons/ri";
 
 import { ACTIVITY_KIND_ORDER } from "#/lib/navigation/activity-search";
 import { Badge } from "#/components/ui/badge";
@@ -84,19 +84,11 @@ export function ActivityFilterSheet({
       <SheetRoot open={open} onOpenChange={changeOpen}>
         <SheetPortal>
           <SheetBackdrop />
-          <SheetContent>
-            <SheetHeader className="flex-row items-center justify-between gap-3">
+          <SheetContent closeButtonLabel={t`Close filters`}>
+            <SheetHeader>
               <SheetTitle>
                 <Trans>Filters</Trans>
               </SheetTitle>
-              <Button
-                variant="outline"
-                size="icon-lg"
-                aria-label={t`Close filters`}
-                onClick={() => changeOpen(false)}
-              >
-                <RiCloseLine className="size-5" aria-hidden="true" />
-              </Button>
             </SheetHeader>
             <fieldset className="border-y border-border px-4 py-3">
               <legend className="sr-only">{t`Activity`}</legend>

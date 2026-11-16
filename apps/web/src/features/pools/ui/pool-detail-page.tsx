@@ -6,7 +6,6 @@ import { RiArrowLeftRightLine, RiArrowRightUpLine, RiQrCodeLine } from "react-ic
 import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Badge } from "#/components/ui/badge";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
-import { ResourceOwnerContact } from "#/components/messaging/resource-owner-contact";
 import { PoolReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
 import { ReportList } from "#/components/reports/report-list";
 import { ReviewSummaryContent } from "#/components/reviews/review-summary";
@@ -329,22 +328,19 @@ export function PoolDetailPage({
       {selectedTab === "activity" ? <PoolActivityPanel pool={pool} /> : null}
 
       {selectedTab === "info" ? (
-        <div className="space-y-3">
-          {pool.ownerAddress ? <ResourceOwnerContact ownerAddress={pool.ownerAddress} /> : null}
-          <AuthenticatedDetailsGate className="border border-border bg-card p-4">
-            <AuthenticatedPoolInfo
-              pool={pool}
-              privateInfo={
-                poolQuery.privateInfo
-                  ? {
-                      ...poolQuery.privateInfo,
-                      retry: () => void poolQuery.privateInfo?.refetch(),
-                    }
-                  : undefined
-              }
-            />
-          </AuthenticatedDetailsGate>
-        </div>
+        <AuthenticatedDetailsGate className="border border-border bg-card p-4">
+          <AuthenticatedPoolInfo
+            pool={pool}
+            privateInfo={
+              poolQuery.privateInfo
+                ? {
+                    ...poolQuery.privateInfo,
+                    retry: () => void poolQuery.privateInfo?.refetch(),
+                  }
+                : undefined
+            }
+          />
+        </AuthenticatedDetailsGate>
       ) : null}
 
       <section id="pool-reviews" className="space-y-3" aria-labelledby="pool-reviews-title">

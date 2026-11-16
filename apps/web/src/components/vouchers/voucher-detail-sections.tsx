@@ -16,7 +16,6 @@ import { useConnection } from "wagmi";
 
 import { ReportList } from "#/components/reports/report-list";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
-import { ResourceOwnerContact } from "#/components/messaging/resource-owner-contact";
 import { VoucherReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
 import { Button } from "#/components/ui/button";
 import { ResourceQuotaTitle } from "#/components/resource-usage";
@@ -159,13 +158,6 @@ export function VoucherDetailSections({
       </VoucherSection>
 
       <VoucherSection id="info" title={<Trans>Info</Trans>} {...{ idPrefix, headingLevel }}>
-        {(ownerAddress ?? detail?.ownerAddress) ? (
-          <ResourceOwnerContact
-            ownerAddress={(ownerAddress ?? detail?.ownerAddress)!}
-            label={t`Issuer`}
-            className="mb-3"
-          />
-        ) : null}
         <AuthenticatedDetailsGate>
           <AuthenticatedVoucherInfo
             address={address}

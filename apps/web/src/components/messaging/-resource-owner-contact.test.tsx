@@ -25,15 +25,20 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   }),
 }));
 
-import { ResourceOwnerContact } from "./resource-owner-contact";
+import { ResourceOwnerContact, ResourceOwnerContactValue } from "./resource-owner-contact";
 
-function mount() {
+function mount(embedded = false) {
   const root = createRootRoute();
   const home = createRoute({
     getParentRoute: () => root,
     path: "/",
     validateSearch: (search: Record<string, unknown>) => search,
-    component: () => <ResourceOwnerContact ownerAddress={OWNER} label="Issuer" />,
+    component: () =>
+      embedded ? (
+        <ResourceOwnerContactValue ownerAddress={OWNER} />
+      ) : (
+        <ResourceOwnerContact ownerAddress={OWNER} label="Issuer" />
+      ),
   });
   const router = createRouter({
     routeTree: root.addChildren([home]),
@@ -75,10 +80,30 @@ describe("ResourceOwnerContact", () => {
     );
   });
 
+  it("opens the same owner prefill when the displayed identity is selected", async () => {
+    const router = mount();
+    fireEvent.click(await screen.findByRole("link", { name: "amina" }));
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({
+        tab: "activity",
+        section: "messages",
+        messageTo: OWNER,
+      }),
+    );
+  });
+
+  it("reuses the owner result for an embedded Info-row action", async () => {
+    mount(true);
+    expect(await screen.findByRole("link", { name: "amina" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Message" })).toBeTruthy();
+    expect(mocks.owner).toHaveBeenCalledTimes(1);
+  });
+
   it("does not offer a self-message action", async () => {
     mocks.viewer.address = SIGNER;
     mount();
     expect(await screen.findByText("amina")).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "amina" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Message" })).toBeNull();
   });
 

@@ -35,7 +35,6 @@ import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import {
   DialogBackdrop,
-  DialogClose,
   DialogContent,
   DialogPortal,
   DialogRoot,
@@ -314,9 +313,6 @@ function OfferingTile({
         <DialogPortal>
           <DialogBackdrop />
           <DialogContent className="grid max-h-[calc(100dvh-3rem)] max-w-lg gap-4 overflow-y-auto rounded-none border border-border bg-card p-5 shadow-none">
-            <DialogClose className="sr-only">
-              <Trans>Close</Trans>
-            </DialogClose>
             <span className="relative grid aspect-[16/7] place-items-center overflow-hidden bg-muted">
               {imageUrl ? (
                 <ProgressiveImage

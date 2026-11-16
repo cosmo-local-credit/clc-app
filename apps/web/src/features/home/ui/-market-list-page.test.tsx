@@ -452,7 +452,7 @@ describe("MarketListPage", () => {
     expect(within(sheet).getByRole("heading", { name: "Filter vouchers" }).className).toContain(
       "sr-only",
     );
-    expect(within(sheet).getByRole("button", { name: "Close filters" }).className).toContain(
+    expect(within(sheet).getByRole("button", { name: "Close filters" }).className).not.toContain(
       "sr-only",
     );
     const filterContent = sheet.querySelector<HTMLElement>(".overflow-y-auto");

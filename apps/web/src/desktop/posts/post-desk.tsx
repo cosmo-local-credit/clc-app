@@ -452,7 +452,10 @@ function PostImageViewer({
     >
       <DialogPortal>
         <DialogBackdrop className="bg-black" />
-        <DialogContent className="top-0 left-0 h-dvh w-full max-w-none translate-x-0 translate-y-0 rounded-none border-0 bg-black p-0 shadow-none transition-opacity data-[ending-style]:scale-100 data-[starting-style]:scale-100">
+        <DialogContent
+          showCloseButton={false}
+          className="top-0 left-0 h-dvh w-full max-w-none translate-x-0 translate-y-0 rounded-none border-0 bg-black p-0 shadow-none transition-opacity data-[ending-style]:scale-100 data-[starting-style]:scale-100"
+        >
           <DialogTitle className="sr-only">
             <Trans>Report images</Trans>
           </DialogTitle>
