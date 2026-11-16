@@ -137,8 +137,15 @@ export function SendDesk({
     query,
     recipient,
   });
-  const { tokens, tokensQuery, selectedToken, amount, exactVoucherAmount, unitValueLabel } =
-    payment;
+  const {
+    tokens,
+    tokensQuery,
+    selectedToken,
+    maxAmount,
+    amount,
+    exactVoucherAmount,
+    unitValueLabel,
+  } = payment;
   const showRecent = query.trim() === "";
   const loadingTokens = Boolean(address) && tokensQuery.isPending;
   function handleSelectRecipient(next: Recipient) {
@@ -304,7 +311,7 @@ export function SendDesk({
                   t`Balance`,
                   selectedToken ? (
                     <span key="balance" dir="ltr">
-                      {selectedToken.amount} {selectedToken.symbol}
+                      {maxAmount} {selectedToken.symbol}
                     </span>
                   ) : (
                     <Dash key="balance" />
