@@ -4,6 +4,7 @@ import type { CatalogsClient } from "./client";
 import { retryTransientBackendRead } from "../../client/errors";
 import {
   catalogCompleteMembersQueryOptions,
+  deleteCatalogMutationOptions,
   catalogKeys,
   catalogMembershipQueryOptions,
   catalogMemberMutationOptions,
@@ -128,6 +129,26 @@ describe("catalog cache", () => {
     await options.onSuccess?.(catalog, {} as never, undefined, {} as never);
     expect(queryClient.getQueryData(catalogKeys.detail("1"))).toEqual(catalog);
     expect(invalidate).toHaveBeenCalled();
+  });
+  it("invalidates catalog, Marketplace, map and quota projections after deletion", async () => {
+    const queryClient = new QueryClient();
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+    const remove = vi.fn().mockResolvedValue("7");
+    const options = deleteCatalogMutationOptions(
+      { remove } as unknown as CatalogsClient,
+      queryClient,
+      "7",
+    );
+
+    await expect(options.mutationFn?.(undefined as never, {} as never)).resolves.toBe("7");
+    expect(remove).toHaveBeenCalledWith("7");
+    await options.onSuccess?.("7", undefined as never, undefined, {} as never);
+
+    expect(invalidate).toHaveBeenCalledTimes(4);
+    expect(invalidate).toHaveBeenCalledWith(expect.objectContaining({ queryKey: catalogKeys.all }));
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["clc", "marketplace"] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["clc", "market-map"] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["clc", "resource-limits"] });
   });
 });
 

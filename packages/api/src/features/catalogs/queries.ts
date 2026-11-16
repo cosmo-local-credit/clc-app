@@ -1,4 +1,6 @@
 import { resourceLimitKeys } from "../resource-limits/queries";
+import { marketMapKeys } from "../market-map/queries";
+import { marketplaceKeys } from "../marketplace/queries";
 import type { CatalogKind, CatalogWrite } from "@clc/core/features/catalogs/logic";
 import { infiniteQueryOptions, mutationOptions, queryOptions } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
@@ -159,6 +161,7 @@ export function catalogMembershipQueryOptions(
  */
 export const catalogMutationKeys = {
   save: (id?: string) => [...catalogKeys.all, "save", id ?? "new"] as const,
+  remove: (id: string) => [...catalogKeys.all, "remove", id] as const,
   member: (address: string) => [...catalogKeys.all, "member", address.toLowerCase()] as const,
 };
 
@@ -178,6 +181,29 @@ export function saveCatalogMutationOptions(
         queryKey: catalogKeys.all,
         predicate: (query) => query.queryKey[2] !== "detail",
       });
+    },
+  });
+}
+
+/** Refresh every public and owner-scoped projection affected by permanent deletion. */
+export function deleteCatalogMutationOptions(
+  client: CatalogsClient,
+  queryClient: QueryClient,
+  id: string,
+) {
+  return mutationOptions({
+    mutationKey: catalogMutationKeys.remove(id),
+    mutationFn: () => client.remove(id),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: catalogKeys.all,
+          predicate: (query) => query.queryKey[2] !== "detail",
+        }),
+        queryClient.invalidateQueries({ queryKey: marketplaceKeys.all }),
+        queryClient.invalidateQueries({ queryKey: marketMapKeys.all }),
+        queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
+      ]);
     },
   });
 }

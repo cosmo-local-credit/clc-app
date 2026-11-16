@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => ({
     setMember: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    remove: vi.fn(),
   },
   auth: {
     address: `0x${"a".repeat(40)}`,
@@ -202,6 +203,7 @@ beforeEach(() => {
   mocks.api.members.mockResolvedValue({ items: [], nextCursor: null });
   mocks.api.create.mockResolvedValue(catalog);
   mocks.api.update.mockResolvedValue(catalog);
+  mocks.api.remove.mockResolvedValue("7");
 });
 describe("catalog curation", () => {
   it.each([false, true])("guides an empty Catalog list (authenticated=%s)", async (signedIn) => {
@@ -412,6 +414,65 @@ describe("catalog curation", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(catalog));
+  });
+  it("confirms permanent deletion and returns the owner to Wallet", async () => {
+    mount(<CatalogForm catalog={catalog} onSaved={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete catalog" }));
+    const dialog = screen.getByRole("dialog", { name: "Delete this catalog?" });
+    expect(
+      within(dialog).getByText(
+        "This permanently deletes the catalog and removes its Pool and Voucher listings. The Pools and Vouchers are not deleted.",
+      ),
+    ).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    expect(screen.queryByRole("dialog", { name: "Delete this catalog?" })).toBeNull();
+    expect(mocks.api.remove).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete catalog" }));
+    const reopenedDialog = screen.getByRole("dialog", { name: "Delete this catalog?" });
+    fireEvent.click(within(reopenedDialog).getByRole("button", { name: "Delete catalog" }));
+
+    await waitFor(() => expect(mocks.api.remove).toHaveBeenCalledExactlyOnceWith("7"));
+    expect(mocks.success).toHaveBeenCalledWith("Catalog deleted.");
+    expect(mocks.navigate).toHaveBeenCalledWith({
+      to: "/",
+      search: { tab: "wallet" },
+      replace: true,
+    });
+  });
+  it("keeps a failed deletion retryable without navigating", async () => {
+    mocks.api.remove.mockRejectedValueOnce(new Error("offline")).mockResolvedValue("7");
+    mount(<CatalogForm catalog={catalog} onSaved={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete catalog" }));
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "Delete this catalog?" })).getByRole("button", {
+        name: "Delete catalog",
+      }),
+    );
+    expect(await screen.findByRole("alert")).toHaveProperty(
+      "textContent",
+      "Couldn't delete the catalog. Try again.",
+    );
+    expect(mocks.navigate).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete catalog" }));
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "Delete this catalog?" })).getByRole("button", {
+        name: "Delete catalog",
+      }),
+    );
+    await waitFor(() => expect(mocks.api.remove).toHaveBeenCalledTimes(2));
+  });
+  it("does not offer deletion while creating a catalog", () => {
+    mount(
+      <CatalogForm
+        initialPlace={{ lat: 43, lng: 18, locationName: "Sarajevo" }}
+        onSaved={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole("button", { name: "Delete catalog" })).toBeNull();
   });
   it("shows editing only for the backend session owner", async () => {
     mocks.auth.session.address = `0x${"c".repeat(40)}`;
