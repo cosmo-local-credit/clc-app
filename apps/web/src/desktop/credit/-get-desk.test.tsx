@@ -138,6 +138,22 @@ const SECOND = {
     },
   ],
 };
+const ALTERNATE = {
+  ...FIRST,
+  id: "alternate",
+  hops: [
+    {
+      pool: { address: FIXTURE.pool3, name: "Malindi Pool" },
+      tokenIn: FIXTURE.voucherA,
+      tokenOut: FIXTURE.voucherC,
+      feePpm: "0",
+      protocolFeePpm: "20000",
+      feeSource: "pair",
+    },
+  ],
+  maxAmountIn: "7500000",
+  maxAmountOut: "7000000",
+};
 function page(params: CreditRoutesParams, empty = false) {
   return {
     target: { address: FIXTURE.voucherC, symbol: "CCC", decimals: 6 },
@@ -381,5 +397,28 @@ describe("desktop Get", () => {
       expect.anything(),
     );
     expect(mocks.quote).not.toHaveBeenCalled();
+  });
+
+  it("shows alternate Pool links and applies an alternate route's maximum", async () => {
+    mocks.routes.mockImplementation(async (params: CreditRoutesParams) => {
+      const result = page(params);
+      result.inputs[0]!.routes.push(ALTERNATE);
+      return result;
+    });
+    renderPage();
+
+    const alternatives = await screen.findByRole("table", { name: "Other ways" });
+    expect(
+      within(alternatives).getByRole("link", { name: "Malindi Pool" }).getAttribute("href"),
+    ).toBe(`/pools/${FIXTURE.pool3}`);
+    fireEvent.click(within(alternatives).getByRole("button", { name: "Max 7.00 CCC" }));
+
+    expect((screen.getByLabelText("You get") as HTMLInputElement).value).toBe("7.00");
+    await waitFor(() =>
+      expect(mocks.routes).toHaveBeenCalledWith(
+        expect.objectContaining({ amount: "7000000" }),
+        expect.anything(),
+      ),
+    );
   });
 });
