@@ -351,21 +351,22 @@ describe("Send across a phone/desktop view switch", () => {
       target: { value: RECIPIENT },
     });
     fireEvent.click(screen.getByRole("button", { name: "Max" }));
-    // The balance is 12.345678; the field shows it to two places while "Max"
-    // remembers the exact raw amount.
+    // Max displays the complete voucher precision and remembers the exact raw
+    // amount only for this mounted view.
     const shown = amountBox().value;
-    expect(shown).toMatch(/^12\.3[45]$/);
+    expect(shown).toBe("12.345678");
 
     setViewport(false);
-    expect(amountBox().value).toBe(shown);
+    expect(amountBox().value).toBe("12.34");
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
     fireEvent.click(await screen.findByRole("button", { name: "Confirm and send" }));
 
     await waitFor(() => expect(mocks.send.mutateAsync).toHaveBeenCalledTimes(1));
-    // What is on screen, not the 12.345678 the old Max would have sent.
+    // The remounted view parses what is on screen instead of restoring a hidden
+    // Max snapshot.
     expect(mocks.send.mutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({
-        amountRaw: `${shown.replace(".", "")}0000`,
+        amountRaw: "12340000",
         recipientAddress: RECIPIENT,
       }),
     );
@@ -395,10 +396,10 @@ describe("Send across a phone/desktop view switch", () => {
     render(amountStep());
     fireEvent.click(screen.getByRole("button", { name: /Use max/ }));
     const shown = amountBox().value;
-    expect(shown).toMatch(/^12\.3[45]$/);
+    expect(shown).toBe("12.345678");
 
     setViewport(true);
-    expect(amountBox().value).toBe(shown);
+    expect(amountBox().value).toBe("12.34");
     fireEvent.click(screen.getByRole("button", { name: "Review" }));
     fireEvent.click(
       within(await screen.findByRole("dialog")).getByRole("button", { name: "Confirm and send" }),
@@ -406,7 +407,7 @@ describe("Send across a phone/desktop view switch", () => {
 
     await waitFor(() => expect(mocks.send.mutateAsync).toHaveBeenCalledTimes(1));
     expect(mocks.send.mutateAsync).toHaveBeenCalledWith(
-      expect.objectContaining({ amountRaw: `${shown.replace(".", "")}0000` }),
+      expect.objectContaining({ amountRaw: "12340000" }),
     );
   });
 

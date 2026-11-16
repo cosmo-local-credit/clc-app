@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   send: { mutateAsync: vi.fn(), isPending: false, error: null as Error | null },
   upsert: { mutateAsync: vi.fn(), isPending: false },
+  token: { balance: "1000", decimals: 2 },
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -30,8 +31,8 @@ vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
         tokenAddress: TOKEN,
         tokenSymbol: "RIV",
         tokenName: "Riverside Voucher",
-        tokenDecimals: 2,
-        balance: "1000",
+        tokenDecimals: mocks.token.decimals,
+        balance: mocks.token.balance,
         iconUrl: null,
         lastDateBlock: "2026-10-01T00:00:00Z",
       },
@@ -120,6 +121,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.send.error = null;
   mocks.send.isPending = false;
+  mocks.token.balance = "1000";
+  mocks.token.decimals = 2;
   mocks.send.mutateAsync.mockResolvedValue({ trackingId: "track-1", valuationSnapshots: [] });
   mocks.upsert.mutateAsync.mockResolvedValue(undefined);
   Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
@@ -203,6 +206,35 @@ describe("Send page", () => {
           search: expect.objectContaining({ trackingId: "track-1", amount: "5", symbol: "RIV" }),
         }),
       ),
+    );
+  });
+
+  it("reviews and sends the exact dust balance selected by Max", async () => {
+    mocks.token.balance = "2";
+    mocks.token.decimals = 7;
+    mount();
+    fireEvent.change(screen.getByRole("textbox", { name: /Recipient username/ }), {
+      target: { value: RECIPIENT },
+    });
+
+    expect(screen.getByText("0.0000002 RIV")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Max" }));
+    expect((screen.getByRole("textbox", { name: "Amount" }) as HTMLInputElement).value).toBe(
+      "0.0000002",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Review" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog.textContent).toContain("0.0000002 RIV");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Confirm and send" }));
+
+    await waitFor(() =>
+      expect(mocks.send.mutateAsync).toHaveBeenCalledWith({
+        senderAddress: SENDER,
+        tokenAddress: TOKEN,
+        recipientAddress: RECIPIENT,
+        amountRaw: "2",
+        includeAuthorization: false,
+      }),
     );
   });
 
