@@ -874,8 +874,8 @@ msgstr "Toegevoegd aan catalogus"
 msgid "Address"
 msgstr "Adres"
 
-#: apps/web/src/desktop/wallet/send-desk.tsx:562
-#: apps/web/src/desktop/wallet/send-desk.tsx:567
+#: apps/web/src/desktop/wallet/send-desk.tsx:569
+#: apps/web/src/desktop/wallet/send-desk.tsx:574
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:170
 msgid "Address book"
@@ -888,7 +888,7 @@ msgstr "Adresboek"
 #: apps/web/src/desktop/wallet/cash-desk.tsx:31
 #: apps/web/src/desktop/wallet/receive-desk.tsx:47
 #: apps/web/src/desktop/wallet/receive-desk.tsx:99
-#: apps/web/src/desktop/wallet/send-desk.tsx:325
+#: apps/web/src/desktop/wallet/send-desk.tsx:332
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:187
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:90
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:273
@@ -1024,9 +1024,9 @@ msgstr "Controleer vóór het verzenden altijd of de token en het netwerk "
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:146
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:155
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:113
-#: apps/web/src/desktop/wallet/send-desk.tsx:210
 #: apps/web/src/desktop/wallet/send-desk.tsx:217
-#: apps/web/src/desktop/wallet/send-desk.tsx:334
+#: apps/web/src/desktop/wallet/send-desk.tsx:224
+#: apps/web/src/desktop/wallet/send-desk.tsx:341
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:164
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:69
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:264
@@ -1057,7 +1057,7 @@ msgid "Amount exceeds your balance"
 msgstr "Het bedrag is hoger dan uw saldo"
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:349
-#: apps/web/src/desktop/wallet/send-desk.tsx:280
+#: apps/web/src/desktop/wallet/send-desk.tsx:287
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:188
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:227
 msgid "Amount exceeds your balance"
@@ -1309,13 +1309,13 @@ msgstr "Tas"
 #: apps/web/src/desktop/credit/get-desk.tsx:274
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:168
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:101
-#: apps/web/src/desktop/wallet/send-desk.tsx:304
+#: apps/web/src/desktop/wallet/send-desk.tsx:311
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:226
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:16
 msgid "Balance"
 msgstr "Saldo"
 
-#. placeholder {0}: selectedToken.amount
+#. placeholder {0}: payment.maxAmount
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Balance {0}"
 msgstr "Saldo {0}"
@@ -1327,7 +1327,7 @@ msgid "Balance {tokenBalance}"
 msgstr "Saldo {tokenBalance}"
 
 #. placeholder {0}: selectedToken.amount
-#: apps/web/src/desktop/wallet/send-desk.tsx:240
+#: apps/web/src/desktop/wallet/send-desk.tsx:247
 msgid "Balance <0>{0}</0>"
 msgstr "Saldo <0>{0}</0>"
 
@@ -2598,7 +2598,7 @@ msgid "Copy receipt"
 msgstr "Ontvangstbewijs kopiëren"
 
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:163
-#: apps/web/src/desktop/wallet/send-desk.tsx:324
+#: apps/web/src/desktop/wallet/send-desk.tsx:331
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:186
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:89
 msgid "Copy recipient address"
@@ -2785,7 +2785,7 @@ msgstr "Kopiëren mislukt"
 #: apps/web/src/desktop/wallet/receive-desk.tsx:42
 #: apps/web/src/desktop/wallet/receive-desk.tsx:49
 #: apps/web/src/desktop/wallet/receive-desk.tsx:100
-#: apps/web/src/desktop/wallet/send-desk.tsx:326
+#: apps/web/src/desktop/wallet/send-desk.tsx:333
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:188
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:91
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:268
@@ -2947,7 +2947,7 @@ msgstr "De afbeelding kon niet worden geïmporteerd"
 #: apps/web/src/desktop/activity/transactions-desk.tsx:647
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1081
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:153
-#: apps/web/src/desktop/wallet/send-desk.tsx:535
+#: apps/web/src/desktop/wallet/send-desk.tsx:542
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:483
 #: apps/web/src/features/home/ui/activity-page.tsx:219
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:85
@@ -3154,7 +3154,7 @@ msgstr "Deze waardebon kon niet worden geladen."
 msgid "Couldn't load this Want."
 msgstr "Dit verzoek kon niet worden geladen."
 
-#: apps/web/src/desktop/wallet/send-desk.tsx:259
+#: apps/web/src/desktop/wallet/send-desk.tsx:266
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:141
 msgid "Couldn't load tokens"
 msgstr "De tokens konden niet worden geladen"
@@ -5620,7 +5620,7 @@ msgstr "Laden"
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:223
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1077
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:145
-#: apps/web/src/desktop/wallet/send-desk.tsx:529
+#: apps/web/src/desktop/wallet/send-desk.tsx:536
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:480
 #: apps/web/src/features/home/ui/activity-page.tsx:214
 #: apps/web/src/features/home/ui/activity-page.tsx:263
@@ -5629,7 +5629,7 @@ msgstr "Laden"
 msgid "Loading activity…"
 msgstr "Activiteit laden…"
 
-#: apps/web/src/desktop/wallet/send-desk.tsx:572
+#: apps/web/src/desktop/wallet/send-desk.tsx:579
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:48
 msgid "Loading address book…"
 msgstr "Adresboek laden…"
@@ -5796,7 +5796,7 @@ msgstr "Tags laden…"
 msgid "Loading the editor…"
 msgstr "Editor laden…"
 
-#: apps/web/src/desktop/wallet/send-desk.tsx:257
+#: apps/web/src/desktop/wallet/send-desk.tsx:264
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:147
 msgid "Loading tokens…"
 msgstr "Tokens laden…"
@@ -5896,7 +5896,7 @@ msgstr "Uw profiel laden…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1069
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:69
-#: apps/web/src/features/wallet/hooks/use-send-payment.ts:130
+#: apps/web/src/features/wallet/hooks/use-send-payment.ts:129
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:245
 msgid "Loading…"
 msgstr "Laden…"
@@ -6082,7 +6082,7 @@ msgstr "Overeenkomende ontvangers"
 #: apps/web/src/desktop/credit/get-desk.tsx:308
 #: apps/web/src/desktop/credit/route-details.tsx:212
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:449
-#: apps/web/src/desktop/wallet/send-desk.tsx:245
+#: apps/web/src/desktop/wallet/send-desk.tsx:252
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:440
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:430
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:168
@@ -6452,7 +6452,7 @@ msgstr "Geen van beiden kan berichten sturen. Alleen u kunt vragen om weer te "
 msgid "Network"
 msgstr "Netwerk"
 
-#: apps/web/src/desktop/wallet/send-desk.tsx:357
+#: apps/web/src/desktop/wallet/send-desk.tsx:364
 msgid "Network fee"
 msgstr "Netwerkkosten"
 
@@ -6923,7 +6923,7 @@ msgstr "Nog geen beoordelingen."
 #~ msgid "No route from your vouchers reaches {targetSymbol}."
 #~ msgstr "Er is geen route van uw waardebonnen naar {targetSymbol}."
 
-#: apps/web/src/desktop/wallet/send-desk.tsx:576
+#: apps/web/src/desktop/wallet/send-desk.tsx:583
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:53
 msgid "No saved recipients yet."
 msgstr "Nog geen opgeslagen ontvangers."
@@ -6938,7 +6938,7 @@ msgstr "Geen suggesties beschikbaar."
 msgid "No tags found."
 msgstr "Geen tags gevonden."
 
-#: apps/web/src/desktop/wallet/send-desk.tsx:263
+#: apps/web/src/desktop/wallet/send-desk.tsx:270
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:145
 msgid "No tokens available"
 msgstr "Geen tokens beschikbaar"
@@ -8789,7 +8789,7 @@ msgstr "Recent"
 msgid "Recent collections"
 msgstr "Recente inningen"
 
-#: apps/web/src/desktop/wallet/send-desk.tsx:518
+#: apps/web/src/desktop/wallet/send-desk.tsx:525
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:223
 msgid "Recent recipients"
 msgstr "Recente ontvangers"
@@ -8807,7 +8807,7 @@ msgstr "Recente ontvangers"
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:152
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:377
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:389
-#: apps/web/src/desktop/wallet/send-desk.tsx:314
+#: apps/web/src/desktop/wallet/send-desk.tsx:321
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:174
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:82
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:353
@@ -8825,7 +8825,7 @@ msgstr "Ontvanger"
 #~ msgid "Recipient ENS, phone or address"
 #~ msgstr "ENS-naam, telefoonnummer of adres van de ontvanger"
 
-#: apps/web/src/desktop/wallet/send-desk.tsx:192
+#: apps/web/src/desktop/wallet/send-desk.tsx:199
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:144
 msgid "Recipient username, pool name, phone or address"
 msgstr "Gebruikersnaam van ontvanger, fondsnaam, telefoonnummer of adres"
@@ -9424,7 +9424,7 @@ msgid "Reverted"
 msgstr "Teruggedraaid"
 
 #: apps/web/src/desktop/credit/get-desk.tsx:212
-#: apps/web/src/desktop/wallet/send-desk.tsx:380
+#: apps/web/src/desktop/wallet/send-desk.tsx:387
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:259
 msgid "Review"
 msgstr "Controleren"
@@ -9903,7 +9903,7 @@ msgstr "Alle resultaten voor ‘{deferred}’ bekijken"
 msgid "Select {name}"
 msgstr "{name} selecteren"
 
-#: apps/web/src/desktop/wallet/send-desk.tsx:261
+#: apps/web/src/desktop/wallet/send-desk.tsx:268
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:143
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:46
 msgid "Select a token"
@@ -9979,7 +9979,7 @@ msgstr "Verkopen naar een bankrekening"
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:148
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:151
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:317
-#: apps/web/src/desktop/wallet/send-desk.tsx:178
+#: apps/web/src/desktop/wallet/send-desk.tsx:185
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:348
 #: apps/web/src/features/home/ui/wallet-page.tsx:75
 #: apps/web/src/features/messaging/ui/message-composer.tsx:107
@@ -10046,7 +10046,7 @@ msgid "Sending"
 msgstr "Verzenden"
 
 #: apps/web/src/desktop/messaging/composer-desk.tsx:109
-#: apps/web/src/desktop/wallet/send-desk.tsx:380
+#: apps/web/src/desktop/wallet/send-desk.tsx:387
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:110
 #: apps/web/src/features/messaging/ui/message-composer.tsx:107
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:243
@@ -11682,7 +11682,7 @@ msgstr "De titel mag maximaal 200 tekens bevatten"
 #: apps/web/src/desktop/activity/transactions-desk.tsx:780
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:159
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:86
-#: apps/web/src/desktop/wallet/send-desk.tsx:182
+#: apps/web/src/desktop/wallet/send-desk.tsx:189
 #: apps/web/src/features/home/ui/activity-page.tsx:520
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:218
@@ -11886,8 +11886,8 @@ msgstr "Reis"
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:164
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:183
 #: apps/web/src/desktop/wallet/receive-poster-dialog.tsx:184
-#: apps/web/src/desktop/wallet/send-desk.tsx:275
-#: apps/web/src/desktop/wallet/send-desk.tsx:538
+#: apps/web/src/desktop/wallet/send-desk.tsx:282
+#: apps/web/src/desktop/wallet/send-desk.tsx:545
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:306
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:396
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:576
@@ -12002,7 +12002,7 @@ msgstr "De taal kon niet worden geladen. Er wordt teruggeschakeld naar Engels."
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:142
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:48
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:145
-#: apps/web/src/features/wallet/hooks/use-send-payment.ts:131
+#: apps/web/src/features/wallet/hooks/use-send-payment.ts:130
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:112
 msgid "Unavailable"
 msgstr "Niet beschikbaar"
@@ -12238,7 +12238,7 @@ msgstr "Standaard gebruiken"
 msgid "Use letters and numbers, for example KES"
 msgstr "Gebruik letters en cijfers, bijvoorbeeld KES"
 
-#. placeholder {0}: selectedToken.amount
+#. placeholder {0}: payment.maxAmount
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:222
 msgid "Use max · {0}"
 msgstr "Maximum gebruiken · {0}"
@@ -12328,7 +12328,7 @@ msgstr "Gebruikersnaam, adres of telefoonnummer"
 msgid "Uses voucher rates set for this pool"
 msgstr "Gebruikt waardebonkoersen die voor dit fonds zijn ingesteld"
 
-#: apps/web/src/desktop/wallet/send-desk.tsx:344
+#: apps/web/src/desktop/wallet/send-desk.tsx:351
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:243
 msgid "Value"
 msgstr "Waarde"
@@ -12467,8 +12467,8 @@ msgstr "waardebon"
 #: apps/web/src/desktop/vouchers/create/voucher-preview.tsx:110
 #: apps/web/src/desktop/vouchers/create/wizard-steps.tsx:12
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:82
-#: apps/web/src/desktop/wallet/send-desk.tsx:291
-#: apps/web/src/desktop/wallet/send-desk.tsx:421
+#: apps/web/src/desktop/wallet/send-desk.tsx:298
+#: apps/web/src/desktop/wallet/send-desk.tsx:428
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:201
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:96
 #: apps/web/src/features/home/ui/marketplace-page.tsx:428

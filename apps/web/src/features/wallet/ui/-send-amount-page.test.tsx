@@ -495,6 +495,9 @@ describe("SendAmountPage", () => {
     );
 
     const maxButton = await screen.findByRole("button", { name: /use max · 0.0000002/i });
+    expect(screen.getByText("Balance 0.0000002")).toBeTruthy();
+    expect(screen.queryByText("QuG0IF")).toBeNull();
+    expect(screen.queryByText("rLFIRw")).toBeNull();
     fireEvent.click(maxButton);
 
     expect((screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement).value).toBe(

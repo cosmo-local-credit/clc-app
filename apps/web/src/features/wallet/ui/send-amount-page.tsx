@@ -67,8 +67,7 @@ export function SendAmountPage({
     query: recipient?.address ?? "",
     recipient,
   });
-  const { tokens, tokensQuery, selectedToken, maxAmount, amount, exceedsBalance, unitValueLabel } =
-    payment;
+  const { tokens, tokensQuery, selectedToken, amount, exceedsBalance, unitValueLabel } = payment;
   const { recipientAddress, recipientLabel } = payment;
   // Preserve the current token selection when editing the recipient.
   const tokenParam = selectedToken?.contractAddress ?? selectedToken?.id ?? token;
@@ -131,7 +130,7 @@ export function SendAmountPage({
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold">{selectedToken.symbol}</p>
               <p className="text-muted-foreground text-xs">
-                <Trans>Balance {maxAmount}</Trans>
+                <Trans>Balance {payment.maxAmount}</Trans>
               </p>
             </div>
           </>
@@ -220,7 +219,7 @@ export function SendAmountPage({
         ) : null}
         {selectedToken ? (
           <Button variant="secondary" tap className="mt-3" onClick={payment.setMax}>
-            <Trans>Use max · {maxAmount}</Trans>
+            <Trans>Use max · {payment.maxAmount}</Trans>
           </Button>
         ) : null}
         {exceedsBalance ? (
