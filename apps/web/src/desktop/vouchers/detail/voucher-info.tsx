@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
+import { ResourceOwnerContact } from "#/components/messaging/resource-owner-contact";
 import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
 import { Button } from "#/components/ui/button";
 import { LocationMap } from "#/components/ui/location-map.lazy";
@@ -62,17 +63,26 @@ export function VoucherInfoDesk({
     retry: () => void;
   };
 }) {
+  const { t } = useLingui();
   return (
-    <AuthenticatedDetailsGate className="border border-border bg-card p-4">
-      <VoucherInfoBody
-        address={address}
-        symbol={symbol}
-        decimals={decimals}
-        ownerAddress={ownerAddress}
-        detail={detail}
-        privateInfo={privateInfo}
-      />
-    </AuthenticatedDetailsGate>
+    <div className="grid gap-4">
+      {(ownerAddress ?? detail?.ownerAddress) ? (
+        <ResourceOwnerContact
+          ownerAddress={(ownerAddress ?? detail?.ownerAddress)!}
+          label={t`Issuer`}
+        />
+      ) : null}
+      <AuthenticatedDetailsGate className="border border-border bg-card p-4">
+        <VoucherInfoBody
+          address={address}
+          symbol={symbol}
+          decimals={decimals}
+          ownerAddress={ownerAddress}
+          detail={detail}
+          privateInfo={privateInfo}
+        />
+      </AuthenticatedDetailsGate>
+    </div>
   );
 }
 

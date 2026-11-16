@@ -4,6 +4,7 @@ import {
   canonicalActivityRouteSearch,
   clearActivityRouteSearch,
   parseActivityDeskFilters,
+  parseActivityMessageTo,
   parseActivitySearch,
   parseActivitySection,
   pickActivitySearch,
@@ -49,8 +50,12 @@ describe("activity search", () => {
       canonicalActivityRouteSearch({ activityQ: "old voucher", activityTypes: "sent,swapped" }),
     ).toBeNull();
     expect(clearActivityRouteSearch()).toEqual({
+      activityRange: undefined,
+      activityVoucher: undefined,
       activityQ: undefined,
       activityTypes: undefined,
+      messageTo: undefined,
+      section: undefined,
       tx: undefined,
     });
   });
@@ -95,5 +100,28 @@ describe("activity search", () => {
       section: undefined,
     });
     expect(clearActivityRouteSearch()).toHaveProperty("section", undefined);
+  });
+
+  it("checksums a message recipient and removes invalid prefill values", () => {
+    const lower = "0x5c0d0000000000000000000000000000000e7e21";
+    const checksummed = "0x5C0d0000000000000000000000000000000E7E21";
+    expect(parseActivityMessageTo(lower)).toBe(checksummed);
+    expect(canonicalActivityRouteSearch({ section: "messages", messageTo: lower })).toEqual({
+      section: "messages",
+      activityQ: undefined,
+      activityTypes: undefined,
+      messageTo: checksummed,
+    });
+    expect(
+      canonicalActivityRouteSearch({ section: "messages", messageTo: checksummed }),
+    ).toBeNull();
+    expect(
+      canonicalActivityRouteSearch({ section: "messages", messageTo: "not-an-address" }),
+    ).toEqual({
+      section: "messages",
+      activityQ: undefined,
+      activityTypes: undefined,
+      messageTo: undefined,
+    });
   });
 });

@@ -3,6 +3,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { CatalogPicture } from "#/components/catalogs/catalog-row";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
+import { ResourceOwnerContact } from "#/components/messaging/resource-owner-contact";
 import { Button } from "#/components/ui/button";
 import {
   SheetBackdrop,
@@ -76,6 +77,7 @@ export function CatalogDetailPage({ id, editor }: { id: string; editor?: Catalog
               {catalog.description}
             </p>
           ) : null}
+          <ResourceOwnerContact ownerAddress={catalog.ownerAddress} />
           {catalog.tags.length > 0 ? (
             <div className="flex flex-wrap gap-2" aria-label={t`Tags`}>
               {catalog.tags.map((tag) => (

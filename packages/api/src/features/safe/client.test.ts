@@ -41,11 +41,29 @@ describe("safe client", () => {
   it("reads public persisted ownership with an unknown threshold", async () => {
     const state = { kind: "safe", owner: A(1), signers: [A(5)], threshold: null };
     const { spy, safe } = client(state);
-    await expect(safe.owner(A(1))).resolves.toEqual(state);
+    await expect(safe.owner(A(1))).resolves.toEqual({ ...state, messageTargets: [] });
     expect(spy).toHaveBeenCalledWith(
       `https://api.example/api/v2/owners/${A(1)}`,
       expect.objectContaining({ cache: "no-store" }),
     );
+  });
+
+  it("reads only the public identities that can receive owner messages", async () => {
+    const state = {
+      kind: "safe",
+      owner: A(1),
+      signers: [A(5)],
+      threshold: 1,
+      messageTargets: [
+        {
+          address: A(5),
+          username: "amina",
+          avatar: "https://storage.example/amina.webp",
+        },
+      ],
+    };
+    const { safe } = client(state);
+    await expect(safe.owner(A(1))).resolves.toEqual(state);
   });
   it("lists pending transactions of a Safe", async () => {
     const { spy, safe } = client({ results: [proposal] });

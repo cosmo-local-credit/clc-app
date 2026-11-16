@@ -1,7 +1,7 @@
 import { CONVERSATION_INTRO_MAX, type Conversation } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RiQuillPenLine, RiSearchLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
@@ -24,22 +24,55 @@ import { useNewMessage } from "#/features/messaging/hooks/use-new-message";
  * New message on the desktop: the recipient search in a dialog, then an
  * optional introduction. Someone already in the list opens their thread.
  */
-export function NewMessageDialog({ existing }: { existing: readonly Conversation[] }) {
+export function NewMessageDialog({
+  existing,
+  messageTo,
+  onMessageToConsumed,
+}: {
+  existing: readonly Conversation[];
+  messageTo?: `0x${string}`;
+  onMessageToConsumed?: () => void;
+}) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const flow = useNewMessage(existing, (conversationId) => {
-    changeOpen(false);
-    void navigate({
-      to: "/messages/$conversationId",
-      params: { conversationId: String(conversationId) },
-    });
-  });
+  const flow = useNewMessage(
+    existing,
+    (conversationId) => {
+      changeOpen(false);
+      void navigate({
+        to: "/messages/$conversationId",
+        params: { conversationId: String(conversationId) },
+      });
+    },
+    messageTo,
+  );
   const { term, search, users, selected, failure } = flow;
+  const shownUsers = messageTo ? flow.ownerUsers : users;
+
+  useEffect(() => {
+    if (messageTo) setOpen(true);
+  }, [messageTo]);
+
+  useEffect(() => {
+    if (!messageTo || !flow.ownerSearch.isSuccess || flow.ownerUsers.length !== 1 || selected) {
+      return;
+    }
+    onMessageToConsumed?.();
+    flow.choose(flow.ownerUsers[0]!);
+  }, [flow, messageTo, onMessageToConsumed, selected]);
 
   function changeOpen(next: boolean) {
     setOpen(next);
-    if (!next) flow.reset();
+    if (!next) {
+      if (messageTo) onMessageToConsumed?.();
+      flow.reset();
+    }
+  }
+
+  function choose(match: (typeof shownUsers)[number]) {
+    if (messageTo) onMessageToConsumed?.();
+    flow.choose(match);
   }
 
   return (
@@ -75,7 +108,9 @@ export function NewMessageDialog({ existing }: { existing: readonly Conversation
                 </Field>
                 {failure ? (
                   <p role="alert" className="text-xs text-destructive">
-                    {failure === "missing" ? (
+                    {failure === "self" ? (
+                      <Trans>You can't message yourself.</Trans>
+                    ) : failure === "missing" ? (
                       <Trans>You can't message this person.</Trans>
                     ) : failure === "exists" ? (
                       <Trans>You already have a conversation with this person.</Trans>
@@ -97,49 +132,90 @@ export function NewMessageDialog({ existing }: { existing: readonly Conversation
               </>
             ) : (
               <>
-                <div className="relative">
-                  <RiSearchLine
-                    className="pointer-events-none absolute top-1/2 start-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                  <Input
-                    dir="ltr"
-                    type="search"
-                    value={flow.query}
-                    maxLength={120}
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    autoComplete="off"
-                    spellCheck={false}
-                    aria-label={t`Username or phone number`}
-                    placeholder={t`Username or phone number`}
-                    className="ps-8"
-                    onChange={(event) => flow.setQuery(event.target.value)}
-                  />
-                </div>
+                {!messageTo ? (
+                  <div className="relative">
+                    <RiSearchLine
+                      className="pointer-events-none absolute top-1/2 start-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                    <Input
+                      dir="ltr"
+                      type="search"
+                      value={flow.query}
+                      maxLength={120}
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      autoComplete="off"
+                      spellCheck={false}
+                      aria-label={t`Username, address, or phone number`}
+                      placeholder={t`Username, address, or phone number`}
+                      className="ps-8"
+                      onChange={(event) => flow.setQuery(event.target.value)}
+                    />
+                  </div>
+                ) : null}
                 <div className="min-h-0 overflow-y-auto">
-                  {term && (search.isDebouncing || search.isFetching) ? (
+                  {messageTo && flow.ownerSearch.isPending ? (
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Spinner />
+                      <Trans>Loading recipients…</Trans>
+                    </p>
+                  ) : null}
+                  {messageTo && flow.ownerSearch.isError ? (
+                    <div role="alert" className="grid justify-items-start gap-2 text-xs">
+                      <p className="text-destructive">
+                        <Trans>Couldn't load recipients.</Trans>
+                      </p>
+                      <Button
+                        variant="outline"
+                        pending={flow.ownerSearch.isFetching}
+                        onClick={() => void flow.ownerSearch.refetch()}
+                      >
+                        <Trans>Retry</Trans>
+                      </Button>
+                    </div>
+                  ) : null}
+                  {messageTo && flow.ownerSearch.isSuccess && shownUsers.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">
+                      <Trans>No message recipient is available.</Trans>
+                    </p>
+                  ) : null}
+                  {messageTo && shownUsers.length > 1 ? (
+                    <p className="text-xs text-muted-foreground">
+                      <Trans>Choose who to message.</Trans>
+                    </p>
+                  ) : null}
+                  {!selected && failure === "self" ? (
+                    <p role="alert" className="text-xs text-destructive">
+                      <Trans>You can't message yourself.</Trans>
+                    </p>
+                  ) : null}
+                  {!messageTo && term && (search.isDebouncing || search.isFetching) ? (
                     <p className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Spinner />
                       <Trans>Searching…</Trans>
                     </p>
                   ) : null}
-                  {term && search.error ? (
+                  {!messageTo && term && search.error ? (
                     <p role="alert" className="text-xs text-destructive">
                       <Trans>Couldn't search. Try again.</Trans>
                     </p>
                   ) : null}
-                  {term && !search.isDebouncing && search.isSuccess && users.length === 0 ? (
+                  {!messageTo &&
+                  term &&
+                  !search.isDebouncing &&
+                  search.isSuccess &&
+                  users.length === 0 ? (
                     <p className="text-xs text-muted-foreground">
                       <Trans>No matching people.</Trans>
                     </p>
                   ) : null}
-                  {users.length > 0 ? (
+                  {shownUsers.length > 0 ? (
                     <ul
                       className="border border-border [&>li+li]:border-border [&>li+li]:border-t"
                       aria-label={t`Matching people`}
                     >
-                      {users.map((match) => (
+                      {shownUsers.map((match) => (
                         <li key={match.address} className="flex items-center gap-3 p-3">
                           <div className="min-w-0 flex-1">
                             <RecipientIdentityText
@@ -148,7 +224,7 @@ export function NewMessageDialog({ existing }: { existing: readonly Conversation
                             />
                             <EllipsizedAddress address={match.address} className="block" />
                           </div>
-                          <Button variant="outline" onClick={() => flow.choose(match)}>
+                          <Button variant="outline" onClick={() => choose(match)}>
                             <Trans>Message</Trans>
                           </Button>
                         </li>

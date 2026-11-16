@@ -2,6 +2,10 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
+vi.mock("#/components/messaging/resource-owner-contact", () => ({
+  OwnerMessageButton: () => null,
+}));
+
 const { identities, reverseResolution, shareState, recipients } = vi.hoisted(() => ({
   identities: {
     data: {} as Record<

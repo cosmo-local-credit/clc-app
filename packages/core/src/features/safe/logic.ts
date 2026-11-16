@@ -27,6 +27,13 @@ const hexSchema = z.custom<Hex>(
 );
 const decimalSchema = z.string().regex(/^\d+$/);
 
+export const ownerMessageTargetSchema = z.object({
+  address: addressSchema,
+  username: z.string().trim().min(1).nullable(),
+  avatar: z.string().nullable(),
+});
+export type OwnerMessageTarget = z.infer<typeof ownerMessageTargetSchema>;
+
 /** Persisted ownership capabilities. A custom multisig may omit a threshold getter. */
 export const safeOwnerInfoSchema = z.object({
   kind: z.literal("safe"),

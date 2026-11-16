@@ -23,6 +23,8 @@ export type HomePageProps = {
   activityTypes?: readonly ActivityKind[];
   /** Activity's sub-tab; read only when messaging is on. */
   activitySection?: ActivitySection;
+  messageTo?: `0x${string}`;
+  onMessageToConsumed?: () => void;
   onActivityQueryChange?: (query: string) => void;
   onActivityTypesChange?: (types: readonly ActivityKind[]) => void;
 };
@@ -34,6 +36,8 @@ export function HomePage({
   activityQ,
   activityTypes,
   activitySection = "transactions",
+  messageTo,
+  onMessageToConsumed,
   onActivityQueryChange,
   onActivityTypesChange,
 }: HomePageProps) {
@@ -66,6 +70,8 @@ export function HomePage({
                 address={address}
                 query={activityQ}
                 types={activityTypes}
+                messageTo={messageTo}
+                onMessageToConsumed={onMessageToConsumed}
                 onQueryChange={onActivityQueryChange}
                 onTypesChange={onActivityTypesChange}
               />

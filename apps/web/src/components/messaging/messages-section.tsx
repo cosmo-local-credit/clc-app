@@ -7,7 +7,13 @@ import { ConversationRow } from "./conversation-row";
 import { NewMessageSheet } from "./new-message-sheet";
 
 /** Activity's Messages: requests waiting on the caller first, then every conversation. */
-export function MessagesSection() {
+export function MessagesSection({
+  messageTo,
+  onMessageToConsumed,
+}: {
+  messageTo?: `0x${string}`;
+  onMessageToConsumed?: () => void;
+}) {
   const { t } = useLingui();
   const list = useConversationList("direct");
   const requests = list.conversations.filter(
@@ -16,7 +22,11 @@ export function MessagesSection() {
   const others = list.conversations.filter((conversation) => !requests.includes(conversation));
   return (
     <div className="space-y-3">
-      <NewMessageSheet existing={list.conversations} />
+      <NewMessageSheet
+        existing={list.conversations}
+        messageTo={messageTo}
+        onMessageToConsumed={onMessageToConsumed}
+      />
       {list.isPending && list.fetchStatus !== "idle" ? (
         <ListSkeleton label={<Trans>Loading messages…</Trans>} count={4} />
       ) : null}

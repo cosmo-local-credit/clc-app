@@ -74,7 +74,7 @@ msgstr "{count, plural, one {# Beitrag} other {# Beiträge}}"
 #~ msgstr "Wählen Sie eine bevorzugte Währung"
 
 #. placeholder {0}: activity.length
-#: apps/web/src/desktop/activity/transactions-desk.tsx:477
+#: apps/web/src/desktop/activity/transactions-desk.tsx:478
 #: apps/web/src/features/home/ui/activity-page.tsx:179
 msgid "{0, plural, one {# activity item shown.} other {# activity items "
 "shown.}}"
@@ -390,6 +390,11 @@ msgid "{withdrawable} {0} available. Fees held for collection stay in the pool."
 msgstr "{withdrawable} {0} verfügbar. Gebühren für die Abholung bleiben im "
 "Fonds."
 
+#. placeholder {0}: targets.length - 1
+#: apps/web/src/components/messaging/resource-owner-contact.tsx:116
+msgid "+{0} more"
+msgstr "+{0} weitere"
+
 #: apps/web/src/components/auth/authenticated-details-gate.tsx:66
 msgid "<0>Sign in</0> for more information."
 msgstr "<0>Anmelden</0>, um weitere Informationen zu erhalten."
@@ -400,7 +405,7 @@ msgstr "<0>Anmelden</0>, um weitere Informationen zu erhalten."
 #. placeholder {0}: rate.value
 #. placeholder {1}: rate.unit
 #: apps/web/src/components/vouchers/voucher-about.tsx:52
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:155
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:165
 msgid "1 {symbol} = {0} {1}"
 msgstr "1 {symbol} = {0} {1}"
 
@@ -553,7 +558,7 @@ msgstr "Ein Gutschein steht für das Versprechen des Herausgebers, Waren oder "
 "und wer ihn annimmt."
 
 #: apps/web/src/components/app-menu.tsx:64
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:82
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:84
 #: apps/web/src/desktop/shell/sidebar.tsx:119
 msgid "About"
 msgstr "Über:"
@@ -657,9 +662,9 @@ msgstr "Aktiv"
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:102
 #: apps/web/src/components/market-bar.tsx:334
 #: apps/web/src/components/navigation/bottom-navigation.tsx:55
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:177
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:185
 #: apps/web/src/desktop/activity/activity-header.tsx:30
-#: apps/web/src/desktop/activity/transactions-desk.tsx:517
+#: apps/web/src/desktop/activity/transactions-desk.tsx:518
 #: apps/web/src/desktop/market/place-panel.tsx:63
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:221
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:969
@@ -671,14 +676,14 @@ msgstr "Aktiv"
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:467
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:472
-#: apps/web/src/features/home/ui/activity-inbox.tsx:59
+#: apps/web/src/features/home/ui/activity-inbox.tsx:63
 #: apps/web/src/features/home/ui/activity-page.tsx:129
 #: apps/web/src/features/home/ui/activity-page.tsx:173
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:49
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:50
 msgid "Activity"
 msgstr "Tätigkeit"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:645
+#: apps/web/src/desktop/activity/transactions-desk.tsx:646
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:223
 msgid "Activity not found."
 msgstr "Aktivität nicht gefunden."
@@ -738,7 +743,7 @@ msgstr "Fügen Sie Ihrem Profil eine Telefonnummer hinzu, um MPESA zu verwenden.
 msgid "Add a photo"
 msgstr "Hinzufügen eines Fotos"
 
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:169
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:171
 #: apps/web/src/features/catalogs/hooks/use-catalog-member-picker.tsx:81
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 msgid "Add a pool"
@@ -753,7 +758,7 @@ msgstr "Hinzufügen einer privaten Nachricht"
 msgid "Add a profile photo to continue."
 msgstr "Fügen Sie ein Profilfoto hinzu, um fortzufahren."
 
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:169
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:171
 #: apps/web/src/features/catalogs/hooks/use-catalog-member-picker.tsx:81
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 msgid "Add a voucher"
@@ -851,8 +856,8 @@ msgstr "Fügen Sie Ihre Kontaktdaten hinzu"
 msgid "Added to catalog"
 msgstr "Zum Katalog hinzugefügt"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:210
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:215
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:221
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:226
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:287
 #: apps/web/src/features/wallet/ui/recent-recipient-row.tsx:28
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:256
@@ -869,7 +874,7 @@ msgstr "Adressbuch"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:588
 #: apps/web/src/desktop/activity/identified-address.tsx:22
-#: apps/web/src/desktop/activity/transactions-desk.tsx:875
+#: apps/web/src/desktop/activity/transactions-desk.tsx:879
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:35
 #: apps/web/src/desktop/wallet/cash-desk.tsx:31
 #: apps/web/src/desktop/wallet/receive-desk.tsx:47
@@ -933,7 +938,7 @@ msgstr "Landwirtschaft"
 
 #: apps/web/src/components/market-bar.tsx:205
 #: apps/web/src/components/market-bar.tsx:264
-#: apps/web/src/desktop/activity/transactions-desk.tsx:362
+#: apps/web/src/desktop/activity/transactions-desk.tsx:363
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1056
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:399
 #: apps/web/src/features/home/ui/post-timing-chips.tsx:66
@@ -965,8 +970,8 @@ msgstr "Alle Fonds"
 msgid "All selected"
 msgstr "Alle ausgewählt"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:424
-#: apps/web/src/desktop/activity/transactions-desk.tsx:428
+#: apps/web/src/desktop/activity/transactions-desk.tsx:425
+#: apps/web/src/desktop/activity/transactions-desk.tsx:429
 msgid "All time"
 msgstr "Gesamter Zeitraum"
 
@@ -998,8 +1003,8 @@ msgstr "Prüfen Sie vor dem Senden immer, ob Token und Netzwerk übereinstimmen.
 #~ msgstr "Ermöglicht jederzeit die Anmeldung und Wiederherstellung dieser "
 #~ "Geldbörse. Bewahren Sie sie sicher auf."
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
-#: apps/web/src/desktop/activity/transactions-desk.tsx:306
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:145
+#: apps/web/src/desktop/activity/transactions-desk.tsx:307
 #: apps/web/src/desktop/credit/get-desk.tsx:86
 #: apps/web/src/desktop/credit/get-desk.tsx:88
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:120
@@ -1097,7 +1102,7 @@ msgstr "Es läuft bereits ein anderer Kartenscan. Versuchen Sie es erneut."
 msgid "Any selected"
 msgstr "Jede ausgewählte"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:401
+#: apps/web/src/desktop/activity/transactions-desk.tsx:402
 msgid "Any voucher"
 msgstr "Beliebiger Gutschein"
 
@@ -1245,12 +1250,12 @@ msgstr "Warten auf die Genehmigung"
 
 #: apps/web/src/components/introduction/introduction.tsx:121
 #: apps/web/src/components/market-search.tsx:159
-#: apps/web/src/components/messaging/new-message-sheet.tsx:157
+#: apps/web/src/components/messaging/new-message-sheet.tsx:235
 #: apps/web/src/components/paper-wallet-scanner.tsx:119
 #: apps/web/src/components/paper-wallet-scanner.tsx:143
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:84
 #: apps/web/src/desktop/market/place-panel.tsx:123
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:91
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:126
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:171
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:249
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:410
@@ -1414,10 +1419,10 @@ msgid "Buy USD₮ with KES."
 msgstr "Kaufen Sie USD₮ mit KES."
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:373
-#: apps/web/src/components/wants/want-detail.tsx:195
+#: apps/web/src/components/wants/want-detail.tsx:197
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:202
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:208
-#: apps/web/src/desktop/wants/want-place-desk.tsx:275
+#: apps/web/src/desktop/wants/want-place-desk.tsx:279
 msgid "Call"
 msgstr "Ruf"
 
@@ -1548,8 +1553,8 @@ msgid "Catalog limit reached. Ask an administrator to increase your allowance."
 msgstr "Kataloglimit erreicht. Bitten Sie einen Administrator, Ihr Limit zu "
 "erhöhen."
 
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:49
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:39
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:50
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:40
 msgid "Catalog not found."
 msgstr "Katalog nicht gefunden."
 
@@ -1571,7 +1576,7 @@ msgstr "Katalog gespeichert. Der Eintrag konnte nicht hinzugefügt werden. "
 #: apps/web/src/desktop/market/market-layers.tsx:37
 #: apps/web/src/desktop/shell/crumbs.tsx:30
 #: apps/web/src/desktop/shell/sidebar.tsx:203
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:32
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:33
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:30
 msgid "Catalogs"
 msgstr "Kataloge"
@@ -1931,6 +1936,11 @@ msgstr "Wählen Sie festgelegte Kurse oder einen gleichen Wert, wenn für die "
 msgid "Choose username"
 msgstr "Benutzernamen wählen"
 
+#: apps/web/src/components/messaging/new-message-sheet.tsx:178
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:185
+msgid "Choose who to message."
+msgstr "Wähle aus, wem du schreiben möchtest."
+
 #: apps/web/src/features/install/ui/install-page.tsx:96
 msgid "CLC is installed. Find it on your home screen."
 msgstr "CLC ist installiert. Sie finden die App auf Ihrem Home-Bildschirm."
@@ -1953,7 +1963,7 @@ msgid "Clear filter"
 msgstr "Klarfilter"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:115
-#: apps/web/src/desktop/activity/transactions-desk.tsx:544
+#: apps/web/src/desktop/activity/transactions-desk.tsx:545
 #: apps/web/src/desktop/market/market-list-desk.tsx:503
 #: apps/web/src/desktop/market/market-notices.tsx:192
 #: apps/web/src/desktop/market/market-notices.tsx:257
@@ -1990,7 +2000,7 @@ msgstr "Klare Lage"
 #: apps/web/src/components/catalog-filter-controls.tsx:479
 #: apps/web/src/components/market-search.tsx:73
 #: apps/web/src/components/market-search.tsx:180
-#: apps/web/src/desktop/activity/transactions-desk.tsx:457
+#: apps/web/src/desktop/activity/transactions-desk.tsx:458
 #: apps/web/src/desktop/market/market-search-field.tsx:131
 #: apps/web/src/desktop/market/market-toolbar.tsx:299
 #: apps/web/src/features/home/ui/activity-page.tsx:154
@@ -2014,7 +2024,7 @@ msgstr "Suche löschen"
 #: apps/web/src/desktop/shell/shortcut-help.tsx:144
 #: apps/web/src/desktop/ui/inspector.tsx:107
 #: apps/web/src/desktop/vouchers/detail/voucher-dialog.tsx:56
-#: apps/web/src/desktop/wants/want-place-desk.tsx:60
+#: apps/web/src/desktop/wants/want-place-desk.tsx:61
 #: apps/web/src/features/home/ui/report-page.tsx:282
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:105
 msgid "Close"
@@ -2237,10 +2247,10 @@ msgstr "Bestätigen Sie mit Ihrem Passkey. Ihre alte Karte funktioniert danach "
 "auf keinem Gerät mehr für die Anmeldung."
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:74
-#: apps/web/src/desktop/activity/transactions-desk.tsx:338
-#: apps/web/src/desktop/activity/transactions-desk.tsx:757
-#: apps/web/src/desktop/activity/transactions-desk.tsx:831
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:75
+#: apps/web/src/desktop/activity/transactions-desk.tsx:339
+#: apps/web/src/desktop/activity/transactions-desk.tsx:760
+#: apps/web/src/desktop/activity/transactions-desk.tsx:835
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:280
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:223
@@ -2324,11 +2334,11 @@ msgstr "Die Verbindung scheiterte."
 msgid "Construction"
 msgstr "Bauwesen"
 
-#: apps/web/src/components/wants/want-detail.tsx:126
+#: apps/web/src/components/wants/want-detail.tsx:127
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:120
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:238
 #: apps/web/src/desktop/wants/want-outline.tsx:15
-#: apps/web/src/desktop/wants/want-place-desk.tsx:199
+#: apps/web/src/desktop/wants/want-place-desk.tsx:200
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:68
 msgid "Contact"
 msgstr "Kontakt"
@@ -2459,12 +2469,12 @@ msgstr "Weiter mit {providerLabel}"
 msgid "Continue with sign-in card"
 msgstr "Mit Sign-in-Karte fortfahren"
 
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:171
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:181
 msgid "Contract"
 msgstr "Vertrag"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:66
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:98
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:100
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:109
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:101
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:113
@@ -2474,10 +2484,10 @@ msgid "Contract address"
 msgstr "Vertragsanschrift"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:79
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:73
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:75
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:697
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:115
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:145
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:155
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:118
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:29
@@ -2496,9 +2506,9 @@ msgstr "Unterhaltung"
 msgid "Conversation options"
 msgstr "Optionen der Unterhaltung"
 
-#: apps/web/src/components/messaging/messages-section.tsx:55
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:74
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:75
+#: apps/web/src/components/messaging/messages-section.tsx:65
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:86
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:87
 msgid "Conversations"
 msgstr "Unterhaltungen"
 
@@ -2522,10 +2532,10 @@ msgid "Copy address"
 msgstr "Adresse kopieren"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:70
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:102
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:104
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:695
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:113
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:175
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:185
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:105
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:116
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:47
@@ -2556,7 +2566,7 @@ msgstr "Link kopieren"
 #~ msgid "Copy mint transaction hash"
 #~ msgstr "Hash der Ausgabetransaktion kopieren"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:874
+#: apps/web/src/desktop/activity/transactions-desk.tsx:878
 #: apps/web/src/desktop/pools/detail/pool-receive-popover.tsx:34
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:56
 msgid "Copy pool address"
@@ -2598,7 +2608,7 @@ msgid "Copy tracking ID"
 msgstr "Tracking-ID kopieren"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:105
-#: apps/web/src/desktop/activity/transactions-desk.tsx:715
+#: apps/web/src/desktop/activity/transactions-desk.tsx:716
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:178
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:125
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:255
@@ -2759,7 +2769,7 @@ msgstr "Kopieren fehlgeschlagen"
 #: apps/web/src/desktop/account/settings-desk.tsx:583
 #: apps/web/src/desktop/account/settings-desk.tsx:589
 #: apps/web/src/desktop/activity/identified-address.tsx:22
-#: apps/web/src/desktop/activity/transactions-desk.tsx:875
+#: apps/web/src/desktop/activity/transactions-desk.tsx:879
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:35
 #: apps/web/src/desktop/wallet/cash-desk.tsx:26
 #: apps/web/src/desktop/wallet/cash-desk.tsx:32
@@ -2784,12 +2794,12 @@ msgstr "Adresse konnte nicht kopiert werden"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:74
 #: apps/web/src/components/vouchers/voucher-about.tsx:80
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:68
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:74
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:70
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:76
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:697
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:115
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:140
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:146
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:150
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:156
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:118
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:24
@@ -2854,7 +2864,7 @@ msgstr "Der Hash der Transaktion zur Bestandserstellung konnte nicht kopiert "
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:39
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:45
-#: apps/web/src/desktop/activity/transactions-desk.tsx:698
+#: apps/web/src/desktop/activity/transactions-desk.tsx:699
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:130
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:168
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:174
@@ -2924,9 +2934,9 @@ msgstr "An diesem Ort konnte kein Land ermittelt werden. Versuchen Sie es an "
 msgid "Couldn't import the image"
 msgstr "Das Bild konnte nicht importiert werden"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:417
-#: apps/web/src/desktop/activity/transactions-desk.tsx:503
-#: apps/web/src/desktop/activity/transactions-desk.tsx:645
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:425
+#: apps/web/src/desktop/activity/transactions-desk.tsx:504
+#: apps/web/src/desktop/activity/transactions-desk.tsx:646
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1085
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:153
 #: apps/web/src/desktop/wallet/send-desk.tsx:535
@@ -2941,7 +2951,7 @@ msgstr "Die Aktivität konnte nicht geladen werden."
 msgid "Couldn't load all results in this area."
 msgstr "Es konnten nicht alle Ergebnisse in diesem Bereich geladen werden."
 
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:186
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:188
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:67
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:42
@@ -2950,10 +2960,10 @@ msgstr "Katalogeinträge konnten nicht geladen werden."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:58
 #: apps/web/src/desktop/catalogs/catalog-create-desk.tsx:47
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:51
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:52
 #: apps/web/src/desktop/wallet/wallet-catalogs.tsx:46
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:32
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:41
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:42
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:117
 msgid "Couldn't load catalogs."
 msgstr "Kataloge konnten nicht geladen werden."
@@ -2966,8 +2976,8 @@ msgstr "Kataloge konnten nicht geladen werden."
 msgid "Couldn't load complete marketplace results."
 msgstr "Die vollständigen Marktplatzergebnisse konnten nicht geladen werden."
 
-#: apps/web/src/components/wants/want-detail.tsx:152
-#: apps/web/src/desktop/wants/want-place-desk.tsx:234
+#: apps/web/src/components/wants/want-detail.tsx:154
+#: apps/web/src/desktop/wants/want-place-desk.tsx:238
 msgid "Couldn't load contact information."
 msgstr "Kontaktinformationen konnten nicht geladen werden."
 
@@ -2988,8 +2998,8 @@ msgstr "Die Kreditlimits konnten nicht geladen werden."
 msgid "Couldn't load marketplace results."
 msgstr "Marktplatzergebnisse konnten nicht geladen werden."
 
-#: apps/web/src/components/messaging/messages-section.tsx:26
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:48
+#: apps/web/src/components/messaging/messages-section.tsx:36
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:60
 #: apps/web/src/desktop/messaging/thread-desk.tsx:106
 #: apps/web/src/features/messaging/ui/thread-page.tsx:181
 msgid "Couldn't load messages."
@@ -3010,9 +3020,9 @@ msgstr "Meldungen konnten nicht geladen werden."
 msgid "Couldn't load offerings."
 msgstr "Die Angebote konnten nicht geladen werden."
 
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:47
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:49
 #: apps/web/src/desktop/pools/detail/pool-profile-desk.tsx:30
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:484
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:488
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:65
 msgid "Couldn't load pool information."
 msgstr "Pool-Informationen konnten nicht geladen werden."
@@ -3023,17 +3033,17 @@ msgstr "Pool-Informationen konnten nicht geladen werden."
 msgid "Couldn't load pool tags."
 msgstr "Die Schlagwörter des Fonds konnten nicht geladen werden."
 
-#: apps/web/src/components/wants/want-detail.tsx:238
-#: apps/web/src/desktop/wants/want-place-desk.tsx:330
+#: apps/web/src/components/wants/want-detail.tsx:240
+#: apps/web/src/desktop/wants/want-place-desk.tsx:334
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
 msgid "Couldn't load pools."
 msgstr "Die Fonds konnten nicht geladen werden."
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:339
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:347
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:45
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:71
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:61
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:409
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:413
 msgid "Couldn't load posts."
 msgstr "Die Beiträge konnten nicht geladen werden."
 
@@ -3050,6 +3060,11 @@ msgstr "Der Pretium-Verlauf konnte nicht geladen werden."
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:264
 msgid "Couldn't load price feeds."
 msgstr "Preisfeeds konnten nicht geladen werden."
+
+#: apps/web/src/components/messaging/new-message-sheet.tsx:159
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:167
+msgid "Couldn't load recipients."
+msgstr "Empfänger konnten nicht geladen werden."
 
 #: apps/web/src/components/resource-usage.tsx:126
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:58
@@ -3079,8 +3094,8 @@ msgstr "Dieser Gutschein konnte nicht geladen werden."
 msgid "Couldn't load the helpdesk."
 msgstr "Der Helpdesk konnte nicht geladen werden."
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:247
-#: apps/web/src/desktop/activity/transactions-desk.tsx:907
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:258
+#: apps/web/src/desktop/activity/transactions-desk.tsx:911
 msgid "Couldn't load the private attachment."
 msgstr "Der private Anhang konnte nicht geladen werden."
 
@@ -3096,7 +3111,7 @@ msgstr "Diese Unterhaltung konnte nicht geladen werden."
 
 #: apps/web/src/desktop/pools/pool-desk.tsx:139
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:79
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:124
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:125
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:45
 msgid "Couldn't load this pool."
 msgstr "Dieser Fonds konnte nicht geladen werden."
@@ -3125,7 +3140,7 @@ msgid "Couldn't load this voucher."
 msgstr "Dieser Gutschein konnte nicht geladen werden."
 
 #: apps/web/src/components/wants/want-sheet.tsx:69
-#: apps/web/src/desktop/wants/want-place-desk.tsx:68
+#: apps/web/src/desktop/wants/want-place-desk.tsx:69
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:39
 msgid "Couldn't load this Want."
 msgstr "Dieses Gesuch konnte nicht geladen werden."
@@ -3145,8 +3160,8 @@ msgstr "Rechnungseinheiten konnten nicht geladen werden."
 #~ msgid "Couldn't load voucher choices."
 #~ msgstr "Die Gutscheinauswahl konnte nicht geladen werden."
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:224
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:116
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:232
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:126
 msgid "Couldn't load voucher information."
 msgstr "Gutschein-Informationen konnten nicht geladen werden."
 
@@ -3163,14 +3178,14 @@ msgstr "Gutscheine konnten nicht geladen werden"
 
 #: apps/web/src/components/account-retirement/recovery-page.tsx:152
 #: apps/web/src/components/account-retirement/recovery-page.tsx:194
-#: apps/web/src/components/wants/want-detail.tsx:217
+#: apps/web/src/components/wants/want-detail.tsx:219
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:253
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:156
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:175
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:324
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:430
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:544
-#: apps/web/src/desktop/wants/want-place-desk.tsx:295
+#: apps/web/src/desktop/wants/want-place-desk.tsx:299
 #: apps/web/src/features/home/ui/wallet-page.tsx:190
 #: apps/web/src/features/home/ui/wallet-page.tsx:208
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:298
@@ -3348,13 +3363,13 @@ msgstr "Die Fonds konnten nicht durchsucht werden."
 msgid "Couldn't search vouchers."
 msgstr "Ich konnte keine Gutscheine durchsuchen."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:119
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:129
+#: apps/web/src/components/messaging/new-message-sheet.tsx:193
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:201
 msgid "Couldn't search. Try again."
 msgstr "Suche fehlgeschlagen. Versuchen Sie es noch einmal."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:90
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:85
+#: apps/web/src/components/messaging/new-message-sheet.tsx:125
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:120
 msgid "Couldn't send the request. Try again."
 msgstr "Die Anfrage konnte nicht gesendet werden. Versuchen Sie es noch einmal."
 
@@ -3548,10 +3563,10 @@ msgstr "Gesuch erstellen"
 msgid "Create your account"
 msgstr "Konto erstellen"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:471
-#: apps/web/src/desktop/activity/transactions-desk.tsx:199
-#: apps/web/src/desktop/activity/transactions-desk.tsx:602
-#: apps/web/src/desktop/activity/transactions-desk.tsx:734
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:479
+#: apps/web/src/desktop/activity/transactions-desk.tsx:200
+#: apps/web/src/desktop/activity/transactions-desk.tsx:603
+#: apps/web/src/desktop/activity/transactions-desk.tsx:737
 #: apps/web/src/desktop/posts/post-desk.tsx:305
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:74
 #: apps/web/src/desktop/wallet/wallet-parts.tsx:97
@@ -3566,7 +3581,7 @@ msgstr "Erstellt"
 msgid "Created in the pool"
 msgstr "Im Fonds erstellt"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:70
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:71
 msgid "Created voucher"
 msgstr "Gutschein ausgegeben"
 
@@ -3612,7 +3627,7 @@ msgstr "Erstellung fehlgeschlagen"
 #: apps/web/src/components/creditable-browse-control.tsx:98
 #: apps/web/src/desktop/market/market-toolbar.tsx:362
 #: apps/web/src/desktop/pools/pool-main.tsx:432
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:48
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:49
 msgid "Credit"
 msgstr "Kredit"
 
@@ -3650,8 +3665,8 @@ msgstr "Kredit: an"
 #~ msgid "Credit: up to two hops"
 #~ msgstr "Kredit: bis zu zwei Schritte"
 
-#: apps/web/src/components/wants/want-detail.tsx:230
-#: apps/web/src/desktop/wants/want-place-desk.tsx:326
+#: apps/web/src/components/wants/want-detail.tsx:232
+#: apps/web/src/desktop/wants/want-place-desk.tsx:330
 msgid "Creditable pools"
 msgstr "Kreditfähige Pools"
 
@@ -3699,10 +3714,10 @@ msgid "Dark mode"
 msgstr "Dunkelmodus"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:97
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:159
-#: apps/web/src/desktop/activity/transactions-desk.tsx:267
-#: apps/web/src/desktop/activity/transactions-desk.tsx:761
-#: apps/web/src/desktop/activity/transactions-desk.tsx:881
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:167
+#: apps/web/src/desktop/activity/transactions-desk.tsx:268
+#: apps/web/src/desktop/activity/transactions-desk.tsx:764
+#: apps/web/src/desktop/activity/transactions-desk.tsx:885
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:168
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1034
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:100
@@ -3714,7 +3729,7 @@ msgstr "Dunkelmodus"
 msgid "Date"
 msgstr "Datum"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:421
+#: apps/web/src/desktop/activity/transactions-desk.tsx:422
 msgid "Date range"
 msgstr "Zeitraum"
 
@@ -3818,11 +3833,11 @@ msgstr "Deployment Transaktion Hash kopiert"
 #: apps/web/src/features/home/ui/activity-page.tsx:494
 #: apps/web/src/features/pools/hooks/use-pool-activity-details.ts:51
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:212
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:213
 msgid "Deposit"
 msgstr "Einlagen"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:66
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:67
 msgid "Deposit into pool"
 msgstr "In Pool einzahlen"
 
@@ -3836,7 +3851,7 @@ msgid "Deposited in this pool"
 msgstr "In diesem Fonds hinterlegt"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:35
-#: apps/web/src/desktop/activity/transactions-desk.tsx:203
+#: apps/web/src/desktop/activity/transactions-desk.tsx:204
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:963
 msgid "Deposits"
 msgstr "Einzahlungen"
@@ -3854,7 +3869,7 @@ msgstr "Beschreiben Sie Ihren Fonds"
 
 #: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:52
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:145
-#: apps/web/src/components/wants/want-detail.tsx:117
+#: apps/web/src/components/wants/want-detail.tsx:118
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:81
 #: apps/web/src/desktop/onboarding/paper-wallet-desk.tsx:119
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:313
@@ -3863,7 +3878,7 @@ msgstr "Beschreiben Sie Ihren Fonds"
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:56
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:517
 #: apps/web/src/desktop/wants/want-form-desk.tsx:133
-#: apps/web/src/desktop/wants/want-place-desk.tsx:193
+#: apps/web/src/desktop/wants/want-place-desk.tsx:194
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:61
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:44
@@ -3887,7 +3902,7 @@ msgstr "Gutscheine vernichten"
 msgid "Destroying vouchers…"
 msgstr "Gutscheine werden vernichtet…"
 
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:93
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:95
 #: apps/web/src/desktop/ui/inspector.tsx:210
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:121
 msgid "Details"
@@ -4036,10 +4051,10 @@ msgstr "Ökodorf"
 msgid "Edit"
 msgstr "Bearbeiten"
 
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:85
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:125
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:91
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:107
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:86
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:127
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:93
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:109
 msgid "Edit catalog"
 msgstr "Katalog bearbeiten"
 
@@ -4093,7 +4108,7 @@ msgstr "Gutscheindetails bearbeiten"
 
 #: apps/web/src/desktop/wants/want-form-desk.tsx:64
 #: apps/web/src/desktop/wants/want-form-desk.tsx:116
-#: apps/web/src/desktop/wants/want-place-desk.tsx:123
+#: apps/web/src/desktop/wants/want-place-desk.tsx:124
 #: apps/web/src/features/wants/ui/want-form-page.tsx:26
 msgid "Edit Want"
 msgstr "Gesuch bearbeiten"
@@ -4123,19 +4138,19 @@ msgid "Elders"
 msgstr "Ältere Menschen"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:93
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:278
-#: apps/web/src/components/wants/want-detail.tsx:187
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:289
+#: apps/web/src/components/wants/want-detail.tsx:189
 #: apps/web/src/desktop/account/profile-desk.tsx:172
 #: apps/web/src/desktop/account/profile-desk.tsx:184
-#: apps/web/src/desktop/activity/transactions-desk.tsx:936
+#: apps/web/src/desktop/activity/transactions-desk.tsx:940
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:372
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:353
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:109
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:111
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:69
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:181
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:191
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:298
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:94
-#: apps/web/src/desktop/wants/want-place-desk.tsx:267
+#: apps/web/src/desktop/wants/want-place-desk.tsx:271
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:206
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:218
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:197
@@ -4176,14 +4191,14 @@ msgstr "Stiftungen"
 
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:403
 #: apps/web/src/desktop/wants/want-form-desk.tsx:181
-#: apps/web/src/desktop/wants/want-place-desk.tsx:180
+#: apps/web/src/desktop/wants/want-place-desk.tsx:181
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:247
 #: apps/web/src/features/wants/ui/want-form-page.tsx:146
 msgid "Ends"
 msgstr "Enden"
 
 #. placeholder {0}: dates.format(new Date(want.expiresAt))
-#: apps/web/src/components/wants/want-detail.tsx:108
+#: apps/web/src/components/wants/want-detail.tsx:109
 msgid "Ends {0}"
 msgstr "Endet {0}"
 
@@ -4499,10 +4514,10 @@ msgid "Extra received"
 msgstr "Zusätzlich erhalten"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:74
-#: apps/web/src/desktop/activity/transactions-desk.tsx:338
-#: apps/web/src/desktop/activity/transactions-desk.tsx:757
-#: apps/web/src/desktop/activity/transactions-desk.tsx:831
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:75
+#: apps/web/src/desktop/activity/transactions-desk.tsx:339
+#: apps/web/src/desktop/activity/transactions-desk.tsx:760
+#: apps/web/src/desktop/activity/transactions-desk.tsx:835
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:990
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:54
@@ -4781,10 +4796,10 @@ msgstr "Lebensmittelproduktion"
 msgid "Frame your photo"
 msgstr "Wählen Sie den Bildausschnitt"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:483
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:167
-#: apps/web/src/desktop/activity/transactions-desk.tsx:208
-#: apps/web/src/desktop/activity/transactions-desk.tsx:767
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:491
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:175
+#: apps/web/src/desktop/activity/transactions-desk.tsx:209
+#: apps/web/src/desktop/activity/transactions-desk.tsx:770
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:144
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:86
 #: apps/web/src/features/home/ui/activity-page.tsx:520
@@ -4880,7 +4895,7 @@ msgstr "Kunsthandwerk"
 msgid "Handmade"
 msgstr "Handgemacht"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:613
+#: apps/web/src/desktop/activity/transactions-desk.tsx:614
 #: apps/web/src/features/home/ui/activity-page.tsx:508
 msgid "Has a message"
 msgstr "Hat eine Nachricht"
@@ -4947,7 +4962,7 @@ msgid "Holdings"
 msgstr "Betriebe"
 
 #: apps/web/src/desktop/pools/pool-main.tsx:430
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:47
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:48
 msgctxt "Pool tab"
 msgid "Holdings"
 msgstr "Betriebe"
@@ -5036,8 +5051,8 @@ msgstr "Wie war Ihre Erfahrung?"
 msgid "I already have an account"
 msgstr "Ich habe bereits ein Konto"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:205
-#: apps/web/src/desktop/activity/transactions-desk.tsx:788
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:216
+#: apps/web/src/desktop/activity/transactions-desk.tsx:792
 msgid "I created {amountLabel}."
 msgstr "Ich habe {amountLabel} ausgegeben."
 
@@ -5056,11 +5071,11 @@ msgid "I made a swap."
 msgstr "Ich habe getauscht."
 
 #. placeholder {0}: item.senderAddress
-#: apps/web/src/desktop/activity/transactions-desk.tsx:791
+#: apps/web/src/desktop/activity/transactions-desk.tsx:795
 msgid "I received {amountLabel} from {0}."
 msgstr "Ich habe {amountLabel} von {0} erhalten."
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:208
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:219
 msgid "I received {amountLabel} from {senderLabel}."
 msgstr "Ich habe {amountLabel} von {senderLabel} erhalten."
 
@@ -5077,11 +5092,11 @@ msgstr "Ich habe meine Anmeldekarte gespeichert. Wenn ich es verliere, verliere 
 "ich möglicherweise den Zugriff auf meine Brieftasche."
 
 #. placeholder {0}: item.recipientAddress
-#: apps/web/src/desktop/activity/transactions-desk.tsx:790
+#: apps/web/src/desktop/activity/transactions-desk.tsx:794
 msgid "I sent {amountLabel} to {0}."
 msgstr "Ich schickte {amountLabel} zu {0}."
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:207
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:218
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:254
 msgid "I sent {amountLabel} to {recipientLabel}."
 msgstr "Ich schickte {amountLabel} zu {recipientLabel}."
@@ -5164,11 +5179,11 @@ msgstr "Menge von {0} erhöhen"
 #~ msgid "Increase quantity"
 #~ msgstr "Erhöhung der Menge"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:160
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:161
 #: apps/web/src/desktop/market/place-panel.tsx:62
 #: apps/web/src/desktop/pools/pool-main.tsx:436
 #: apps/web/src/desktop/vouchers/voucher-desk.tsx:290
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:50
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:51
 msgid "Info"
 msgstr "Infos"
 
@@ -5215,8 +5230,8 @@ msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "Installation angefordert. Befolgen Sie die Anweisungen Ihres Browsers "
 "zum Abschluss."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:72
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:67
+#: apps/web/src/components/messaging/new-message-sheet.tsx:105
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:100
 msgid "Introduce yourself"
 msgstr "Stellen Sie sich vor"
 
@@ -5240,7 +5255,9 @@ msgstr "Ungültige Telefonnummer"
 #~ msgstr "Ist das eine gute oder eine Dienstleistung?"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:135
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:226
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:165
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:72
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:236
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:306
 msgid "Issuer"
 msgstr "Herausgeber"
@@ -5283,15 +5300,15 @@ msgstr "Kilogramm"
 msgid "Language"
 msgstr "Sprache"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:190
+#: apps/web/src/desktop/activity/transactions-desk.tsx:191
 msgid "Last 30 days"
 msgstr "Letzte 30 Tage"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:189
+#: apps/web/src/desktop/activity/transactions-desk.tsx:190
 msgid "Last 7 days"
 msgstr "Letzte 7 Tage"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:191
+#: apps/web/src/desktop/activity/transactions-desk.tsx:192
 msgid "Last 90 days"
 msgstr "Letzte 90 Tage"
 
@@ -5552,18 +5569,18 @@ msgstr "Ältere Nachrichten laden"
 #: apps/web/src/components/account-retirement/recovery-page.tsx:175
 #: apps/web/src/components/account-retirement/recovery-page.tsx:224
 #: apps/web/src/components/market-search.tsx:310
-#: apps/web/src/components/messaging/messages-section.tsx:73
+#: apps/web/src/components/messaging/messages-section.tsx:83
 #: apps/web/src/components/offerings/offerings-panel.tsx:247
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:382
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:517
-#: apps/web/src/components/wants/want-detail.tsx:295
-#: apps/web/src/desktop/activity/transactions-desk.tsx:561
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:267
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:390
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:525
+#: apps/web/src/components/wants/want-detail.tsx:297
+#: apps/web/src/desktop/activity/transactions-desk.tsx:562
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:269
 #: apps/web/src/desktop/credit/get-desk.tsx:308
 #: apps/web/src/desktop/market/market-list-states.tsx:100
 #: apps/web/src/desktop/market/market-map-desk.tsx:253
 #: apps/web/src/desktop/market/market-search-field.tsx:450
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:95
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:107
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:128
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:94
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
@@ -5573,7 +5590,7 @@ msgstr "Ältere Nachrichten laden"
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:246
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:670
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:744
-#: apps/web/src/desktop/wants/want-place-desk.tsx:406
+#: apps/web/src/desktop/wants/want-place-desk.tsx:410
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:110
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:206
@@ -5594,10 +5611,10 @@ msgstr "Mehr Bewertungen laden"
 msgid "Loading"
 msgstr "Wird geladen"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:411
-#: apps/web/src/desktop/activity/transactions-desk.tsx:492
-#: apps/web/src/desktop/activity/transactions-desk.tsx:498
-#: apps/web/src/desktop/activity/transactions-desk.tsx:650
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:419
+#: apps/web/src/desktop/activity/transactions-desk.tsx:493
+#: apps/web/src/desktop/activity/transactions-desk.tsx:499
+#: apps/web/src/desktop/activity/transactions-desk.tsx:651
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:223
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1081
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:145
@@ -5626,8 +5643,8 @@ msgstr "Guthaben werden geladen…"
 msgid "Loading cash activity…"
 msgstr "Bargeldaktivitäten werden geladen…"
 
-#: apps/web/src/components/wants/want-detail.tsx:144
-#: apps/web/src/desktop/wants/want-place-desk.tsx:226
+#: apps/web/src/components/wants/want-detail.tsx:146
+#: apps/web/src/desktop/wants/want-place-desk.tsx:230
 msgid "Loading contact information…"
 msgstr "Kontaktinformationen werden geladen…"
 
@@ -5653,10 +5670,10 @@ msgstr "Beladebetriebe ..."
 
 #: apps/web/src/components/ui/location-picker.tsx:132
 #: apps/web/src/components/ui/location-picker.tsx:151
-#: apps/web/src/components/wants/want-detail.tsx:90
+#: apps/web/src/components/wants/want-detail.tsx:91
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:586
 #: apps/web/src/desktop/vouchers/create/desk-location-field.tsx:35
-#: apps/web/src/desktop/wants/want-place-desk.tsx:141
+#: apps/web/src/desktop/wants/want-place-desk.tsx:142
 msgid "Loading location map"
 msgstr "Standortkarte wird geladen"
 
@@ -5669,8 +5686,8 @@ msgstr "Standortkarte wird geladen"
 msgid "Loading marketplace…"
 msgstr "Marktplatz wird geladen…"
 
-#: apps/web/src/components/messaging/messages-section.tsx:21
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:42
+#: apps/web/src/components/messaging/messages-section.tsx:31
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:54
 msgid "Loading messages…"
 msgstr "Nachrichten werden geladen…"
 
@@ -5695,16 +5712,16 @@ msgstr "Meldungen werden geladen…"
 msgid "Loading offerings…"
 msgstr "Angebote werden geladen…"
 
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:42
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:44
 #: apps/web/src/desktop/pools/detail/pool-profile-desk.tsx:25
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:476
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:480
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:59
 msgid "Loading pool information…"
 msgstr "Pool-Informationen werden geladen…"
 
 #: apps/web/src/desktop/pools/pool-desk.tsx:137
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:75
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:121
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:122
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:42
 msgid "Loading pool…"
 msgstr "Fonds wird geladen…"
@@ -5721,15 +5738,15 @@ msgstr "Fonds werden geladen…"
 msgid "Loading post…"
 msgstr "Beitrag wird geladen…"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:314
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:332
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:322
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:340
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:36
 #: apps/web/src/desktop/posts/posts-desk.tsx:191
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:60
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:66
 #: apps/web/src/features/home/ui/posts-page.tsx:130
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:400
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:404
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:408
 msgid "Loading posts…"
 msgstr "Beiträge werden geladen…"
 
@@ -5738,14 +5755,19 @@ msgstr "Beiträge werden geladen…"
 msgid "Loading price feeds…"
 msgstr "Preisfeeds werden geladen…"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:240
-#: apps/web/src/desktop/activity/transactions-desk.tsx:900
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:251
+#: apps/web/src/desktop/activity/transactions-desk.tsx:904
 msgid "Loading private attachment…"
 msgstr "Privater Anhang wird geladen…"
 
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:210
 msgid "Loading receipt…"
 msgstr "Beleg wird geladen…"
+
+#: apps/web/src/components/messaging/new-message-sheet.tsx:153
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:161
+msgid "Loading recipients…"
+msgstr "Empfänger werden geladen…"
 
 #: apps/web/src/components/retirement/retirement-control.tsx:67
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:705
@@ -5838,13 +5860,13 @@ msgstr "Ihr Profil wird geladen…"
 #: apps/web/src/components/resource-usage.tsx:64
 #: apps/web/src/components/resource-usage.tsx:141
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:270
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:382
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:517
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:390
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:525
 #: apps/web/src/components/vouchers/voucher-summary.tsx:142
-#: apps/web/src/components/wants/want-detail.tsx:279
+#: apps/web/src/components/wants/want-detail.tsx:281
 #: apps/web/src/desktop/catalogs/catalog-create-desk.tsx:37
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:41
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:267
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:42
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:269
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:73
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:292
 #: apps/web/src/desktop/market/market-search-field.tsx:358
@@ -5861,9 +5883,9 @@ msgstr "Ihr Profil wird geladen…"
 #: apps/web/src/desktop/vouchers/detail/voucher-section-bits.tsx:34
 #: apps/web/src/desktop/vouchers/detail/voucher-section-bits.tsx:63
 #: apps/web/src/desktop/wallet/wallet-catalogs.tsx:43
-#: apps/web/src/desktop/wants/want-place-desk.tsx:386
+#: apps/web/src/desktop/wants/want-place-desk.tsx:390
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:27
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:61
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:309
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:38
@@ -5883,20 +5905,20 @@ msgid "Local money and M-Pesa"
 msgstr "Lokales Geld und M-Pesa"
 
 #: apps/web/src/components/ui/location-picker.tsx:68
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:302
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:313
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:121
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:240
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:594
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:348
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:65
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:164
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:166
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:396
 #: apps/web/src/desktop/posts/post-desk.tsx:187
 #: apps/web/src/desktop/vouchers/create/desk-location-field.tsx:46
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:58
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:282
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:96
-#: apps/web/src/desktop/wants/want-place-desk.tsx:158
+#: apps/web/src/desktop/wants/want-place-desk.tsx:159
 #: apps/web/src/features/home/ui/report-page.tsx:528
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:70
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
@@ -6042,8 +6064,8 @@ msgstr "Marktplatzbereiche"
 msgid "Match"
 msgstr "Übereinstimmung"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:128
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:140
+#: apps/web/src/components/messaging/new-message-sheet.tsx:206
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:216
 msgid "Matching people"
 msgstr "Passende Personen"
 
@@ -6076,10 +6098,11 @@ msgstr "Max. {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "Medien müssen eine hochgeladene http(s) URL sein"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:142
+#: apps/web/src/components/messaging/new-message-sheet.tsx:220
+#: apps/web/src/components/messaging/resource-owner-contact.tsx:87
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:155
 #: apps/web/src/desktop/messaging/composer-desk.tsx:88
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:152
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:228
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:140
 #: apps/web/src/features/messaging/ui/message-composer.tsx:64
 #: apps/web/src/features/wallet/hooks/use-send-share-form.ts:91
@@ -6097,8 +6120,8 @@ msgstr "Nachricht muss 500 Zeichen oder weniger sein"
 msgid "Message or order shared."
 msgstr "Nachricht oder Bestellung geteilt."
 
-#: apps/web/src/components/messaging/messages-section.tsx:44
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:61
+#: apps/web/src/components/messaging/messages-section.tsx:54
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:73
 msgid "Message requests"
 msgstr "Nachrichtenanfragen"
 
@@ -6423,10 +6446,10 @@ msgstr "Neu"
 #~ msgid "New member"
 #~ msgstr "Neues Mitglied"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:51
-#: apps/web/src/components/messaging/new-message-sheet.tsx:59
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:49
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:56
+#: apps/web/src/components/messaging/new-message-sheet.tsx:84
+#: apps/web/src/components/messaging/new-message-sheet.tsx:92
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:82
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:89
 msgid "New message"
 msgstr "Neue Nachricht"
 
@@ -6477,10 +6500,10 @@ msgstr "Neuer Beitrag"
 msgid "New signer"
 msgstr "Neue unterzeichnende Person"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:480
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:171
-#: apps/web/src/desktop/activity/transactions-desk.tsx:290
-#: apps/web/src/desktop/activity/transactions-desk.tsx:770
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:488
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:179
+#: apps/web/src/desktop/activity/transactions-desk.tsx:291
+#: apps/web/src/desktop/activity/transactions-desk.tsx:773
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:147
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1003
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:83
@@ -6545,7 +6568,7 @@ msgstr "Für {0} sind noch keine Gebühren angefallen."
 msgid "No accepted vouchers in this Pool yet."
 msgstr "Noch keine akzeptierten Gutscheine in diesem Pool."
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:527
+#: apps/web/src/desktop/activity/transactions-desk.tsx:528
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1097
 #: apps/web/src/features/home/ui/activity-page.tsx:190
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:100
@@ -6556,9 +6579,9 @@ msgstr "Keine Aktivitäten entsprechen diesen Filtern."
 #~ msgid "No activity matches this search."
 #~ msgstr "Keine Aktivitäten entsprechen dieser Suche."
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:434
-#: apps/web/src/desktop/activity/transactions-desk.tsx:486
-#: apps/web/src/desktop/activity/transactions-desk.tsx:548
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:442
+#: apps/web/src/desktop/activity/transactions-desk.tsx:487
+#: apps/web/src/desktop/activity/transactions-desk.tsx:549
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:172
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:489
 #: apps/web/src/features/home/ui/activity-page.tsx:192
@@ -6606,15 +6629,15 @@ msgstr "Es sind keine Kategoriefilter verfügbar."
 msgid "No CLC account was found for this sign-in."
 msgstr "Für diese Anmeldung wurde kein CLC-Konto gefunden."
 
-#: apps/web/src/desktop/wants/want-place-desk.tsx:250
+#: apps/web/src/desktop/wants/want-place-desk.tsx:254
 msgid "No contact details available."
 msgstr "Keine Kontaktdaten verfügbar."
 
-#: apps/web/src/components/wants/want-detail.tsx:170
+#: apps/web/src/components/wants/want-detail.tsx:172
 msgid "No contact information given"
 msgstr "Keine Kontaktinformationen angegeben"
 
-#: apps/web/src/desktop/messaging/messages-desk.tsx:28
+#: apps/web/src/desktop/messaging/messages-desk.tsx:36
 msgid "No conversation open"
 msgstr "Keine Unterhaltung geöffnet"
 
@@ -6669,10 +6692,10 @@ msgstr "Kein Fonds mit Kreditmöglichkeit und diesem Gutschein entspricht diesen
 #~ msgid "No deposit limit"
 #~ msgstr "Kein Einzahlungslimit"
 
-#: apps/web/src/components/wants/want-detail.tsx:110
+#: apps/web/src/components/wants/want-detail.tsx:111
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:780
 #: apps/web/src/desktop/wants/want-form-desk.tsx:198
-#: apps/web/src/desktop/wants/want-place-desk.tsx:185
+#: apps/web/src/desktop/wants/want-place-desk.tsx:186
 #: apps/web/src/features/wants/ui/want-form-page.tsx:143
 msgid "No ending date"
 msgstr "Kein Enddatum"
@@ -6741,8 +6764,8 @@ msgstr "Noch keine Marktplatzergebnisse zum Anzeigen."
 msgid "No matches"
 msgstr "Keine Treffer"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:124
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:134
+#: apps/web/src/components/messaging/new-message-sheet.tsx:202
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:210
 msgid "No matching people."
 msgstr "Keine passenden Personen."
 
@@ -6751,8 +6774,13 @@ msgstr "Keine passenden Personen."
 msgid "No matching recipients."
 msgstr "Keine übereinstimmenden Empfänger."
 
-#: apps/web/src/components/messaging/messages-section.tsx:40
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:57
+#: apps/web/src/components/messaging/new-message-sheet.tsx:173
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:180
+msgid "No message recipient is available."
+msgstr "Kein Nachrichtenempfänger verfügbar."
+
+#: apps/web/src/components/messaging/messages-section.tsx:50
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:69
 #: apps/web/src/desktop/messaging/thread-desk.tsx:125
 #: apps/web/src/features/messaging/ui/thread-page.tsx:204
 msgid "No messages yet."
@@ -6819,9 +6847,9 @@ msgstr "Keine Fonds entsprechen dieser Suche."
 msgid "No pools with this voucher match these filters."
 msgstr "Kein Fonds mit diesem Gutschein entspricht diesen Filtern."
 
-#: apps/web/src/components/wants/want-detail.tsx:237
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:194
-#: apps/web/src/desktop/wants/want-place-desk.tsx:331
+#: apps/web/src/components/wants/want-detail.tsx:239
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:196
+#: apps/web/src/desktop/wants/want-place-desk.tsx:335
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:56
 msgid "No pools yet."
 msgstr "Noch keine Fonds."
@@ -6840,12 +6868,12 @@ msgstr "Keine Fonds."
 msgid "No posts match this search."
 msgstr "Keine Beiträge entsprechen dieser Suche."
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:354
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:362
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:53
 #: apps/web/src/desktop/posts/posts-desk.tsx:213
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:83
 #: apps/web/src/features/home/ui/posts-page.tsx:142
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:422
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:426
 msgid "No posts yet."
 msgstr "Noch keine Beiträge."
 
@@ -6965,12 +6993,12 @@ msgstr "Keine Gutscheine zum Kassieren"
 #~ msgid "No vouchers to show yet."
 #~ msgstr "Noch keine Gutscheine zu zeigen."
 
-#: apps/web/src/components/wants/want-detail.tsx:216
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:194
+#: apps/web/src/components/wants/want-detail.tsx:218
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:196
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:233
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:441
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:550
-#: apps/web/src/desktop/wants/want-place-desk.tsx:296
+#: apps/web/src/desktop/wants/want-place-desk.tsx:300
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:56
 #: apps/web/src/features/home/ui/wallet-page.tsx:246
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:226
@@ -7191,15 +7219,15 @@ msgstr "Angebot entfernt."
 msgid "Offering updated."
 msgstr "Angebot aktualisiert."
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:117
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:125
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:128
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:118
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:126
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:129
 #: apps/web/src/desktop/market/place-panel.tsx:59
 #: apps/web/src/desktop/pools/pool-main.tsx:426
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:206
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:218
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:42
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:43
 msgid "Offerings"
 msgstr "Angebote"
 
@@ -7247,10 +7275,10 @@ msgstr "Onramp-Details"
 msgid "Open CLC in Chrome on Android to collect with an NFC card."
 msgstr "Öffnen Sie CLC in Chrome auf Android, um per NFC-Karte zu kassieren."
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:569
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:174
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:577
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:176
 #: apps/web/src/desktop/posts/post-desk.tsx:209
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:267
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:277
 #: apps/web/src/features/home/ui/report-page.tsx:549
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:129
 msgid "Open in Maps"
@@ -7262,8 +7290,8 @@ msgstr "Geöffnet in Karten"
 msgid "Open in Safe"
 msgstr "In Safe öffnen"
 
-#: apps/web/src/components/wants/want-detail.tsx:82
-#: apps/web/src/desktop/wants/want-place-desk.tsx:173
+#: apps/web/src/components/wants/want-detail.tsx:83
+#: apps/web/src/desktop/wants/want-place-desk.tsx:174
 msgid "Open location in Google Maps"
 msgstr "Standort in Google Maps öffnen"
 
@@ -7339,14 +7367,14 @@ msgid "Opening sign-in card…"
 msgstr "Anmeldekarte öffnen..."
 
 #: apps/web/src/components/account-retirement/retire-account-section.tsx:188
-#: apps/web/src/components/messaging/new-message-sheet.tsx:77
+#: apps/web/src/components/messaging/new-message-sheet.tsx:110
 #: apps/web/src/components/ui/avatar-picker.tsx:98
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:218
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:182
 #: apps/web/src/desktop/account/profile-desk.tsx:131
 #: apps/web/src/desktop/account/profile-desk.tsx:223
 #: apps/web/src/desktop/account/profile-desk.tsx:254
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:72
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:105
 #: apps/web/src/desktop/messaging/thread-menu-desk.tsx:160
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:200
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:43
@@ -7439,6 +7467,10 @@ msgstr "Gemeinwesenarbeit"
 #: apps/web/src/components/vouchers/voucher-sheet-full.tsx:51
 #~ msgid "Overview"
 #~ msgstr "Übersicht"
+
+#: apps/web/src/components/messaging/resource-owner-contact.tsx:37
+msgid "Owner"
+msgstr "Inhaber"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:230
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:235
@@ -7601,8 +7633,8 @@ msgid "Pay me on CLC"
 msgstr "Bezahlen Sie mich über CLC"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:36
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:68
-#: apps/web/src/desktop/activity/transactions-desk.tsx:204
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:69
+#: apps/web/src/desktop/activity/transactions-desk.tsx:205
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:964
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1140
 #: apps/web/src/features/home/ui/activity-page.tsx:496
@@ -7643,8 +7675,8 @@ msgstr "Zahlung fehlgeschlagen"
 msgid "Payment QR code"
 msgstr "QR-Code zum Bezahlen"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/desktop/activity/transactions-desk.tsx:785
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:213
+#: apps/web/src/desktop/activity/transactions-desk.tsx:789
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:281
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:251
 msgid "Payment receipt"
@@ -7655,7 +7687,7 @@ msgid "Payment status unknown"
 msgstr "Zahlungsstatus unbekannt"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:43
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:162
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:174
 #: apps/web/src/desktop/messaging/thread-desk.tsx:58
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1095
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:145
@@ -7728,14 +7760,14 @@ msgid "Permaculture"
 msgstr "Permakultur"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:117
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:291
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:302
 #: apps/web/src/desktop/account/profile-desk.tsx:200
-#: apps/web/src/desktop/activity/transactions-desk.tsx:946
+#: apps/web/src/desktop/activity/transactions-desk.tsx:950
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:396
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:355
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:131
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:133
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:71
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:205
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:215
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:290
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:95
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:236
@@ -7759,7 +7791,7 @@ msgstr "Telefon nicht verfügbar"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:55
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:217
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:174
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:186
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:284
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:579
 msgid "Photo"
@@ -7829,7 +7861,7 @@ msgstr "Pflanzenschule"
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
 #: apps/web/src/components/market-search.tsx:334
 #: apps/web/src/components/wallet/recipient-address-input.tsx:211
-#: apps/web/src/desktop/activity/transactions-desk.tsx:868
+#: apps/web/src/desktop/activity/transactions-desk.tsx:872
 #: apps/web/src/desktop/credit/fallback-pools.tsx:50
 #: apps/web/src/desktop/credit/route-details.tsx:117
 #: apps/web/src/desktop/credit/route-details.tsx:198
@@ -7861,7 +7893,7 @@ msgstr "Fonds"
 msgid "Pool · {locationName}"
 msgstr "Fonds · {locationName}"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:185
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:186
 msgid "Pool actions"
 msgstr "Fondsaktionen"
 
@@ -7885,7 +7917,7 @@ msgstr "Fondsadresse"
 #~ msgstr "Fondsalden"
 
 #: apps/web/src/desktop/pools/pool-main.tsx:288
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:256
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:257
 msgid "Pool contents"
 msgstr "Fondsinhalte"
 
@@ -7991,7 +8023,7 @@ msgstr "Der Fondsname muss 80 Zeichen oder weniger sein."
 
 #: apps/web/src/desktop/pools/pool-desk.tsx:140
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:91
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:127
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:128
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:48
 msgid "Pool not found."
 msgstr "Fonds nicht gefunden."
@@ -8061,8 +8093,8 @@ msgstr "Details zum Fonds-Tracking fehlen."
 #: apps/web/src/components/market-bar.tsx:189
 #: apps/web/src/components/market-bar.tsx:268
 #: apps/web/src/components/resource-usage.tsx:118
-#: apps/web/src/desktop/activity/transactions-desk.tsx:868
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:164
+#: apps/web/src/desktop/activity/transactions-desk.tsx:872
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:166
 #: apps/web/src/desktop/market/market-layers.tsx:36
 #: apps/web/src/desktop/market/market-search-field.tsx:349
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:75
@@ -8073,8 +8105,8 @@ msgstr "Details zum Fonds-Tracking fehlen."
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:29
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:171
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:92
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:133
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:500
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:134
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:504
 #: apps/web/src/features/pools/ui/pools-page.tsx:167
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:125
 msgid "Pools"
@@ -8151,8 +8183,8 @@ msgstr "Beitrag aktualisiert."
 #: apps/web/src/components/market-bar.tsx:192
 #: apps/web/src/components/market-bar.tsx:334
 #: apps/web/src/components/navigation/bottom-navigation.tsx:68
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:151
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:358
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:152
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:366
 #: apps/web/src/desktop/market/market-layers.tsx:38
 #: apps/web/src/desktop/market/place-panel.tsx:61
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:118
@@ -8166,8 +8198,8 @@ msgstr "Beitrag aktualisiert."
 #: apps/web/src/features/home/ui/report-page.tsx:68
 #: apps/web/src/features/home/ui/report-page.tsx:564
 #: apps/web/src/features/home/ui/report-page.tsx:583
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:424
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:431
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:428
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:435
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:27
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:62
 msgid "Posts"
@@ -8177,7 +8209,7 @@ msgstr "Stellen"
 msgid "Posts aren't available for this pool."
 msgstr "Für diesen Pool sind keine Beiträge verfügbar."
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:326
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:334
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:64
 msgid "Posts aren't available for this voucher."
 msgstr "Beiträge sind für diesen Gutschein nicht verfügbar."
@@ -8392,9 +8424,9 @@ msgstr "Druck"
 msgid "Privacy note"
 msgstr "Hinweis zum Datenschutz"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:258
-#: apps/web/src/desktop/activity/transactions-desk.tsx:915
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:269
 #: apps/web/src/desktop/activity/transactions-desk.tsx:919
+#: apps/web/src/desktop/activity/transactions-desk.tsx:923
 msgid "Private attachment"
 msgstr "Private Pfändung"
 
@@ -8470,7 +8502,7 @@ msgstr "Geschützt. Halten Sie das Passwort von der Karte getrennt."
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:82
 #: apps/web/src/components/activity/swap-activity.tsx:51
-#: apps/web/src/desktop/activity/transactions-desk.tsx:848
+#: apps/web/src/desktop/activity/transactions-desk.tsx:852
 #: apps/web/src/desktop/credit/review-dialog.tsx:105
 #: apps/web/src/desktop/credit/route-details.tsx:154
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:108
@@ -8668,7 +8700,7 @@ msgstr "Kopierter Empfang"
 #: apps/web/src/desktop/wallet/receive-desk.tsx:57
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:354
 #: apps/web/src/features/home/ui/wallet-page.tsx:78
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:224
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:225
 #: apps/web/src/features/wallet/ui/collect-page.tsx:111
 #: apps/web/src/features/wallet/ui/receive-page.tsx:46
 msgid "Receive"
@@ -8700,11 +8732,11 @@ msgstr "Empfang von Gutscheinen"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:75
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:33
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:473
-#: apps/web/src/desktop/activity/transactions-desk.tsx:201
-#: apps/web/src/desktop/activity/transactions-desk.tsx:604
-#: apps/web/src/desktop/activity/transactions-desk.tsx:736
-#: apps/web/src/desktop/activity/transactions-desk.tsx:841
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:481
+#: apps/web/src/desktop/activity/transactions-desk.tsx:202
+#: apps/web/src/desktop/activity/transactions-desk.tsx:605
+#: apps/web/src/desktop/activity/transactions-desk.tsx:739
+#: apps/web/src/desktop/activity/transactions-desk.tsx:845
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:961
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:76
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:152
@@ -8712,7 +8744,7 @@ msgstr "Empfang von Gutscheinen"
 msgid "Received"
 msgstr "Empfangen"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:72
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:73
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:137
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:141
 msgid "Received voucher"
@@ -8866,7 +8898,7 @@ msgstr "Relative Preisgestaltung"
 #: apps/web/src/components/ui/avatar-picker.tsx:84
 #: apps/web/src/components/ui/image-upload-field.tsx:167
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:599
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:253
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:255
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:303
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:390
 #: apps/web/src/desktop/vouchers/create/desk-logo-field.tsx:161
@@ -8887,7 +8919,7 @@ msgstr "Entfernen Sie \"{0}\" vom Marktplatz?"
 #. placeholder {0}: label(pool)
 #. placeholder {0}: label(ref)
 #: apps/web/src/components/catalog-filter-controls.tsx:301
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:248
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:250
 #: apps/web/src/desktop/posts/post-facets.tsx:397
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:91
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:209
@@ -9042,7 +9074,7 @@ msgstr "Gemeldet"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:38
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:157
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:157
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:169
 #: apps/web/src/desktop/messaging/thread-desk.tsx:58
 #: apps/web/src/desktop/messaging/thread-desk.tsx:162
 #: apps/web/src/features/messaging/ui/thread-page.tsx:84
@@ -9071,7 +9103,7 @@ msgstr "Antrag abgelehnt"
 msgid "Request retirement"
 msgstr "Stilllegung beantragen"
 
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:61
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:73
 msgid "Requests"
 msgstr "Anfragen"
 
@@ -9171,7 +9203,7 @@ msgid "Retired — withdrawals available"
 msgstr "Stillgelegt — Auszahlungen sind möglich"
 
 #: apps/web/src/desktop/pools/pool-main.tsx:259
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:168
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:169
 msgid "Retired pool"
 msgstr "Stillgelegter Fonds"
 
@@ -9225,22 +9257,24 @@ msgstr "Auszeit"
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:38
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:66
 #: apps/web/src/components/creditable-browse-control.tsx:123
+#: apps/web/src/components/messaging/new-message-sheet.tsx:167
+#: apps/web/src/components/messaging/resource-owner-contact.tsx:51
 #: apps/web/src/components/resource-usage.tsx:134
 #: apps/web/src/components/retirement/my-retirement-requests.tsx:29
 #: apps/web/src/components/retirement/retirement-control.tsx:80
 #: apps/web/src/components/retirement/retirement-request-form.tsx:65
 #: apps/web/src/components/ui/unit-of-account-combobox.tsx:61
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:227
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:235
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:243
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:127
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
-#: apps/web/src/components/wants/want-detail.tsx:160
-#: apps/web/src/components/wants/want-detail.tsx:285
+#: apps/web/src/components/wants/want-detail.tsx:162
+#: apps/web/src/components/wants/want-detail.tsx:287
 #: apps/web/src/components/wants/want-sheet.tsx:79
 #: apps/web/src/desktop/auth/auth-gate-desk.tsx:103
 #: apps/web/src/desktop/catalogs/catalog-create-desk.tsx:57
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:55
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:189
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:56
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:191
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:87
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:226
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:274
@@ -9250,10 +9284,11 @@ msgstr "Auszeit"
 #: apps/web/src/desktop/market/market-notices.tsx:114
 #: apps/web/src/desktop/market/market-notices.tsx:169
 #: apps/web/src/desktop/market/place-panel.tsx:140
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:174
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:61
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:99
 #: apps/web/src/desktop/pools/create/unit-combobox-desk.tsx:132
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:50
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:52
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:717
 #: apps/web/src/desktop/pools/detail/pool-profile-desk.tsx:33
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:135
@@ -9275,7 +9310,7 @@ msgstr "Auszeit"
 #: apps/web/src/desktop/vouchers/detail/voucher-catalog-button.tsx:29
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:286
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:714
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:119
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:129
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:100
 #: apps/web/src/desktop/vouchers/detail/voucher-section-bits.tsx:70
 #: apps/web/src/desktop/vouchers/voucher-desk.tsx:134
@@ -9283,11 +9318,11 @@ msgstr "Auszeit"
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:130
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:386
 #: apps/web/src/desktop/wants/want-form-desk.tsx:88
-#: apps/web/src/desktop/wants/want-place-desk.tsx:75
-#: apps/web/src/desktop/wants/want-place-desk.tsx:241
-#: apps/web/src/desktop/wants/want-place-desk.tsx:395
+#: apps/web/src/desktop/wants/want-place-desk.tsx:76
+#: apps/web/src/desktop/wants/want-place-desk.tsx:245
+#: apps/web/src/desktop/wants/want-place-desk.tsx:399
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:42
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:50
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:51
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:76
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:258
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:323
@@ -9302,7 +9337,7 @@ msgstr "Auszeit"
 #: apps/web/src/features/home/ui/report-page.tsx:59
 #: apps/web/src/features/home/ui/wallet-page.tsx:160
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:463
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:487
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:491
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:73
 #: apps/web/src/features/pools/ui/pool-profile-fields.tsx:159
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:218
@@ -9366,11 +9401,11 @@ msgid "Review this transaction in your multisig wallet."
 msgstr "Prüfe diese Transaktion in deiner Multisig-Wallet."
 
 #: apps/web/src/components/account-retirement/retire-account-section.tsx:168
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:147
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:148
 #: apps/web/src/desktop/market/place-panel.tsx:60
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:301
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:348
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:352
 msgid "Reviews"
 msgstr "Bewertungen"
 
@@ -9389,7 +9424,7 @@ msgstr "Widerrufen"
 msgid "Revoke this conversation?"
 msgstr "Diese Unterhaltung widerrufen?"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:856
+#: apps/web/src/desktop/activity/transactions-desk.tsx:860
 msgid "Route"
 msgstr "Route"
 
@@ -9434,7 +9469,7 @@ msgstr "Gesuch speichern und wieder öffnen"
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:239
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:423
 #: apps/web/src/desktop/account/profile-desk.tsx:103
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:137
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:139
 #: apps/web/src/desktop/pools/detail/pool-profile-desk.tsx:63
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:100
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:253
@@ -9569,7 +9604,7 @@ msgstr "Ihre alte Karte scannen"
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:411
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:721
 #: apps/web/src/desktop/wants/want-form-desk.tsx:451
-#: apps/web/src/desktop/wants/want-place-desk.tsx:114
+#: apps/web/src/desktop/wants/want-place-desk.tsx:115
 #: apps/web/src/features/home/ui/wallet-page.tsx:352
 msgid "Scheduled"
 msgstr "Geplant"
@@ -9591,8 +9626,8 @@ msgstr "„{query}“ suchen"
 msgid "Search “{term}”"
 msgstr "„{term}“ suchen"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:447
 #: apps/web/src/desktop/activity/transactions-desk.tsx:448
+#: apps/web/src/desktop/activity/transactions-desk.tsx:449
 #: apps/web/src/features/home/ui/activity-page.tsx:145
 #: apps/web/src/features/home/ui/activity-page.tsx:146
 msgid "Search activity"
@@ -9804,9 +9839,9 @@ msgstr "Suche in diesem Bereich"
 msgid "Searching vouchers…"
 msgstr "Gutscheine werden gesucht…"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:114
+#: apps/web/src/components/messaging/new-message-sheet.tsx:188
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:211
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:124
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:196
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:828
 #: apps/web/src/desktop/shell/command-palette.tsx:387
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:237
@@ -9942,8 +9977,8 @@ msgstr "Senden Sie von Ihrer Gnosis-Wallet über Jumper an eine Börse und zahle
 msgid "Send report"
 msgstr "Versenden des Berichts"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:154
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:94
+#: apps/web/src/components/messaging/new-message-sheet.tsx:232
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:129
 msgid "Send request"
 msgstr "Anfrage senden"
 
@@ -9985,11 +10020,11 @@ msgstr "Versenden..."
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:69
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:32
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:475
-#: apps/web/src/desktop/activity/transactions-desk.tsx:200
-#: apps/web/src/desktop/activity/transactions-desk.tsx:606
-#: apps/web/src/desktop/activity/transactions-desk.tsx:738
-#: apps/web/src/desktop/activity/transactions-desk.tsx:835
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:483
+#: apps/web/src/desktop/activity/transactions-desk.tsx:201
+#: apps/web/src/desktop/activity/transactions-desk.tsx:607
+#: apps/web/src/desktop/activity/transactions-desk.tsx:741
+#: apps/web/src/desktop/activity/transactions-desk.tsx:839
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:960
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:78
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:89
@@ -9999,7 +10034,7 @@ msgstr "Versenden..."
 msgid "Sent"
 msgstr "Abgesandt"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:73
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:74
 msgid "Sent voucher"
 msgstr "Gutschein gesendet"
 
@@ -10064,13 +10099,13 @@ msgid "Settling…"
 msgstr "Wird abgewickelt…"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:444
-#: apps/web/src/components/wants/want-detail.tsx:361
+#: apps/web/src/components/wants/want-detail.tsx:363
 #: apps/web/src/desktop/account/settings-desk.tsx:119
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:629
 #: apps/web/src/desktop/wallet/receive-desk.tsx:124
 #: apps/web/src/desktop/wallet/receive-poster-dialog.tsx:208
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:221
-#: apps/web/src/desktop/wants/want-place-desk.tsx:129
+#: apps/web/src/desktop/wants/want-place-desk.tsx:130
 #: apps/web/src/features/catalogs/hooks/use-catalog-share.ts:42
 #: apps/web/src/features/wallet/ui/receive-page.tsx:142
 #: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:246
@@ -10109,8 +10144,8 @@ msgid "Share receipt"
 msgstr "Anteilsübernahme"
 
 #. placeholder {0}: share.sharedBy.name
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:261
-#: apps/web/src/desktop/activity/transactions-desk.tsx:922
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:272
+#: apps/web/src/desktop/activity/transactions-desk.tsx:926
 msgid "Shared by {0}"
 msgstr "Geteilt von {0}"
 
@@ -10274,15 +10309,15 @@ msgstr "Zum Einlösen anmelden"
 msgid "Sign in to send"
 msgstr "Zum Senden anmelden"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:406
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:414
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:137
 msgid "Sign in to view activity."
 msgstr "Melden Sie sich an, um die Aktivität anzuzeigen."
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:320
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:328
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:38
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:62
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:402
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:406
 msgid "Sign in to view posts."
 msgstr "Melden Sie sich an, um Beiträge anzusehen."
 
@@ -10488,14 +10523,14 @@ msgstr "Beginnen..."
 
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:383
 #: apps/web/src/desktop/wants/want-form-desk.tsx:172
-#: apps/web/src/desktop/wants/want-place-desk.tsx:178
+#: apps/web/src/desktop/wants/want-place-desk.tsx:179
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:226
 #: apps/web/src/features/wants/ui/want-form-page.tsx:132
 msgid "Starts"
 msgstr "Beginn"
 
 #. placeholder {0}: dates.format(new Date(want.startsAt))
-#: apps/web/src/components/wants/want-detail.tsx:104
+#: apps/web/src/components/wants/want-detail.tsx:105
 msgid "Starts {0}"
 msgstr "Beginnt {0}"
 
@@ -10504,10 +10539,10 @@ msgid "Starts {starts}"
 msgstr "Beginnt {starts}"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:64
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:129
-#: apps/web/src/desktop/activity/transactions-desk.tsx:328
-#: apps/web/src/desktop/activity/transactions-desk.tsx:749
-#: apps/web/src/desktop/activity/transactions-desk.tsx:823
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
+#: apps/web/src/desktop/activity/transactions-desk.tsx:329
+#: apps/web/src/desktop/activity/transactions-desk.tsx:752
+#: apps/web/src/desktop/activity/transactions-desk.tsx:827
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:65
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:681
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:279
@@ -10632,15 +10667,15 @@ msgstr "SVG-Dateien werden nicht unterstützt. Verwenden Sie PNG, JPEG oder "
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:55
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:58
 #: apps/web/src/components/offerings/offerings-panel.tsx:575
-#: apps/web/src/desktop/activity/transactions-desk.tsx:600
-#: apps/web/src/desktop/activity/transactions-desk.tsx:815
+#: apps/web/src/desktop/activity/transactions-desk.tsx:601
+#: apps/web/src/desktop/activity/transactions-desk.tsx:819
 #: apps/web/src/desktop/credit/route-details.tsx:127
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:362
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:258
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:270
 #: apps/web/src/desktop/shell/command-palette.tsx:111
 #: apps/web/src/features/pools/hooks/use-pool-activity-details.ts:47
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:189
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:190
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:191
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:64
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:227
@@ -10734,7 +10769,7 @@ msgstr "Tausch"
 msgid "Swapping…"
 msgstr "Tausch läuft…"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:202
+#: apps/web/src/desktop/activity/transactions-desk.tsx:203
 #: apps/web/src/desktop/credit/get-desk.tsx:293
 #: apps/web/src/desktop/credit/route-details.tsx:211
 msgid "Swaps"
@@ -10781,7 +10816,7 @@ msgstr "Symbol wurde genommen, stattdessen {0} verwendend."
 
 #: apps/web/src/components/market-search.tsx:224
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:224
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:100
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:101
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:113
 #: apps/web/src/desktop/market/market-toolbar.tsx:266
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:351
@@ -10792,7 +10827,7 @@ msgstr "Symbol wurde genommen, stattdessen {0} verwendend."
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:68
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:696
 #: apps/web/src/desktop/wants/want-form-desk.tsx:145
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:80
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:82
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:93
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:87
 #: apps/web/src/features/home/ui/marketplace-page.tsx:128
@@ -10885,14 +10920,14 @@ msgstr "Erzählen Sie den Leuten von Ihrem Geschäft ..."
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:358
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:190
 #: apps/web/src/desktop/pools/create/review-step-desk.tsx:41
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:139
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:155
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:141
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:157
 #: apps/web/src/desktop/vouchers/create/place-step.tsx:227
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:73
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:87
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:802
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:213
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:244
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:223
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:254
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:555
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:659
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:78
@@ -11494,7 +11529,7 @@ msgstr "Dieser Fonds enthält noch keine Gutscheine."
 #~ msgstr "Das Kreditlimit ist erreicht"
 
 #: apps/web/src/desktop/pools/pool-main.tsx:262
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:171
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:172
 msgid "This pool is hidden from discovery and does not accept new swaps or "
 "deposits in CLC. You can still withdraw funds and view its history."
 msgstr "Dieser Fonds wird nicht mehr in der Suche angezeigt und nimmt in CLC "
@@ -11610,10 +11645,10 @@ msgstr "Titel"
 msgid "Title must be 200 characters or fewer"
 msgstr "Titel müssen 200 Zeichen oder weniger sein"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:483
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:183
-#: apps/web/src/desktop/activity/transactions-desk.tsx:210
-#: apps/web/src/desktop/activity/transactions-desk.tsx:776
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:491
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:191
+#: apps/web/src/desktop/activity/transactions-desk.tsx:211
+#: apps/web/src/desktop/activity/transactions-desk.tsx:779
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:159
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:86
 #: apps/web/src/desktop/wallet/send-desk.tsx:182
@@ -11688,8 +11723,8 @@ msgid "Training"
 msgstr "Schulung"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:102
-#: apps/web/src/desktop/activity/transactions-desk.tsx:777
-#: apps/web/src/desktop/activity/transactions-desk.tsx:886
+#: apps/web/src/desktop/activity/transactions-desk.tsx:780
+#: apps/web/src/desktop/activity/transactions-desk.tsx:890
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:174
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:251
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:196
@@ -11703,7 +11738,7 @@ msgstr "Schulung"
 msgid "Transaction"
 msgstr "Transaktion"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:120
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:128
 msgid "Transaction details"
 msgstr "Einzelheiten zu Transaktionen"
 
@@ -11713,7 +11748,7 @@ msgid "Transaction hash"
 msgstr "Transaktions-Hash"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:44
-#: apps/web/src/desktop/activity/transactions-desk.tsx:698
+#: apps/web/src/desktop/activity/transactions-desk.tsx:699
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:129
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:173
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:202
@@ -11730,7 +11765,7 @@ msgstr "Transaktions-Hash kopiert"
 msgid "Transactions"
 msgstr "Transaktionen"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:638
+#: apps/web/src/desktop/activity/transactions-desk.tsx:639
 msgid "Transfer details"
 msgstr "Überweisungsdetails"
 
@@ -11782,21 +11817,21 @@ msgstr "Reise"
 #: apps/web/src/components/catalog-filter-controls.tsx:347
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/messaging/helpdesk-section.tsx:37
-#: apps/web/src/components/messaging/messages-section.tsx:34
+#: apps/web/src/components/messaging/messages-section.tsx:44
 #: apps/web/src/components/messaging/notifications-section.tsx:31
 #: apps/web/src/components/nfc-card-prompt.tsx:112
 #: apps/web/src/components/offerings/offerings-panel.tsx:188
 #: apps/web/src/components/reviews/redemption-review-prompt.tsx:42
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:77
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:149
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:347
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:425
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:355
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:433
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:65
 #: apps/web/src/desktop/account/profile-desk.tsx:53
 #: apps/web/src/desktop/account/settings-desk.tsx:545
-#: apps/web/src/desktop/activity/transactions-desk.tsx:511
+#: apps/web/src/desktop/activity/transactions-desk.tsx:512
 #: apps/web/src/desktop/market/market-search-field.tsx:442
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:51
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:63
 #: apps/web/src/desktop/messaging/helpdesk-desk.tsx:55
 #: apps/web/src/desktop/messaging/notifications-desk.tsx:34
 #: apps/web/src/desktop/messaging/thread-desk.tsx:89
@@ -11845,7 +11880,7 @@ msgstr "Reise"
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:93
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:301
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:56
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:417
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:421
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:83
 #: apps/web/src/features/pools/ui/pool-holding-list.tsx:59
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:63
@@ -11862,7 +11897,7 @@ msgstr "Reise"
 msgid "Try again"
 msgstr "Versuchen Sie es noch einmal"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:299
+#: apps/web/src/desktop/activity/transactions-desk.tsx:300
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:54
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:50
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:98
@@ -11883,7 +11918,7 @@ msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "Geben Sie mindestens {VOUCHER_SEARCH_MIN_CHARS} Zeichen ein, um "
 "Gutscheine zu suchen."
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:468
+#: apps/web/src/desktop/activity/transactions-desk.tsx:469
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:173
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:807
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:196
@@ -11975,7 +12010,7 @@ msgstr "Die Einheit darf höchstens 32 Zeichen lang sein"
 
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:310
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:115
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:106
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:108
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:32
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:51
 msgid "Unit of account"
@@ -12246,12 +12281,19 @@ msgstr "Der Benutzername muss 1–80 Zeichen enthalten"
 #: apps/web/src/components/messaging/new-message-sheet.tsx:109
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:114
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:115
-msgid "Username or phone number"
-msgstr "Benutzername oder Telefonnummer"
+#~ msgid "Username or phone number"
+#~ msgstr "Benutzername oder Telefonnummer"
 
 #: apps/web/src/features/auth/hooks/use-username-form.ts:51
 msgid "Username updated"
 msgstr "Benutzername aktualisiert"
+
+#: apps/web/src/components/messaging/new-message-sheet.tsx:135
+#: apps/web/src/components/messaging/new-message-sheet.tsx:146
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:150
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:151
+msgid "Username, address, or phone number"
+msgstr "Benutzername, Adresse oder Telefonnummer"
 
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:239
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:257
@@ -12321,7 +12363,7 @@ msgstr "Blickrichtung"
 #: apps/web/src/features/home/ui/wallet-page.tsx:184
 #: apps/web/src/features/home/ui/wallet-page.tsx:226
 #: apps/web/src/features/home/ui/wallet-page.tsx:239
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:443
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:447
 msgid "View all"
 msgstr "Alle anzeigen"
 
@@ -12338,7 +12380,7 @@ msgid "View offering details: {0}"
 msgstr "Details zum Angebot anzeigen: {0}"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:119
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:224
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:235
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:56
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:684
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:203
@@ -12356,7 +12398,7 @@ msgstr "Fonds anzeigen"
 msgid "View this location on the map"
 msgstr "Diesen Ort auf der Karte anzeigen"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:146
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:154
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:311
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:333
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:290
@@ -12384,7 +12426,7 @@ msgstr "Gutschein"
 #: apps/web/src/components/account-retirement/retire-account-section.tsx:149
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/desktop/activity/transactions-desk.tsx:386
+#: apps/web/src/desktop/activity/transactions-desk.tsx:387
 #: apps/web/src/desktop/credit/get-desk.tsx:65
 #: apps/web/src/desktop/credit/get-desk.tsx:244
 #: apps/web/src/desktop/market/market-bits.tsx:82
@@ -12423,8 +12465,8 @@ msgstr "Gutscheinvertrag"
 msgid "Voucher controls"
 msgstr "Kontrolle der Gutscheine"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/desktop/activity/transactions-desk.tsx:785
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:213
+#: apps/web/src/desktop/activity/transactions-desk.tsx:789
 msgid "Voucher creation receipt"
 msgstr "Beleg zur Gutscheinausgabe"
 
@@ -12540,11 +12582,11 @@ msgstr "Schlagwörter des Gutscheins"
 msgid "Voucher tracking details are missing."
 msgstr "Angaben zur Gutscheinverfolgung fehlen."
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:391
+#: apps/web/src/desktop/activity/transactions-desk.tsx:392
 msgid "Voucher: <0>{voucherLabel}</0>"
 msgstr "Gutschein: <0>{voucherLabel}</0>"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:395
+#: apps/web/src/desktop/activity/transactions-desk.tsx:396
 msgid "Voucher: Any"
 msgstr "Gutschein: Beliebig"
 
@@ -12552,8 +12594,8 @@ msgstr "Gutschein: Beliebig"
 #: apps/web/src/components/market-bar.tsx:187
 #: apps/web/src/components/market-bar.tsx:267
 #: apps/web/src/components/resource-usage.tsx:115
-#: apps/web/src/components/wants/want-detail.tsx:209
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:164
+#: apps/web/src/components/wants/want-detail.tsx:211
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:166
 #: apps/web/src/desktop/market/market-layers.tsx:34
 #: apps/web/src/desktop/market/market-search-field.tsx:348
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:326
@@ -12564,7 +12606,7 @@ msgstr "Gutschein: Beliebig"
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:122
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:262
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:400
-#: apps/web/src/desktop/wants/want-place-desk.tsx:291
+#: apps/web/src/desktop/wants/want-place-desk.tsx:295
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:29
 #: apps/web/src/features/home/ui/market-list-page.tsx:126
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
@@ -12689,9 +12731,9 @@ msgstr "Geldbörsensitzung"
 #: apps/web/src/desktop/shell/command-palette.tsx:81
 #: apps/web/src/desktop/wants/want-form-desk.tsx:412
 #: apps/web/src/desktop/wants/want-outline.tsx:11
-#: apps/web/src/desktop/wants/want-place-desk.tsx:58
+#: apps/web/src/desktop/wants/want-place-desk.tsx:59
 #: apps/web/src/features/home/ui/marketplace-page.tsx:427
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:133
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:134
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:64
 msgid "Want"
 msgstr "Gesuch"
@@ -12720,7 +12762,7 @@ msgstr "Gesuchsbild"
 #: apps/web/src/desktop/pools/pool-main.tsx:428
 #: apps/web/src/desktop/shell/crumbs.tsx:24
 #: apps/web/src/desktop/shell/sidebar.tsx:198
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:43
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:44
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:28
 #: apps/web/src/features/wants/ui/wants-page.tsx:55
 msgid "Wants"
@@ -12774,11 +12816,11 @@ msgstr "Es konnte nicht geprüft werden, ob dieser Gutschein bereits einen "
 #: apps/web/src/desktop/onboarding/paper-wallet-desk.tsx:110
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:416
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:354
-#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:117
+#: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:119
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:70
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:223
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:229
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:188
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:198
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:170
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:186
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:245
@@ -12841,8 +12883,8 @@ msgstr "Was ist ein Gutschein?"
 msgid "When"
 msgstr "Wann"
 
-#: apps/web/src/components/wants/want-detail.tsx:66
-#: apps/web/src/desktop/wants/want-place-desk.tsx:135
+#: apps/web/src/components/wants/want-detail.tsx:67
+#: apps/web/src/desktop/wants/want-place-desk.tsx:136
 msgid "When and where"
 msgstr "Wann und wo"
 
@@ -12860,7 +12902,7 @@ msgstr "Wo und wofür"
 msgid "Where did this happen?"
 msgstr "Wo ist das passiert?"
 
-#: apps/web/src/desktop/activity/transactions-desk.tsx:211
+#: apps/web/src/desktop/activity/transactions-desk.tsx:212
 msgid "With"
 msgstr "Mit"
 
@@ -12902,7 +12944,7 @@ msgstr "Eingereichte Rücknahme"
 msgid "Write a message"
 msgstr "Nachricht schreiben"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:369
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:377
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:155
 msgid "Write a post"
 msgstr "Schreiben Sie einen Beitrag"
@@ -12961,8 +13003,8 @@ msgstr "Sie haben bereits <0>{heldAmount} {targetSymbol}</0>"
 msgid "You already have a catalog."
 msgstr "Du hast bereits einen Katalog."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:86
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:81
+#: apps/web/src/components/messaging/new-message-sheet.tsx:121
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:116
 msgid "You already have a conversation with this person."
 msgstr "Sie haben bereits eine Unterhaltung mit dieser Person."
 
@@ -13008,10 +13050,17 @@ msgstr "Sie können auch nach der Stilllegung des Fonds Guthaben abheben."
 msgid "You can write or edit your review until {0}."
 msgstr "Sie können Ihre Bewertung bis {0} verfassen oder bearbeiten."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:84
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:79
+#: apps/web/src/components/messaging/new-message-sheet.tsx:119
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:114
 msgid "You can't message this person."
 msgstr "Sie können dieser Person keine Nachricht senden."
+
+#: apps/web/src/components/messaging/new-message-sheet.tsx:117
+#: apps/web/src/components/messaging/new-message-sheet.tsx:183
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:112
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:190
+msgid "You can't message yourself."
+msgstr "Du kannst dir nicht selbst schreiben."
 
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:249
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:245
@@ -13135,8 +13184,8 @@ msgstr "Sie werden erhalten"
 msgid "You'll send"
 msgstr "Sie werden senden"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:88
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:83
+#: apps/web/src/components/messaging/new-message-sheet.tsx:123
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:118
 msgid "You've sent too many requests today. Try again tomorrow."
 msgstr "Sie haben heute zu viele Anfragen gesendet. Versuchen Sie es morgen "
 "noch einmal."

@@ -4,6 +4,10 @@ vi.mock("#/components/retirement/retirement-control", () => ({
 vi.mock("#/features/ownership/hooks/use-asset-owner", () => ({
   useAssetOwner: (_address: string, owner: string | null) => owner,
 }));
+vi.mock("#/components/messaging/resource-owner-contact", () => ({
+  ResourceOwnerContact: () => null,
+  OwnerMessageButton: () => null,
+}));
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";

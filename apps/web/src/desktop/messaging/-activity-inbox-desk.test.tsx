@@ -190,9 +190,12 @@ describe("desktop New message", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "New message" }));
     const dialog = await screen.findByRole("dialog", { name: "New message" });
-    fireEvent.change(within(dialog).getByRole("searchbox", { name: "Username or phone number" }), {
-      target: { value: "juma" },
-    });
+    fireEvent.change(
+      within(dialog).getByRole("searchbox", { name: "Username, address, or phone number" }),
+      {
+        target: { value: "juma" },
+      },
+    );
     const people = within(dialog).getByRole("list", { name: "Matching people" });
     // Only a person can be messaged, not a pool.
     expect(within(people).getAllByRole("button", { name: "Message" })).toHaveLength(1);

@@ -4,6 +4,7 @@ import {
   safeReadAbi,
   type AssetOwnerInfo,
 } from "@clc/core/features/safe/logic";
+import { safeKeys } from "@clc/api/features/safe/queries";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { isAddress, zeroAddress, type Client } from "viem";
 import { getBlockNumber, getCode, readContract } from "viem/actions";
@@ -16,8 +17,7 @@ import { useAssetOwner } from "./use-asset-owner";
 
 export type { AssetOwnerInfo } from "@clc/core/features/safe/logic";
 
-export const assetOwnerInfoKey = (owner: string) =>
-  ["asset-owner-info", CHAIN_ID, owner.toLowerCase()] as const;
+export const assetOwnerInfoKey = (owner: string) => safeKeys.owner(owner);
 
 export const assetOwnerProjectionKey = (owner: string) =>
   ["asset-owner-projection", CHAIN_ID, owner.toLowerCase()] as const;
@@ -78,7 +78,7 @@ export function useAssetOwnerInfo(address: string, catalogOwner: string | null |
   const auth = useAuthStatus();
   const ownerAddress = owner && isAddress(owner) ? owner : undefined;
   const query = useQuery({
-    queryKey: assetOwnerInfoKey(ownerAddress ?? "none"),
+    queryKey: safeKeys.owner(ownerAddress ?? "none"),
     queryFn: async ({ signal }): Promise<AssetOwnerInfo> => {
       // The backend persists discovery and registers verified catalog owners
       // in AccountIndex. Membership comes from the same projection as writes.
