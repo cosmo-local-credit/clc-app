@@ -1,11 +1,12 @@
 import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { RiBookOpenLine } from "react-icons/ri";
 
 import { PublicLocationWarning } from "#/components/public-location-warning";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { ConfirmDialog } from "#/components/ui/confirm-dialog";
 import { Field } from "#/components/ui/field";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
@@ -34,7 +35,18 @@ export function CatalogFieldsDesk({
   title?: ReactNode;
 }) {
   const { t, i18n } = useLingui();
-  const { form, inFlight, imageBusy, setImageBusy, error, tagOptions } = model;
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const {
+    form,
+    canDelete,
+    inFlight,
+    deleting,
+    deleteCatalog,
+    imageBusy,
+    setImageBusy,
+    error,
+    tagOptions,
+  } = model;
   return (
     <form
       className="grid min-w-0 content-start gap-5"
@@ -134,15 +146,51 @@ export function CatalogFieldsDesk({
           {error}
         </p>
       ) : null}
-      <div className="flex justify-end border-border border-t pt-4">
+      <div className="flex gap-2 border-border border-t pt-4">
+        {canDelete ? (
+          <Button
+            type="button"
+            variant="destructive"
+            pending={deleting}
+            disabled={inFlight}
+            onClick={() => setConfirmDelete(true)}
+          >
+            {deleting ? <Trans>Deleting…</Trans> : <Trans>Delete catalog</Trans>}
+          </Button>
+        ) : null}
         <form.Subscribe selector={(state) => [state.isSubmitting]}>
           {([submitting]) => (
-            <Button type="submit" disabled={imageBusy} pending={submitting || inFlight}>
+            <Button
+              type="submit"
+              className="ms-auto"
+              disabled={imageBusy || deleting}
+              pending={submitting || inFlight}
+            >
               {submitting || inFlight ? <Trans>Saving…</Trans> : submitLabel}
             </Button>
           )}
         </form.Subscribe>
       </div>
+      <ConfirmDialog
+        open={confirmDelete}
+        title={<Trans>Delete this catalog?</Trans>}
+        description={
+          <Trans>
+            This permanently deletes the catalog and removes its Pool and Voucher listings. The
+            Pools and Vouchers are not deleted.
+          </Trans>
+        }
+        confirmLabel={<Trans>Delete catalog</Trans>}
+        pendingLabel={<Trans>Deleting…</Trans>}
+        cancelLabel={<Trans>Cancel</Trans>}
+        destructive
+        pending={deleting}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          setConfirmDelete(false);
+          void deleteCatalog();
+        }}
+      />
     </form>
   );
 }

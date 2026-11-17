@@ -26,6 +26,7 @@ const memberPageSchema = z.object({
   nextCursor: z.string().nullable(),
 });
 const savedSchema = z.object({ catalog: catalogSchema });
+const deletedSchema = z.object({ catalogId: catalogIdSchema });
 const membershipSchema = z.object({ added: z.boolean() });
 export type CatalogsClient = ReturnType<typeof createCatalogsClient>;
 
@@ -137,6 +138,14 @@ export function createCatalogsClient(http: HttpClient) {
           signal,
         })
       ).catalog;
+    },
+    async remove(id: string, signal?: AbortSignal) {
+      return (
+        await read(deletedSchema, `/api/v2/catalogs/${catalogIdSchema.parse(id)}`, {
+          method: "DELETE",
+          signal,
+        })
+      ).catalogId;
     },
     membership(id: string, kind: CatalogKind, resourceId: string, signal?: AbortSignal) {
       const query = new URLSearchParams({

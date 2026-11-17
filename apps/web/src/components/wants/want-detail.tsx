@@ -11,6 +11,7 @@ import {
   RiShareLine,
 } from "react-icons/ri";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
+import { ResourceOwnerContact } from "#/components/messaging/resource-owner-contact";
 import { Button } from "#/components/ui/button";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { TagBadge } from "#/components/ui/tag-badge";
@@ -125,6 +126,7 @@ export function WantDetail({
         <h2>
           <Trans>Contact</Trans>
         </h2>
+        {want.ownerAddress ? <ResourceOwnerContact ownerAddress={want.ownerAddress} /> : null}
         <AuthenticatedDetailsGate>
           <AuthenticatedWantContact wantId={want.id} />
         </AuthenticatedDetailsGate>

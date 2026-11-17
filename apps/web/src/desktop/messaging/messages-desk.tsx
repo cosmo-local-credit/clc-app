@@ -14,13 +14,21 @@ import { ThreadDesk } from "#/desktop/messaging/thread-desk";
 export function MessagesDesk({
   header,
   conversationId,
+  messageTo,
+  onMessageToConsumed,
 }: {
   header: ReactNode;
   conversationId?: number;
+  messageTo?: `0x${string}`;
+  onMessageToConsumed?: () => void;
 }) {
   return (
     <DeskInboxFrame header={header}>
-      <ConversationListDesk selectedId={conversationId} />
+      <ConversationListDesk
+        selectedId={conversationId}
+        messageTo={messageTo}
+        onMessageToConsumed={onMessageToConsumed}
+      />
       {conversationId === undefined ? (
         <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-2 bg-background text-muted-foreground">
           <RiChat3Line className="size-6" aria-hidden="true" />

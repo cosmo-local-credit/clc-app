@@ -19,7 +19,15 @@ import { cn } from "#/lib/utils";
  * every other conversation. Opening one from the inbox pushes history; moving
  * between threads replaces it, so Back always returns to the inbox.
  */
-export function ConversationListDesk({ selectedId }: { selectedId?: number }) {
+export function ConversationListDesk({
+  selectedId,
+  messageTo,
+  onMessageToConsumed,
+}: {
+  selectedId?: number;
+  messageTo?: `0x${string}`;
+  onMessageToConsumed?: () => void;
+}) {
   const { t } = useLingui();
   const list = useConversationList("direct");
   const requests = list.conversations.filter(
@@ -30,7 +38,11 @@ export function ConversationListDesk({ selectedId }: { selectedId?: number }) {
   return (
     <div className="flex min-h-0 w-[340px] shrink-0 flex-col border-border border-e">
       <div className="shrink-0 border-border border-b p-3">
-        <NewMessageDialog existing={list.conversations} />
+        <NewMessageDialog
+          existing={list.conversations}
+          messageTo={messageTo}
+          onMessageToConsumed={onMessageToConsumed}
+        />
       </div>
       <div
         className="min-h-0 flex-1 overflow-y-auto"

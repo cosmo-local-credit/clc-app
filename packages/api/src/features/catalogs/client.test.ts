@@ -108,6 +108,13 @@ describe("catalog HTTP contract", () => {
     expect(fetcher.mock.calls[2]?.[0]).toBe("https://api.test/api/v2/catalogs/7");
     expect(fetcher.mock.calls[2]?.[1]).toMatchObject({ method: "PUT" });
   });
+  it("deletes a catalog through the authenticated owner route", async () => {
+    const fetcher = respond({ catalogId: "7" });
+
+    await expect(api.remove("7")).resolves.toBe("7");
+    expect(fetcher.mock.calls[0]?.[0]).toBe("https://api.test/api/v2/catalogs/7");
+    expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ method: "DELETE" });
+  });
   it("uses resource DB IDs and one pool-only membership write", async () => {
     const fetcher = respond({ added: true });
     await api.setMember("7", "pool", "12", true);

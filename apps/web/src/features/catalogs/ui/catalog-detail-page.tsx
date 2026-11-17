@@ -3,6 +3,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { CatalogPicture } from "#/components/catalogs/catalog-row";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
+import { ResourceOwnerContact } from "#/components/messaging/resource-owner-contact";
 import { Button } from "#/components/ui/button";
 import {
   SheetBackdrop,
@@ -94,6 +95,7 @@ export function CatalogDetailPage({ id, editor }: { id: string; editor?: Catalog
           ) : null}
           <CatalogMembers catalogId={id} kind="pool" canEdit={owner} />
           <CatalogMembers catalogId={id} kind="voucher" canEdit={owner} />
+          <ResourceOwnerContact ownerAddress={catalog.ownerAddress} />
           {owner ? (
             <SheetRoot
               open={editing}

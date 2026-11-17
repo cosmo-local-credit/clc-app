@@ -65,8 +65,10 @@ describe("Want contracts", () => {
   });
 
   it("normalizes numeric IDs and exposes only populated contact values", () => {
+    const ownerAddress = "0x1111111111111111111111111111111111111111";
     const parsed = wantSchema.parse({
       ...want,
+      ownerAddress,
       id: 7,
       ownerUserId: 3,
       ownerName: "Amina",
@@ -77,6 +79,7 @@ describe("Want contracts", () => {
       phone: null,
     });
     expect(parsed.id).toBe("7");
+    expect(parsed.ownerAddress).toBe(ownerAddress);
     expect(parsed).not.toHaveProperty("ownerUserId");
     expect(parsed).not.toHaveProperty("ownerName");
     expect(parsed).not.toHaveProperty("ownerUsername");

@@ -17,6 +17,11 @@ vi.mock("#/components/ui/location-map.lazy", () => ({
 
 vi.mock("#/lib/default-maps", () => ({ openDefaultMaps: mocks.maps }));
 vi.mock("sonner", () => ({ toast: { success: mocks.success, error: mocks.error } }));
+vi.mock("#/components/messaging/resource-owner-contact", () => ({
+  ResourceOwnerContactValue: ({ ownerAddress }: { ownerAddress: string }) => (
+    <span>{`owner:${ownerAddress}`}</span>
+  ),
+}));
 
 import { PoolInfoPanel } from "./pool-info-panel";
 
@@ -64,6 +69,8 @@ describe("PoolInfoPanel", () => {
   it("opens the exact pool location and reports an unavailable clipboard", () => {
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
     render(<PoolInfoPanel pool={pool} />);
+
+    expect(screen.getByText(`owner:${pool.ownerAddress}`)).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Copy contract address" }));
     expect(mocks.error).toHaveBeenCalledWith("Couldn't copy contract address");

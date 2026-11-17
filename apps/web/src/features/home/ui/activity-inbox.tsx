@@ -20,6 +20,8 @@ export function ActivityInbox({
   types,
   onQueryChange,
   onTypesChange,
+  messageTo,
+  onMessageToConsumed,
 }: {
   section: ActivitySection;
   address?: string;
@@ -27,6 +29,8 @@ export function ActivityInbox({
   types?: readonly ActivityKind[];
   onQueryChange?: (query: string) => void;
   onTypesChange?: (types: readonly ActivityKind[]) => void;
+  messageTo?: `0x${string}`;
+  onMessageToConsumed?: () => void;
 }) {
   const { t } = useLingui();
   const counts = useActivityCounts();
@@ -60,7 +64,9 @@ export function ActivityInbox({
       <div className="sticky top-0 z-20 bg-background pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-1">
         {tabs}
       </div>
-      {section === "messages" ? <MessagesSection /> : null}
+      {section === "messages" ? (
+        <MessagesSection messageTo={messageTo} onMessageToConsumed={onMessageToConsumed} />
+      ) : null}
       {section === "notifications" ? <NotificationsSection /> : null}
       {section === "helpdesk" ? <HelpdeskSection /> : null}
     </div>

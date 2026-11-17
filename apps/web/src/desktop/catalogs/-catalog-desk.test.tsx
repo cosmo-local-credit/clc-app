@@ -7,19 +7,22 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const OWNER = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
 
-const { detail, members, update, auth } = vi.hoisted(() => ({
+const { detail, members, update, remove, success, auth } = vi.hoisted(() => ({
   detail: vi.fn(),
   members: vi.fn(),
   update: vi.fn(),
+  remove: vi.fn(),
+  success: vi.fn(),
   auth: { address: "" },
 }));
 
-vi.mock("#/lib/api/catalogs", () => ({ catalogsClient: { detail, members, update } }));
+vi.mock("#/lib/api/catalogs", () => ({ catalogsClient: { detail, members, update, remove } }));
+vi.mock("sonner", () => ({ toast: { success } }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({ isAuthenticated: true, session: { address: auth.address } }),
 }));
@@ -36,6 +39,11 @@ vi.mock("#/components/ui/location-picker", () => ({
 }));
 vi.mock("#/components/auth/authenticated-details-gate", () => ({
   AuthenticatedDetailsGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+vi.mock("#/components/messaging/resource-owner-contact", () => ({
+  ResourceOwnerContact: ({ ownerAddress }: { ownerAddress: string }) => (
+    <div data-testid="catalog-owner-contact">{ownerAddress}</div>
+  ),
 }));
 
 import { CatalogDesk } from "./catalog-desk";
@@ -83,6 +91,7 @@ beforeEach(() => {
   detail.mockResolvedValue(CATALOG);
   members.mockResolvedValue({ items: [], nextCursor: null });
   update.mockResolvedValue({ ...CATALOG, name: "Kilifi Traders Co-op" });
+  remove.mockResolvedValue("7");
 });
 
 afterEach(() => {
@@ -90,6 +99,17 @@ afterEach(() => {
 });
 
 describe("CatalogDesk edit inspector", () => {
+  it("places the owner contact after both member sections", async () => {
+    mountAt("/catalogs/7");
+    const owner = await screen.findByTestId("catalog-owner-contact");
+    const pools = (await screen.findByRole("heading", { name: "Pools" })).closest("section");
+    const vouchers = (await screen.findByRole("heading", { name: "Vouchers" })).closest("section");
+    if (!pools || !vouchers) throw new Error("expected Catalog member sections");
+
+    expect(pools.compareDocumentPosition(owner) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+    expect(vouchers.compareDocumentPosition(owner) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+  });
+
   it("opens as ?edit, takes focus, and Back closes it", async () => {
     const router = mountAt("/catalogs/7");
     const edit = await screen.findByRole("button", { name: "Edit catalog" });
@@ -161,6 +181,26 @@ describe("CatalogDesk edit inspector", () => {
     expect(router.state.location.search).not.toHaveProperty("edit");
     // Popped, not stacked: the catalog page is the entry we are on again.
     expect(router.history.location.state.__TSR_index).toBe(0);
+  });
+
+  it("confirms deletion and navigates to Wallet", async () => {
+    const router = mountAt("/catalogs/7?edit=true");
+    await screen.findByRole("complementary", { name: "Edit catalog" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete catalog" }));
+    const dialog = screen.getByRole("dialog", { name: "Delete this catalog?" });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    expect(screen.queryByRole("dialog", { name: "Delete this catalog?" })).toBeNull();
+    expect(remove).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete catalog" }));
+    const reopenedDialog = screen.getByRole("dialog", { name: "Delete this catalog?" });
+    fireEvent.click(within(reopenedDialog).getByRole("button", { name: "Delete catalog" }));
+
+    await waitFor(() => expect(remove).toHaveBeenCalledExactlyOnceWith("7"));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/"));
+    expect(router.state.location.search).toMatchObject({ tab: "wallet" });
+    expect(success).toHaveBeenCalledWith("Catalog deleted.");
   });
 
   it("keeps the editor closed for someone who does not own the catalog", async () => {

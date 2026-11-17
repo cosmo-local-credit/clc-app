@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { delegationStatus, navigate, sendMutateAsync, sendVoucherState, voucherDetails } =
@@ -64,8 +64,9 @@ function renderWithQueryClient(ui: React.ReactElement) {
 
 function mockTokens({
   usdcBalance = "245000000",
+  usdcDecimals = 6,
   retired = false,
-}: { usdcBalance?: string; retired?: boolean } = {}) {
+}: { usdcBalance?: string; usdcDecimals?: number; retired?: boolean } = {}) {
   vi.stubGlobal(
     "fetch",
     vi.fn().mockResolvedValue({
@@ -84,7 +85,7 @@ function mockTokens({
                   catalogActive: !retired,
                   tokenSymbol: "USDC",
                   tokenName: "USD Coin",
-                  tokenDecimals: 6,
+                  tokenDecimals: usdcDecimals,
                   balance: usdcBalance,
                   iconUrl: null,
                   lastDateBlock: "2026-07-01T12:20:29Z",
@@ -446,10 +447,10 @@ describe("SendAmountPage", () => {
       <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" />,
     );
 
-    const maxButton = await screen.findByRole("button", { name: /use max · 2.13/i });
+    const maxButton = await screen.findByRole("button", { name: /use max · 2.134567/i });
     fireEvent.click(maxButton);
     expect((screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement).value).toBe(
-      "2.13",
+      "2.134567",
     );
     expect(screen.getByText("(2.13 KES)")).toBeTruthy();
 
@@ -477,6 +478,57 @@ describe("SendAmountPage", () => {
         symbol: "USDC",
         uoaValue: "2.134567",
         uoa: "KES",
+        returnPool: undefined,
+      },
+    });
+  });
+
+  it("lets Max send a positive balance smaller than one hundredth", async () => {
+    sendMutateAsync.mockResolvedValue({
+      trackingId: "tracking-dust",
+      signatureType: "secp256k1",
+      valuationSnapshots: [],
+    });
+    mockTokens({ usdcBalance: "2", usdcDecimals: 7 });
+    renderWithQueryClient(
+      <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Voucher issuer" />,
+    );
+
+    const maxButton = await screen.findByRole("button", { name: /use max · 0.0000002/i });
+    expect(screen.getByText("Balance 0.0000002")).toBeTruthy();
+    expect(screen.queryByText("QuG0IF")).toBeNull();
+    expect(screen.queryByText("rLFIRw")).toBeNull();
+    fireEvent.click(maxButton);
+
+    expect((screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement).value).toBe(
+      "0.0000002",
+    );
+    const send = screen.getByRole("button", { name: /^send$/i });
+    expect(send.hasAttribute("disabled")).toBe(false);
+    fireEvent.click(send);
+    const confirmation = screen.getByRole("dialog");
+    expect(confirmation.textContent).toContain("0.0000002 USDC");
+    fireEvent.click(within(confirmation).getByRole("button", { name: /confirm and send/i }));
+
+    await waitFor(() =>
+      expect(sendMutateAsync).toHaveBeenCalledWith({
+        senderAddress: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+        tokenAddress: USDC,
+        recipientAddress: RECIPIENT,
+        amountRaw: "2",
+        includeAuthorization: false,
+      }),
+    );
+    expect(navigate).toHaveBeenCalledWith({
+      to: "/wallet/send/receipt",
+      search: {
+        trackingId: "tracking-dust",
+        token: USDC,
+        recipient: RECIPIENT,
+        recipientLabel: "Voucher issuer",
+        amount: "0.0000002",
+        symbol: "USDC",
+        uoaUnavailable: true,
         returnPool: undefined,
       },
     });

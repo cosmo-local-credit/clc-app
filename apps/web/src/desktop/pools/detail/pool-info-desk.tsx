@@ -6,6 +6,7 @@ import { RiNavigationLine } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
+import { ResourceOwnerContactValue } from "#/components/messaging/resource-owner-contact";
 import { Button } from "#/components/ui/button";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { MarkdownContent } from "#/components/ui/markdown-content";
@@ -35,7 +36,7 @@ export function PoolInfoDesk({
   privateInfo?: PoolPrivateInfo;
 }) {
   return (
-    <div>
+    <div className="grid gap-4">
       <AuthenticatedDetailsGate className="border border-border bg-card p-4">
         {privateInfo?.isPending ? (
           <p aria-busy="true" className="text-sm text-muted-foreground">
@@ -104,6 +105,14 @@ function PoolInfoBody({ pool }: { pool: UserPool }) {
                 />,
               ],
               [<Trans key="label">Unit of account</Trans>, pool.unitOfAccount ?? "—"],
+              [
+                <Trans key="label">Owner</Trans>,
+                pool.ownerAddress ? (
+                  <ResourceOwnerContactValue key="value" ownerAddress={pool.ownerAddress} />
+                ) : (
+                  "—"
+                ),
+              ],
               pool.email
                 ? [
                     <Trans key="label">Email</Trans>,

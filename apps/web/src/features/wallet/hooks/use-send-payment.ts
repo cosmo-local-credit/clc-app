@@ -2,11 +2,7 @@ import {
   formatUnitOfAccountDisplayValue,
   formatVoucherUnitValue,
 } from "@clc/core/features/market/logic";
-import {
-  formatTokenAmount,
-  formatTokenAmountFixed,
-  parseTokenAmount,
-} from "@clc/core/features/wallet/logic";
+import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { useLingui } from "@lingui/react/macro";
 import { useIsMutating, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -97,6 +93,9 @@ export function useSendPayment({
   const [maxAmountRaw, setMaxAmountRaw] = useState<string | null>(null);
 
   const tokenDecimals = selectedToken?.tokenDecimals ?? 2;
+  const maxAmount = selectedToken?.balance
+    ? formatTokenAmount(selectedToken.balance, tokenDecimals, tokenDecimals)
+    : (selectedToken?.amount ?? null);
   const voucherDetail = useMarketVoucherDetail(selectedToken?.contractAddress);
   const amountRaw = useMemo(() => {
     if (!selectedToken || amount.trim() === "") return null;
@@ -169,7 +168,7 @@ export function useSendPayment({
   function setMax() {
     if (!selectedToken) return;
     if (selectedToken.balance) {
-      setAmountValue(formatTokenAmountFixed(selectedToken.balance, tokenDecimals, 2));
+      setAmountValue(maxAmount ?? "");
       setMaxAmountRaw(selectedToken.balance);
       return;
     }
@@ -234,6 +233,7 @@ export function useSendPayment({
     tokens,
     tokensQuery,
     selectedToken,
+    maxAmount,
     selectToken,
     amount,
     setAmount,

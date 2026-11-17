@@ -1,7 +1,9 @@
 import type { Catalog } from "@clc/core/features/catalogs/logic";
 import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useState } from "react";
 import { Button } from "#/components/ui/button";
+import { ConfirmDialog } from "#/components/ui/confirm-dialog";
 import { PublicLocationWarning } from "#/components/public-location-warning";
 import { Field } from "#/components/ui/field";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
@@ -23,11 +25,9 @@ export function CatalogForm({
   onSaved: (catalog: Catalog) => void | Promise<void>;
 }) {
   const { t, i18n } = useLingui();
-  const { form, inFlight, imageBusy, setImageBusy, error, tagOptions } = useCatalogForm({
-    catalog,
-    initialPlace,
-    onSaved,
-  });
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const { form, inFlight, deleting, deleteCatalog, imageBusy, setImageBusy, error, tagOptions } =
+    useCatalogForm({ catalog, initialPlace, onSaved });
   return (
     <form
       className="space-y-5"
@@ -132,7 +132,7 @@ export function CatalogForm({
             type="submit"
             tap
             className="w-full"
-            disabled={imageBusy}
+            disabled={imageBusy || deleting}
             pending={submitting || inFlight}
           >
             {submitting || inFlight ? (
@@ -145,6 +145,39 @@ export function CatalogForm({
           </Button>
         )}
       </form.Subscribe>
+      {catalog ? (
+        <Button
+          type="button"
+          tap
+          variant="destructive"
+          className="w-full"
+          pending={deleting}
+          disabled={inFlight}
+          onClick={() => setConfirmDelete(true)}
+        >
+          {deleting ? <Trans>Deleting…</Trans> : <Trans>Delete catalog</Trans>}
+        </Button>
+      ) : null}
+      <ConfirmDialog
+        open={confirmDelete}
+        title={<Trans>Delete this catalog?</Trans>}
+        description={
+          <Trans>
+            This permanently deletes the catalog and removes its Pool and Voucher listings. The
+            Pools and Vouchers are not deleted.
+          </Trans>
+        }
+        confirmLabel={<Trans>Delete catalog</Trans>}
+        pendingLabel={<Trans>Deleting…</Trans>}
+        cancelLabel={<Trans>Cancel</Trans>}
+        destructive
+        pending={deleting}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          setConfirmDelete(false);
+          void deleteCatalog();
+        }}
+      />
     </form>
   );
 }

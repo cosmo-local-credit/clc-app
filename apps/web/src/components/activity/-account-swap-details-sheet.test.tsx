@@ -7,6 +7,7 @@ const { toast } = vi.hoisted(() => ({
 }));
 
 vi.mock("sonner", () => ({ toast }));
+vi.mock("./swap-pool-owner-contacts", () => ({ SwapPoolOwnerContacts: () => null }));
 
 import { AccountSwapDetailsSheet } from "./account-swap-details-sheet";
 

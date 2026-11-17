@@ -1,5 +1,6 @@
 import {
   assetOwnerInfoSchema,
+  ownerMessageTargetSchema,
   safeConfirmationSchema,
   safeOwnerInfoSchema,
   safeTransactionSchema,
@@ -28,6 +29,9 @@ export type SafeProposal = z.infer<typeof safeProposalSchema>;
 
 const pendingSchema = z.object({ results: z.array(safeProposalSchema) });
 const mineSchema = z.object({ safes: z.array(safeOwnerInfoSchema) });
+const ownerContactInfoSchema = assetOwnerInfoSchema.and(
+  z.object({ messageTargets: z.array(ownerMessageTargetSchema).default([]) }),
+);
 
 export type ProposeSafeTransactionInput = {
   safe: `0x${string}`;
@@ -40,7 +44,7 @@ export type ProposeSafeTransactionInput = {
 export function createSafeClient(http: HttpClient) {
   return {
     async owner(address: string, signal?: AbortSignal) {
-      return assetOwnerInfoSchema.parse(
+      return ownerContactInfoSchema.parse(
         await http.request<unknown>(`/api/v2/owners/${encodeURIComponent(address)}`, {
           method: "GET",
           signal,

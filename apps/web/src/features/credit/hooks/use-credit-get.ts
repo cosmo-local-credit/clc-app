@@ -12,7 +12,7 @@ import {
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { relayerHealthQueryOptions } from "@clc/api/features/relayer/queries";
 import type { CreditQuoteMode } from "@clc/core/features/credit-router/logic";
-import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
+import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import {
   keepPreviousData,
   useInfiniteQuery,
@@ -29,7 +29,7 @@ import { useConnection } from "wagmi";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { relayCreditQuote } from "#/features/credit/api/relay-credit-quote";
 import {
-  type CreditPayOption,
+  creditRouteCapacity,
   creditPayOption,
   creditRouteHopRefs,
   creditRouteKey,
@@ -51,6 +51,14 @@ const relayerClient = createRelayerClient(RELAYER_URL);
 const AMOUNT_DEBOUNCE_MS = 400;
 /** A quote this close to its deadline is asked again rather than signed. */
 const QUOTE_EXPIRY_MARGIN_S = 15;
+
+function editableExactAmount(raw: string, decimals: number): string {
+  const value = formatTokenAmount(raw, decimals, decimals);
+  const minimumFractionDigits = Math.min(2, decimals);
+  if (minimumFractionDigits === 0) return value;
+  const [whole, fraction = ""] = value.split(".");
+  return `${whole}.${fraction.padEnd(minimumFractionDigits, "0")}`;
+}
 
 /**
  * Every credit-route relay, whichever view started it, so a remounted view
@@ -324,16 +332,15 @@ export function useCreditGet(targetAddress: `0x${string}`) {
       setRouteChoices((choices) => ({ ...choices, [key]: creditRouteKey(route) }));
       setChosenVoucher(key);
     },
-    /**
-     * Fills the amount with the most an option's route takes, in the voucher
-     * the amount is counted in, and pays with that voucher.
-     */
-    fillMax: (option: CreditPayOption) => {
-      const raw = mode === "exactOutput" ? option.route.maxAmountOut : option.route.maxAmountIn;
-      const decimals = decimalsOf(mode === "exactOutput" ? targetAddress : option.voucher);
-      if (raw === null || decimals === null) return;
-      setChosenVoucher(option.voucher.toLowerCase());
-      setAmount(formatTokenAmountFixed(raw, decimals, 2));
+    /** Selects a route and fills its authoritative maximum without losing raw precision. */
+    fillRouteMax: (voucher: `0x${string}`, route: CreditRoute) => {
+      const capacity = creditRouteCapacity(route, mode, voucher, targetAddress);
+      const decimals = capacity ? decimalsOf(capacity.voucher) : null;
+      if (!capacity?.exact || decimals === null) return;
+      const key = voucher.toLowerCase();
+      setRouteChoices((choices) => ({ ...choices, [key]: creditRouteKey(route) }));
+      setChosenVoucher(key);
+      setAmount(editableExactAmount(capacity.raw, decimals));
     },
     selected,
 

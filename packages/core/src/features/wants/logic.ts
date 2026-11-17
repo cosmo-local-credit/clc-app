@@ -19,6 +19,10 @@ const idSchema = z.union([z.string().min(1), z.number().int().positive()]).trans
 
 export const wantSchema = z.object({
   id: idSchema,
+  ownerAddress: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{40}$/)
+    .optional(),
   name: z.string().trim().min(1).max(120),
   description: z.string().trim().min(1).max(2000),
   locationName: z.string().trim().min(1),

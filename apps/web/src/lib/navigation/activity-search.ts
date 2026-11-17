@@ -35,6 +35,8 @@ export type ActivityRouteSearch = {
   activityRange?: string | readonly string[];
   /** Selected activity row. Opening it pushes history so Back closes the inspector. */
   tx?: string;
+  /** Resource-owner address used to prefill New message. */
+  messageTo?: string | readonly string[];
 };
 
 export type ActivitySearch = {
@@ -50,6 +52,7 @@ export function pickActivitySearch(search: unknown): ActivityRouteSearch {
   const activityVoucher = pickStringSearchValue(record.activityVoucher);
   const activityRange = pickStringSearchValue(record.activityRange);
   const tx = typeof record.tx === "string" && record.tx.length > 0 ? record.tx : undefined;
+  const messageTo = pickStringSearchValue(record.messageTo);
   const section = typeof record.section === "string" ? record.section : undefined;
   return {
     ...(section !== undefined ? { section } : {}),
@@ -58,6 +61,7 @@ export function pickActivitySearch(search: unknown): ActivityRouteSearch {
     ...(activityVoucher !== undefined ? { activityVoucher } : {}),
     ...(activityRange !== undefined ? { activityRange } : {}),
     ...(tx !== undefined ? { tx } : {}),
+    ...(messageTo !== undefined ? { messageTo } : {}),
   };
 }
 
@@ -103,19 +107,22 @@ export function canonicalActivityRouteSearch(search: unknown): ActivityRouteSear
   const parsed = parseActivitySearch(raw);
   const desk = parseActivityDeskFilters(raw);
   const section = parseActivitySection(raw.section);
+  const messageTo = parseActivityMessageTo(raw.messageTo);
   const canonical: ActivityRouteSearch = {
     section: section === "transactions" ? undefined : section,
     activityQ: parsed.q || undefined,
     activityTypes: parsed.types.length ? parsed.types.join(",") : undefined,
     ...(raw.activityVoucher !== undefined ? { activityVoucher: desk.voucher } : {}),
     ...(raw.activityRange !== undefined ? { activityRange: desk.range } : {}),
+    ...(raw.messageTo !== undefined ? { messageTo } : {}),
   };
   if (
     raw.section === canonical.section &&
     raw.activityQ === canonical.activityQ &&
     raw.activityTypes === canonical.activityTypes &&
     raw.activityVoucher === canonical.activityVoucher &&
-    raw.activityRange === canonical.activityRange
+    raw.activityRange === canonical.activityRange &&
+    raw.messageTo === canonical.messageTo
   ) {
     return null;
   }
@@ -130,7 +137,17 @@ export function clearActivityRouteSearch(): ActivityRouteSearch {
     activityVoucher: undefined,
     activityRange: undefined,
     tx: undefined,
+    messageTo: undefined,
   };
+}
+
+export function parseActivityMessageTo(value: unknown): `0x${string}` | undefined {
+  const candidate = toValues(
+    typeof value === "string" || Array.isArray(value)
+      ? (value as string | readonly string[])
+      : undefined,
+  )[0];
+  return candidate && isAddress(candidate, { strict: false }) ? getAddress(candidate) : undefined;
 }
 
 function pickStringSearchValue(value: unknown): string | readonly string[] | undefined {

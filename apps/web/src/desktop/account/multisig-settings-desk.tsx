@@ -115,7 +115,10 @@ function MultisigRow({ safe }: { safe: `0x${string}` }) {
       <DialogRoot open={open} onOpenChange={setOpen}>
         <DialogPortal>
           <DialogBackdrop />
-          <DialogContent className="flex max-h-[85dvh] w-[480px] max-w-[480px] flex-col rounded-none border border-border bg-card p-0 shadow-none">
+          <DialogContent
+            showCloseButton={false}
+            className="flex max-h-[85dvh] w-[480px] max-w-[480px] flex-col rounded-none border border-border bg-card p-0 shadow-none"
+          >
             <div className="flex h-13 shrink-0 items-center justify-between gap-3 border-border border-b px-4">
               <DialogTitle>{title}</DialogTitle>
               <DialogClose

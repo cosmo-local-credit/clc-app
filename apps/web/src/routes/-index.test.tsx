@@ -35,15 +35,19 @@ vi.mock("#/features/home/ui/home-page", () => ({
     isAuthenticated,
     activityQ,
     activityTypes,
+    messageTo,
     onActivityQueryChange,
     onActivityTypesChange,
+    onMessageToConsumed,
   }: {
     activeTab: string;
     isAuthenticated: boolean;
     activityQ?: string;
     activityTypes?: readonly ActivityKind[];
+    messageTo?: `0x${string}`;
     onActivityQueryChange?: (query: string) => void;
     onActivityTypesChange?: (types: readonly ActivityKind[]) => void;
+    onMessageToConsumed?: () => void;
   }) => (
     <div
       data-testid="home-page"
@@ -51,12 +55,16 @@ vi.mock("#/features/home/ui/home-page", () => ({
       data-authenticated={String(isAuthenticated)}
       data-activity-q={activityQ}
       data-activity-types={activityTypes?.join(",")}
+      data-message-to={messageTo}
     >
       <button type="button" onClick={() => onActivityQueryChange?.("market")}>
         Set query
       </button>
       <button type="button" onClick={() => onActivityTypesChange?.(["sent", "swapped"])}>
         Set types
+      </button>
+      <button type="button" onClick={onMessageToConsumed}>
+        Clear message recipient
       </button>
     </div>
   ),
@@ -162,6 +170,27 @@ describe("IndexPage routing", () => {
       tab: "activity",
       activityQ: "market",
       activityTypes: "sent,swapped",
+    });
+  });
+
+  it("passes and clears a resource-owner message recipient", async () => {
+    const owner = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
+    mockAuthStatus.isAuthenticated = true;
+    mockUseSearch.mockReturnValue({
+      tab: "activity",
+      section: "messages",
+      messageTo: owner,
+    });
+    renderIndex();
+
+    expect((await screen.findByTestId("home-page")).getAttribute("data-message-to")).toBe(owner);
+    fireEvent.click(screen.getByRole("button", { name: "Clear message recipient" }));
+
+    const navigation = mockNavigate.mock.calls[0]?.[0];
+    expect(navigation.replace).toBe(true);
+    expect(navigation.search({ tab: "activity", messageTo: owner })).toEqual({
+      tab: "activity",
+      messageTo: undefined,
     });
   });
 });

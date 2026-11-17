@@ -6,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { Suspense } from "react";
 
 import { Badge } from "#/components/ui/badge";
+import { OwnerMessageButton } from "#/components/messaging/resource-owner-contact";
 import { Button } from "#/components/ui/button";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import {
@@ -108,6 +109,13 @@ export function TransferDetailsSheet({
     ? formatTransferUnitValue(transfer.uoaValue, transfer.uoa, i18n.locales?.[0] ?? i18n.locale)
     : null;
   const amountLabel = uoaLabel ? `${tokenAmountLabel} (${uoaLabel})` : tokenAmountLabel;
+  const counterparty = transfer
+    ? transfer.direction === "OUT"
+      ? transfer.recipientAddress
+      : created
+        ? null
+        : transfer.senderAddress
+    : null;
 
   return (
     <SheetRoot open={open} onOpenChange={onOpenChange}>
@@ -189,6 +197,9 @@ export function TransferDetailsSheet({
                   />
                 </div>
               </div>
+              {counterparty ? (
+                <OwnerMessageButton ownerAddress={counterparty} className="mt-2 w-full" />
+              ) : null}
             </div>
           ) : null}
 

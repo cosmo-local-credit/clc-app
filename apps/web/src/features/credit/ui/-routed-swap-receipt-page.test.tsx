@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const WALLET = "0xA1a1A1a1A1A1A1a1A1a1a1a1a1a1A1A1A1a1A1a1";
@@ -19,7 +20,23 @@ const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
 }));
 
-vi.mock("@tanstack/react-router", () => ({ useNavigate: () => mocks.navigate }));
+vi.mock("@tanstack/react-router", () => ({
+  useNavigate: () => mocks.navigate,
+  Link: ({
+    children,
+    params,
+    to,
+    ...props
+  }: AnchorHTMLAttributes<HTMLAnchorElement> & {
+    children: ReactNode;
+    params: { poolAddress: string };
+    to: string;
+  }) => (
+    <a href={to.replace("$poolAddress", params.poolAddress)} {...props}>
+      {children}
+    </a>
+  ),
+}));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({ isAuthenticated: true, isLoading: false, address: WALLET }),
 }));
@@ -148,6 +165,9 @@ describe("RoutedSwapReceiptPage", () => {
 
     const details = openDetails();
     await waitFor(() => expect(details.textContent).toContain("Swap 1: AAA → BBB · Kilifi Pool"));
+    expect(within(details).getByRole("link", { name: "Kilifi Pool" }).getAttribute("href")).toBe(
+      `/pools/${POOL_1}`,
+    );
     const text = details.textContent ?? "";
     expect(text).toContain("Swap 2: BBB → CCC · Mombasa Pool");
     expect(text).toContain("Protocol fee<0.01 BBB");

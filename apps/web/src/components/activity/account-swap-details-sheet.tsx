@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { toast } from "sonner";
 
 import { formatActivityLegAmount } from "#/components/activity/swap-activity";
+import { SwapPoolOwnerContacts } from "#/components/activity/swap-pool-owner-contacts";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
@@ -59,7 +60,7 @@ export function AccountSwapDetailsSheet({
             </SheetTitle>
           </SheetHeader>
           {activity ? (
-            <div className="px-6 pb-2">
+            <div className="grid gap-4 px-6 pb-2">
               <div className="border border-border bg-card">
                 <DetailRow label={t`Status`}>
                   <Badge variant={activity.success ? "primary" : "muted"} size="sm" caps>
@@ -107,6 +108,7 @@ export function AccountSwapDetailsSheet({
                   />
                 </DetailRow>
               </div>
+              <SwapPoolOwnerContacts poolAddresses={activity.poolAddresses} />
             </div>
           ) : null}
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">

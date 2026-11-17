@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
+import { ResourceOwnerContactValue } from "#/components/messaging/resource-owner-contact";
 import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
 import { Button } from "#/components/ui/button";
 import { LocationMap } from "#/components/ui/location-map.lazy";
@@ -16,7 +17,6 @@ import { MarkdownContent } from "#/components/ui/markdown-content";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { Skeleton } from "#/components/ui/skeleton";
 import { FullValue } from "#/desktop/ui/full-value";
-import { IdentifiedAddress } from "#/desktop/activity/identified-address";
 import { DeskKV } from "#/desktop/ui/kv";
 import { DeskPanel } from "#/desktop/ui/page";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -63,16 +63,18 @@ export function VoucherInfoDesk({
   };
 }) {
   return (
-    <AuthenticatedDetailsGate className="border border-border bg-card p-4">
-      <VoucherInfoBody
-        address={address}
-        symbol={symbol}
-        decimals={decimals}
-        ownerAddress={ownerAddress}
-        detail={detail}
-        privateInfo={privateInfo}
-      />
-    </AuthenticatedDetailsGate>
+    <div className="grid gap-4">
+      <AuthenticatedDetailsGate className="border border-border bg-card p-4">
+        <VoucherInfoBody
+          address={address}
+          symbol={symbol}
+          decimals={decimals}
+          ownerAddress={ownerAddress}
+          detail={detail}
+          privateInfo={privateInfo}
+        />
+      </AuthenticatedDetailsGate>
+    </div>
   );
 }
 
@@ -226,7 +228,7 @@ function VoucherInfoBody({
             t`Issuer`,
             issuer ? (
               <span key="issuer" className="grid min-w-0 gap-1">
-                <IdentifiedAddress address={issuer} />
+                <ResourceOwnerContactValue ownerAddress={issuer} />
                 <span className="font-sans font-normal">
                   <MultisigOwnerNotice info={ownerInfo} />
                 </span>

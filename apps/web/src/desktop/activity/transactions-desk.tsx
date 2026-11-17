@@ -9,11 +9,13 @@ import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "
 import { RiChat1Line, RiCloseLine, RiExternalLinkLine, RiSearchLine } from "react-icons/ri";
 
 import { formatActivityLegAmount } from "#/components/activity/swap-activity";
+import { SwapPoolOwnerContacts } from "#/components/activity/swap-pool-owner-contacts";
 import { SwapCount } from "#/components/credit/credit-hops";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { LocationMap } from "#/components/ui/location-map.lazy";
+import { OwnerMessageButton } from "#/components/messaging/resource-owner-contact";
 import { SelectContent, SelectItem, SelectRoot, SelectTrigger } from "#/components/ui/select";
 import { Spinner } from "#/components/ui/spinner";
 import { UnreadDot } from "#/components/ui/unread-count";
@@ -725,6 +727,8 @@ function TransferInspector({ item }: { item: Exclude<AccountActivityItem, { kind
   const amountLabel = uoaLabel ? `${tokenAmount} (${uoaLabel})` : tokenAmount;
   const explorerUrl = explorerTxUrl(CHAIN_INFO, item.txHash);
   const shareQuery = useSendShare(item.txHash, item.success && !created);
+  const counterparty =
+    item.kind === "sent" ? item.recipientAddress : created ? null : item.senderAddress;
 
   return (
     <>
@@ -778,6 +782,7 @@ function TransferInspector({ item }: { item: Exclude<AccountActivityItem, { kind
         ]}
       />
       <PrivateAttachment query={shareQuery} />
+      {counterparty ? <OwnerMessageButton ownerAddress={counterparty} /> : null}
       <div className={cn("grid gap-4", item.success && "grid-cols-2")}>
         {item.success ? (
           <ShareReceiptButton
@@ -886,6 +891,7 @@ function SwapInspector({
           [t`Transaction`, <TransactionValue key="tx" txHash={item.txHash} />],
         ]}
       />
+      <SwapPoolOwnerContacts poolAddresses={item.poolAddresses} />
       <ExplorerButton txHash={item.txHash} />
     </>
   );

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { RiAddLine, RiFileCopyLine, RiShareLine } from "react-icons/ri";
 
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
+import { ResourceOwnerContact } from "#/components/messaging/resource-owner-contact";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
@@ -111,6 +112,7 @@ export function CatalogDesk({ id, editor }: { id: string; editor?: CatalogEditor
             <CatalogMembersDesk catalogId={id} kind="pool" canEdit={owner} />
             <CatalogMembersDesk catalogId={id} kind="voucher" canEdit={owner} />
           </div>
+          <ResourceOwnerContact ownerAddress={catalog.ownerAddress} />
         </>
       ) : null}
     </DeskCanvas>

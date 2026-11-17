@@ -3,7 +3,7 @@ import type {
   CreditRouteInput,
   CreditRoutesPage,
 } from "@clc/api/features/credit-router/client";
-import type { CreditRouteHopRef } from "@clc/core/features/credit-router/logic";
+import type { CreditQuoteMode, CreditRouteHopRef } from "@clc/core/features/credit-router/logic";
 
 /**
  * Routes grouped by the voucher they spend, in the server's order. A page
@@ -117,4 +117,20 @@ export function creditRouteShortfall(
   if (reason === "wallet_balance" || reason === "wallet") return "wallet";
   if (reason === "liquidity" || reason === "deposit_cap") return "pool";
   return "other";
+}
+
+/** The capacity in the unit edited by the current Get/Spend mode. */
+export function creditRouteCapacity(
+  route: Pick<CreditRoute, "maxAmountIn" | "maxAmountOut" | "maxIsExact">,
+  mode: CreditQuoteMode,
+  inputVoucher: `0x${string}`,
+  outputVoucher: `0x${string}`,
+): { raw: string; voucher: `0x${string}`; exact: boolean } | null {
+  const raw = mode === "exactOutput" ? route.maxAmountOut : route.maxAmountIn;
+  if (raw === null) return null;
+  return {
+    raw,
+    voucher: mode === "exactOutput" ? outputVoucher : inputVoucher,
+    exact: route.maxIsExact,
+  };
 }

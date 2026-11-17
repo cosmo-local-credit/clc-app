@@ -3,9 +3,20 @@ import type { SafeClient } from "./client";
 
 export const safeKeys = {
   all: ["clc", "safe"] as const,
+  owner: (owner: string) => [...safeKeys.all, "owner", owner.toLowerCase()] as const,
   pending: (safe: string) => ["clc", "safe", "pending", safe.toLowerCase()] as const,
   mine: (account: string) => ["clc", "safe", "mine", account.toLowerCase()] as const,
 };
+
+/** Public ownership and message targets for one owner address. */
+export function ownerInfoQueryOptions(client: SafeClient, owner: string | undefined) {
+  return queryOptions({
+    queryKey: safeKeys.owner(owner ?? "none"),
+    queryFn: ({ signal }) => client.owner(owner!, signal),
+    enabled: Boolean(owner),
+    staleTime: 30_000,
+  });
+}
 
 /** The multisigs `account`, the signed-in session, signs for. */
 export function mySafesQueryOptions(client: SafeClient, account: string | undefined) {

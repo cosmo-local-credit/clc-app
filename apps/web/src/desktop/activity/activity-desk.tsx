@@ -19,6 +19,8 @@ export function ActivityDesk({
   types,
   onQueryChange,
   onTypesChange,
+  messageTo,
+  onMessageToConsumed,
 }: {
   section?: ActivitySection;
   address?: string;
@@ -26,10 +28,20 @@ export function ActivityDesk({
   types?: readonly ActivityKind[];
   onQueryChange?: (query: string) => void;
   onTypesChange?: (types: readonly ActivityKind[]) => void;
+  messageTo?: `0x${string}`;
+  onMessageToConsumed?: () => void;
 }) {
   const current = MESSAGING_ENABLED ? section : "transactions";
   const header = <ActivityHeader section={current} sections={MESSAGING_ENABLED} />;
-  if (current === "messages") return <MessagesDesk header={header} />;
+  if (current === "messages") {
+    return (
+      <MessagesDesk
+        header={header}
+        messageTo={messageTo}
+        onMessageToConsumed={onMessageToConsumed}
+      />
+    );
+  }
   if (current === "notifications") return <NotificationsDesk header={header} />;
   if (current === "helpdesk") return <HelpdeskDesk header={header} />;
   return (

@@ -23,6 +23,7 @@ import {
   canonicalActivityRouteSearch,
   clearActivityRouteSearch,
   parseActivitySearch,
+  parseActivityMessageTo,
   parseActivitySection,
 } from "#/lib/navigation/activity-search";
 
@@ -115,7 +116,8 @@ export const Route = createFileRoute("/_nav/")({
         search.activityQ !== undefined ||
         search.activityTypes !== undefined ||
         search.activityVoucher !== undefined ||
-        search.activityRange !== undefined)
+        search.activityRange !== undefined ||
+        search.messageTo !== undefined)
     ) {
       throw redirect({
         to: "/",
@@ -147,6 +149,12 @@ function IndexPage() {
   const { tab = "market" } = search;
   const creditOn = parseCredit(search);
   const activity = parseActivitySearch(search);
+  const messageTo = parseActivityMessageTo(search.messageTo);
+  const clearMessageTo = () =>
+    navigate({
+      search: (previous) => ({ ...previous, messageTo: undefined }),
+      replace: true,
+    });
 
   if (auth.isLoading) return <HomePageFallback />;
 
@@ -173,6 +181,8 @@ function IndexPage() {
         activityQ={activity.q}
         activityTypes={activity.types}
         activitySection={parseActivitySection(search.section)}
+        messageTo={messageTo}
+        onMessageToConsumed={clearMessageTo}
         onActivityQueryChange={onActivityQueryChange}
         onActivityTypesChange={onActivityTypesChange}
       />
@@ -187,6 +197,8 @@ function IndexPage() {
         address={auth.address}
         query={activity.q}
         types={activity.types}
+        messageTo={messageTo}
+        onMessageToConsumed={clearMessageTo}
         onQueryChange={onActivityQueryChange}
         onTypesChange={onActivityTypesChange}
       />
