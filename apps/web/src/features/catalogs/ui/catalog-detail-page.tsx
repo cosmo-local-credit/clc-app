@@ -95,7 +95,10 @@ export function CatalogDetailPage({ id, editor }: { id: string; editor?: Catalog
           ) : null}
           <CatalogMembers catalogId={id} kind="pool" canEdit={owner} />
           <CatalogMembers catalogId={id} kind="voucher" canEdit={owner} />
-          <ResourceOwnerContact ownerAddress={catalog.ownerAddress} />
+          <ResourceOwnerContact
+            ownerAddress={catalog.ownerAddress}
+            context={{ kind: "catalog", resourceId: id }}
+          />
           {owner ? (
             <SheetRoot
               open={editing}

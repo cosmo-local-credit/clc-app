@@ -1,4 +1,5 @@
 import type { ActivityKind } from "@clc/api/features/accounts/client";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 import { getAddress, isAddress } from "viem";
 
 export const ACTIVITY_KIND_ORDER = [
@@ -37,6 +38,9 @@ export type ActivityRouteSearch = {
   tx?: string;
   /** Resource-owner address used to prefill New message. */
   messageTo?: string | readonly string[];
+  messageKind?: string | readonly string[];
+  messageResource?: string | readonly string[];
+  messageVoucher?: string | readonly string[];
 };
 
 export type ActivitySearch = {
@@ -53,6 +57,9 @@ export function pickActivitySearch(search: unknown): ActivityRouteSearch {
   const activityRange = pickStringSearchValue(record.activityRange);
   const tx = typeof record.tx === "string" && record.tx.length > 0 ? record.tx : undefined;
   const messageTo = pickStringSearchValue(record.messageTo);
+  const messageKind = pickStringSearchValue(record.messageKind);
+  const messageResource = pickStringSearchValue(record.messageResource);
+  const messageVoucher = pickStringSearchValue(record.messageVoucher);
   const section = typeof record.section === "string" ? record.section : undefined;
   return {
     ...(section !== undefined ? { section } : {}),
@@ -62,6 +69,9 @@ export function pickActivitySearch(search: unknown): ActivityRouteSearch {
     ...(activityRange !== undefined ? { activityRange } : {}),
     ...(tx !== undefined ? { tx } : {}),
     ...(messageTo !== undefined ? { messageTo } : {}),
+    ...(messageKind !== undefined ? { messageKind } : {}),
+    ...(messageResource !== undefined ? { messageResource } : {}),
+    ...(messageVoucher !== undefined ? { messageVoucher } : {}),
   };
 }
 
@@ -108,6 +118,7 @@ export function canonicalActivityRouteSearch(search: unknown): ActivityRouteSear
   const desk = parseActivityDeskFilters(raw);
   const section = parseActivitySection(raw.section);
   const messageTo = parseActivityMessageTo(raw.messageTo);
+  const messageContext = parseActivityMessageContext(raw);
   const canonical: ActivityRouteSearch = {
     section: section === "transactions" ? undefined : section,
     activityQ: parsed.q || undefined,
@@ -115,6 +126,11 @@ export function canonicalActivityRouteSearch(search: unknown): ActivityRouteSear
     ...(raw.activityVoucher !== undefined ? { activityVoucher: desk.voucher } : {}),
     ...(raw.activityRange !== undefined ? { activityRange: desk.range } : {}),
     ...(raw.messageTo !== undefined ? { messageTo } : {}),
+    ...(raw.messageKind !== undefined ? { messageKind: messageContext?.kind } : {}),
+    ...(raw.messageResource !== undefined ? { messageResource: messageContext?.resourceId } : {}),
+    ...(raw.messageVoucher !== undefined && messageContext?.kind === "pool"
+      ? { messageVoucher: messageContext.proposedVoucherAddress }
+      : {}),
   };
   if (
     raw.section === canonical.section &&
@@ -122,7 +138,10 @@ export function canonicalActivityRouteSearch(search: unknown): ActivityRouteSear
     raw.activityTypes === canonical.activityTypes &&
     raw.activityVoucher === canonical.activityVoucher &&
     raw.activityRange === canonical.activityRange &&
-    raw.messageTo === canonical.messageTo
+    raw.messageTo === canonical.messageTo &&
+    raw.messageKind === canonical.messageKind &&
+    raw.messageResource === canonical.messageResource &&
+    raw.messageVoucher === canonical.messageVoucher
   ) {
     return null;
   }
@@ -138,7 +157,34 @@ export function clearActivityRouteSearch(): ActivityRouteSearch {
     activityRange: undefined,
     tx: undefined,
     messageTo: undefined,
+    messageKind: undefined,
+    messageResource: undefined,
+    messageVoucher: undefined,
   };
+}
+
+export function parseActivityMessageContext(value: unknown): MessageContextInput | undefined {
+  const raw = pickActivitySearch(value);
+  const kind = toValues(raw.messageKind)[0];
+  const resourceId = toValues(raw.messageResource)[0];
+  const proposedVoucherAddress = toValues(raw.messageVoucher)[0];
+  if (!kind || !resourceId) return undefined;
+  if (kind === "pool" || kind === "voucher") {
+    if (!isAddress(resourceId, { strict: false })) return undefined;
+    const canonicalResource = getAddress(resourceId);
+    if (kind === "voucher") return { kind, resourceId: canonicalResource };
+    return {
+      kind,
+      resourceId: canonicalResource,
+      ...(proposedVoucherAddress && isAddress(proposedVoucherAddress, { strict: false })
+        ? { proposedVoucherAddress: getAddress(proposedVoucherAddress) }
+        : {}),
+    };
+  }
+  if ((kind === "want" || kind === "catalog") && /^[1-9][0-9]*$/.test(resourceId)) {
+    return { kind, resourceId };
+  }
+  return undefined;
 }
 
 export function parseActivityMessageTo(value: unknown): `0x${string}` | undefined {

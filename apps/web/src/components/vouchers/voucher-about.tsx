@@ -135,7 +135,14 @@ export function VoucherAbout({
         <InfoRow label={t`Issuer`}>
           {issuerAddress ? (
             <div className="min-w-0 space-y-1">
-              <ResourceOwnerContactValue ownerAddress={issuerAddress} />
+              <ResourceOwnerContactValue
+                ownerAddress={issuerAddress}
+                context={
+                  contractAddress
+                    ? { kind: "voucher", resourceId: contractAddress as `0x${string}` }
+                    : undefined
+                }
+              />
               <MultisigOwnerNotice info={ownerInfo} />
             </div>
           ) : (

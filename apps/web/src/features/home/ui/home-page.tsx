@@ -14,6 +14,7 @@ import { SettingsPage } from "./settings-page";
 import { isPrivateHomeTab, type HomeTab } from "#/lib/navigation/home-tabs";
 import { WalletPage } from "./wallet-page";
 import type { ActivityKind } from "@clc/api/features/accounts/client";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 
 export type HomePageProps = {
   activeTab?: HomeTab;
@@ -24,6 +25,7 @@ export type HomePageProps = {
   /** Activity's sub-tab; read only when messaging is on. */
   activitySection?: ActivitySection;
   messageTo?: `0x${string}`;
+  messageContext?: MessageContextInput;
   onMessageToConsumed?: () => void;
   onActivityQueryChange?: (query: string) => void;
   onActivityTypesChange?: (types: readonly ActivityKind[]) => void;
@@ -37,6 +39,7 @@ export function HomePage({
   activityTypes,
   activitySection = "transactions",
   messageTo,
+  messageContext,
   onMessageToConsumed,
   onActivityQueryChange,
   onActivityTypesChange,
@@ -71,6 +74,7 @@ export function HomePage({
                 query={activityQ}
                 types={activityTypes}
                 messageTo={messageTo}
+                messageContext={messageContext}
                 onMessageToConsumed={onMessageToConsumed}
                 onQueryChange={onActivityQueryChange}
                 onTypesChange={onActivityTypesChange}

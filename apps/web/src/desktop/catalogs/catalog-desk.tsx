@@ -112,7 +112,10 @@ export function CatalogDesk({ id, editor }: { id: string; editor?: CatalogEditor
             <CatalogMembersDesk catalogId={id} kind="pool" canEdit={owner} />
             <CatalogMembersDesk catalogId={id} kind="voucher" canEdit={owner} />
           </div>
-          <ResourceOwnerContact ownerAddress={catalog.ownerAddress} />
+          <ResourceOwnerContact
+            ownerAddress={catalog.ownerAddress}
+            context={{ kind: "catalog", resourceId: id }}
+          />
         </>
       ) : null}
     </DeskCanvas>

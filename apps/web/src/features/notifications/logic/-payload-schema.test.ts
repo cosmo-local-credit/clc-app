@@ -26,6 +26,7 @@ describe("notificationKindSchema", () => {
   it.each<NotificationKind>([
     "voucher.received",
     "offramp.completed",
+    "pool.voucher_admitted",
     "message.received",
     "message.request",
     "message.accepted",
@@ -228,10 +229,11 @@ describe("parseNotificationPayload", () => {
 });
 
 describe("messaging notification kinds", () => {
-  it("declares the v1 kinds plus the four messaging kinds", () => {
+  it("declares the resource and messaging kinds", () => {
     expect(NOTIFICATION_KINDS).toEqual([
       "voucher.received",
       "offramp.completed",
+      "pool.voucher_admitted",
       "message.received",
       "message.request",
       "message.accepted",

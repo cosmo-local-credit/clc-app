@@ -199,7 +199,11 @@ function WantPlaceBody({
 
       <PlaceSection title={<Trans>Contact</Trans>}>
         {want.ownerAddress ? (
-          <ResourceOwnerContact ownerAddress={want.ownerAddress} className="mb-3" />
+          <ResourceOwnerContact
+            ownerAddress={want.ownerAddress}
+            context={{ kind: "want", resourceId: want.id }}
+            className="mb-3"
+          />
         ) : null}
         <AuthenticatedDetailsGate>
           <WantContact wantId={want.id} />

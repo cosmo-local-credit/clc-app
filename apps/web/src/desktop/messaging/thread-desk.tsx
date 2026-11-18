@@ -1,6 +1,7 @@
 import { BackendApiError } from "@clc/api/client/errors";
 import {
   type Conversation,
+  type MessageContextInput,
   conversationActions,
   newestMessageId,
 } from "@clc/core/features/messaging/logic";
@@ -30,7 +31,15 @@ import {
  * request's Accept and Decline, the messages, and the composer. The read
  * marker moves once the newest message is on screen.
  */
-export function ThreadDesk({ conversationId }: { conversationId: number }) {
+export function ThreadDesk({
+  conversationId,
+  initialContext,
+  onContextSent,
+}: {
+  conversationId: number;
+  initialContext?: MessageContextInput;
+  onContextSent?: () => void;
+}) {
   const titleId = useId();
   const { conversation, messages, loadOlder } = useConversationThread(conversationId);
   const items = messages.data?.items ?? [];
@@ -137,7 +146,11 @@ export function ThreadDesk({ conversationId }: { conversationId: number }) {
 
       {current && actions?.canSend ? (
         <footer className="shrink-0 border-border border-t p-4">
-          <ComposerDesk conversationId={conversationId} />
+          <ComposerDesk
+            conversationId={conversationId}
+            initialContext={initialContext}
+            onContextSent={onContextSent}
+          />
         </footer>
       ) : null}
     </section>

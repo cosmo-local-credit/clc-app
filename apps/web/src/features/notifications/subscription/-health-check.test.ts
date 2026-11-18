@@ -99,6 +99,7 @@ describe("runNotificationSubscriptionHealthCheck", () => {
       workerKinds: [
         "voucher.received",
         "offramp.completed",
+        "pool.voucher_admitted",
         "message.received",
         "message.request",
         "message.accepted",
@@ -116,6 +117,7 @@ describe("runNotificationSubscriptionHealthCheck", () => {
         kinds: [
           "voucher.received",
           "offramp.completed",
+          "pool.voucher_admitted",
           "message.received",
           "message.request",
           "message.accepted",
@@ -129,6 +131,7 @@ describe("runNotificationSubscriptionHealthCheck", () => {
         registeredKinds: [
           "voucher.received",
           "offramp.completed",
+          "pool.voucher_admitted",
           "message.received",
           "message.request",
           "message.accepted",

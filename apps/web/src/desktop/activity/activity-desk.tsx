@@ -7,6 +7,7 @@ import { MessagesDesk } from "#/desktop/messaging/messages-desk";
 import { NotificationsDesk } from "#/desktop/messaging/notifications-desk";
 import { MESSAGING_ENABLED } from "#/lib/messaging-config";
 import type { ActivitySection } from "#/lib/navigation/activity-search";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 
 /**
  * Activity on the desktop. With messaging on, `?section=` picks one of four
@@ -20,6 +21,7 @@ export function ActivityDesk({
   onQueryChange,
   onTypesChange,
   messageTo,
+  messageContext,
   onMessageToConsumed,
 }: {
   section?: ActivitySection;
@@ -29,6 +31,7 @@ export function ActivityDesk({
   onQueryChange?: (query: string) => void;
   onTypesChange?: (types: readonly ActivityKind[]) => void;
   messageTo?: `0x${string}`;
+  messageContext?: MessageContextInput;
   onMessageToConsumed?: () => void;
 }) {
   const current = MESSAGING_ENABLED ? section : "transactions";
@@ -38,6 +41,7 @@ export function ActivityDesk({
       <MessagesDesk
         header={header}
         messageTo={messageTo}
+        messageContext={messageContext}
         onMessageToConsumed={onMessageToConsumed}
       />
     );

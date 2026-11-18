@@ -51,6 +51,7 @@ export function message(
     sender,
     body,
     imageUrls: [],
+    context: null,
     createdAt: "2026-11-09T10:00:00Z",
   };
 }

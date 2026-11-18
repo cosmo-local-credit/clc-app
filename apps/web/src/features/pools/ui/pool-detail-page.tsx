@@ -12,6 +12,7 @@ import { ReviewSummaryContent } from "#/components/reviews/review-summary";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
+import { OwnerMessageButton } from "#/components/messaging/resource-owner-contact";
 import { BackChevron, PoolLogo } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { usePoolReportsInfinite } from "#/features/home/hooks/use-reports";
@@ -229,7 +230,16 @@ export function PoolDetailPage({
       {auth.isAuthenticated && pool.active !== false ? (
         <>
           <PoolReceiveSheet pool={pool} open={receiving} onClose={() => setReceiving(false)} />
-          <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} tap />
+          <div className="flex flex-wrap gap-2">
+            <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} tap />
+            {pool.ownerAddress ? (
+              <OwnerMessageButton
+                ownerAddress={pool.ownerAddress}
+                excludeAddress={auth.session?.address}
+                context={{ kind: "pool", resourceId: pool.address }}
+              />
+            ) : null}
+          </div>
         </>
       ) : null}
 

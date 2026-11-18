@@ -243,6 +243,7 @@ describe("declared kinds on inbox sync", () => {
       workerKinds: [
         "voucher.received",
         "offramp.completed",
+        "pool.voucher_admitted",
         "message.received",
         "message.request",
         "message.accepted",
@@ -268,6 +269,7 @@ describe("declared kinds on inbox sync", () => {
         kinds: [
           "voucher.received",
           "offramp.completed",
+          "pool.voucher_admitted",
           "message.received",
           "message.request",
           "message.accepted",

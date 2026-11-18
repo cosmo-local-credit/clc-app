@@ -51,7 +51,14 @@ export function PoolInfoPanel({ pool }: { pool: UserPool }) {
         </InfoRow>
         <InfoRow label={t`Unit of account`}>{pool.unitOfAccount ?? "—"}</InfoRow>
         <InfoRow label={t`Owner`}>
-          {pool.ownerAddress ? <ResourceOwnerContactValue ownerAddress={pool.ownerAddress} /> : "—"}
+          {pool.ownerAddress ? (
+            <ResourceOwnerContactValue
+              ownerAddress={pool.ownerAddress}
+              context={{ kind: "pool", resourceId: pool.address }}
+            />
+          ) : (
+            "—"
+          )}
         </InfoRow>
         {pool.email ? (
           <InfoRow label={t`Email`}>

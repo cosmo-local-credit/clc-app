@@ -5,6 +5,7 @@ import {
   buildMessageContent,
   MESSAGE_IMAGE_MAX,
   type SendMessageInput,
+  type MessageContextInput,
 } from "@clc/core/features/messaging/logic";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -32,13 +33,18 @@ type ComposerImageError = "unsupported" | "upload-failed";
  * response was lost is stored once: clc-core answers a repeated `clientId` with
  * the stored message. Editing the draft after a failure gives it a new id.
  */
-export function useMessageComposer(conversationId: number) {
+export function useMessageComposer(
+  conversationId: number,
+  initialContext?: MessageContextInput,
+  onContextSent?: () => void,
+) {
   const viewer = useMessagingViewer();
   const queryClient = useQueryClient();
   const upload = useImageUpload();
   const [body, setBody] = useState("");
   const [images, setImages] = useState<ComposerImage[]>([]);
   const [unsupported, setUnsupported] = useState(false);
+  const [context, setContext] = useState<MessageContextInput | undefined>(initialContext);
   const pending = useRef<{ key: string; clientId: string } | null>(null);
   const previews = useRef(new Set<string>());
 
@@ -55,7 +61,12 @@ export function useMessageComposer(conversationId: number) {
     body,
     images.flatMap((image) => (image.url ? [image.url] : [])),
   );
-  const contentKey = content ? JSON.stringify(content) : null;
+  const sendContent = content
+    ? { ...content, ...(context ? { context } : {}) }
+    : context
+      ? { context }
+      : null;
+  const contentKey = sendContent ? JSON.stringify(sendContent) : null;
   const currentKey = useRef(contentKey);
   currentKey.current = contentKey;
 
@@ -77,6 +88,10 @@ export function useMessageComposer(conversationId: number) {
         setBody("");
         for (const image of images) dropPreview(image.previewUrl);
         setImages([]);
+        if (context) {
+          setContext(undefined);
+          onContextSent?.();
+        }
       }
       if (!viewer) return;
       appendThreadMessage(queryClient, messagingKeys.messages(viewer, conversationId), message);
@@ -93,11 +108,11 @@ export function useMessageComposer(conversationId: number) {
   }
 
   function submit() {
-    if (!content || !contentKey || uploading || uploadFailed || send.isPending) return;
+    if (!sendContent || !contentKey || uploading || uploadFailed || send.isPending) return;
     if (pending.current?.key !== contentKey) {
       pending.current = { key: contentKey, clientId: crypto.randomUUID() };
     }
-    send.mutate({ clientId: pending.current.clientId, ...content });
+    send.mutate({ clientId: pending.current.clientId, ...sendContent });
   }
 
   async function addImage(file: File) {
@@ -140,8 +155,13 @@ export function useMessageComposer(conversationId: number) {
     removeImage,
     canAddImage: isStorageConfigured && images.length < MESSAGE_IMAGE_MAX,
     uploading,
-    canSend: content !== null && !uploading && !uploadFailed && !send.isPending,
+    canSend: sendContent !== null && !uploading && !uploadFailed && !send.isPending,
     submit,
     send,
+    context,
+    clearContext: () => {
+      setContext(undefined);
+      onContextSent?.();
+    },
   };
 }

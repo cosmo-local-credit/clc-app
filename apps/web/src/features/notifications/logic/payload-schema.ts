@@ -4,6 +4,9 @@ import { normalizeNotificationTargetUrl } from "./target-url";
 /** Kinds every client in the field parses; the service assumes these when none are declared. */
 const V1_NOTIFICATION_KINDS = ["voucher.received", "offramp.completed"] as const;
 
+/** Resource events added after v1; current clients declare them explicitly. */
+const RESOURCE_NOTIFICATION_KINDS = ["pool.voucher_admitted"] as const;
+
 /** Kinds that open a conversation. They show in Messages and Helpdesk, not in Notifications. */
 const MESSAGING_NOTIFICATION_KINDS = [
   "message.received",
@@ -13,7 +16,11 @@ const MESSAGING_NOTIFICATION_KINDS = [
 ] as const;
 
 /** Every kind this build parses, declared to the service once this build's worker is active. */
-export const NOTIFICATION_KINDS = [...V1_NOTIFICATION_KINDS, ...MESSAGING_NOTIFICATION_KINDS];
+export const NOTIFICATION_KINDS = [
+  ...V1_NOTIFICATION_KINDS,
+  ...RESOURCE_NOTIFICATION_KINDS,
+  ...MESSAGING_NOTIFICATION_KINDS,
+];
 
 export const notificationKindSchema = z.enum(NOTIFICATION_KINDS);
 
@@ -50,6 +57,10 @@ const notificationKindPolicies = {
     priority: "high",
   },
   "offramp.completed": {
+    ...sharedV1Policy,
+    priority: "high",
+  },
+  "pool.voucher_admitted": {
     ...sharedV1Policy,
     priority: "high",
   },

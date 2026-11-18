@@ -24,6 +24,7 @@ import {
   clearActivityRouteSearch,
   parseActivitySearch,
   parseActivityMessageTo,
+  parseActivityMessageContext,
   parseActivitySection,
 } from "#/lib/navigation/activity-search";
 
@@ -117,7 +118,10 @@ export const Route = createFileRoute("/_nav/")({
         search.activityTypes !== undefined ||
         search.activityVoucher !== undefined ||
         search.activityRange !== undefined ||
-        search.messageTo !== undefined)
+        search.messageTo !== undefined ||
+        search.messageKind !== undefined ||
+        search.messageResource !== undefined ||
+        search.messageVoucher !== undefined)
     ) {
       throw redirect({
         to: "/",
@@ -150,9 +154,16 @@ function IndexPage() {
   const creditOn = parseCredit(search);
   const activity = parseActivitySearch(search);
   const messageTo = parseActivityMessageTo(search.messageTo);
+  const messageContext = parseActivityMessageContext(search);
   const clearMessageTo = () =>
     navigate({
-      search: (previous) => ({ ...previous, messageTo: undefined }),
+      search: (previous) => ({
+        ...previous,
+        messageTo: undefined,
+        messageKind: undefined,
+        messageResource: undefined,
+        messageVoucher: undefined,
+      }),
       replace: true,
     });
 
@@ -182,6 +193,7 @@ function IndexPage() {
         activityTypes={activity.types}
         activitySection={parseActivitySection(search.section)}
         messageTo={messageTo}
+        messageContext={messageContext}
         onMessageToConsumed={clearMessageTo}
         onActivityQueryChange={onActivityQueryChange}
         onActivityTypesChange={onActivityTypesChange}
@@ -198,6 +210,7 @@ function IndexPage() {
         query={activity.q}
         types={activity.types}
         messageTo={messageTo}
+        messageContext={messageContext}
         onMessageToConsumed={clearMessageTo}
         onQueryChange={onActivityQueryChange}
         onTypesChange={onActivityTypesChange}

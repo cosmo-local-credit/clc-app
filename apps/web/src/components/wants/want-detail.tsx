@@ -126,7 +126,12 @@ export function WantDetail({
         <h2>
           <Trans>Contact</Trans>
         </h2>
-        {want.ownerAddress ? <ResourceOwnerContact ownerAddress={want.ownerAddress} /> : null}
+        {want.ownerAddress ? (
+          <ResourceOwnerContact
+            ownerAddress={want.ownerAddress}
+            context={{ kind: "want", resourceId: want.id }}
+          />
+        ) : null}
         <AuthenticatedDetailsGate>
           <AuthenticatedWantContact wantId={want.id} />
         </AuthenticatedDetailsGate>

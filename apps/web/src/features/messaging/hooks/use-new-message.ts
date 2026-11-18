@@ -1,7 +1,7 @@
 import { BackendApiError } from "@clc/api/client/errors";
 import type { RecipientIdentity } from "@clc/api/features/recipients/client";
 import { ownerInfoQueryOptions } from "@clc/api/features/safe/queries";
-import type { Conversation } from "@clc/core/features/messaging/logic";
+import type { Conversation, MessageContextInput } from "@clc/core/features/messaging/logic";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -21,14 +21,16 @@ type NewMessageFailure = "missing" | "exists" | "quota" | "self" | "failed";
  */
 export function useNewMessage(
   existing: readonly Conversation[],
-  openThread: (conversationId: number) => void,
+  openThread: (conversationId: number, context?: MessageContextInput) => void,
   ownerAddress?: `0x${string}`,
+  initialContext?: MessageContextInput,
 ) {
   const auth = useAuthStatus();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<RecipientIdentity | null>(null);
   const [intro, setIntro] = useState("");
   const [localFailure, setLocalFailure] = useState<NewMessageFailure | null>(null);
+  const [context, setContext] = useState<MessageContextInput | undefined>(initialContext);
   const term = query.trim();
   const search = useRecipientSearch(term === "" ? null : term, false);
   const ownerSearch = useQuery({
@@ -64,7 +66,7 @@ export function useNewMessage(
         ? "failed"
         : null);
 
-  function choose(match: RecipientIdentity) {
+  function choose(match: RecipientIdentity, contextOverride = context) {
     setLocalFailure(null);
     if (match.address.toLowerCase() === viewer) {
       setLocalFailure("self");
@@ -73,8 +75,11 @@ export function useNewMessage(
     const known = existing.find(
       (conversation) => conversation.peer?.address.toLowerCase() === match.address.toLowerCase(),
     );
-    if (known) openThread(known.id);
-    else setSelected(match);
+    if (known) openThread(known.id, known.status === "accepted" ? contextOverride : undefined);
+    else {
+      setContext(contextOverride);
+      setSelected(match);
+    }
   }
 
   return {
@@ -97,6 +102,7 @@ export function useNewMessage(
       setIntro("");
       setLocalFailure(null);
       request.reset();
+      setContext(initialContext);
     },
     choose,
     unselect: () => {
@@ -107,9 +113,22 @@ export function useNewMessage(
       if (!selected) return;
       const note = intro.trim();
       request.mutate(
-        { recipientAddress: selected.address, ...(note ? { intro: note } : {}) },
+        {
+          recipientAddress: selected.address,
+          ...(note ? { intro: note } : {}),
+          ...(context ? { context } : {}),
+        },
         { onSuccess: (conversation) => openThread(conversation.id) },
       );
+    },
+    context,
+    setProposedVoucher: (address?: `0x${string}`) => {
+      if (context?.kind !== "pool") return;
+      setContext({
+        kind: "pool",
+        resourceId: context.resourceId,
+        ...(address ? { proposedVoucherAddress: address } : {}),
+      });
     },
   };
 }

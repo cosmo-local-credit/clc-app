@@ -1,5 +1,12 @@
 import type { Message } from "@clc/core/features/messaging/logic";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  RouterProvider,
+} from "@tanstack/react-router";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -27,15 +34,39 @@ function sent(body: string): Message {
     sender: "self",
     body,
     imageUrls: [],
+    context: null,
     createdAt: "2026-11-09T10:00:00Z",
   };
 }
 
-function mount() {
+function mount(options?: {
+  initialContext?: {
+    kind: "pool";
+    resourceId: `0x${string}`;
+    proposedVoucherAddress?: `0x${string}`;
+  };
+  onContextSent?: () => void;
+}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const root = createRootRoute();
+  const home = createRoute({
+    getParentRoute: () => root,
+    path: "/",
+    component: () => (
+      <MessageComposer
+        conversationId={5}
+        initialContext={options?.initialContext}
+        onContextSent={options?.onContextSent}
+      />
+    ),
+  });
+  const router = createRouter({
+    routeTree: root.addChildren([home]),
+    history: createMemoryHistory({ initialEntries: ["/"] }),
+  });
   render(
     <QueryClientProvider client={client}>
-      <MessageComposer conversationId={5} />
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   );
 }
@@ -58,7 +89,7 @@ describe("MessageComposer", () => {
   it("will not send the text alone while a photo has failed to upload", async () => {
     mocks.upload.mockRejectedValueOnce(new Error("storage down"));
     mount();
-    fireEvent.change(screen.getByRole("textbox", { name: "Message" }), {
+    fireEvent.change(await screen.findByRole("textbox", { name: "Message" }), {
       target: { value: "Here is the receipt" },
     });
     attachPhoto();
@@ -82,5 +113,29 @@ describe("MessageComposer", () => {
         expect.objectContaining({ body: "Here is the receipt" }),
       ),
     );
+  });
+
+  it("sends resource context without requiring message text", async () => {
+    const onContextSent = vi.fn();
+    const context = {
+      kind: "pool" as const,
+      resourceId: "0x4444444444444444444444444444444444444444" as const,
+      proposedVoucherAddress: "0x5555555555555555555555555555555555555555" as const,
+    };
+    mocks.send.mockResolvedValueOnce({ ...sent(""), context });
+    mount({ initialContext: context, onContextSent });
+
+    expect(await screen.findByText("Regarding")).toBeTruthy();
+    expect(screen.getByText(context.resourceId)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+
+    await waitFor(() =>
+      expect(mocks.send).toHaveBeenCalledWith(
+        5,
+        expect.objectContaining({ context, clientId: expect.any(String) }),
+      ),
+    );
+    await waitFor(() => expect(onContextSent).toHaveBeenCalledTimes(1));
+    expect(screen.queryByText("Regarding")).toBeNull();
   });
 });

@@ -1,8 +1,13 @@
-import { CONVERSATION_INTRO_MAX, type Conversation } from "@clc/core/features/messaging/logic";
+import {
+  CONVERSATION_INTRO_MAX,
+  type Conversation,
+  type MessageContextInput,
+} from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { RiQuillPenLine, RiSearchLine } from "react-icons/ri";
+import { getAddress } from "viem";
 
 import { Button } from "#/components/ui/button";
 import {
@@ -19,6 +24,8 @@ import { Textarea } from "#/components/ui/textarea";
 import { RecipientIdentityText } from "#/components/wallet/recipient-identity-label";
 import { EllipsizedAddress } from "#/components/wallet/wallet-address";
 import { useNewMessage } from "#/features/messaging/hooks/use-new-message";
+import { ResourceContextCard } from "#/components/messaging/resource-context-card";
+import { VoucherProposalPicker } from "#/components/messaging/voucher-proposal-picker";
 
 /**
  * New message on the desktop: the recipient search in a dialog, then an
@@ -27,10 +34,12 @@ import { useNewMessage } from "#/features/messaging/hooks/use-new-message";
 export function NewMessageDialog({
   existing,
   messageTo,
+  messageContext,
   onMessageToConsumed,
 }: {
   existing: readonly Conversation[];
   messageTo?: `0x${string}`;
+  messageContext?: MessageContextInput;
   onMessageToConsumed?: () => void;
 }) {
   const { t } = useLingui();
@@ -38,14 +47,22 @@ export function NewMessageDialog({
   const [open, setOpen] = useState(false);
   const flow = useNewMessage(
     existing,
-    (conversationId) => {
+    (conversationId, context) => {
       changeOpen(false);
       void navigate({
         to: "/messages/$conversationId",
         params: { conversationId: String(conversationId) },
+        search: context
+          ? {
+              messageKind: context.kind,
+              messageResource: context.resourceId,
+              messageVoucher: context.kind === "pool" ? context.proposedVoucherAddress : undefined,
+            }
+          : {},
       });
     },
     messageTo,
+    messageContext,
   );
   const { term, search, users, selected, failure } = flow;
   const shownUsers = messageTo ? flow.ownerUsers : users;
@@ -59,8 +76,8 @@ export function NewMessageDialog({
       return;
     }
     onMessageToConsumed?.();
-    flow.choose(flow.ownerUsers[0]!);
-  }, [flow, messageTo, onMessageToConsumed, selected]);
+    flow.choose(flow.ownerUsers[0]!, messageContext);
+  }, [flow, messageContext, messageTo, onMessageToConsumed, selected]);
 
   function changeOpen(next: boolean) {
     setOpen(next);
@@ -72,7 +89,7 @@ export function NewMessageDialog({
 
   function choose(match: (typeof shownUsers)[number]) {
     if (messageTo) onMessageToConsumed?.();
-    flow.choose(match);
+    flow.choose(match, messageContext);
   }
 
   return (
@@ -97,6 +114,17 @@ export function NewMessageDialog({
                   />
                   <EllipsizedAddress address={selected.address} className="mt-1 block" />
                 </div>
+                {flow.context ? <ResourceContextCard context={flow.context} /> : null}
+                {flow.context?.kind === "pool" ? (
+                  <VoucherProposalPicker
+                    value={
+                      flow.context.proposedVoucherAddress
+                        ? getAddress(flow.context.proposedVoucherAddress)
+                        : undefined
+                    }
+                    onChange={flow.setProposedVoucher}
+                  />
+                ) : null}
                 <Field label={t`Introduce yourself`} htmlFor="desk-new-message-intro">
                   <Textarea
                     id="desk-new-message-intro"
