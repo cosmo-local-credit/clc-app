@@ -200,7 +200,7 @@ describe("desktop New message", () => {
     // Only a person can be messaged, not a pool.
     expect(within(people).getAllByRole("button", { name: "Message" })).toHaveLength(1);
     fireEvent.click(within(people).getByRole("button", { name: "Message" }));
-    fireEvent.change(within(dialog).getByRole("textbox", { name: "Introduce yourself" }), {
+    fireEvent.change(await within(dialog).findByRole("textbox", { name: "Introduce yourself" }), {
       target: { value: "We met at the market" },
     });
     fireEvent.click(within(dialog).getByRole("button", { name: "Send request" }));
@@ -215,8 +215,14 @@ describe("desktop New message", () => {
     expect(await screen.findByText("Waiting for them to accept your request.")).toBeTruthy();
   });
 
-  it("opens the existing thread instead of a second request", async () => {
-    mocks.client.list.mockResolvedValue({ items: [conversation(1)], nextCursor: null });
+  it("opens an older accepted thread outside the loaded inbox page", async () => {
+    mocks.client.list.mockImplementation(({ peerAddress }) =>
+      Promise.resolve(
+        peerAddress
+          ? { items: [conversation(1)], nextCursor: null }
+          : { items: [], nextCursor: "older" },
+      ),
+    );
     mocks.client.get.mockResolvedValue(conversation(1));
     mocks.client.messages.mockResolvedValue({ items: [], hasMore: false });
     mocks.search.mockReturnValue({
@@ -226,8 +232,7 @@ describe("desktop New message", () => {
       isSuccess: true,
     });
     const { router } = mountDesk("/?tab=activity&section=messages");
-    await screen.findByRole("link", { name: /user1/ });
-    fireEvent.click(screen.getByRole("button", { name: "New message" }));
+    fireEvent.click(await screen.findByRole("button", { name: "New message" }));
     const dialog = await screen.findByRole("dialog", { name: "New message" });
     fireEvent.change(within(dialog).getByRole("searchbox"), { target: { value: "user1" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "Message" }));

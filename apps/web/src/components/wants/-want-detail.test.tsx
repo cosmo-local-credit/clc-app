@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { Want } from "@clc/core/features/wants/logic";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -10,7 +10,9 @@ const api = vi.hoisted(() => ({
   creatorVouchers: vi.fn(),
   creatorPools: vi.fn(),
   contact: vi.fn(),
+  owner: vi.fn(),
 }));
+const OWNER = `0x${"b".repeat(40)}` as const;
 const auth = vi.hoisted(() => ({
   state: "authenticated",
   isLoading: false,
@@ -21,6 +23,7 @@ const auth = vi.hoisted(() => ({
 }));
 vi.mock("sonner", () => ({ toast }));
 vi.mock("#/lib/api/wants", () => ({ wantsClient: api }));
+vi.mock("#/lib/api/safe", () => ({ safeClient: { owner: api.owner } }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => auth }));
 vi.mock("#/components/ui/location-map.lazy", () => ({
   LocationMap: ({ markerStyle }: { markerStyle: { icon: string; color: string } }) => (
@@ -37,16 +40,18 @@ vi.mock("@tanstack/react-router", () => ({
   }: {
     to: string;
     params?: Record<string, string>;
-    search?: { step?: string; redirect?: string };
+    search?: Record<string, string | undefined>;
     children: ReactNode;
   }) => (
     <a
       href={
         to === "/onboarding"
           ? `/onboarding?step=${search?.step ?? ""}`
-          : to
-              .replace("$voucherAddress", params.voucherAddress ?? "")
-              .replace("$poolAddress", params.poolAddress ?? "")
+          : to === "/" && search
+            ? `/?${new URLSearchParams(Object.entries(search).filter((entry): entry is [string, string] => entry[1] !== undefined))}`
+            : to
+                .replace("$voucherAddress", params.voucherAddress ?? "")
+                .replace("$poolAddress", params.poolAddress ?? "")
       }
       {...props}
     >
@@ -88,6 +93,13 @@ beforeEach(() => {
   api.creatorVouchers.mockReset().mockResolvedValue({ vouchers: [], first: 0, last: 0 });
   api.creatorPools.mockReset().mockResolvedValue({ pools: [], first: 0, last: 0 });
   api.contact.mockReset().mockResolvedValue(WANT.contact);
+  api.owner.mockReset().mockResolvedValue({
+    kind: "account",
+    owner: OWNER,
+    signers: [],
+    threshold: null,
+    messageTargets: [{ address: OWNER, username: "owner", avatar: null }],
+  });
   auth.state = "authenticated";
   auth.isLoading = false;
   auth.isAuthenticated = true;
@@ -109,6 +121,17 @@ function rerenderWant(rerender: (ui: ReactNode) => void, ui: ReactNode) {
 }
 
 describe("Want detail", () => {
+  it("places the contextual Message in the header", async () => {
+    renderWant(<WantDetail want={{ ...WANT, ownerAddress: OWNER }} />);
+    const header = screen.getByRole("banner");
+    const message = await within(header).findByRole("link", { name: "Message" });
+    const query = new URL(message.getAttribute("href")!, "https://example.test").searchParams;
+    expect(query.get("messageTo")).toBe(OWNER);
+    expect(query.get("messageKind")).toBe("want");
+    expect(query.get("messageResource")).toBe(WANT.id);
+    expect(screen.getAllByRole("link", { name: "Message" })).toHaveLength(2);
+  });
+
   it("shows scheduling, protected location, tags, description, and selected contacts to a signed-in user", async () => {
     renderWant(<WantDetail want={WANT} distanceOrigin={{ lat: -1.28, lng: 36.82 }} />);
 

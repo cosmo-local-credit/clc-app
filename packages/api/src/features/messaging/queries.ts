@@ -32,6 +32,8 @@ export const messagingKeys = {
   unread: (viewer: string) => [...messagingKeys.viewer(viewer), "unread"] as const,
   lists: (viewer: string) => [...messagingKeys.viewer(viewer), "list"] as const,
   list: (viewer: string, kind: ConversationKind) => [...messagingKeys.lists(viewer), kind] as const,
+  peer: (viewer: string, peerAddress: string) =>
+    [...messagingKeys.lists(viewer), "peer", peerAddress.toLowerCase()] as const,
   thread: (viewer: string, id: number) => [...messagingKeys.viewer(viewer), "thread", id] as const,
   conversation: (viewer: string, id: number) =>
     [...messagingKeys.thread(viewer, id), "conversation"] as const,
@@ -160,6 +162,32 @@ export function conversationQueryOptions(messaging: MessagingClient, viewer: str
   return queryOptions({
     queryKey: messagingKeys.conversation(viewer, id),
     queryFn: ({ signal }) => messaging.get(id, signal),
+  });
+}
+
+export function conversationByPeerQueryOptions(
+  messaging: MessagingClient,
+  viewer: string,
+  peerAddress: string,
+) {
+  const peer = peerAddress.toLowerCase();
+  return queryOptions({
+    queryKey: messagingKeys.peer(viewer, peer),
+    queryFn: async ({ signal }) => {
+      const page = await messaging.list({ kind: "direct", peerAddress: peer }, signal);
+      const conversation = page.items[0];
+      if (
+        page.nextCursor !== null ||
+        page.items.length > 1 ||
+        (conversation &&
+          (conversation.kind !== "direct" || conversation.peer?.address.toLowerCase() !== peer))
+      ) {
+        throw new Error("The conversation lookup did not return an exact peer result.");
+      }
+      return conversation ?? null;
+    },
+    staleTime: 0,
+    retry: false,
   });
 }
 

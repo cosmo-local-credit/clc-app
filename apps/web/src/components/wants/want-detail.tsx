@@ -17,6 +17,7 @@ import { LocationMap } from "#/components/ui/location-map.lazy";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { PoolLogo, VoucherAvatar } from "#/components/wallet";
 import { WantPicture } from "./want-row";
+import { WantMessageButton } from "./want-message-button";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
 import { useWantContact, useWantCreatorResources, useWantShare } from "./use-want-detail";
 
@@ -41,7 +42,7 @@ export function WantDetail({
   return (
     <div className="space-y-4">
       {showHeader ? (
-        <header className="border border-border bg-card p-4">
+        <header className="space-y-3 border border-border bg-card p-4">
           <div className="flex items-start gap-3">
             <WantPicture want={want} size="size-14" />
             <div className="min-w-0 flex-1">
@@ -51,6 +52,7 @@ export function WantDetail({
             </div>
             <WantShareButton want={want} />
           </div>
+          <WantMessageButton want={want} />
         </header>
       ) : null}
 

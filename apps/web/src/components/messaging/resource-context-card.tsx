@@ -2,31 +2,82 @@ import type {
   MessageContextInput,
   MessageResourceContext,
 } from "@clc/core/features/messaging/logic";
+import { catalogDetailQueryOptions } from "@clc/api/features/catalogs/queries";
+import { voucherQueryOptions } from "@clc/api/features/market/queries";
+import { poolQueryOptions } from "@clc/api/features/pools/queries";
+import { wantDetailQueryOptions } from "@clc/api/features/wants/queries";
 import { Trans } from "@lingui/react/macro";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { Button } from "#/components/ui/button";
+import { catalogsClient } from "#/lib/api/catalogs";
+import { marketClient } from "#/lib/api/market";
+import { poolsClient } from "#/lib/api/pools";
+import { wantsClient } from "#/lib/api/wants";
 
-type Context = MessageContextInput | MessageResourceContext;
+/** Draft names are display metadata. The send still contains only identifiers. */
+function DraftContextCard({ context }: { context: MessageContextInput }) {
+  const { kind, resourceId } = context;
+  const proposedAddress = kind === "pool" ? context.proposedVoucherAddress : undefined;
+  const pool = useQuery({
+    ...poolQueryOptions(poolsClient, kind === "pool" ? resourceId : undefined),
+    retry: false,
+  });
+  const voucher = useQuery({
+    ...voucherQueryOptions(marketClient, kind === "voucher" ? resourceId : proposedAddress),
+    retry: false,
+  });
+  const want = useQuery({
+    ...wantDetailQueryOptions(wantsClient, kind === "want" ? resourceId : ""),
+    enabled: kind === "want",
+    retry: false,
+  });
+  const catalog = useQuery({
+    ...catalogDetailQueryOptions(catalogsClient, kind === "catalog" ? resourceId : ""),
+    enabled: kind === "catalog",
+    retry: false,
+  });
+  const name =
+    pool.data?.name ??
+    want.data?.name ??
+    catalog.data?.name ??
+    (kind === "voucher" ? voucher.data?.name : undefined);
+
+  return (
+    <ContextCard
+      context={{
+        kind,
+        resourceId,
+        resourceName: name || resourceId,
+        proposedVoucher: proposedAddress
+          ? {
+              address: proposedAddress,
+              name: voucher.data?.name || proposedAddress,
+              symbol: voucher.data?.symbol ?? "",
+            }
+          : undefined,
+      }}
+    />
+  );
+}
 
 export function ResourceContextCard({
   context,
   approve = false,
 }: {
-  context: Context;
+  context: MessageContextInput | MessageResourceContext;
   approve?: boolean;
 }) {
-  const name = "resourceName" in context ? context.resourceName : context.resourceId;
-  const proposed =
-    "resourceName" in context
-      ? context.proposedVoucher
-      : context.kind === "pool" && context.proposedVoucherAddress
-        ? {
-            address: context.proposedVoucherAddress,
-            name: context.proposedVoucherAddress,
-            symbol: "",
-          }
-        : undefined;
+  return "resourceName" in context ? (
+    <ContextCard context={context} approve={approve} />
+  ) : (
+    <DraftContextCard context={context} />
+  );
+}
+
+function ContextCard({ context, approve }: { context: MessageResourceContext; approve?: boolean }) {
+  const proposed = context.proposedVoucher;
   const resourceLink =
     context.kind === "pool"
       ? { to: "/pools/$poolAddress" as const, params: { poolAddress: context.resourceId } }
@@ -41,12 +92,22 @@ export function ResourceContextCard({
 
   return (
     <div className="grid gap-2 border border-current/20 bg-card p-3 text-foreground">
-      <p className="text-xs text-muted-foreground">
-        <Trans>Regarding</Trans>
+      <p className="flex flex-wrap items-baseline gap-x-1 pe-9 text-sm">
+        <span className="text-muted-foreground">
+          {context.kind === "pool" ? (
+            <Trans>Pool:</Trans>
+          ) : context.kind === "voucher" ? (
+            <Trans>Voucher:</Trans>
+          ) : context.kind === "want" ? (
+            <Trans>Want:</Trans>
+          ) : (
+            <Trans>Catalog:</Trans>
+          )}
+        </span>
+        <Link {...resourceLink} className="min-w-0 break-words font-semibold underline">
+          {context.resourceName}
+        </Link>
       </p>
-      <Link {...resourceLink} className="break-words text-sm font-semibold underline">
-        {name}
-      </Link>
       {proposed ? (
         <div className="grid gap-1 border-border border-t pt-2">
           <p className="text-xs text-muted-foreground">
@@ -65,7 +126,7 @@ export function ResourceContextCard({
               <Link
                 to="/pools/$poolAddress"
                 params={{ poolAddress: context.resourceId }}
-                search={{ tool: "approve", candidate: proposed.address }}
+                search={{ tab: "holdings", tool: "approve", candidate: proposed.address }}
               >
                 <Trans>Approve voucher</Trans>
               </Link>

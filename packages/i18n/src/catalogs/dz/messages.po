@@ -669,7 +669,7 @@ msgstr "ཤུགས་ལྡན།"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:177
 #: apps/web/src/desktop/activity/activity-header.tsx:30
 #: apps/web/src/desktop/activity/transactions-desk.tsx:519
-#: apps/web/src/desktop/market/place-panel.tsx:63
+#: apps/web/src/desktop/market/place-panel.tsx:65
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:221
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:965
 #: apps/web/src/desktop/pools/pool-main.tsx:442
@@ -742,12 +742,12 @@ msgid "Add a phone number to your profile to use MPESA."
 msgstr "MPESA ལག་ལེན་འཐབ་ནིའི་དོན་ལུ་ཁྱོད་ཀྱི་གསལ་སྡུད་ནང་ཁ་པར་ཨང་ཁ་སྐོང་རྐྱབ།"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:66
-#: apps/web/src/desktop/messaging/composer-desk.tsx:104
-#: apps/web/src/features/messaging/ui/message-composer.tsx:117
+#: apps/web/src/desktop/messaging/composer-desk.tsx:114
+#: apps/web/src/features/messaging/ui/message-composer.tsx:127
 msgid "Add a photo"
 msgstr "པར་ཅིག་ཁ་སྐོང་རྐྱབ།"
 
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:174
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:182
 #: apps/web/src/features/catalogs/hooks/use-catalog-member-picker.tsx:81
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 msgid "Add a pool"
@@ -762,7 +762,7 @@ msgstr "སྒེར་གྱི་འཕྲིན་དོན་ཅིག་ཁ
 msgid "Add a profile photo to continue."
 msgstr "འཕྲོ་མཐུད་ནིའི་དོན་ལུ་གསལ་སྡུད་པར་ཅིག་ཁ་སྐོང་རྐྱབ།"
 
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:174
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:182
 #: apps/web/src/features/catalogs/hooks/use-catalog-member-picker.tsx:81
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 msgid "Add a voucher"
@@ -1169,7 +1169,7 @@ msgstr "དགོས་པའི་ཆ་འཇོག"
 msgid "Approve {0}"
 msgstr "{0} ཆ་འཇོག་འབད།"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:70
+#: apps/web/src/components/messaging/resource-context-card.tsx:131
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:699
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:62
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:100
@@ -1253,12 +1253,12 @@ msgstr "ཆ་འཇོག་བསྒུག་པའི་སྒང་།"
 
 #: apps/web/src/components/introduction/introduction.tsx:121
 #: apps/web/src/components/market-search.tsx:159
-#: apps/web/src/components/messaging/new-message-sheet.tsx:263
+#: apps/web/src/components/messaging/new-message-sheet.tsx:265
 #: apps/web/src/components/paper-wallet-scanner.tsx:119
 #: apps/web/src/components/paper-wallet-scanner.tsx:143
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:84
-#: apps/web/src/desktop/market/place-panel.tsx:123
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:154
+#: apps/web/src/desktop/market/place-panel.tsx:126
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:267
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:171
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:249
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:410
@@ -1421,11 +1421,11 @@ msgstr "Gnosis གུ་བརྟན་ཏོག་ཏོ་དངུལ་ཉ�
 msgid "Buy USD₮ with KES."
 msgstr "KES གིས་ USD₮ ཉོ།"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:373
-#: apps/web/src/components/wants/want-detail.tsx:202
+#: apps/web/src/components/vouchers/voucher-summary.tsx:379
+#: apps/web/src/components/wants/want-detail.tsx:204
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:202
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:208
-#: apps/web/src/desktop/wants/want-place-desk.tsx:283
+#: apps/web/src/desktop/wants/want-place-desk.tsx:285
 msgid "Call"
 msgstr "ཁ་པར་གཏང་།"
 
@@ -1556,8 +1556,8 @@ msgid "Catalog limit reached. Ask an administrator to increase your allowance."
 msgstr "ཐོ་གཞུང་གི་ཚད་ལུ་ལྷོད་ཡོད། "
 "ཚད་ཡར་སེང་འབད་གནང་ཟེར་བདག་སྐྱོང་པ་ལུ་ཞུ་བ་འབད།"
 
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:50
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:40
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:53
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:43
 msgid "Catalog not found."
 msgstr "ཐོ་གཞུང་འཚོལ་མ་ཐོབ།"
 
@@ -1571,6 +1571,10 @@ msgstr "ཐོ་གཞུང་གི་པར།"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "ཐོ་གཞུང་བསྲུངས་ཡོད། ཅ་ཆས་ཁ་སྐོང་རྐྱབ་མ་ཚུགས། ལོག་འབད་རྩོལ་བསྐྱེད།"
 
+#: apps/web/src/components/messaging/resource-context-card.tsx:104
+msgid "Catalog:"
+msgstr "ཐོ་གཞུང་:"
+
 #: apps/web/src/components/account-retirement/retire-account-section.tsx:166
 #: apps/web/src/components/market-bar.tsx:190
 #: apps/web/src/components/market-bar.tsx:269
@@ -1578,7 +1582,7 @@ msgstr "ཐོ་གཞུང་བསྲུངས་ཡོད། ཅ་ཆས�
 #: apps/web/src/desktop/market/market-layers.tsx:37
 #: apps/web/src/desktop/shell/crumbs.tsx:30
 #: apps/web/src/desktop/shell/sidebar.tsx:203
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:33
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:36
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:30
 msgid "Catalogs"
 msgstr "ཐོ་གཞུང་ཚུ།"
@@ -1719,6 +1723,10 @@ msgstr "གསར་བཏོན་གནས་ཚད་ཞིབ་དཔྱད
 #: apps/web/src/desktop/market/market-notices.tsx:89
 msgid "Checking Credit availability…"
 msgstr "ཡིད་རྟོན་ཐོབ་ཚུགས་མི་ཡོད་མེད་ཞིབ་དཔྱད་འབད་དོ…"
+
+#: apps/web/src/components/messaging/conversation-lookup-state.tsx:16
+msgid "Checking for a conversation…"
+msgstr "གླེང་མོལ་ཡོད་མེད་ཞིབ་དཔྱད་འབད་དོ…"
 
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:149
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:234
@@ -1940,8 +1948,8 @@ msgstr "ཆ་ཕྲན་ལུ་གནས་གོང་གི་གནས་
 msgid "Choose username"
 msgstr "ལག་ལེན་པའི་མིང་གདམ།"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:206
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:213
+#: apps/web/src/components/messaging/new-message-sheet.tsx:208
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:207
 msgid "Choose who to message."
 msgstr "འཕྲིན་དོན་གཏང་སའི་མི་གདམ་ཁ་རྐྱབ།"
 
@@ -1957,7 +1965,7 @@ msgstr "ཁྱོད་ཀྱི་ཁྱིམ་ཤོག་གུ་ CLC"
 msgid "Cleaning"
 msgstr "གཙང་སྦྲ།"
 
-#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:65
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:109
 msgid "Clear"
 msgstr "བསལ།"
 
@@ -2017,10 +2025,10 @@ msgstr "འཚོལ་ཞིབ་བསལ།"
 #: apps/web/src/components/ui/sheet.tsx:93
 #: apps/web/src/components/ui/sheet.tsx:94
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:118
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:264
-#: apps/web/src/components/wants/want-sheet.tsx:71
-#: apps/web/src/components/wants/want-sheet.tsx:101
-#: apps/web/src/components/wants/want-sheet.tsx:108
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:265
+#: apps/web/src/components/wants/want-sheet.tsx:72
+#: apps/web/src/components/wants/want-sheet.tsx:103
+#: apps/web/src/components/wants/want-sheet.tsx:112
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:126
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:66
 #: apps/web/src/desktop/pools/detail/pool-side-panel.tsx:103
@@ -2028,7 +2036,7 @@ msgstr "འཚོལ་ཞིབ་བསལ།"
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:52
 #: apps/web/src/desktop/ui/inspector.tsx:107
 #: apps/web/src/desktop/vouchers/detail/voucher-dialog.tsx:56
-#: apps/web/src/desktop/wants/want-place-desk.tsx:61
+#: apps/web/src/desktop/wants/want-place-desk.tsx:62
 #: apps/web/src/features/home/ui/report-page.tsx:285
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:105
 msgid "Close"
@@ -2338,11 +2346,11 @@ msgstr "མཐུད་ལམ་མ་འགྲུབ།"
 msgid "Construction"
 msgstr "བཟོ་སྐྲུན།"
 
-#: apps/web/src/components/wants/want-detail.tsx:127
+#: apps/web/src/components/wants/want-detail.tsx:129
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:120
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:238
 #: apps/web/src/desktop/wants/want-outline.tsx:15
-#: apps/web/src/desktop/wants/want-place-desk.tsx:200
+#: apps/web/src/desktop/wants/want-place-desk.tsx:202
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:68
 msgid "Contact"
 msgstr "འབྲེལ་བ།"
@@ -2510,9 +2518,9 @@ msgstr "གླེང་མོལ།"
 msgid "Conversation options"
 msgstr "གླེང་མོལ་གྱི་གདམ་ཁ།"
 
-#: apps/web/src/components/messaging/messages-section.tsx:69
+#: apps/web/src/components/messaging/messages-section.tsx:68
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:89
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:90
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:91
 msgid "Conversations"
 msgstr "གླེང་མོལ་ཚུ།"
 
@@ -2559,7 +2567,7 @@ msgstr "གསར་སྤེལ་ཉོ་ཚོང་ཧེཤ་འདྲ་
 msgid "Copy fee recipient"
 msgstr "གླ་ཡོན་ལེན་མི་འདྲ་བཤུས།"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:444
+#: apps/web/src/components/vouchers/voucher-summary.tsx:457
 #: apps/web/src/desktop/ui/phone-only.tsx:48
 #: apps/web/src/desktop/wallet/receive-poster-dialog.tsx:208
 #: apps/web/src/features/catalogs/hooks/use-catalog-share.ts:42
@@ -2728,6 +2736,10 @@ msgstr "ཁྱོད་ཀྱི་པར་ཡར་བཙུགས་འབད
 msgid "Couldn't check creditable pools."
 msgstr "བརྗེ་ལེན་འབད་བཏུབ་པའི་མཉམ་སྤྱོད་དངུལ་ཁུངས་ཚུ་ཞིབ་དཔྱད་འབད་མ་ཚུགས།"
 
+#: apps/web/src/components/messaging/conversation-lookup-state.tsx:21
+msgid "Couldn't check for a conversation."
+msgstr "གླེང་མོལ་ཡོད་མེད་ཞིབ་དཔྱད་འབད་མ་ཚུགས།"
+
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:60
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:326
 msgid "Couldn't check message availability."
@@ -2748,6 +2760,10 @@ msgstr "འཛིན་ཤོག་ཐོབ་ཚུགས་མི་ཞིབ
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:948
 msgid "Couldn't check which vouchers are already approved."
 msgstr "ཧེ་མ་ལས་ཆ་འཇོག་གྲུབ་པའི་འཛིན་ཤོག་ཚུ་ཞིབ་དཔྱད་འབད་མ་ཚུགས།"
+
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:150
+msgid "Couldn't check which vouchers the pool accepts."
+msgstr "དངུལ་ཁུངས་ཀྱིས་འཛིན་ཤོག་ག་ཅི་དང་ལེན་འབདཝ་ཨིན་ན་ཞིབ་དཔྱད་འབད་མ་ཚུགས།"
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:312
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:159
@@ -2822,8 +2838,8 @@ msgstr "གསར་སྤེལ་ཉོ་ཚོང་ཧེཤ་འདྲ་
 msgid "Couldn't copy fee recipient"
 msgstr "གླ་ཡོན་ལེན་མི་འདྲ་བཤུས་འབད་མ་ཚུགས།"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:421
-#: apps/web/src/components/vouchers/voucher-summary.tsx:427
+#: apps/web/src/components/vouchers/voucher-summary.tsx:434
+#: apps/web/src/components/vouchers/voucher-summary.tsx:440
 #: apps/web/src/desktop/ui/phone-only.tsx:23
 #: apps/web/src/desktop/ui/phone-only.tsx:29
 #: apps/web/src/desktop/wallet/receive-poster-dialog.tsx:133
@@ -2950,7 +2966,7 @@ msgstr "བྱ་བ་མངོན་གསལ་འབད་མ་ཚུགས
 msgid "Couldn't load all results in this area."
 msgstr "ས་ཁོངས་འདི་ནང་གི་གྲུབ་འབྲས་ཆ་མཉམ་མངོན་མ་ཚུགས།"
 
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:191
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:199
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:82
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:67
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:42
@@ -2959,10 +2975,10 @@ msgstr "ཐོ་གཞུང་གི་ཅ་ཆས་ཚུ་བཀལ་མ
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:58
 #: apps/web/src/desktop/catalogs/catalog-create-desk.tsx:47
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:52
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:55
 #: apps/web/src/desktop/wallet/wallet-catalogs.tsx:46
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:32
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:42
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:117
 msgid "Couldn't load catalogs."
 msgstr "ཐོ་གཞུང་ཚུ་བཀལ་མ་ཚུགས།"
@@ -2975,8 +2991,8 @@ msgstr "ཐོ་གཞུང་ཚུ་བཀལ་མ་ཚུགས།"
 msgid "Couldn't load complete marketplace results."
 msgstr "ཚོང་རའི་གྲུབ་འབྲས་ཆ་ཚང་བཀལ་མ་ཚུགས།"
 
-#: apps/web/src/components/wants/want-detail.tsx:159
-#: apps/web/src/desktop/wants/want-place-desk.tsx:242
+#: apps/web/src/components/wants/want-detail.tsx:161
+#: apps/web/src/desktop/wants/want-place-desk.tsx:244
 msgid "Couldn't load contact information."
 msgstr "འབྲེལ་བའི་ཁ་གསལ་མངོན་མ་ཚུགས།"
 
@@ -2997,8 +3013,8 @@ msgstr "ཡིད་རྟོན་ཚད་ཚུ་མངོན་གསལ་
 msgid "Couldn't load marketplace results."
 msgstr "ཚོང་རའི་གྲུབ་འབྲས་བཀལ་མ་ཚུགས།"
 
-#: apps/web/src/components/messaging/messages-section.tsx:40
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:64
+#: apps/web/src/components/messaging/messages-section.tsx:39
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:63
 #: apps/web/src/desktop/messaging/thread-desk.tsx:115
 #: apps/web/src/features/messaging/ui/thread-page.tsx:190
 msgid "Couldn't load messages."
@@ -3033,8 +3049,8 @@ msgid "Couldn't load pool tags."
 msgstr "དངུལ་ཁུངས་ཀྱི་ངོ་རྟགས་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
 #: apps/web/src/components/activity/swap-pool-owner-contacts.tsx:55
-#: apps/web/src/components/wants/want-detail.tsx:245
-#: apps/web/src/desktop/wants/want-place-desk.tsx:338
+#: apps/web/src/components/wants/want-detail.tsx:247
+#: apps/web/src/desktop/wants/want-place-desk.tsx:340
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
 msgid "Couldn't load pools."
 msgstr "དངུལ་ཁུངས་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
@@ -3061,8 +3077,8 @@ msgstr "Pretium ལོ་རྒྱུས་མངོན་གསལ་འབད�
 msgid "Couldn't load price feeds."
 msgstr "གོང་ཚད་གནས་ཚུལ་ཚུ་མངོན་མ་ཚུགས།"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:187
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:195
+#: apps/web/src/components/messaging/new-message-sheet.tsx:189
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:189
 msgid "Couldn't load recipients."
 msgstr "ལེན་མཁན་ཚུ་བཙུགས་མ་ཚུགས།"
 
@@ -3133,14 +3149,14 @@ msgstr "གསལ་བསྒྲགས་འདི་མངོན་གསལ་
 "ཁྱོད་རང་གིས་བྲིས་མི་གསལ་བསྒྲགས་རྐྱངམ་ཅིག་ཞུན་དག་འབད་ཚུགས།"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:116
-#: apps/web/src/desktop/market/place-panel.tsx:133
-#: apps/web/src/desktop/vouchers/voucher-desk.tsx:127
+#: apps/web/src/desktop/market/place-panel.tsx:136
+#: apps/web/src/desktop/vouchers/voucher-desk.tsx:128
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:147
 msgid "Couldn't load this voucher."
 msgstr "འཛིན་ཤོག་འདི་མངོན་གསལ་འབད་མ་ཚུགས།"
 
-#: apps/web/src/components/wants/want-sheet.tsx:69
-#: apps/web/src/desktop/wants/want-place-desk.tsx:69
+#: apps/web/src/components/wants/want-sheet.tsx:70
+#: apps/web/src/desktop/wants/want-place-desk.tsx:70
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:39
 msgid "Couldn't load this Want."
 msgstr "تعذر تحميل هذا الطلب."
@@ -3178,14 +3194,14 @@ msgstr "འཛིན་ཤོག་ཚུ་མངོན་གསལ་འབད
 
 #: apps/web/src/components/account-retirement/recovery-page.tsx:152
 #: apps/web/src/components/account-retirement/recovery-page.tsx:194
-#: apps/web/src/components/wants/want-detail.tsx:224
+#: apps/web/src/components/wants/want-detail.tsx:226
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:253
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:156
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:175
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:324
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:430
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:544
-#: apps/web/src/desktop/wants/want-place-desk.tsx:303
+#: apps/web/src/desktop/wants/want-place-desk.tsx:305
 #: apps/web/src/features/home/ui/wallet-page.tsx:190
 #: apps/web/src/features/home/ui/wallet-page.tsx:208
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:298
@@ -3357,18 +3373,19 @@ msgstr "དངུལ་ཁུངས་ཚུ་འཚོལ་མ་ཚུགས
 msgid "Couldn't search vouchers."
 msgstr "འཛིན་ཤོག་ཚུ་འཚོལ་མ་ཚུགས།"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:221
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:229
+#: apps/web/src/components/messaging/new-message-sheet.tsx:223
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:197
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:223
 msgid "Couldn't search. Try again."
 msgstr "འཚོལ་མ་ཚུགས། ལོག་སྟེ་འབད།"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:153
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:148
+#: apps/web/src/components/messaging/new-message-sheet.tsx:155
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:150
 msgid "Couldn't send the request. Try again."
 msgstr "ཞུ་བ་གཏང་མ་ཚུགས། ལོག་སྟེ་འབད།"
 
-#: apps/web/src/desktop/messaging/composer-desk.tsx:84
-#: apps/web/src/features/messaging/ui/message-composer.tsx:84
+#: apps/web/src/desktop/messaging/composer-desk.tsx:94
+#: apps/web/src/features/messaging/ui/message-composer.tsx:94
 msgid "Couldn't send. Your message is kept; send it again."
 msgstr "གཏང་མ་ཚུགས། ཁྱོད་ཀྱི་འཕྲིན་དོན་བཞག་ཡོད། ལོག་སྟེ་གཏང་།"
 
@@ -3657,8 +3674,8 @@ msgstr "ཡིད་རྟོན: ཁ་ཕྱེ"
 #~ msgid "Credit: up to two hops"
 #~ msgstr "ཡིད་རྟོན: གོ་རིམ་གཉིས་ཚུན"
 
-#: apps/web/src/components/wants/want-detail.tsx:237
-#: apps/web/src/desktop/wants/want-place-desk.tsx:334
+#: apps/web/src/components/wants/want-detail.tsx:239
+#: apps/web/src/desktop/wants/want-place-desk.tsx:336
 msgid "Creditable pools"
 msgstr "تجمعات الائتمان"
 
@@ -3860,7 +3877,7 @@ msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུངས་བཤད།"
 
 #: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:52
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:145
-#: apps/web/src/components/wants/want-detail.tsx:118
+#: apps/web/src/components/wants/want-detail.tsx:120
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:81
 #: apps/web/src/desktop/onboarding/paper-wallet-desk.tsx:119
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:313
@@ -3869,7 +3886,7 @@ msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུངས་བཤད།"
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:56
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:517
 #: apps/web/src/desktop/wants/want-form-desk.tsx:133
-#: apps/web/src/desktop/wants/want-place-desk.tsx:194
+#: apps/web/src/desktop/wants/want-place-desk.tsx:196
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:61
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:44
@@ -3899,7 +3916,7 @@ msgstr "འཛིན་ཤོག་ཚུ་མེད་པར་བཟོ་ད
 msgid "Details"
 msgstr "ཁ་གསལ་"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:366
+#: apps/web/src/components/vouchers/voucher-summary.tsx:372
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:187
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:193
 msgid "Directions"
@@ -4043,10 +4060,10 @@ msgstr "མཐའ་འཁོར་གཡུས་ཚན།"
 msgid "Edit"
 msgstr "ཞུན་དག"
 
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:86
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:130
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:92
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:112
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:94
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:138
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:100
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:120
 msgid "Edit catalog"
 msgstr "ཐོ་གཞུང་ཞུན་དག་འབད།"
 
@@ -4100,7 +4117,7 @@ msgstr "འཛིན་ཤོག་ཁ་གསལ་ཞུན་དག"
 
 #: apps/web/src/desktop/wants/want-form-desk.tsx:64
 #: apps/web/src/desktop/wants/want-form-desk.tsx:116
-#: apps/web/src/desktop/wants/want-place-desk.tsx:124
+#: apps/web/src/desktop/wants/want-place-desk.tsx:126
 #: apps/web/src/features/wants/ui/want-form-page.tsx:26
 msgid "Edit Want"
 msgstr "تعديل الطلب"
@@ -4131,7 +4148,7 @@ msgstr "རྒན་རྒས།"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:93
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:289
-#: apps/web/src/components/wants/want-detail.tsx:194
+#: apps/web/src/components/wants/want-detail.tsx:196
 #: apps/web/src/desktop/account/profile-desk.tsx:172
 #: apps/web/src/desktop/account/profile-desk.tsx:184
 #: apps/web/src/desktop/activity/transactions-desk.tsx:942
@@ -4142,7 +4159,7 @@ msgstr "རྒན་རྒས།"
 #: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:183
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:298
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:94
-#: apps/web/src/desktop/wants/want-place-desk.tsx:275
+#: apps/web/src/desktop/wants/want-place-desk.tsx:277
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:206
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:218
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:197
@@ -4183,14 +4200,14 @@ msgstr "གཏན་རྩའི་མ་དངུལ།"
 
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:403
 #: apps/web/src/desktop/wants/want-form-desk.tsx:181
-#: apps/web/src/desktop/wants/want-place-desk.tsx:181
+#: apps/web/src/desktop/wants/want-place-desk.tsx:183
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:247
 #: apps/web/src/features/wants/ui/want-form-page.tsx:146
 msgid "Ends"
 msgstr "མཇུག་བསྡུ་ས།"
 
 #. placeholder {0}: dates.format(new Date(want.expiresAt))
-#: apps/web/src/components/wants/want-detail.tsx:109
+#: apps/web/src/components/wants/want-detail.tsx:111
 msgid "Ends {0}"
 msgstr "ينتهي {0}"
 
@@ -4309,7 +4326,7 @@ msgstr "ཀླད་ཀོར་ལས་སྦོམ་པའི་བརྗེ
 #~ msgid "Enter and apply a password before downloading this card."
 #~ msgstr "ཤོག་བྱང་འདི་ཕབ་ལེན་མ་འབད་བའི་ཧེ་མ་གསང་ཚིག་བཙུགས་ཏེ་ལག་ལེན་འཐབ།"
 
-#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:93
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:187
 msgid "Enter at least two characters."
 msgstr "Enter at least two characters."
 
@@ -4817,8 +4834,8 @@ msgstr "གེསི་ལྷག་དངུལ།"
 msgid "Gathering"
 msgstr "འཛོམས་འདུ།"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:331
-#: apps/web/src/components/vouchers/voucher-summary.tsx:336
+#: apps/web/src/components/vouchers/voucher-summary.tsx:337
+#: apps/web/src/components/vouchers/voucher-summary.tsx:342
 #: apps/web/src/desktop/credit/get-desk.tsx:98
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:119
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:129
@@ -5180,9 +5197,9 @@ msgstr "{0} གི་གྲངས་ཚད་ཡར་སེང་འབད།"
 #~ msgstr "མང་ཉུང་ཡར་སེང་།"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:160
-#: apps/web/src/desktop/market/place-panel.tsx:62
+#: apps/web/src/desktop/market/place-panel.tsx:64
 #: apps/web/src/desktop/pools/pool-main.tsx:444
-#: apps/web/src/desktop/vouchers/voucher-desk.tsx:290
+#: apps/web/src/desktop/vouchers/voucher-desk.tsx:298
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:51
 msgid "Info"
 msgstr "བརྡ་དོན།"
@@ -5230,8 +5247,8 @@ msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "གཞི་བཙུགས་ཞུ་བ་འབད་ཡོད། "
 "མཇུག་བསྡུ་ནིའི་དོན་ལུ་བརྡ་འཚོལ་མཉེན་ཆས་ཀྱི་བཀོད་རྒྱ་ལག་ལེན་འཐབ།"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:133
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:128
+#: apps/web/src/components/messaging/new-message-sheet.tsx:135
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:130
 msgid "Introduce yourself"
 msgstr "ཁྱོད་རང་ངོ་སྤྲོད་འབད།"
 
@@ -5459,7 +5476,7 @@ msgstr "Link at least one voucher or pool."
 msgid "Link at most 12 vouchers"
 msgstr "འཛིན་ཤོག་ ༡༢ ལས་མ་བརྒལ་བར་འབྲེལ་མཐུད།"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:426
+#: apps/web/src/components/vouchers/voucher-summary.tsx:439
 #: apps/web/src/components/wants/use-want-detail.ts:39
 #: apps/web/src/desktop/ui/phone-only.tsx:28
 #: apps/web/src/desktop/wallet/receive-poster-dialog.tsx:138
@@ -5567,18 +5584,18 @@ msgstr "ཧེ་མའི་འཕྲིན་དོན་ཚུ་མངོན
 #: apps/web/src/components/account-retirement/recovery-page.tsx:175
 #: apps/web/src/components/account-retirement/recovery-page.tsx:224
 #: apps/web/src/components/market-search.tsx:310
-#: apps/web/src/components/messaging/messages-section.tsx:87
+#: apps/web/src/components/messaging/messages-section.tsx:86
 #: apps/web/src/components/offerings/offerings-panel.tsx:246
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:382
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:517
-#: apps/web/src/components/wants/want-detail.tsx:302
+#: apps/web/src/components/wants/want-detail.tsx:304
 #: apps/web/src/desktop/activity/transactions-desk.tsx:563
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:272
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:280
 #: apps/web/src/desktop/credit/get-desk.tsx:341
 #: apps/web/src/desktop/market/market-list-states.tsx:100
 #: apps/web/src/desktop/market/market-map-desk.tsx:253
 #: apps/web/src/desktop/market/market-search-field.tsx:450
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:111
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:110
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:128
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:93
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
@@ -5588,7 +5605,7 @@ msgstr "ཧེ་མའི་འཕྲིན་དོན་ཚུ་མངོན
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:246
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:670
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:744
-#: apps/web/src/desktop/wants/want-place-desk.tsx:414
+#: apps/web/src/desktop/wants/want-place-desk.tsx:416
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:110
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:223
@@ -5641,8 +5658,8 @@ msgstr "ལྷག་དངུལ་ཚུ་མངོན་གསལ་འབད
 msgid "Loading cash activity…"
 msgstr "དངུལ་རྐྱང་བྱ་བ་མངོན་གསལ་འབད་དོ…"
 
-#: apps/web/src/components/wants/want-detail.tsx:151
-#: apps/web/src/desktop/wants/want-place-desk.tsx:234
+#: apps/web/src/components/wants/want-detail.tsx:153
+#: apps/web/src/desktop/wants/want-place-desk.tsx:236
 msgid "Loading contact information…"
 msgstr "འབྲེལ་བའི་ཁ་གསལ་མངོན་དོ…"
 
@@ -5668,10 +5685,10 @@ msgstr "བཟུང་བཞག་ཚུ་མངོན་གསལ་འབད
 
 #: apps/web/src/components/ui/location-picker.tsx:132
 #: apps/web/src/components/ui/location-picker.tsx:151
-#: apps/web/src/components/wants/want-detail.tsx:91
+#: apps/web/src/components/wants/want-detail.tsx:93
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:586
 #: apps/web/src/desktop/vouchers/create/desk-location-field.tsx:35
-#: apps/web/src/desktop/wants/want-place-desk.tsx:142
+#: apps/web/src/desktop/wants/want-place-desk.tsx:144
 msgid "Loading location map"
 msgstr "ས་གནས་ས་ཁྲ་མངོན་གསལ་འབད་དོ།"
 
@@ -5684,8 +5701,8 @@ msgstr "ས་གནས་ས་ཁྲ་མངོན་གསལ་འབད་
 msgid "Loading marketplace…"
 msgstr "ཚོང་ར་མངོན་གསལ་འབད་དོ…"
 
-#: apps/web/src/components/messaging/messages-section.tsx:35
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:58
+#: apps/web/src/components/messaging/messages-section.tsx:34
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:57
 msgid "Loading messages…"
 msgstr "འཕྲིན་དོན་ཚུ་མངོན་གསལ་འབད་དོ…"
 
@@ -5762,8 +5779,8 @@ msgstr "སྒེར་གྱི་མཐུད་ཡིག་མངོན་ག
 msgid "Loading receipt…"
 msgstr "འབྱོར་ཡིག་མངོན་གསལ་འབད་དོ…"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:181
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:189
+#: apps/web/src/components/messaging/new-message-sheet.tsx:183
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:183
 msgid "Loading recipients…"
 msgstr "ལེན་མཁན་ཚུ་བཙུགས་དོ…"
 
@@ -5797,13 +5814,14 @@ msgstr "ཞུན་དག་ཆས་མངོན་གསལ་འབད་ད
 msgid "Loading tokens…"
 msgstr "ཊོ་ཀེན་ཚུ་མངོན་གསལ་འབད་དོ…"
 
-#: apps/web/src/desktop/vouchers/voucher-desk.tsx:120
+#: apps/web/src/desktop/vouchers/voucher-desk.tsx:121
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:143
 msgid "Loading voucher…"
 msgstr "འཛིན་ཤོག་མངོན་གསལ་འབད་དོ…"
 
 #: apps/web/src/components/account-retirement/recovery-page.tsx:151
 #: apps/web/src/components/account-retirement/recovery-page.tsx:193
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:167
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:248
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:524
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:151
@@ -5817,7 +5835,7 @@ msgstr "འཛིན་ཤོག་མངོན་གསལ་འབད་དོ
 msgid "Loading vouchers…"
 msgstr "འཛིན་ཤོག་ཚུ་མངོན་གསལ་འབད་དོ…"
 
-#: apps/web/src/components/wants/want-sheet.tsx:106
+#: apps/web/src/components/wants/want-sheet.tsx:110
 #: apps/web/src/desktop/wants/want-form-desk.tsx:80
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:34
 #: apps/web/src/features/wants/ui/want-form-page.tsx:29
@@ -5860,11 +5878,11 @@ msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད་མངོན་ག
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:270
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:382
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:517
-#: apps/web/src/components/vouchers/voucher-summary.tsx:142
-#: apps/web/src/components/wants/want-detail.tsx:286
+#: apps/web/src/components/vouchers/voucher-summary.tsx:143
+#: apps/web/src/components/wants/want-detail.tsx:288
 #: apps/web/src/desktop/catalogs/catalog-create-desk.tsx:37
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:42
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:272
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:45
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:280
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:76
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:295
 #: apps/web/src/desktop/market/market-search-field.tsx:358
@@ -5881,9 +5899,9 @@ msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད་མངོན་ག
 #: apps/web/src/desktop/vouchers/detail/voucher-section-bits.tsx:34
 #: apps/web/src/desktop/vouchers/detail/voucher-section-bits.tsx:63
 #: apps/web/src/desktop/wallet/wallet-catalogs.tsx:43
-#: apps/web/src/desktop/wants/want-place-desk.tsx:394
+#: apps/web/src/desktop/wants/want-place-desk.tsx:396
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:27
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:38
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:61
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:309
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:38
@@ -5916,7 +5934,7 @@ msgstr "ས་གནས་དངུལ་དང་ M-Pesa"
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:58
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:282
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:96
-#: apps/web/src/desktop/wants/want-place-desk.tsx:159
+#: apps/web/src/desktop/wants/want-place-desk.tsx:161
 #: apps/web/src/features/home/ui/report-page.tsx:531
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:70
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
@@ -6066,8 +6084,8 @@ msgstr "ཚོང་རའི་དབྱེ་ཚན་ཚུ།"
 msgid "Match"
 msgstr "མཐུན།"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:234
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:244
+#: apps/web/src/components/messaging/new-message-sheet.tsx:236
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:238
 msgid "Matching people"
 msgstr "མཐུན་པའི་མི་ཚུ།"
 
@@ -6101,13 +6119,13 @@ msgstr "མཐོ་ཚད་ {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "བརྡ་ལམ་འདི་ཡར་བཙུགས་འབད་ཡོད་པའི་ http(s) URL ཅིག་དགོ"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:248
+#: apps/web/src/components/messaging/new-message-sheet.tsx:250
 #: apps/web/src/components/messaging/resource-owner-contact.tsx:171
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:155
-#: apps/web/src/desktop/messaging/composer-desk.tsx:112
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:256
+#: apps/web/src/desktop/messaging/composer-desk.tsx:122
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:250
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:140
-#: apps/web/src/features/messaging/ui/message-composer.tsx:88
+#: apps/web/src/features/messaging/ui/message-composer.tsx:98
 #: apps/web/src/features/wallet/hooks/use-send-share-form.ts:91
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:412
 msgid "Message"
@@ -6123,8 +6141,8 @@ msgstr "འཕྲིན་དོན་ཡིག་འབྲུ་ ༥༠༠ ཡ�
 msgid "Message or order shared."
 msgstr "འཕྲིན་དོན་ ཡང་ན་ མངགས་ཐོ་རུབ་སྤྱོད་གྲུབ།"
 
-#: apps/web/src/components/messaging/messages-section.tsx:58
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:77
+#: apps/web/src/components/messaging/messages-section.tsx:57
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:76
 msgid "Message requests"
 msgstr "འཕྲིན་དོན་གྱི་ཞུ་བ་ཚུ།"
 
@@ -6460,10 +6478,10 @@ msgstr "གསརཔ།"
 #~ msgid "New member"
 #~ msgstr "འཐུས་མི་གསརཔ་"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:101
-#: apps/web/src/components/messaging/new-message-sheet.tsx:109
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:99
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:106
+#: apps/web/src/components/messaging/new-message-sheet.tsx:103
+#: apps/web/src/components/messaging/new-message-sheet.tsx:111
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:101
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:108
 msgid "New message"
 msgstr "འཕྲིན་དོན་གསརཔ།"
 
@@ -6643,11 +6661,11 @@ msgstr "དབྱེ་རིམ་ཚགས་མ་ཐོབ་མི་ཚུ
 msgid "No CLC account was found for this sign-in."
 msgstr "ནང་འཛུལ་འདིའི་དོན་ལུ་ CLC རྩིས་ཐོ་མ་ཐོབ།"
 
-#: apps/web/src/desktop/wants/want-place-desk.tsx:258
+#: apps/web/src/desktop/wants/want-place-desk.tsx:260
 msgid "No contact details available."
 msgstr "འབྲེལ་བའི་ཁ་གསལ་མི་འདུག"
 
-#: apps/web/src/components/wants/want-detail.tsx:177
+#: apps/web/src/components/wants/want-detail.tsx:179
 msgid "No contact information given"
 msgstr "འབྲེལ་བའི་གནས་ཚུལ་མ་བྱིན།"
 
@@ -6708,10 +6726,10 @@ msgstr "ཚགས་མ་འདི་ཚུ་དང་མཐུན་པའི
 #~ msgid "No deposit limit"
 #~ msgstr "བཙུགས་དངུལ་ཚད་མེད།"
 
-#: apps/web/src/components/wants/want-detail.tsx:111
+#: apps/web/src/components/wants/want-detail.tsx:113
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:780
 #: apps/web/src/desktop/wants/want-form-desk.tsx:198
-#: apps/web/src/desktop/wants/want-place-desk.tsx:186
+#: apps/web/src/desktop/wants/want-place-desk.tsx:188
 #: apps/web/src/features/wants/ui/want-form-page.tsx:143
 msgid "No ending date"
 msgstr "بدون تاريخ انتهاء"
@@ -6782,8 +6800,8 @@ msgstr "ད་ལྟོ་སྟོན་ནིའི་ཚོང་རའི་
 msgid "No matches"
 msgstr "མཐུན་མི་མེད།"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:230
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:238
+#: apps/web/src/components/messaging/new-message-sheet.tsx:232
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:232
 msgid "No matching people."
 msgstr "མཐུན་པའི་མི་མེད།"
 
@@ -6792,13 +6810,17 @@ msgstr "མཐུན་པའི་མི་མེད།"
 msgid "No matching recipients."
 msgstr "མཐུན་པའི་ལེན་མཁན་མིན་འདུག"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:201
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:208
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:207
+msgid "No matching vouchers."
+msgstr "མཐུན་པའི་འཛིན་ཤོག་མེད།"
+
+#: apps/web/src/components/messaging/new-message-sheet.tsx:203
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:202
 msgid "No message recipient is available."
 msgstr "འཕྲིན་དོན་ལེན་མཁན་མིན་འདུག།"
 
-#: apps/web/src/components/messaging/messages-section.tsx:54
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:73
+#: apps/web/src/components/messaging/messages-section.tsx:53
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:72
 #: apps/web/src/desktop/messaging/thread-desk.tsx:134
 #: apps/web/src/features/messaging/ui/thread-page.tsx:213
 msgid "No messages yet."
@@ -6865,9 +6887,9 @@ msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི
 msgid "No pools with this voucher match these filters."
 msgstr "འཛིན་ཤོག་འདི་ཐོབ་པའི་དངུལ་ཁུངས་གང་ཡང་ཚགས་མ་འདི་ཚུ་དང་མི་མཐུན།"
 
-#: apps/web/src/components/wants/want-detail.tsx:244
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:199
-#: apps/web/src/desktop/wants/want-place-desk.tsx:339
+#: apps/web/src/components/wants/want-detail.tsx:246
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:207
+#: apps/web/src/desktop/wants/want-place-desk.tsx:341
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:56
 msgid "No pools yet."
 msgstr "ད་ཚུན་དངུལ་ཁུངས་མེད།"
@@ -7010,12 +7032,12 @@ msgstr "བསྡུ་ལེན་འབད་ནིའི་འཛིན་ཤ
 #~ msgid "No vouchers to show yet."
 #~ msgstr "ད་ཚུན་སྟོན་ནིའི་འཛིན་ཤོག་མེད།"
 
-#: apps/web/src/components/wants/want-detail.tsx:223
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:199
+#: apps/web/src/components/wants/want-detail.tsx:225
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:207
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:233
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:441
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:550
-#: apps/web/src/desktop/wants/want-place-desk.tsx:304
+#: apps/web/src/desktop/wants/want-place-desk.tsx:306
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:56
 #: apps/web/src/features/home/ui/wallet-page.tsx:246
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:226
@@ -7243,7 +7265,7 @@ msgstr "གོ་སྐབས་དུས་མཐུན་བཟོ་ཡོད
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:117
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:125
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:128
-#: apps/web/src/desktop/market/place-panel.tsx:59
+#: apps/web/src/desktop/market/place-panel.tsx:61
 #: apps/web/src/desktop/pools/pool-main.tsx:434
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:206
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:218
@@ -7314,8 +7336,8 @@ msgstr "ས་ཁྲ་ནང་ཁ་ཕྱེ།"
 msgid "Open in Safe"
 msgstr "Safe ནང་ཁ་ཕྱེ།"
 
-#: apps/web/src/components/wants/want-detail.tsx:83
-#: apps/web/src/desktop/wants/want-place-desk.tsx:174
+#: apps/web/src/components/wants/want-detail.tsx:85
+#: apps/web/src/desktop/wants/want-place-desk.tsx:176
 msgid "Open location in Google Maps"
 msgstr "فتح الموقع في خرائط Google"
 
@@ -7390,14 +7412,14 @@ msgid "Opening sign-in card…"
 msgstr "ཐོ་བཀོད་འབད་སའི་ ས་ཁྲ་འདི་ཕྱེ་སྟེ་..."
 
 #: apps/web/src/components/account-retirement/retire-account-section.tsx:188
-#: apps/web/src/components/messaging/new-message-sheet.tsx:138
+#: apps/web/src/components/messaging/new-message-sheet.tsx:140
 #: apps/web/src/components/ui/avatar-picker.tsx:98
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:218
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:182
 #: apps/web/src/desktop/account/profile-desk.tsx:131
 #: apps/web/src/desktop/account/profile-desk.tsx:223
 #: apps/web/src/desktop/account/profile-desk.tsx:254
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:133
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:135
 #: apps/web/src/desktop/messaging/thread-menu-desk.tsx:160
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:200
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:43
@@ -7713,7 +7735,7 @@ msgid "Payment status unknown"
 msgstr "སྤྲོད་ལེན་གྱི་གནས་ཚད་མ་ཤེས།"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:43
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:178
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:177
 #: apps/web/src/desktop/messaging/thread-desk.tsx:67
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1095
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:145
@@ -7817,7 +7839,7 @@ msgstr "الهاتف غير متاح"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:57
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:217
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:192
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:191
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:284
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:579
 msgid "Photo"
@@ -7843,8 +7865,8 @@ msgstr "པར་ཚུ།"
 #~ msgid "Photos appear in the order you add them."
 #~ msgstr "པར་ཚུ་ཁྱོད་ཀྱིས་ཁ་སྐོང་རྐྱབ་པའི་གོ་རིམ་བཞིན་མཐོང་འོང་།"
 
-#: apps/web/src/desktop/messaging/composer-desk.tsx:52
-#: apps/web/src/features/messaging/ui/message-composer.tsx:52
+#: apps/web/src/desktop/messaging/composer-desk.tsx:62
+#: apps/web/src/features/messaging/ui/message-composer.tsx:62
 msgid "Photos to send"
 msgstr "གཏང་ནིའི་པར་ཚུ།"
 
@@ -8115,12 +8137,16 @@ msgstr "དངུལ་ཁུངས་ངོ་རྟགས།"
 msgid "Pool tracking details are missing."
 msgstr "དངུལ་ཁུངས་རྗེས་འདེད་ཁ་གསལ་མེད།"
 
+#: apps/web/src/components/messaging/resource-context-card.tsx:98
+msgid "Pool:"
+msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས་:"
+
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:89
 #: apps/web/src/components/market-bar.tsx:189
 #: apps/web/src/components/market-bar.tsx:268
 #: apps/web/src/components/resource-usage.tsx:118
 #: apps/web/src/desktop/activity/transactions-desk.tsx:873
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:169
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:177
 #: apps/web/src/desktop/market/market-layers.tsx:36
 #: apps/web/src/desktop/market/market-search-field.tsx:349
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:75
@@ -8212,7 +8238,7 @@ msgstr "གསལ་བསྒྲགས་དུས་མཐུན་བཟོ་
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:151
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:358
 #: apps/web/src/desktop/market/market-layers.tsx:38
-#: apps/web/src/desktop/market/place-panel.tsx:61
+#: apps/web/src/desktop/market/place-panel.tsx:63
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:118
 #: apps/web/src/desktop/posts/posts-desk.tsx:104
 #: apps/web/src/desktop/posts/posts-desk.tsx:224
@@ -8488,11 +8514,12 @@ msgstr "ནཱ་ལུ་གྲོས་འཆར་མི་འཐོབ། "
 msgid "Propose"
 msgstr "གྲོས་འཆར་བཀོད།"
 
-#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:61
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:35
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:105
 msgid "Propose a voucher"
 msgstr "Propose a voucher"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:53
+#: apps/web/src/components/messaging/resource-context-card.tsx:114
 msgid "Proposed voucher"
 msgstr "Proposed voucher"
 
@@ -8852,7 +8879,7 @@ msgstr "འཛིན་ཤོག་འདི་ཁྱབ་བསྒྲགས་
 #~ msgstr "གསར་བཏོན་འབད་ནིའི་དོན་ལུ་འཛིན་ཤོག་འདི་ཁྱབ་བསྒྲགས་འབད་མི་དངུལ་ཁུག་ལོག་མཐ"
 #~ "ུད།"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:355
+#: apps/web/src/components/vouchers/voucher-summary.tsx:361
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:332
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:337
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:163
@@ -8890,8 +8917,8 @@ msgstr "ལོག་འབད།"
 #~ msgstr "བརྗེ་ལེན་འབད་བཏུབ་པའི་མཉམ་སྤྱོད་དངུལ་ཁུངས་ཚུ་ཁ་གསོ་འབད་དོ…"
 
 #: apps/web/src/components/messaging/resource-context-card.tsx:45
-msgid "Regarding"
-msgstr "Regarding"
+#~ msgid "Regarding"
+#~ msgstr "Regarding"
 
 #: apps/web/src/lib/category-label.ts:42
 msgid "Regenerative Agriculture"
@@ -8939,7 +8966,7 @@ msgstr "བསྡུར་བའི་གནས་གོང་།"
 #: apps/web/src/components/ui/avatar-picker.tsx:84
 #: apps/web/src/components/ui/image-upload-field.tsx:167
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:599
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:258
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:266
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:303
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:390
 #: apps/web/src/desktop/vouchers/create/desk-logo-field.tsx:161
@@ -8960,7 +8987,7 @@ msgstr "“{0}” འདི་ཚོང་ར་ནང་ལས་བཏོན�
 #. placeholder {0}: label(pool)
 #. placeholder {0}: label(ref)
 #: apps/web/src/components/catalog-filter-controls.tsx:292
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:253
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:261
 #: apps/web/src/desktop/posts/post-facets.tsx:397
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:91
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:209
@@ -8997,8 +9024,8 @@ msgstr "དངུལ་ཁུངས་ནང་ལས་བཏོན།"
 msgid "Remove link {0}"
 msgstr "འབྲེལ་ལམ་ {0} བཏོན།"
 
-#: apps/web/src/desktop/messaging/composer-desk.tsx:64
-#: apps/web/src/features/messaging/ui/message-composer.tsx:64
+#: apps/web/src/desktop/messaging/composer-desk.tsx:74
+#: apps/web/src/features/messaging/ui/message-composer.tsx:74
 msgid "Remove photo"
 msgstr "པར་བཏོན།"
 
@@ -9007,8 +9034,8 @@ msgstr "པར་བཏོན།"
 msgid "Remove photo {0}"
 msgstr "པར་ {0} བཏོན།"
 
-#: apps/web/src/desktop/messaging/composer-desk.tsx:44
-#: apps/web/src/features/messaging/ui/message-composer.tsx:44
+#: apps/web/src/desktop/messaging/composer-desk.tsx:45
+#: apps/web/src/features/messaging/ui/message-composer.tsx:45
 msgid "Remove resource"
 msgstr "Remove resource"
 
@@ -9120,7 +9147,7 @@ msgstr "སྙན་ཞུ་གྲུབ།"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:38
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:157
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:173
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:172
 #: apps/web/src/desktop/messaging/thread-desk.tsx:67
 #: apps/web/src/desktop/messaging/thread-desk.tsx:175
 #: apps/web/src/features/messaging/ui/thread-page.tsx:93
@@ -9149,7 +9176,7 @@ msgstr "Request rejected"
 msgid "Request retirement"
 msgstr "Request retirement"
 
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:77
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:76
 msgid "Requests"
 msgstr "ཞུ་བ་ཚུ།"
 
@@ -9191,7 +9218,7 @@ msgstr "སེལ་ཚར་ཡི།"
 #~ msgstr "ལེན་མི་ངོས་འཛིན་འབད་དོ…"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:53
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:188
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:187
 msgid "Resource shared"
 msgstr "Resource shared"
 
@@ -9309,9 +9336,13 @@ msgstr "མཚམས་སྡོད།"
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:38
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:66
 #: apps/web/src/components/creditable-browse-control.tsx:123
-#: apps/web/src/components/messaging/new-message-sheet.tsx:195
+#: apps/web/src/components/messaging/conversation-lookup-state.tsx:24
+#: apps/web/src/components/messaging/new-message-sheet.tsx:197
 #: apps/web/src/components/messaging/resource-owner-contact.tsx:64
 #: apps/web/src/components/messaging/resource-owner-contact.tsx:118
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:161
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:181
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:199
 #: apps/web/src/components/resource-usage.tsx:134
 #: apps/web/src/components/retirement/my-retirement-requests.tsx:29
 #: apps/web/src/components/retirement/retirement-control.tsx:80
@@ -9320,14 +9351,14 @@ msgstr "མཚམས་སྡོད།"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:227
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:243
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:127
-#: apps/web/src/components/vouchers/voucher-summary.tsx:156
-#: apps/web/src/components/wants/want-detail.tsx:167
-#: apps/web/src/components/wants/want-detail.tsx:292
-#: apps/web/src/components/wants/want-sheet.tsx:79
+#: apps/web/src/components/vouchers/voucher-summary.tsx:157
+#: apps/web/src/components/wants/want-detail.tsx:169
+#: apps/web/src/components/wants/want-detail.tsx:294
+#: apps/web/src/components/wants/want-sheet.tsx:80
 #: apps/web/src/desktop/auth/auth-gate-desk.tsx:103
 #: apps/web/src/desktop/catalogs/catalog-create-desk.tsx:57
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:56
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:194
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:59
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:202
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:90
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:229
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:277
@@ -9336,8 +9367,8 @@ msgstr "མཚམས་སྡོད།"
 #: apps/web/src/desktop/market/market-map-desk.tsx:253
 #: apps/web/src/desktop/market/market-notices.tsx:114
 #: apps/web/src/desktop/market/market-notices.tsx:169
-#: apps/web/src/desktop/market/place-panel.tsx:140
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:202
+#: apps/web/src/desktop/market/place-panel.tsx:143
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:196
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:61
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:99
 #: apps/web/src/desktop/pools/create/unit-combobox-desk.tsx:132
@@ -9366,16 +9397,16 @@ msgstr "མཚམས་སྡོད།"
 #: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:121
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:100
 #: apps/web/src/desktop/vouchers/detail/voucher-section-bits.tsx:70
-#: apps/web/src/desktop/vouchers/voucher-desk.tsx:134
+#: apps/web/src/desktop/vouchers/voucher-desk.tsx:135
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:56
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:130
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:386
 #: apps/web/src/desktop/wants/want-form-desk.tsx:88
-#: apps/web/src/desktop/wants/want-place-desk.tsx:76
-#: apps/web/src/desktop/wants/want-place-desk.tsx:249
-#: apps/web/src/desktop/wants/want-place-desk.tsx:403
+#: apps/web/src/desktop/wants/want-place-desk.tsx:77
+#: apps/web/src/desktop/wants/want-place-desk.tsx:251
+#: apps/web/src/desktop/wants/want-place-desk.tsx:405
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:42
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:51
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:54
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:76
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:258
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:323
@@ -9455,7 +9486,7 @@ msgstr "སྤྲོད་ལེན་འདི་ཁྱོད་རའི་མ
 
 #: apps/web/src/components/account-retirement/retire-account-section.tsx:168
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:147
-#: apps/web/src/desktop/market/place-panel.tsx:60
+#: apps/web/src/desktop/market/place-panel.tsx:62
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:301
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:358
@@ -9522,7 +9553,7 @@ msgstr "حفظ الطلب وإعادة فتحه"
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:239
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:423
 #: apps/web/src/desktop/account/profile-desk.tsx:103
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:142
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:150
 #: apps/web/src/desktop/pools/detail/pool-profile-desk.tsx:63
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:100
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:253
@@ -9657,7 +9688,7 @@ msgstr "ཁྱོད་ཀྱི་ཤོག་བྱང་རྙིངམ་བ
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:407
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:721
 #: apps/web/src/desktop/wants/want-form-desk.tsx:451
-#: apps/web/src/desktop/wants/want-place-desk.tsx:115
+#: apps/web/src/desktop/wants/want-place-desk.tsx:116
 #: apps/web/src/features/home/ui/wallet-page.tsx:352
 msgid "Scheduled"
 msgstr "مجدول"
@@ -9833,8 +9864,8 @@ msgid "Search voucher tags"
 msgstr "འཛིན་ཤོག་ངོ་རྟགས་འཚོལ།"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:303
-#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:87
-#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:88
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:115
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:116
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:166
 #: apps/web/src/desktop/market/market-toolbar.tsx:169
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:799
@@ -9893,10 +9924,10 @@ msgstr "ས་ཁོངས་འདི་འཚོལ་དོ་"
 msgid "Searching vouchers…"
 msgstr "འཛིན་ཤོག་ཚུ་འཚོལ་དོ…"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:216
-#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:98
+#: apps/web/src/components/messaging/new-message-sheet.tsx:218
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:192
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:214
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:224
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:218
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:828
 #: apps/web/src/desktop/shell/command-palette.tsx:387
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:237
@@ -9991,8 +10022,8 @@ msgid "Sell to a bank account"
 msgstr "དངུལ་ཁང་རྩིས་ཐོ་ལུ་བཙོང་ནི་"
 
 #: apps/web/src/components/account-retirement/recovery-page.tsx:131
-#: apps/web/src/components/vouchers/voucher-summary.tsx:344
-#: apps/web/src/desktop/messaging/composer-desk.tsx:133
+#: apps/web/src/components/vouchers/voucher-summary.tsx:350
+#: apps/web/src/desktop/messaging/composer-desk.tsx:143
 #: apps/web/src/desktop/shell/command-palette.tsx:101
 #: apps/web/src/desktop/shell/crumbs.tsx:32
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:148
@@ -10001,7 +10032,7 @@ msgstr "དངུལ་ཁང་རྩིས་ཐོ་ལུ་བཙོང་
 #: apps/web/src/desktop/wallet/send-desk.tsx:185
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:348
 #: apps/web/src/features/home/ui/wallet-page.tsx:75
-#: apps/web/src/features/messaging/ui/message-composer.tsx:131
+#: apps/web/src/features/messaging/ui/message-composer.tsx:141
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:84
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:243
 msgid "Send"
@@ -10032,8 +10063,8 @@ msgstr "ཁྱེད་རའི་ Gnosis དངུལ་ཁུག་ལས་ 
 msgid "Send report"
 msgstr "སྙན་ཞུ་གཏང་།"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:260
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:157
+#: apps/web/src/components/messaging/new-message-sheet.tsx:262
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:270
 msgid "Send request"
 msgstr "ཞུ་བ་གཏང་།"
 
@@ -10064,10 +10095,10 @@ msgstr "བཀོད་རྒྱ་ལྟར་ xDAI གཏང་གནང་།
 msgid "Sending"
 msgstr "གཏང་དོ།"
 
-#: apps/web/src/desktop/messaging/composer-desk.tsx:133
+#: apps/web/src/desktop/messaging/composer-desk.tsx:143
 #: apps/web/src/desktop/wallet/send-desk.tsx:387
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:110
-#: apps/web/src/features/messaging/ui/message-composer.tsx:131
+#: apps/web/src/features/messaging/ui/message-composer.tsx:141
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:243
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:348
 msgid "Sending…"
@@ -10153,14 +10184,14 @@ msgstr "སྒྲིག་འགོད།"
 msgid "Settling…"
 msgstr "གཏན་འཁེལ་འབད་དོ…"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:444
-#: apps/web/src/components/wants/want-detail.tsx:368
+#: apps/web/src/components/vouchers/voucher-summary.tsx:457
+#: apps/web/src/components/wants/want-detail.tsx:370
 #: apps/web/src/desktop/account/settings-desk.tsx:119
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:625
 #: apps/web/src/desktop/wallet/receive-desk.tsx:124
 #: apps/web/src/desktop/wallet/receive-poster-dialog.tsx:208
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:221
-#: apps/web/src/desktop/wants/want-place-desk.tsx:130
+#: apps/web/src/desktop/wants/want-place-desk.tsx:132
 #: apps/web/src/features/catalogs/hooks/use-catalog-share.ts:42
 #: apps/web/src/features/wallet/ui/receive-page.tsx:142
 #: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:246
@@ -10518,6 +10549,10 @@ msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས་ལ་ལོ
 #~ msgid "Some vouchers couldn't load."
 #~ msgstr "འཛིན་ཤོག་ལ་ལོ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:172
+msgid "Some wallet vouchers couldn't be loaded."
+msgstr "དངུལ་ཁུག་ནང་གི་འཛིན་ཤོག་ལ་ལོ་མངོན་གསལ་འབད་མ་ཚུགས།"
+
 #: apps/web/src/features/credit/ui/credit-failure-notice.tsx:78
 msgid "Something went wrong."
 msgstr "འཛོལ་བ་ཅིག་བྱུང་ཡི།"
@@ -10580,14 +10615,14 @@ msgstr "འགོ་བཙུགས་དོ…"
 
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:383
 #: apps/web/src/desktop/wants/want-form-desk.tsx:172
-#: apps/web/src/desktop/wants/want-place-desk.tsx:179
+#: apps/web/src/desktop/wants/want-place-desk.tsx:181
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:226
 #: apps/web/src/features/wants/ui/want-form-page.tsx:132
 msgid "Starts"
 msgstr "འགོ་བཙུགས་ས།"
 
 #. placeholder {0}: dates.format(new Date(want.startsAt))
-#: apps/web/src/components/wants/want-detail.tsx:105
+#: apps/web/src/components/wants/want-detail.tsx:107
 msgid "Starts {0}"
 msgstr "يبدأ {0}"
 
@@ -10880,7 +10915,7 @@ msgstr "མཚོན་རྟགས་འདི་གཞན་གྱིས་ལ
 
 #: apps/web/src/components/market-search.tsx:224
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:224
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:101
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:109
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:113
 #: apps/web/src/desktop/market/market-toolbar.tsx:266
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:351
@@ -10891,7 +10926,7 @@ msgstr "མཚོན་རྟགས་འདི་གཞན་གྱིས་ལ
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:68
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:696
 #: apps/web/src/desktop/wants/want-form-desk.tsx:145
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:81
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:84
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:93
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:87
 #: apps/web/src/features/home/ui/marketplace-page.tsx:128
@@ -11233,8 +11268,8 @@ msgstr "སྤྲོད་ལེན་དང་ལེན་མ་འབད། {d
 msgid "The payment was refused. Nothing was charged."
 msgstr "སྤྲོད་ལེན་དང་ལེན་མ་འབད། དངུལ་ག་ནི་ཡང་མ་བཀལ།"
 
-#: apps/web/src/desktop/messaging/composer-desk.tsx:78
-#: apps/web/src/features/messaging/ui/message-composer.tsx:78
+#: apps/web/src/desktop/messaging/composer-desk.tsx:88
+#: apps/web/src/features/messaging/ui/message-composer.tsx:88
 msgid "The photo didn't upload. Remove it and try again."
 msgstr "པར་སྐྱེལ་བཙུགས་མ་སོང་། བཏོན་ཞིནམ་ལས་ལོག་སྟེ་འབད།"
 
@@ -11867,7 +11902,7 @@ msgstr "འགྲུལ་བཞུད།"
 #: apps/web/src/components/catalog-filter-controls.tsx:338
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/messaging/helpdesk-section.tsx:37
-#: apps/web/src/components/messaging/messages-section.tsx:48
+#: apps/web/src/components/messaging/messages-section.tsx:47
 #: apps/web/src/components/messaging/notifications-section.tsx:31
 #: apps/web/src/components/nfc-card-prompt.tsx:112
 #: apps/web/src/components/offerings/offerings-panel.tsx:187
@@ -11881,7 +11916,7 @@ msgstr "འགྲུལ་བཞུད།"
 #: apps/web/src/desktop/account/settings-desk.tsx:545
 #: apps/web/src/desktop/activity/transactions-desk.tsx:513
 #: apps/web/src/desktop/market/market-search-field.tsx:442
-#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:67
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:66
 #: apps/web/src/desktop/messaging/helpdesk-desk.tsx:55
 #: apps/web/src/desktop/messaging/notifications-desk.tsx:34
 #: apps/web/src/desktop/messaging/thread-desk.tsx:98
@@ -11991,7 +12026,7 @@ msgid "Unable to load language. Reverted to English."
 msgstr "སྐད་ཡིག་མངོན་གསལ་འབད་མ་ཚུགས། ཨིང་ལིཤ་ལུ་ལོག་བཏང་ཡོད།"
 
 #: apps/web/src/components/resource-usage.tsx:62
-#: apps/web/src/components/vouchers/voucher-summary.tsx:147
+#: apps/web/src/components/vouchers/voucher-summary.tsx:148
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:298
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:134
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:677
@@ -12234,8 +12269,8 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 msgstr "<0>Binance</0> ཡང་ན་ས་གནས་བརྗེ་སོར་གཞན་ལག་ལེན་འཐབ་ དེ་ལས་ <1>Jumper</1> "
 "གིས་ཁྱེད་རའི་ Gnosis དངུལ་ཁུག་ལུ་དངུལ་གཏང་གནང་།"
 
-#: apps/web/src/desktop/messaging/composer-desk.tsx:76
-#: apps/web/src/features/messaging/ui/message-composer.tsx:76
+#: apps/web/src/desktop/messaging/composer-desk.tsx:86
+#: apps/web/src/features/messaging/ui/message-composer.tsx:86
 msgid "Use a JPEG, PNG or WebP photo under 8 MB."
 msgstr "JPEG, PNG ཡང་ན་ WebP པར་ 8 MB གི་འོག་ལུ་ལག་ལེན་འཐབ།"
 
@@ -12336,10 +12371,10 @@ msgstr "ལག་ལེན་པའི་མིང་ནང་ ཡིག་འ�
 msgid "Username updated"
 msgstr "ལག་ལེན་པའི་མིང་དུས་མཐུན་བཟོ་ཡོད།"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:163
-#: apps/web/src/components/messaging/new-message-sheet.tsx:174
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:178
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:179
+#: apps/web/src/components/messaging/new-message-sheet.tsx:165
+#: apps/web/src/components/messaging/new-message-sheet.tsx:176
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:172
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:173
 msgid "Username, address, or phone number"
 msgstr "ལག་ལེན་པའི་མིང་ ཁ་བྱང་ ཡང་ན་ ཁ་པར་ཨང་།"
 
@@ -12478,7 +12513,7 @@ msgstr "འཛིན་ཤོག"
 #: apps/web/src/desktop/credit/get-desk.tsx:66
 #: apps/web/src/desktop/credit/get-desk.tsx:259
 #: apps/web/src/desktop/market/market-bits.tsx:82
-#: apps/web/src/desktop/market/place-panel.tsx:210
+#: apps/web/src/desktop/market/place-panel.tsx:220
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:130
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:565
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:651
@@ -12498,10 +12533,14 @@ msgstr "འཛིན་ཤོག"
 msgid "Voucher"
 msgstr "འཛིན་ཤོག"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:323
+#: apps/web/src/components/vouchers/voucher-summary.tsx:329
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:245
 msgid "Voucher actions"
 msgstr "འཛིན་ཤོག་བྱ་བ།"
+
+#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:127
+msgid "Voucher choices"
+msgstr "འཛིན་ཤོག་གདམ་ཁ།"
 
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:393
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:341
@@ -12630,6 +12669,10 @@ msgstr "འཛིན་ཤོག་ངོ་རྟགས།"
 msgid "Voucher tracking details are missing."
 msgstr "འཛིན་ཤོག་རྗེས་འདེད་ཁ་གསལ་མེད།"
 
+#: apps/web/src/components/messaging/resource-context-card.tsx:100
+msgid "Voucher:"
+msgstr "འཛིན་ཤོག་:"
+
 #: apps/web/src/desktop/activity/transactions-desk.tsx:393
 msgid "Voucher: <0>{voucherLabel}</0>"
 msgstr "དངུལ་ཤོག་: <0>{voucherLabel}</0>"
@@ -12642,8 +12685,8 @@ msgstr "དངུལ་ཤོག་: ག་ཅི་རུང་"
 #: apps/web/src/components/market-bar.tsx:187
 #: apps/web/src/components/market-bar.tsx:267
 #: apps/web/src/components/resource-usage.tsx:115
-#: apps/web/src/components/wants/want-detail.tsx:216
-#: apps/web/src/desktop/catalogs/catalog-desk.tsx:169
+#: apps/web/src/components/wants/want-detail.tsx:218
+#: apps/web/src/desktop/catalogs/catalog-desk.tsx:177
 #: apps/web/src/desktop/market/market-layers.tsx:34
 #: apps/web/src/desktop/market/market-search-field.tsx:348
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:326
@@ -12654,7 +12697,7 @@ msgstr "དངུལ་ཤོག་: ག་ཅི་རུང་"
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:122
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:262
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:400
-#: apps/web/src/desktop/wants/want-place-desk.tsx:299
+#: apps/web/src/desktop/wants/want-place-desk.tsx:301
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:29
 #: apps/web/src/features/home/ui/market-list-page.tsx:126
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
@@ -12678,7 +12721,6 @@ msgstr "འཛིན་ཤོག་ཐོ་གཞུང་།"
 msgid "Vouchers swap one for one"
 msgstr "འཛིན་ཤོག་གཅིག་ལུ་གཅིག་བརྗེ་ལེན་འབད།"
 
-#: apps/web/src/components/messaging/voucher-proposal-picker.tsx:80
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:762
 #: apps/web/src/features/catalogs/hooks/use-catalog-member-picker.tsx:113
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1034
@@ -12779,7 +12821,7 @@ msgstr "དངུལ་ཁུག་ལཱ་ཡུན།"
 #: apps/web/src/desktop/shell/command-palette.tsx:81
 #: apps/web/src/desktop/wants/want-form-desk.tsx:412
 #: apps/web/src/desktop/wants/want-outline.tsx:11
-#: apps/web/src/desktop/wants/want-place-desk.tsx:59
+#: apps/web/src/desktop/wants/want-place-desk.tsx:60
 #: apps/web/src/features/home/ui/marketplace-page.tsx:427
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:134
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:64
@@ -12794,6 +12836,10 @@ msgstr "تم بلوغ حد الطلبات. اطلب من المسؤول زياد
 #: apps/web/src/features/wants/ui/want-form-page.tsx:170
 msgid "Want picture"
 msgstr "صورة الطلب"
+
+#: apps/web/src/components/messaging/resource-context-card.tsx:102
+msgid "Want:"
+msgstr "ཞུ་བ་:"
 
 #. placeholder {0}: want.ownerName
 #: apps/web/src/components/wants/want-detail.tsx:56
@@ -12857,7 +12903,7 @@ msgstr "ང་བཅས་ཀྱིས་འཛིན་ཤོག་འདི་
 
 #: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:39
 #: apps/web/src/components/vouchers/voucher-about.tsx:102
-#: apps/web/src/components/vouchers/voucher-summary.tsx:381
+#: apps/web/src/components/vouchers/voucher-summary.tsx:387
 #: apps/web/src/desktop/account/profile-desk.tsx:221
 #: apps/web/src/desktop/account/profile-desk.tsx:237
 #: apps/web/src/desktop/onboarding/paper-wallet-desk.tsx:110
@@ -12930,8 +12976,8 @@ msgstr "འཛིན་ཤོག་ཟེར་མི་ག་ཅི་སྨོ
 msgid "When"
 msgstr "ནམ་"
 
-#: apps/web/src/components/wants/want-detail.tsx:67
-#: apps/web/src/desktop/wants/want-place-desk.tsx:136
+#: apps/web/src/components/wants/want-detail.tsx:69
+#: apps/web/src/desktop/wants/want-place-desk.tsx:138
 msgid "When and where"
 msgstr "متى وأين"
 
@@ -12986,8 +13032,8 @@ msgstr "དངུལ་རྒྱུན་ཕྱིར་བཏོན།"
 msgid "Withdrawal submitted"
 msgstr "ཕྱིར་བཏོན་ཞུ་འབུལ་གྲུབ།"
 
-#: apps/web/src/desktop/messaging/composer-desk.tsx:118
-#: apps/web/src/features/messaging/ui/message-composer.tsx:94
+#: apps/web/src/desktop/messaging/composer-desk.tsx:128
+#: apps/web/src/features/messaging/ui/message-composer.tsx:104
 msgid "Write a message"
 msgstr "འཕྲིན་དོན་ཅིག་འབྲི།"
 
@@ -13050,8 +13096,8 @@ msgstr "ཁྱོད་ལུ་ <0>{heldAmount} {targetSymbol}</0> ཧེ་མ
 msgid "You already have a catalog."
 msgstr "ཁྱོད་ལུ་ཐོ་གཞུང་ཧེ་མ་ལས་ཡོད།"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:149
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:144
+#: apps/web/src/components/messaging/new-message-sheet.tsx:151
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:146
 msgid "You already have a conversation with this person."
 msgstr "ཁྱོད་ མི་འདི་དང་གཅིག་ཁར་ གླེང་མོལ་ཧེ་མ་ལས་ཡོད།"
 
@@ -13096,15 +13142,15 @@ msgstr "You can still withdraw funds after the pool is retired."
 msgid "You can write or edit your review until {0}."
 msgstr "{0} ཚུན་ཁྱོད་ཀྱིས་བསྐྱར་ཞིབ་བྲིས་ཡང་ན་ཞུན་དག་འབད་ཚུགས།"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:147
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:142
+#: apps/web/src/components/messaging/new-message-sheet.tsx:149
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:144
 msgid "You can't message this person."
 msgstr "ཁྱོད་ཀྱིས་མི་འདི་ལུ་འཕྲིན་དོན་གཏང་མི་ཚུགས།"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:145
-#: apps/web/src/components/messaging/new-message-sheet.tsx:211
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:140
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:218
+#: apps/web/src/components/messaging/new-message-sheet.tsx:147
+#: apps/web/src/components/messaging/new-message-sheet.tsx:213
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:142
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:212
 msgid "You can't message yourself."
 msgstr "ཁྱོད་རང་ལུ་འཕྲིན་དོན་གཏང་མི་ཚུགས།"
 
@@ -13230,8 +13276,8 @@ msgstr "ཁྱོད་ཀྱིས་ལེན་འོང་།"
 msgid "You'll send"
 msgstr "ཁྱོད་ཀྱིས་གཏང་འོང་།"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:151
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:146
+#: apps/web/src/components/messaging/new-message-sheet.tsx:153
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:148
 msgid "You've sent too many requests today. Try again tomorrow."
 msgstr "ཁྱོད་ཀྱིས་ད་རིས་ཞུ་བ་ལེ་ཤ་བཏང་ཡི། ནངས་པ་ལོག་སྟེ་འབད།"
 
@@ -13261,8 +13307,8 @@ msgid "Your account is awaiting approval. You will be able to continue once it "
 msgstr "ཁྱོད་ཀྱི་རྩིས་ཐོ་ཆ་འཇོག་བསྒུག་པའི་སྒང་ཨིན། "
 "ཆ་འཇོག་གྲུབ་ཞིནམ་ལས་འཕྲོ་མཐུད་ཚུགས།"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:134
-#: apps/web/src/components/vouchers/voucher-summary.tsx:138
+#: apps/web/src/components/vouchers/voucher-summary.tsx:135
+#: apps/web/src/components/vouchers/voucher-summary.tsx:139
 #: apps/web/src/desktop/vouchers/detail/voucher-section-bits.tsx:61
 msgid "Your Balance"
 msgstr "ཁྱེད་ཀྱི་ལྷག་དངུལ།"
@@ -13433,8 +13479,8 @@ msgid "Your unsaved changes to this post will be lost."
 msgstr "གསལ་བསྒྲགས་འདི་ལུ་སྲུང་བཞག་མ་འབད་མི་བསྒྱུར་བཅོས་ཚུ་བྱང་སྟོར་ཤོར་འོང་།"
 
 #: apps/web/src/components/messaging/voucher-proposal-picker.tsx:72
-msgid "Your vouchers"
-msgstr "Your vouchers"
+#~ msgid "Your vouchers"
+#~ msgstr "Your vouchers"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:174
 #: apps/web/src/features/home/ui/wallet-page.tsx:231

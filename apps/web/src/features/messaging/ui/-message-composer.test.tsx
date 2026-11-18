@@ -12,6 +12,7 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const VIEWER = "0x2a986F40d29fc7e1Bded626542d4b8f1Ca0A82f6";
 
+const PROPOSAL = "0x5555555555555555555555555555555555555555" as const;
 const mocks = vi.hoisted(() => ({ send: vi.fn(), upload: vi.fn() }));
 
 vi.mock("#/lib/messaging-config", () => ({ MESSAGING_ENABLED: true }));
@@ -23,6 +24,19 @@ vi.mock("#/features/images/use-image-upload", () => ({
   useImageUpload: () => ({ mutateAsync: mocks.upload }),
 }));
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: true }));
+vi.mock("#/lib/api/pools", () => ({
+  poolsClient: { getPoolByAddress: async () => ({ name: "Community Pool" }) },
+}));
+vi.mock("#/lib/api/market", () => ({
+  marketClient: { getMarketVoucher: async () => ({ name: "Garden Voucher", symbol: "GARD" }) },
+}));
+vi.mock("#/components/messaging/voucher-proposal-picker", () => ({
+  VoucherProposalPicker: ({ onChange }: { onChange: (address: typeof PROPOSAL) => void }) => (
+    <button type="button" onClick={() => onChange(PROPOSAL)}>
+      Choose Garden Voucher
+    </button>
+  ),
+}));
 
 import { MessageComposer } from "./message-composer";
 
@@ -115,27 +129,36 @@ describe("MessageComposer", () => {
     );
   });
 
-  it("sends resource context without requiring message text", async () => {
+  it("sends a chosen proposal without typing", async () => {
     const onContextSent = vi.fn();
     const context = {
       kind: "pool" as const,
       resourceId: "0x4444444444444444444444444444444444444444" as const,
-      proposedVoucherAddress: "0x5555555555555555555555555555555555555555" as const,
     };
-    mocks.send.mockResolvedValueOnce({ ...sent(""), context });
+    mocks.send.mockRejectedValueOnce(new Error("Send failed"));
+    mocks.send.mockResolvedValueOnce({
+      ...sent(""),
+      context: { ...context, resourceName: "Community Pool" },
+    });
     mount({ initialContext: context, onContextSent });
 
-    expect(await screen.findByText("Regarding")).toBeTruthy();
-    expect(screen.getByText(context.resourceId)).toBeTruthy();
+    expect(await screen.findByText("Pool:")).toBeTruthy();
+    expect((await screen.findByRole("link", { name: "Community Pool" })).getAttribute("href")).toBe(
+      `/pools/${context.resourceId}`,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Choose Garden Voucher" }));
+    await screen.findByRole("link", { name: "Garden Voucher (GARD)" });
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
 
-    await waitFor(() =>
-      expect(mocks.send).toHaveBeenCalledWith(
-        5,
-        expect.objectContaining({ context, clientId: expect.any(String) }),
-      ),
-    );
+    await screen.findByRole("alert");
+    expect(screen.getByRole("link", { name: "Garden Voucher (GARD)" })).toBeTruthy();
+    expect(mocks.send).toHaveBeenCalledWith(5, {
+      context: { ...context, proposedVoucherAddress: PROPOSAL },
+      clientId: expect.any(String),
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
     await waitFor(() => expect(onContextSent).toHaveBeenCalledTimes(1));
-    expect(screen.queryByText("Regarding")).toBeNull();
+    expect(mocks.send.mock.calls[1]).toEqual(mocks.send.mock.calls[0]);
+    expect(screen.queryByText("Pool:")).toBeNull();
   });
 });

@@ -42,7 +42,6 @@ export function ConversationListDesk({
     <div className="flex min-h-0 w-[340px] shrink-0 flex-col border-border border-e">
       <div className="shrink-0 border-border border-b p-3">
         <NewMessageDialog
-          existing={list.conversations}
           messageTo={messageTo}
           messageContext={messageContext}
           onMessageToConsumed={onMessageToConsumed}

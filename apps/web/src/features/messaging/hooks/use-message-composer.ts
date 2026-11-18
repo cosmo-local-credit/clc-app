@@ -45,6 +45,12 @@ export function useMessageComposer(
   const [images, setImages] = useState<ComposerImage[]>([]);
   const [unsupported, setUnsupported] = useState(false);
   const [context, setContext] = useState<MessageContextInput | undefined>(initialContext);
+  const initialContextKey = JSON.stringify(initialContext);
+  const [adoptedContextKey, setAdoptedContextKey] = useState(initialContextKey);
+  if (initialContextKey !== adoptedContextKey) {
+    setAdoptedContextKey(initialContextKey);
+    setContext(initialContext);
+  }
   const pending = useRef<{ key: string; clientId: string } | null>(null);
   const previews = useRef(new Set<string>());
 
@@ -159,6 +165,11 @@ export function useMessageComposer(
     submit,
     send,
     context,
+    setProposedVoucher: (address?: `0x${string}`) => {
+      setContext((current) =>
+        current?.kind === "pool" ? { ...current, proposedVoucherAddress: address } : current,
+      );
+    },
     clearContext: () => {
       setContext(undefined);
       onContextSent?.();

@@ -26,7 +26,6 @@ export function MessagesSection({
   return (
     <div className="space-y-3">
       <NewMessageSheet
-        existing={list.conversations}
         messageTo={messageTo}
         messageContext={messageContext}
         onMessageToConsumed={onMessageToConsumed}

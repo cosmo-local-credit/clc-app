@@ -206,6 +206,7 @@ export function VoucherDetailPage({
         website={detail?.website}
         catalogResourceId={detail?.id}
         catalogAddress={detail?.address}
+        active={detail?.active}
         title={
           <h1 className="font-heading text-[1.75rem] font-bold leading-tight [overflow-wrap:anywhere]">
             {token.name}
