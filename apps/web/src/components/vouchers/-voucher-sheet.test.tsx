@@ -46,6 +46,9 @@ vi.mock("#/components/catalogs/add-to-catalog-button", () => ({
     ) : null,
 }));
 vi.mock("#/components/messaging/resource-owner-contact", () => ({
+  OwnerMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
+    <a href={`/?messageKind=${context?.kind}&messageResource=${context?.resourceId}`}>Message</a>
+  ),
   ResourceOwnerContactValue: ({ ownerAddress }: { ownerAddress: string }) => (
     <span>{`issuer:${ownerAddress}`}</span>
   ),
@@ -419,6 +422,9 @@ describe("VoucherSheet summary", () => {
     );
     const actions = screen.getByLabelText("Voucher actions");
     const addToCatalog = within(actions).getByRole("button", { name: "Add to catalog" });
+    const message = within(actions).getByRole("link", { name: "Message" });
+    expect(addToCatalog.nextElementSibling).toBe(message);
+    expect(message.getAttribute("href")).toBe(`/?messageKind=voucher&messageResource=${VOUCHER}`);
     // Compact like the pills beside it, with the same padded 44px target.
     expect(addToCatalog.getAttribute("data-size")).toBeNull();
     expect(addToCatalog.getAttribute("data-tap")).toBe("true");

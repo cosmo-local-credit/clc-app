@@ -11,6 +11,7 @@ import {
   type MapSheetSnap,
 } from "#/components/ui/map-sheet";
 import { WantDetail, WantShareButton } from "#/components/wants/want-detail";
+import { WantMessageButton } from "#/components/wants/want-message-button";
 import { WantPicture } from "#/components/wants/want-row";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
 import { wantsClient } from "#/lib/api/wants";
@@ -80,25 +81,28 @@ export function WantSheet({
             </Button>
           </div>
         ) : want ? (
-          <div className="flex min-h-14 w-full items-center gap-1">
-            <button
-              type="button"
-              className="flex min-h-14 min-w-0 flex-1 items-center gap-3 text-start"
-              onClick={() => onSnapChange(snap === "full" ? "peek" : "full")}
-            >
-              <WantPicture want={want} size="size-12" />
-              <span className="min-w-0 flex-1">
-                <MapSheetTitle dir="auto" className="truncate">
-                  {want.name}
-                </MapSheetTitle>
-                <span dir="auto" className="mt-1 block truncate text-xs text-muted-foreground">
-                  {want.locationName}
-                  {distance ? ` · ${distance}` : null}
+          <div className="space-y-2">
+            <div className="flex min-h-14 w-full items-center gap-1">
+              <button
+                type="button"
+                className="flex min-h-14 min-w-0 flex-1 items-center gap-3 text-start"
+                onClick={() => onSnapChange(snap === "full" ? "peek" : "full")}
+              >
+                <WantPicture want={want} size="size-12" />
+                <span className="min-w-0 flex-1">
+                  <MapSheetTitle dir="auto" className="truncate">
+                    {want.name}
+                  </MapSheetTitle>
+                  <span dir="auto" className="mt-1 block truncate text-xs text-muted-foreground">
+                    {want.locationName}
+                    {distance ? ` · ${distance}` : null}
+                  </span>
                 </span>
-              </span>
-            </button>
-            <WantShareButton want={want} />
-            <CloseWantButton label={t`Close`} onClick={selection.close} />
+              </button>
+              <WantShareButton want={want} />
+              <CloseWantButton label={t`Close`} onClick={selection.close} />
+            </div>
+            <WantMessageButton want={want} />
           </div>
         ) : (
           <div className="flex min-h-14 items-center gap-3">

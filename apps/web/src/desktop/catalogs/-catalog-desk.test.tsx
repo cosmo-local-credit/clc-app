@@ -41,6 +41,9 @@ vi.mock("#/components/auth/authenticated-details-gate", () => ({
   AuthenticatedDetailsGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 vi.mock("#/components/messaging/resource-owner-contact", () => ({
+  OwnerMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
+    <a href={`/?messageKind=${context?.kind}&messageResource=${context?.resourceId}`}>Message</a>
+  ),
   ResourceOwnerContact: ({ ownerAddress }: { ownerAddress: string }) => (
     <div data-testid="catalog-owner-contact">{ownerAddress}</div>
   ),
@@ -106,6 +109,9 @@ describe("CatalogDesk edit inspector", () => {
     const vouchers = (await screen.findByRole("heading", { name: "Vouchers" })).closest("section");
     if (!pools || !vouchers) throw new Error("expected Catalog member sections");
 
+    const message = screen.getByRole("link", { name: "Message" });
+    expect(message.getAttribute("href")).toBe("/?messageKind=catalog&messageResource=7");
+    expect(message.compareDocumentPosition(pools) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
     expect(pools.compareDocumentPosition(owner) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
     expect(vouchers.compareDocumentPosition(owner) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
   });

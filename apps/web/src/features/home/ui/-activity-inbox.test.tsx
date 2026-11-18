@@ -238,7 +238,7 @@ describe("Messages section", () => {
     const results = await screen.findByRole("list", { name: "Matching people" });
     expect(within(results).getAllByRole("button", { name: "Message" })).toHaveLength(1);
     fireEvent.click(within(results).getByRole("button", { name: "Message" }));
-    fireEvent.change(screen.getByLabelText("Introduce yourself"), {
+    fireEvent.change(await screen.findByLabelText("Introduce yourself"), {
       target: { value: "Hello from the market" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Send request" }));
@@ -257,7 +257,7 @@ describe("Messages section", () => {
       `/?tab=activity&section=messages&messageTo=${encodeURIComponent(AMINA)}`,
     );
     const sheet = await screen.findByRole("dialog", { name: "New message" });
-    expect(within(sheet).getByText("amina")).toBeTruthy();
+    expect(await within(sheet).findByText("amina")).toBeTruthy();
     await waitFor(() =>
       expect(router.state.location.search).toEqual({ tab: "activity", section: "messages" }),
     );
@@ -296,7 +296,7 @@ describe("Messages section", () => {
     expect(within(sheet).getByText("Choose who to message.")).toBeTruthy();
     expect(within(sheet).getAllByRole("button", { name: "Message" })).toHaveLength(2);
     fireEvent.click(within(sheet).getAllByRole("button", { name: "Message" })[1]!);
-    expect(within(sheet).getByText("juma")).toBeTruthy();
+    expect(await within(sheet).findByText("juma")).toBeTruthy();
     await waitFor(() =>
       expect(router.state.location.search).toEqual({ tab: "activity", section: "messages" }),
     );

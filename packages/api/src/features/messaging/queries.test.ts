@@ -6,12 +6,36 @@ import {
   adminHelpdeskMessagesQueryOptions,
   adminMessagingKeys,
   appendThreadMessage,
+  conversationByPeerQueryOptions,
   conversationMessagesQueryOptions,
   loadOlderConversationMessages,
   messagingKeys,
 } from "./queries";
 
 const VIEWER = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
+
+it("scopes a peer lookup by viewer and checks it matches the requested direct peer", async () => {
+  const peer = "0xDEADBEEF00000000000000000000000000000001";
+  const direct = { id: 7, kind: "direct", peer: { address: peer } };
+  const list = vi.fn().mockResolvedValue({ items: [direct], nextCursor: null });
+  const client = { list } as unknown as MessagingClient;
+  const queryClient = new QueryClient();
+  const options = conversationByPeerQueryOptions(client, VIEWER, peer);
+
+  await expect(queryClient.fetchQuery(options)).resolves.toEqual(direct);
+  expect(list).toHaveBeenCalledWith(
+    { kind: "direct", peerAddress: peer.toLowerCase() },
+    expect.any(AbortSignal),
+  );
+  expect(options.queryKey).toEqual(messagingKeys.peer(VIEWER.toLowerCase(), peer.toLowerCase()));
+  expect(queryClient.getQueryData(messagingKeys.peer(peer, peer))).toBeUndefined();
+
+  list.mockResolvedValue({
+    items: [{ id: 5, kind: "direct", peer: { address: VIEWER } }],
+    nextCursor: "ordinary-inbox-page",
+  });
+  await expect(queryClient.fetchQuery(options)).rejects.toThrow("exact peer result");
+});
 
 const message = (id: number) => ({
   id,

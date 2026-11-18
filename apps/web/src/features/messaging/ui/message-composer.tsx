@@ -8,6 +8,7 @@ import { Button } from "#/components/ui/button";
 import { Textarea } from "#/components/ui/textarea";
 import { useMessageComposer } from "../hooks/use-message-composer";
 import { ResourceContextCard } from "#/components/messaging/resource-context-card";
+import { VoucherProposalPicker } from "#/components/messaging/voucher-proposal-picker";
 
 /**
  * The thread's composer: the Send screen's message field plus photos through
@@ -47,6 +48,15 @@ export function MessageComposer({
             <RiCloseLine aria-hidden="true" />
           </Button>
         </div>
+      ) : null}
+      {composer.context?.kind === "pool" ? (
+        <VoucherProposalPicker
+          key={composer.context.resourceId}
+          compact
+          poolAddress={composer.context.resourceId}
+          value={composer.context.proposedVoucherAddress}
+          onChange={composer.setProposedVoucher}
+        />
       ) : null}
       {composer.images.length > 0 ? (
         <ul className="flex gap-2" aria-label={t`Photos to send`}>

@@ -6,7 +6,10 @@ import { useState } from "react";
 import { RiAddLine, RiFileCopyLine, RiShareLine } from "react-icons/ri";
 
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
-import { ResourceOwnerContact } from "#/components/messaging/resource-owner-contact";
+import {
+  OwnerMessageButton,
+  ResourceOwnerContact,
+} from "#/components/messaging/resource-owner-contact";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
@@ -31,7 +34,7 @@ import { CatalogMemberPickerDesk } from "./catalog-member-picker-desk";
  */
 export function CatalogDesk({ id, editor }: { id: string; editor?: CatalogEditor }) {
   const { t } = useLingui();
-  const { query, catalog, owner } = useCatalogDetail(id);
+  const { query, catalog, owner, viewerAddress } = useCatalogDetail(id);
   const localEditor = useCatalogEditor();
   const { editing, open: openEditor, close: closeEditor } = editor ?? localEditor;
   useDeskTrailLabel(catalog?.name);
@@ -77,6 +80,11 @@ export function CatalogDesk({ id, editor }: { id: string; editor?: CatalogEditor
               actions={
                 <>
                   <CatalogShareDesk id={catalog.id} name={catalog.name} />
+                  <OwnerMessageButton
+                    ownerAddress={catalog.ownerAddress}
+                    excludeAddress={viewerAddress}
+                    context={{ kind: "catalog", resourceId: catalog.id }}
+                  />
                   {owner ? (
                     <Button
                       variant="outline"

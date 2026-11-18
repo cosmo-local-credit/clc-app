@@ -1,13 +1,12 @@
 import {
   CONVERSATION_INTRO_MAX,
-  type Conversation,
   type MessageContextInput,
 } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { RiQuillPenLine, RiSearchLine } from "react-icons/ri";
-import { getAddress } from "viem";
+import { ConversationLookupState } from "#/components/messaging/conversation-lookup-state";
 
 import { Button } from "#/components/ui/button";
 import {
@@ -29,15 +28,13 @@ import { VoucherProposalPicker } from "#/components/messaging/voucher-proposal-p
 
 /**
  * New message on the desktop: the recipient search in a dialog, then an
- * optional introduction. Someone already in the list opens their thread.
+ * optional introduction. An existing conversation opens in the inbox.
  */
 export function NewMessageDialog({
-  existing,
   messageTo,
   messageContext,
   onMessageToConsumed,
 }: {
-  existing: readonly Conversation[];
   messageTo?: `0x${string}`;
   messageContext?: MessageContextInput;
   onMessageToConsumed?: () => void;
@@ -46,7 +43,6 @@ export function NewMessageDialog({
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const flow = useNewMessage(
-    existing,
     (conversationId, context) => {
       changeOpen(false);
       void navigate({
@@ -72,7 +68,13 @@ export function NewMessageDialog({
   }, [messageTo]);
 
   useEffect(() => {
-    if (!messageTo || !flow.ownerSearch.isSuccess || flow.ownerUsers.length !== 1 || selected) {
+    if (
+      !messageTo ||
+      !flow.ownerSearch.isSuccess ||
+      flow.ownerUsers.length !== 1 ||
+      selected ||
+      flow.lookupStatus !== "idle"
+    ) {
       return;
     }
     onMessageToConsumed?.();
@@ -101,12 +103,14 @@ export function NewMessageDialog({
       <DialogRoot open={open} onOpenChange={changeOpen}>
         <DialogPortal>
           <DialogBackdrop />
-          <DialogContent className="flex max-h-[min(640px,calc(100dvh-4rem))] max-w-[480px] flex-col gap-4 rounded-none border border-border bg-card shadow-none">
-            <DialogTitle>
+          <DialogContent className="flex min-h-0 max-h-[min(640px,calc(100dvh-4rem))] max-w-[480px] flex-col gap-4 rounded-none border border-border bg-card shadow-none">
+            <DialogTitle className="shrink-0">
               <Trans>New message</Trans>
             </DialogTitle>
-            {selected ? (
-              <>
+            {flow.lookupStatus !== "idle" ? (
+              <ConversationLookupState state={flow.lookupStatus} onRetry={flow.retryLookup} />
+            ) : selected ? (
+              <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain">
                 <div className="border border-border bg-background p-3">
                   <RecipientIdentityText
                     identity={selected}
@@ -117,11 +121,9 @@ export function NewMessageDialog({
                 {flow.context ? <ResourceContextCard context={flow.context} /> : null}
                 {flow.context?.kind === "pool" ? (
                   <VoucherProposalPicker
-                    value={
-                      flow.context.proposedVoucherAddress
-                        ? getAddress(flow.context.proposedVoucherAddress)
-                        : undefined
-                    }
+                    key={flow.context.resourceId}
+                    poolAddress={flow.context.resourceId}
+                    value={flow.context.proposedVoucherAddress}
                     onChange={flow.setProposedVoucher}
                   />
                 ) : null}
@@ -149,15 +151,7 @@ export function NewMessageDialog({
                     )}
                   </p>
                 ) : null}
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1" onClick={flow.unselect}>
-                    <Trans>Back</Trans>
-                  </Button>
-                  <Button className="flex-1" pending={flow.request.isPending} onClick={flow.submit}>
-                    <Trans>Send request</Trans>
-                  </Button>
-                </div>
-              </>
+              </div>
             ) : (
               <>
                 {!messageTo ? (
@@ -262,6 +256,21 @@ export function NewMessageDialog({
                 </div>
               </>
             )}
+            {selected && flow.lookupStatus === "idle" ? (
+              <div className="flex shrink-0 gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  disabled={flow.request.isPending}
+                  onClick={flow.unselect}
+                >
+                  <Trans>Back</Trans>
+                </Button>
+                <Button className="flex-1" pending={flow.request.isPending} onClick={flow.submit}>
+                  <Trans>Send request</Trans>
+                </Button>
+              </div>
+            ) : null}
           </DialogContent>
         </DialogPortal>
       </DialogRoot>
