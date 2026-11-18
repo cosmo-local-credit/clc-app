@@ -1,4 +1,5 @@
 import { MESSAGE_BODY_MAX } from "@clc/core/features/messaging/logic";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useRef } from "react";
 import { RiCloseLine, RiImageAddLine } from "react-icons/ri";
@@ -6,15 +7,24 @@ import { RiCloseLine, RiImageAddLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import { Textarea } from "#/components/ui/textarea";
 import { useMessageComposer } from "../hooks/use-message-composer";
+import { ResourceContextCard } from "#/components/messaging/resource-context-card";
 
 /**
  * The thread's composer: the Send screen's message field plus photos through
  * the image upload client. A failed send keeps the draft, and sending it again
  * reuses its `clientId`.
  */
-export function MessageComposer({ conversationId }: { conversationId: number }) {
+export function MessageComposer({
+  conversationId,
+  initialContext,
+  onContextSent,
+}: {
+  conversationId: number;
+  initialContext?: MessageContextInput;
+  onContextSent?: () => void;
+}) {
   const { t } = useLingui();
-  const composer = useMessageComposer(conversationId);
+  const composer = useMessageComposer(conversationId, initialContext, onContextSent);
   const fileInput = useRef<HTMLInputElement>(null);
   return (
     <form
@@ -24,6 +34,20 @@ export function MessageComposer({ conversationId }: { conversationId: number }) 
         composer.submit();
       }}
     >
+      {composer.context ? (
+        <div className="relative">
+          <ResourceContextCard context={composer.context} />
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute top-1 end-1"
+            aria-label={t`Remove resource`}
+            onClick={composer.clearContext}
+          >
+            <RiCloseLine aria-hidden="true" />
+          </Button>
+        </div>
+      ) : null}
       {composer.images.length > 0 ? (
         <ul className="flex gap-2" aria-label={t`Photos to send`}>
           {composer.images.map((image) => (

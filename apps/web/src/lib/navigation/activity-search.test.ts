@@ -4,6 +4,7 @@ import {
   canonicalActivityRouteSearch,
   clearActivityRouteSearch,
   parseActivityDeskFilters,
+  parseActivityMessageContext,
   parseActivityMessageTo,
   parseActivitySearch,
   parseActivitySection,
@@ -123,5 +124,60 @@ describe("activity search", () => {
       activityTypes: undefined,
       messageTo: undefined,
     });
+  });
+
+  it("canonicalizes resource context and an optional Pool voucher proposal", () => {
+    const pool = "0x5c0d0000000000000000000000000000000e7e21";
+    const voucher = "0x1111111111111111111111111111111111111111";
+    const context = parseActivityMessageContext({
+      messageKind: "pool",
+      messageResource: pool,
+      messageVoucher: voucher,
+    });
+
+    expect(context).toEqual({
+      kind: "pool",
+      resourceId: "0x5C0d0000000000000000000000000000000E7E21",
+      proposedVoucherAddress: voucher,
+    });
+    expect(
+      canonicalActivityRouteSearch({
+        section: "messages",
+        messageKind: "pool",
+        messageResource: pool,
+        messageVoucher: voucher,
+      }),
+    ).toEqual({
+      section: "messages",
+      activityQ: undefined,
+      activityTypes: undefined,
+      messageKind: "pool",
+      messageResource: "0x5C0d0000000000000000000000000000000E7E21",
+      messageVoucher: voucher,
+    });
+  });
+
+  it("accepts Want and Catalog context while dropping invalid combinations", () => {
+    expect(parseActivityMessageContext({ messageKind: "want", messageResource: "42" })).toEqual({
+      kind: "want",
+      resourceId: "42",
+    });
+    expect(parseActivityMessageContext({ messageKind: "catalog", messageResource: "7" })).toEqual({
+      kind: "catalog",
+      resourceId: "7",
+    });
+    expect(
+      parseActivityMessageContext({
+        messageKind: "voucher",
+        messageResource: "not-an-address",
+      }),
+    ).toBeUndefined();
+    expect(
+      parseActivityMessageContext({
+        messageKind: "want",
+        messageResource: "42",
+        messageVoucher: "0x1111111111111111111111111111111111111111",
+      }),
+    ).toEqual({ kind: "want", resourceId: "42" });
   });
 });

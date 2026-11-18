@@ -8,13 +8,22 @@ import { MessagesDesk } from "#/desktop/messaging/messages-desk";
 import { useDeskTrailLabel } from "#/desktop/trail";
 import { useMessagingViewer } from "#/features/messaging/hooks/use-messaging-viewer";
 import { messagingClient } from "#/lib/api/messaging";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 
 /**
  * `/messages/$conversationId` on the desktop: Activity with that thread open.
  * A direct thread opens beside the Messages list; the helpdesk thread opens in
  * Helpdesk. Back returns to whichever inbox opened it.
  */
-export function ConversationDesk({ conversationId }: { conversationId: number }) {
+export function ConversationDesk({
+  conversationId,
+  initialContext,
+  onContextSent,
+}: {
+  conversationId: number;
+  initialContext?: MessageContextInput;
+  onContextSent?: () => void;
+}) {
   const { t } = useLingui();
   const viewer = useMessagingViewer();
   // The thread pane polls this conversation; this only reads its kind and peer.
@@ -34,6 +43,11 @@ export function ConversationDesk({ conversationId }: { conversationId: number })
   return helpdesk ? (
     <HelpdeskDesk header={header} conversationId={conversationId} />
   ) : (
-    <MessagesDesk header={header} conversationId={conversationId} />
+    <MessagesDesk
+      header={header}
+      conversationId={conversationId}
+      threadContext={initialContext}
+      onThreadContextSent={onContextSent}
+    />
   );
 }

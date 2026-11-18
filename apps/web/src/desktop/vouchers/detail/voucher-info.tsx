@@ -228,7 +228,10 @@ function VoucherInfoBody({
             t`Issuer`,
             issuer ? (
               <span key="issuer" className="grid min-w-0 gap-1">
-                <ResourceOwnerContactValue ownerAddress={issuer} />
+                <ResourceOwnerContactValue
+                  ownerAddress={issuer}
+                  context={{ kind: "voucher", resourceId: address as `0x${string}` }}
+                />
                 <span className="font-sans font-normal">
                   <MultisigOwnerNotice info={ownerInfo} />
                 </span>

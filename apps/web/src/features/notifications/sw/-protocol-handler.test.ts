@@ -36,6 +36,7 @@ describe("handleNotificationProtocolMessage", () => {
       kinds: [
         "voucher.received",
         "offramp.completed",
+        "pool.voucher_admitted",
         "message.received",
         "message.request",
         "message.accepted",

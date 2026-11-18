@@ -4,6 +4,7 @@ import { type Ref, useEffect, useRef, useState } from "react";
 
 import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
+import { ResourceContextCard } from "#/components/messaging/resource-context-card";
 
 /**
  * A thread's messages, oldest first. Reports the id of the newest one while
@@ -106,6 +107,7 @@ function MessageBubble({ message, ref }: { message: Message; ref?: Ref<HTMLLIEle
             : "border-border bg-card text-foreground",
         )}
       >
+        {message.context ? <ResourceContextCard context={message.context} approve={!own} /> : null}
         {message.imageUrls.length > 0 ? (
           <div className={cn("grid gap-1", message.imageUrls.length > 1 && "grid-cols-2")}>
             {message.imageUrls.map((url) => (

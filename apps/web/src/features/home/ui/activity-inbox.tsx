@@ -7,6 +7,7 @@ import { MessagesSection } from "#/components/messaging/messages-section";
 import { NotificationsSection } from "#/components/messaging/notifications-section";
 import { useActivityCounts } from "#/features/messaging/hooks/use-activity-counts";
 import type { ActivitySection } from "#/lib/navigation/activity-search";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 import { ActivityPage } from "./activity-page";
 
 /**
@@ -21,6 +22,7 @@ export function ActivityInbox({
   onQueryChange,
   onTypesChange,
   messageTo,
+  messageContext,
   onMessageToConsumed,
 }: {
   section: ActivitySection;
@@ -30,6 +32,7 @@ export function ActivityInbox({
   onQueryChange?: (query: string) => void;
   onTypesChange?: (types: readonly ActivityKind[]) => void;
   messageTo?: `0x${string}`;
+  messageContext?: MessageContextInput;
   onMessageToConsumed?: () => void;
 }) {
   const { t } = useLingui();
@@ -65,7 +68,11 @@ export function ActivityInbox({
         {tabs}
       </div>
       {section === "messages" ? (
-        <MessagesSection messageTo={messageTo} onMessageToConsumed={onMessageToConsumed} />
+        <MessagesSection
+          messageTo={messageTo}
+          messageContext={messageContext}
+          onMessageToConsumed={onMessageToConsumed}
+        />
       ) : null}
       {section === "notifications" ? <NotificationsSection /> : null}
       {section === "helpdesk" ? <HelpdeskSection /> : null}

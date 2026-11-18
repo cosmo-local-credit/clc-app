@@ -21,6 +21,15 @@ const searchSchema = z.object({
   wantId: z.string().trim().min(1).optional().catch(undefined),
   /** The desktop Activity tab's kinds, comma separated, as the wallet's Activity takes them. */
   activityTypes: z.string().optional().catch(undefined),
+  tool: z
+    .enum(["details", "liquidity", "fees", "fee-settings", "ownership", "retirement", "approve"])
+    .optional()
+    .catch(undefined),
+  candidate: z.string().optional().catch(undefined),
+  exchangeRate: z.string().optional().catch(undefined),
+  creditLimit: z.string().optional().catch(undefined),
+  manage: z.string().optional().catch(undefined),
+  entry: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_nav/pools/$poolAddress/")({

@@ -49,6 +49,8 @@ export function ConversationRow({
           {last ? (
             last.body ? (
               last.body
+            ) : last.context ? (
+              <Trans>Resource shared</Trans>
             ) : (
               <span className="inline-flex items-center gap-1">
                 <RiImageLine className="size-3.5" aria-hidden="true" />
