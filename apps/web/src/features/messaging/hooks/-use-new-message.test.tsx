@@ -41,12 +41,15 @@ const context = {
   proposedVoucherAddress: "0x4444444444444444444444444444444444444444" as const,
 };
 
-function mount(openThread = vi.fn()) {
+function mount(openThread = vi.fn(), initialContext?: Parameters<typeof useNewMessage>[2]) {
   const client = new QueryClient();
   function wrapper({ children }: { children: ReactNode }) {
     return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
   }
-  return { ...renderHook(() => useNewMessage(openThread, OWNER), { wrapper }), openThread };
+  return {
+    ...renderHook(() => useNewMessage(openThread, OWNER, initialContext), { wrapper }),
+    openThread,
+  };
 }
 
 function threadPage(status: Conversation["status"], blocked = false) {
@@ -153,5 +156,61 @@ describe("useNewMessage", () => {
     await waitFor(() => expect(openThread).toHaveBeenCalledWith(7, context));
     expect(mocks.request).toHaveBeenCalledTimes(1);
     expect(mocks.list).toHaveBeenCalledTimes(2);
+  });
+
+  it("unselects a prepared recipient and can select the same person again", async () => {
+    const { result } = mount();
+    act(() => result.current.choose(recipient, context));
+    await waitFor(() => expect(result.current.selected).toEqual(recipient));
+
+    act(() => result.current.unselect());
+    expect(result.current.selected).toBeNull();
+    expect(result.current.lookupStatus).toBe("idle");
+
+    act(() => result.current.choose(recipient, context));
+    await waitFor(() => expect(result.current.selected).toEqual(recipient));
+  });
+
+  it("updates an optional Pool proposal and ignores proposals for other resources", () => {
+    const { result, rerender } = mount(vi.fn(), context);
+    const replacement = "0x5555555555555555555555555555555555555555" as const;
+    act(() => result.current.setProposedVoucher(replacement));
+    expect(result.current.context).toEqual({
+      kind: "pool",
+      resourceId: context.resourceId,
+      proposedVoucherAddress: replacement,
+    });
+    act(() => result.current.setProposedVoucher());
+    expect(result.current.context).toEqual({ kind: "pool", resourceId: context.resourceId });
+
+    const want = { kind: "want" as const, resourceId: "want-1" };
+    const other = mount(vi.fn(), want);
+    act(() => other.result.current.setProposedVoucher(replacement));
+    expect(other.result.current.context).toEqual(want);
+    rerender();
+  });
+
+  it("trims and submits an optional introduction", async () => {
+    mocks.request.mockResolvedValue({ id: 12 });
+    const { result, openThread } = mount();
+    act(() => result.current.choose(recipient));
+    await waitFor(() => expect(result.current.selected).toEqual(recipient));
+    act(() => result.current.setIntro("  Hello there  "));
+    act(() => result.current.submit());
+    await waitFor(() => expect(openThread).toHaveBeenCalledWith(12));
+    expect(mocks.request).toHaveBeenCalledWith({ recipientAddress: OWNER, intro: "Hello there" });
+  });
+
+  it.each([
+    [404, "missing"],
+    [429, "quota"],
+    [500, "failed"],
+  ] as const)("maps request status %s to the %s failure", async (status, expected) => {
+    mocks.request.mockRejectedValue(new BackendApiError(status, "request failed"));
+    const { result } = mount();
+    act(() => result.current.choose(recipient));
+    await waitFor(() => expect(result.current.selected).toEqual(recipient));
+    act(() => result.current.submit());
+    await waitFor(() => expect(result.current.failure).toBe(expected));
   });
 });
