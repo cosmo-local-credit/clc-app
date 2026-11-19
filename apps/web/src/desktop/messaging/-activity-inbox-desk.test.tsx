@@ -97,6 +97,30 @@ function sections() {
   return screen.getByRole("navigation", { name: "Activity sections" });
 }
 
+function adminHelpdeskItem(id: number, body: string | null = null) {
+  return {
+    id,
+    status: "open" as const,
+    user: { address: AMINA, username: `admin-user-${id}`, avatar: null },
+    lastMessage: body
+      ? {
+          id: id + 100,
+          conversationId: id,
+          clientId: `00000000-0000-4000-8000-${id.toString().padStart(12, "0")}`,
+          sender: "user" as const,
+          adminAddress: null,
+          body,
+          imageUrls: [],
+          createdAt: "2026-11-09T10:00:00Z",
+        }
+      : null,
+    lastMessageAt: "2026-11-09T10:00:00Z",
+    needsReply: true,
+    createdAt: "2026-11-09T09:00:00Z",
+    updatedAt: "2026-11-09T10:00:00Z",
+  };
+}
+
 describe("desktop Activity sections", () => {
   it("names each section with its own count", async () => {
     mountDesk("/?tab=activity&section=messages");
@@ -417,6 +441,78 @@ describe("desktop Helpdesk", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Resolve" }));
     await waitFor(() => expect(mocks.admin.setHelpdeskStatus).toHaveBeenCalledWith(21, "resolved"));
+  });
+
+  it("recovers and paginates the operator queue", async () => {
+    mocks.auth = {
+      isAuthenticated: true,
+      address: VIEWER,
+      session: { address: VIEWER, role: "ADMIN" },
+    };
+    mocks.admin.helpdeskQueue.mockRejectedValueOnce(new Error("down"));
+    mountDesk("/?tab=activity&section=helpdesk", true);
+    expect(await screen.findByText("Couldn't load the helpdesk.")).toBeTruthy();
+
+    mocks.admin.helpdeskQueue
+      .mockResolvedValueOnce({ items: [adminHelpdeskItem(21, "First page")], nextCursor: "next" })
+      .mockResolvedValueOnce({ items: [adminHelpdeskItem(22, "Second page")], nextCursor: null });
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("First page")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Load more" }));
+    expect(await screen.findByText("Second page")).toBeTruthy();
+  });
+
+  it("recovers the selected thread and loads earlier messages", async () => {
+    mocks.auth = {
+      isAuthenticated: true,
+      address: VIEWER,
+      session: { address: VIEWER, role: "SUPERADMIN" },
+    };
+    mocks.admin.helpdeskItem.mockRejectedValueOnce(new Error("down"));
+    mocks.admin.helpdeskMessages.mockResolvedValue({ items: [], hasMore: false });
+    mountDesk("/?tab=activity&section=helpdesk&helpdeskId=21", true);
+    expect(await screen.findByText("Couldn't load this conversation.")).toBeTruthy();
+
+    mocks.admin.helpdeskItem.mockResolvedValue(adminHelpdeskItem(21));
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByRole("heading", { name: "admin-user-21" })).toBeTruthy();
+  });
+
+  it("retries failed operator messages and loads an earlier page", async () => {
+    mocks.auth = {
+      isAuthenticated: true,
+      address: VIEWER,
+      session: { address: VIEWER, role: "SUPERADMIN" },
+    };
+    mocks.admin.helpdeskItem.mockResolvedValue(adminHelpdeskItem(21));
+    mocks.admin.helpdeskMessages.mockRejectedValueOnce(new Error("down"));
+    mocks.admin.helpdeskMessages
+      .mockResolvedValueOnce({
+        items: [
+          {
+            ...adminHelpdeskItem(21, "Newest").lastMessage!,
+            id: 31,
+            conversationId: 21,
+          },
+        ],
+        hasMore: true,
+      })
+      .mockResolvedValueOnce({
+        items: [
+          {
+            ...adminHelpdeskItem(21, "Older").lastMessage!,
+            id: 30,
+            conversationId: 21,
+          },
+        ],
+        hasMore: false,
+      });
+    mountDesk("/?tab=activity&section=helpdesk&helpdeskId=21", true);
+    expect(await screen.findByText("Couldn't load messages.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("Newest")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Load earlier messages" }));
+    expect(await screen.findByText("Older")).toBeTruthy();
   });
 });
 

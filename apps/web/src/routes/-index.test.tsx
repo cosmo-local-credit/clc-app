@@ -3,13 +3,14 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import type { ActivityKind } from "@clc/api/features/accounts/client";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockNavigate, mockUseSearch, mockAuthStatus } = vi.hoisted(() => ({
+const { mockNavigate, mockUseSearch, mockAuthStatus, mockSafeShow } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
   mockUseSearch: vi.fn((): Record<string, unknown> => ({ tab: "market", view: "map" })),
   mockAuthStatus: {
     isLoading: false,
     isAuthenticated: false,
   },
+  mockSafeShow: vi.fn(),
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -22,6 +23,9 @@ vi.mock("@tanstack/react-router", () => ({
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => mockAuthStatus,
+}));
+vi.mock("#/features/safe/state/safe-sheet", () => ({
+  useSafeSheet: { getState: () => ({ show: mockSafeShow }) },
 }));
 
 vi.mock("#/components/auth/authenticated-route", () => ({
@@ -84,6 +88,7 @@ function renderIndex() {
 
 beforeEach(() => {
   mockNavigate.mockClear();
+  mockSafeShow.mockClear();
   mockUseSearch.mockReturnValue({ tab: "market", view: "map" });
   mockAuthStatus.isLoading = false;
   mockAuthStatus.isAuthenticated = false;
@@ -192,5 +197,20 @@ describe("IndexPage routing", () => {
       tab: "activity",
       messageTo: undefined,
     });
+  });
+
+  it("opens the exact Safe proposal from a notification route", async () => {
+    const safe = "0x1111111111111111111111111111111111111111";
+    const safeTx = `0x${"ab".repeat(32)}`;
+    mockAuthStatus.isAuthenticated = true;
+    mockUseSearch.mockReturnValue({
+      tab: "activity",
+      section: "notifications",
+      safe,
+      safeTx,
+    });
+    renderIndex();
+    expect(await screen.findByTestId("home-page")).toBeTruthy();
+    expect(mockSafeShow).toHaveBeenCalledWith(safe, safeTx);
   });
 });
