@@ -6,7 +6,6 @@ import { RiCheckLine } from "react-icons/ri";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
-import { Spinner } from "#/components/ui/spinner";
 import {
   SheetBackdrop,
   SheetContent,
@@ -29,10 +28,11 @@ import {
   WithdrawalAmount,
   WithdrawalRecipient,
 } from "./safe-proposal-labels";
+import { SafeExecutionControl } from "./safe-execution-control";
 
 /**
  * Queued proposals of one Safe. A signer with a key the Safe accepts confirms
- * here; execution and rejection stay in Safe.
+ * here; clc-core sponsors execution and the Safe app remains available.
  */
 export function SafePendingSheet() {
   const safe = useSafeSheet((state) => state.safe);
@@ -255,11 +255,8 @@ function Proposal({
           ))}
         </ul>
       ) : null}
-      {action === "executing" ? (
-        <p role="status" className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Spinner className="size-3.5" />
-          <Trans>Executing…</Trans>
-        </p>
+      {action === "execute" || action === "executing" ? (
+        <SafeExecutionControl proposal={proposal} disabled={busy} />
       ) : action === "confirm" ? (
         <Button tap pending={proposal.confirming} disabled={busy} onClick={proposal.confirm}>
           {proposal.confirming ? <Trans>Confirming</Trans> : <Trans>Confirm</Trans>}
@@ -268,8 +265,6 @@ function Proposal({
         <p className="text-xs text-muted-foreground">
           {action === "confirmed" ? (
             <Trans>You confirmed</Trans>
-          ) : action === "execute" ? (
-            <Trans>Execute it in Safe.</Trans>
           ) : proposal.passkeyUnsupported ? (
             <Trans>
               Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in card.

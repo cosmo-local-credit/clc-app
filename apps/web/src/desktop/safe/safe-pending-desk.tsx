@@ -25,6 +25,7 @@ import {
   WithdrawalAmount,
   WithdrawalRecipient,
 } from "#/features/safe/ui/safe-proposal-labels";
+import { SafeExecutionControl } from "#/features/safe/ui/safe-execution-control";
 import { SAFE_APP_PREFIX } from "#/lib/safe-config";
 
 /**
@@ -252,11 +253,8 @@ function Proposal({
           </DeskRowList>
         </div>
       ) : null}
-      {action === "executing" ? (
-        <p role="status" className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Spinner className="size-3.5" />
-          <Trans>Executing…</Trans>
-        </p>
+      {action === "execute" || action === "executing" ? (
+        <SafeExecutionControl proposal={proposal} className="w-full" disabled={busy} />
       ) : action === "confirm" ? (
         <Button
           className="w-full"
@@ -270,8 +268,6 @@ function Proposal({
         <p className="text-xs text-muted-foreground">
           {action === "confirmed" ? (
             <Trans>You confirmed</Trans>
-          ) : action === "execute" ? (
-            <Trans>Execute it in Safe.</Trans>
           ) : proposal.passkeyUnsupported ? (
             <Trans>
               Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in card.

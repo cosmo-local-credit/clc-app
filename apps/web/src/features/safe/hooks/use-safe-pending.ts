@@ -20,6 +20,7 @@ import { SAFE_MULTISEND_CALL_ONLY } from "#/lib/safe-config";
 import { safeVersionQueryOptions } from "../api/sign-safe-transaction";
 import { useReportWriteError } from "./use-report-write-error";
 import { useSafeConfirm } from "./use-safe-confirm";
+import { useSafeExecute } from "./use-safe-execute";
 import { useRefreshAfterSafeExecution } from "./use-refresh-after-safe-execution";
 import { useRefreshSafeSigners } from "./use-safe-signers";
 
@@ -31,13 +32,17 @@ export interface SafePendingProposal {
   /** This proposal's confirmation is being signed. */
   confirming: boolean;
   confirm: () => void;
+  /** Sponsored execution is being queued or retried for this proposal. */
+  requestingExecution: boolean;
+  execute: () => void;
   /** The viewer signs with a passkey, which this Safe's version does not accept. */
   passkeyUnsupported: boolean;
 }
 
 /**
  * Queued proposals of one Safe and what the viewer may do with each. A signer
- * with a key the Safe accepts confirms; execution and rejection stay in Safe.
+ * with a key the Safe accepts confirms; clc-core sponsors execution and Safe
+ * remains available as the external fallback.
  */
 export function useSafePending(safe: `0x${string}`) {
   const { t } = useLingui();
@@ -79,6 +84,7 @@ export function useSafePending(safe: `0x${string}`) {
     address.toLowerCase() === viewer?.toLowerCase();
   const passkeyUnsupported = isSigner && isPasskey && version.isSuccess && !passkeyCanSign;
   const confirm = useSafeConfirm();
+  const execute = useSafeExecute();
   const report = useReportWriteError();
   const proposals: SafePendingProposal[] = (query.data ?? []).map((transaction) => {
     const calls = decodeSafeTransactionCalls(transaction, SAFE_MULTISEND_CALL_ONLY);
@@ -101,6 +107,14 @@ export function useSafePending(safe: `0x${string}`) {
             report(error, t`Failed`);
           },
         }),
+      requestingExecution:
+        execute.isPending && execute.variables?.safeTxHash === transaction.safeTxHash,
+      execute: () =>
+        execute.mutate(transaction, {
+          onError: (error) => {
+            report(error, t`Execution failed`);
+          },
+        }),
       passkeyUnsupported,
     };
   });
@@ -108,6 +122,6 @@ export function useSafePending(safe: `0x${string}`) {
     status: query.isPending ? "pending" : query.isError ? "error" : "ready",
     proposals,
     /** Any confirmation is being signed; the others wait for it. */
-    confirmBusy: confirm.isPending,
+    confirmBusy: confirm.isPending || execute.isPending,
   } as const;
 }

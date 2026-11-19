@@ -12,6 +12,7 @@ import type { HttpClient } from "../../client/http-client";
 
 const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
 const hexSchema = z.string().regex(/^0x([a-fA-F0-9]{2})*$/);
+const safeExecutionStateSchema = z.enum(["ready", "queued", "submitted", "waiting", "failed"]);
 
 /** A Safe transaction as clc-core's Transaction Service proxy reports it. */
 const safeProposalSchema = safeTransactionSchema.extend({
@@ -24,6 +25,8 @@ const safeProposalSchema = safeTransactionSchema.extend({
   transactionHash: hexSchema.nullable(),
   /** clc-core has queued or sent the execution; absent from older backends. */
   executing: z.boolean().optional(),
+  /** Durable sponsored-execution state; absent from older backends. */
+  executionState: safeExecutionStateSchema.optional(),
 });
 export type SafeProposal = z.infer<typeof safeProposalSchema>;
 
@@ -75,6 +78,15 @@ export function createSafeClient(http: HttpClient) {
           method: "POST",
           body: JSON.stringify(input),
         }),
+      );
+    },
+    /** Queues or retries clc-core's sponsored execution after threshold approval. */
+    async execute(safeTxHash: `0x${string}`) {
+      return safeProposalSchema.parse(
+        await http.request<unknown>(
+          `/api/v2/safe/transactions/${encodeURIComponent(safeTxHash)}/execute`,
+          { method: "POST" },
+        ),
       );
     },
     async pending(safe: string, signal?: AbortSignal) {

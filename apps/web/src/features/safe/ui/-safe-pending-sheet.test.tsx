@@ -14,6 +14,7 @@ const MULTISEND = "0x4444444444444444444444444444444444444444";
 const mocks = vi.hoisted(() => ({
   pending: vi.fn(),
   confirm: vi.fn(),
+  execute: vi.fn(),
   voucher: vi.fn(),
   version: vi.fn(),
   connectorId: "private-key",
@@ -23,7 +24,9 @@ vi.mock("#/lib/api/market", () => ({ marketClient: { getMarketVoucher: mocks.vou
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
   useReverseRecipientResolution: () => ({ data: null, isPending: false }),
 }));
-vi.mock("#/lib/api/safe", () => ({ safeClient: { pending: mocks.pending } }));
+vi.mock("#/lib/api/safe", () => ({
+  safeClient: { pending: mocks.pending, execute: mocks.execute },
+}));
 vi.mock("#/lib/safe-config", () => ({
   SAFE_APP_PREFIX: "gno",
   SAFE_MULTISEND_CALL_ONLY: ["0x4444444444444444444444444444444444444444"],
@@ -101,6 +104,7 @@ async function openWith(transactions: unknown[], safeTxHash?: `0x${string}`) {
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.voucher.mockResolvedValue({ decimals: 6, symbol: "MLTT" });
+  mocks.execute.mockResolvedValue({});
   mocks.connectorId = "private-key";
   act(() => useSafeSheet.getState().close());
 });
@@ -237,6 +241,51 @@ describe("SafePendingSheet", () => {
     ]);
     expect(within(sheet).getByRole("status").textContent).toContain("Executing…");
     expect(within(sheet).queryByText("Execute it in Safe.")).toBeNull();
+  });
+
+  it("offers sponsored execution when the approved proposal is ready", async () => {
+    const tx = proposal({
+      executionState: "ready",
+      confirmations: [
+        { owner: OTHER, signature: "0x", submittedAt: "2026-10-26" },
+        { owner: ME, signature: "0x", submittedAt: "2026-10-26" },
+      ],
+    });
+    const sheet = await openWith([tx]);
+    fireEvent.click(within(sheet).getByRole("button", { name: "Execute" }));
+    await waitFor(() => expect(mocks.execute).toHaveBeenCalledWith(tx.safeTxHash));
+  });
+
+  it("explains nonce ordering without offering a premature execution", async () => {
+    const sheet = await openWith([
+      proposal({
+        executionState: "waiting",
+        confirmations: [
+          { owner: OTHER, signature: "0x", submittedAt: "2026-10-26" },
+          { owner: ME, signature: "0x", submittedAt: "2026-10-26" },
+        ],
+      }),
+    ]);
+    expect(
+      within(sheet).getByText("Waiting for earlier multisig transactions to execute."),
+    ).toBeTruthy();
+    expect(within(sheet).queryByRole("button", { name: "Execute" })).toBeNull();
+  });
+
+  it("turns a finalized automatic failure into an explicit retry", async () => {
+    const tx = proposal({
+      executionState: "failed",
+      confirmations: [
+        { owner: OTHER, signature: "0x", submittedAt: "2026-10-26" },
+        { owner: ME, signature: "0x", submittedAt: "2026-10-26" },
+      ],
+    });
+    const sheet = await openWith([tx]);
+    expect(within(sheet).getByRole("alert").textContent).toContain(
+      "Automatic execution did not complete",
+    );
+    fireEvent.click(within(sheet).getByRole("button", { name: "Execute" }));
+    await waitFor(() => expect(mocks.execute).toHaveBeenCalledWith(tx.safeTxHash));
   });
 
   it("explains when a notification proposal has left the queue", async () => {
