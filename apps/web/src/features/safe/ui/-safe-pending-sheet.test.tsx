@@ -85,7 +85,7 @@ function proposal(overrides: Record<string, unknown> = {}) {
 
 let queryClient: QueryClient;
 
-async function openWith(transactions: unknown[]) {
+async function openWith(transactions: unknown[], safeTxHash?: `0x${string}`) {
   mocks.pending.mockResolvedValue(transactions);
   queryClient = new QueryClient();
   render(
@@ -93,8 +93,8 @@ async function openWith(transactions: unknown[]) {
       <SafePendingSheet />
     </QueryClientProvider>,
   );
-  act(() => useSafeSheet.getState().show(SAFE));
-  await screen.findByText("Nonce 1");
+  act(() => useSafeSheet.getState().show(SAFE, safeTxHash));
+  if (!safeTxHash) await screen.findByText("Nonce 1");
   return screen.getByRole("dialog");
 }
 
@@ -237,6 +237,12 @@ describe("SafePendingSheet", () => {
     ]);
     expect(within(sheet).getByRole("status").textContent).toContain("Executing…");
     expect(within(sheet).queryByText("Execute it in Safe.")).toBeNull();
+  });
+
+  it("explains when a notification proposal has left the queue", async () => {
+    const missing = `0x${"cd".repeat(32)}` as const;
+    const sheet = await openWith([proposal()], missing);
+    expect(await within(sheet).findByText("This proposal is no longer pending.")).toBeTruthy();
   });
 
   it("lets a passkey confirm on a Safe 1.5.0", async () => {

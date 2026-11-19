@@ -7,6 +7,12 @@ const V1_NOTIFICATION_KINDS = ["voucher.received", "offramp.completed"] as const
 /** Resource events added after v1; current clients declare them explicitly. */
 const RESOURCE_NOTIFICATION_KINDS = ["pool.voucher_admitted"] as const;
 
+const SAFE_APPROVAL_NOTIFICATION_KINDS = [
+  "safe.proposed",
+  "safe.confirmed",
+  "safe.approved",
+] as const;
+
 /** Kinds that open a conversation. They show in Messages and Helpdesk, not in Notifications. */
 const MESSAGING_NOTIFICATION_KINDS = [
   "message.received",
@@ -19,6 +25,7 @@ const MESSAGING_NOTIFICATION_KINDS = [
 export const NOTIFICATION_KINDS = [
   ...V1_NOTIFICATION_KINDS,
   ...RESOURCE_NOTIFICATION_KINDS,
+  ...SAFE_APPROVAL_NOTIFICATION_KINDS,
   ...MESSAGING_NOTIFICATION_KINDS,
 ];
 
@@ -28,6 +35,17 @@ export type NotificationKind = z.infer<typeof notificationKindSchema>;
 
 export function isMessagingNotificationKind(kind: NotificationKind): boolean {
   return (MESSAGING_NOTIFICATION_KINDS as readonly string[]).includes(kind);
+}
+
+export function isActivityApprovalNotificationKind(kind: NotificationKind): boolean {
+  return (
+    (RESOURCE_NOTIFICATION_KINDS as readonly string[]).includes(kind) ||
+    (SAFE_APPROVAL_NOTIFICATION_KINDS as readonly string[]).includes(kind)
+  );
+}
+
+export function isSafeApprovalNotificationKind(kind: NotificationKind): boolean {
+  return (SAFE_APPROVAL_NOTIFICATION_KINDS as readonly string[]).includes(kind);
 }
 
 export const notificationPrioritySchema = z.enum(["very-low", "low", "normal", "high"]);
@@ -64,6 +82,9 @@ const notificationKindPolicies = {
     ...sharedV1Policy,
     priority: "high",
   },
+  "safe.proposed": { ...sharedV1Policy, priority: "high" },
+  "safe.confirmed": { ...sharedV1Policy, priority: "high" },
+  "safe.approved": { ...sharedV1Policy, priority: "high" },
   "message.received": {
     ...sharedV1Policy,
     priority: "high",
@@ -111,6 +132,17 @@ export type NotificationPayload = {
   title: string;
   voucherId?: string;
   walletAddressTarget?: string;
+  actorAddress?: string;
+  actorUsername?: string;
+  safeAddress?: string;
+  safeTxHash?: string;
+  resources?: NotificationResource[];
+};
+
+type NotificationResource = {
+  kind: "pool" | "voucher";
+  address: string;
+  name: string;
 };
 
 export type NotificationPayloadParseResult =
@@ -145,6 +177,25 @@ const notificationOptionalMetadataSchema = z.object({
   expiresAt: optionalTrimmedString().pipe(isoTimestampSchema.optional()),
   offRampReference: optionalIdSchema,
   voucherId: optionalIdSchema,
+  actorAddress: optionalWalletAddressSchema,
+  actorUsername: optionalTrimmedString().pipe(trimmedString().min(1).max(80).optional()),
+  safeAddress: optionalWalletAddressSchema,
+  safeTxHash: optionalTrimmedString().pipe(
+    z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{64}$/)
+      .optional(),
+  ),
+  resources: z
+    .array(
+      z.object({
+        kind: z.enum(["pool", "voucher"]),
+        address: walletAddressSchema,
+        name: trimmedString().min(1).max(120),
+      }),
+    )
+    .max(100)
+    .optional(),
 });
 
 export function parseNotificationPayload(

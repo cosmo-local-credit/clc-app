@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { NotificationPushSubscriptionJSON } from "../api/notification-client";
 import type { NotificationConfigRecord } from "../storage/notification-db";
+import { NOTIFICATION_KINDS } from "../logic/payload-schema";
 import { runNotificationSubscriptionHealthCheck } from "./health-check";
 
 const subscription: NotificationPushSubscriptionJSON = {
@@ -96,15 +97,7 @@ describe("runNotificationSubscriptionHealthCheck", () => {
     dependencies.readConfig.mockResolvedValue({
       ...config,
       subscriptionHash: hash,
-      workerKinds: [
-        "voucher.received",
-        "offramp.completed",
-        "pool.voucher_admitted",
-        "message.received",
-        "message.request",
-        "message.accepted",
-        "helpdesk.reply",
-      ],
+      workerKinds: [...NOTIFICATION_KINDS],
     });
     await expect(
       runNotificationSubscriptionHealthCheck(
@@ -114,29 +107,13 @@ describe("runNotificationSubscriptionHealthCheck", () => {
     ).resolves.toMatchObject({ status: "refreshed" });
     expect(dependencies.registerDevice).toHaveBeenCalledWith(
       expect.objectContaining({
-        kinds: [
-          "voucher.received",
-          "offramp.completed",
-          "pool.voucher_admitted",
-          "message.received",
-          "message.request",
-          "message.accepted",
-          "helpdesk.reply",
-        ],
+        kinds: [...NOTIFICATION_KINDS],
       }),
       expect.anything(),
     );
     expect(dependencies.updateConfig).toHaveBeenCalledWith(
       expect.objectContaining({
-        registeredKinds: [
-          "voucher.received",
-          "offramp.completed",
-          "pool.voucher_admitted",
-          "message.received",
-          "message.request",
-          "message.accepted",
-          "helpdesk.reply",
-        ],
+        registeredKinds: [...NOTIFICATION_KINDS],
       }),
       "epoch-1",
     );
