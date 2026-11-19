@@ -130,6 +130,90 @@ describe("useOperatorHelpdeskReply", () => {
     expect(mocks.reply).toHaveBeenCalledTimes(1);
   });
 
+  it("reuses the client id when a failed draft is sent again", async () => {
+    mocks.reply
+      .mockRejectedValueOnce(new BackendApiError(400, "invalid"))
+      .mockResolvedValueOnce(message(12, "Retried"));
+    const { result } = mount(() => useOperatorHelpdeskReply(21));
+    act(() => result.current.setBody("Retry this"));
+    await waitFor(() => expect(result.current.canSend).toBe(true));
+    act(() => result.current.submit());
+    await waitFor(() => expect(result.current.send.isError).toBe(true));
+    const firstClientId = mocks.reply.mock.calls[0]?.[1].clientId;
+
+    act(() => result.current.submit());
+    await waitFor(() => expect(result.current.send.isSuccess).toBe(true));
+    expect(mocks.reply.mock.calls[1]?.[1].clientId).toBe(firstClientId);
+  });
+
+  it("keeps a draft edited while its earlier reply is pending", async () => {
+    let resolveReply: ((value: ReturnType<typeof message>) => void) | undefined;
+    mocks.reply.mockImplementationOnce(
+      () =>
+        new Promise<ReturnType<typeof message>>((resolve) => {
+          resolveReply = resolve;
+        }),
+    );
+    const { result } = mount(() => useOperatorHelpdeskReply(21));
+    act(() => result.current.setBody("First draft"));
+    await waitFor(() => expect(result.current.canSend).toBe(true));
+    act(() => result.current.submit());
+    await waitFor(() => expect(result.current.send.isPending).toBe(true));
+    act(() => {
+      result.current.submit();
+      result.current.setBody("Edited draft");
+    });
+    act(() => resolveReply?.(message(13, "First draft")));
+    await waitFor(() => expect(result.current.send.isSuccess).toBe(true));
+    expect(result.current.body).toBe("Edited draft");
+    expect(mocks.reply).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not clear a draft when the mutation was invoked directly", async () => {
+    const { result } = mount(() => useOperatorHelpdeskReply(21));
+    act(() => result.current.setBody("Keep me"));
+    act(() =>
+      result.current.send.mutate({
+        body: "Direct reply",
+        clientId: "00000000-0000-4000-8000-000000000099",
+      }),
+    );
+    await waitFor(() => expect(result.current.send.isSuccess).toBe(true));
+    expect(result.current.body).toBe("Keep me");
+  });
+
+  it("ignores empty, uploading, and failed submissions", async () => {
+    let resolveUpload: ((value: { url: string }) => void) | undefined;
+    mocks.upload.mockImplementationOnce(
+      () =>
+        new Promise<{ url: string }>((resolve) => {
+          resolveUpload = resolve;
+        }),
+    );
+    const { result } = mount(() => useOperatorHelpdeskReply(21));
+    act(() => result.current.submit());
+    expect(mocks.reply).not.toHaveBeenCalled();
+
+    act(() => result.current.setBody("Wait for upload"));
+    const photo = new File(["jpg"], "photo.jpg", { type: "image/jpeg" });
+    let uploadPromise: Promise<void> | undefined;
+    act(() => {
+      uploadPromise = result.current.addImage(photo);
+    });
+    await waitFor(() => expect(result.current.uploading).toBe(true));
+    act(() => result.current.submit());
+    expect(mocks.reply).not.toHaveBeenCalled();
+    await act(async () => {
+      resolveUpload?.({ url: "https://storage.example/photo.jpg" });
+      await uploadPromise;
+    });
+
+    mocks.upload.mockRejectedValueOnce(new Error("storage down"));
+    await act(() => result.current.addImage(photo));
+    act(() => result.current.submit());
+    expect(mocks.reply).not.toHaveBeenCalled();
+  });
+
   it("rejects unsupported images and handles successful and failed uploads", async () => {
     const { result, unmount } = mount(() => useOperatorHelpdeskReply(21));
     const unsupported = new File(["gif"], "photo.gif", { type: "image/gif" });
@@ -156,5 +240,20 @@ describe("useOperatorHelpdeskReply", () => {
     expect(result.current.canSend).toBe(false);
     unmount();
     expect(mocks.revoke).toHaveBeenCalledTimes(2);
+  });
+
+  it("updates the intended image, enforces the image limit, and ignores unknown removals", async () => {
+    const { result } = mount(() => useOperatorHelpdeskReply(21));
+    const photo = new File(["jpg"], "photo.jpg", { type: "image/jpeg" });
+    for (let index = 0; index < 4; index += 1) {
+      await act(() => result.current.addImage(photo));
+    }
+    expect(result.current.images).toHaveLength(4);
+    expect(mocks.upload).toHaveBeenCalledTimes(4);
+
+    await act(() => result.current.addImage(photo));
+    expect(mocks.upload).toHaveBeenCalledTimes(4);
+    act(() => result.current.removeImage("missing"));
+    expect(result.current.images).toHaveLength(4);
   });
 });

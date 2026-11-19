@@ -124,6 +124,7 @@ describe("activity search", () => {
     expect(parseActivityHelpdeskId(["7"])).toBe(7);
     expect(parseActivityHelpdeskId("0")).toBeUndefined();
     expect(parseActivityHelpdeskId("not-an-id")).toBeUndefined();
+    expect(parseActivityHelpdeskId("9007199254740992")).toBeUndefined();
     expect(parseActivityHelpdeskStatus("resolved")).toBe("resolved");
     expect(parseActivityHelpdeskStatus("unknown")).toBe("open");
     expect(
@@ -144,6 +145,9 @@ describe("activity search", () => {
       activityQ: undefined,
       activityTypes: undefined,
       helpdeskStatus: undefined,
+    });
+    expect(canonicalActivityRouteSearch({ section: "helpdesk", helpdeskId: "0" })).toMatchObject({
+      helpdeskId: undefined,
     });
   });
 

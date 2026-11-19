@@ -58,6 +58,11 @@ describe("OperatorHelpdeskComposer", () => {
     const file = new File(["jpg"], "photo.jpg", { type: "image/jpeg" });
     const input = document.querySelector<HTMLInputElement>('input[type="file"]');
     if (!input) throw new Error("photo input missing");
+    const inputClick = vi.spyOn(input, "click").mockImplementation(() => undefined);
+    fireEvent.click(screen.getByRole("button", { name: "Add a photo" }));
+    expect(inputClick).toHaveBeenCalledOnce();
+    fireEvent.change(input, { target: { files: [] } });
+    expect(mocks.addImage).not.toHaveBeenCalled();
     fireEvent.change(input, { target: { files: [file] } });
     expect(mocks.addImage).toHaveBeenCalledWith(file);
 

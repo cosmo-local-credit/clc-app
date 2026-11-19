@@ -93,4 +93,21 @@ describe("NotificationContextLinks", () => {
     expect(screen.queryByText("Four")).toBeNull();
     expect(screen.getByText("View the proposal for more resources.")).toBeTruthy();
   });
+
+  it("falls back to an address, shows a username without an address, and accepts no resources", () => {
+    const { rerender } = render(
+      <NotificationContextLinks
+        item={payload({ actorUsername: undefined, resources: undefined })}
+      />,
+    );
+    expect(screen.getByRole("link", { name: ACTOR })).toBeTruthy();
+
+    rerender(
+      <NotificationContextLinks
+        item={payload({ actorAddress: undefined, actorUsername: "amina", resources: undefined })}
+      />,
+    );
+    expect(screen.getByText("amina").tagName).toBe("SPAN");
+    expect(screen.queryByText("View the proposal for more resources.")).toBeNull();
+  });
 });

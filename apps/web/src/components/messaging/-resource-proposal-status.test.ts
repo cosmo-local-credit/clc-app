@@ -31,8 +31,28 @@ describe("resolvePoolProposalApprovalState", () => {
   });
 
   it("waits for authoritative reads and otherwise permits approval", () => {
+    expect(resolvePoolProposalApprovalState({ ...base, poolPending: true })).toBe("checking");
+    expect(resolvePoolProposalApprovalState({ ...base, poolLoaded: false })).toBe("checking");
+    expect(resolvePoolProposalApprovalState({ ...base, poolLoaded: false, poolError: true })).toBe(
+      "unavailable",
+    );
     expect(resolvePoolProposalApprovalState({ ...base, membershipPending: true })).toBe("checking");
     expect(resolvePoolProposalApprovalState(base)).toBe("available");
+    expect(
+      resolvePoolProposalApprovalState({
+        ...base,
+        hasRegistry: false,
+        membership: undefined,
+        legacyPending: true,
+      }),
+    ).toBe("checking");
+    expect(
+      resolvePoolProposalApprovalState({
+        ...base,
+        hasRegistry: false,
+        membership: undefined,
+      }),
+    ).toBe("available");
   });
 
   it("does not offer approval when the authoritative check fails", () => {
