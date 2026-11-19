@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { NearbyCatalog } from "#/components/nearby-catalog";
@@ -26,7 +26,12 @@ import {
   parseActivityMessageTo,
   parseActivityMessageContext,
   parseActivitySection,
+  parseActivitySafeTarget,
+  parseActivityHelpdeskId,
+  parseActivityHelpdeskStatus,
 } from "#/lib/navigation/activity-search";
+import { useSafeSheet } from "#/features/safe/state/safe-sheet";
+import { isAdminRole } from "@clc/core/features/users/roles";
 
 const HomePage = lazy(() =>
   import("#/features/home/ui/home-page").then((module) => ({
@@ -121,7 +126,11 @@ export const Route = createFileRoute("/_nav/")({
         search.messageTo !== undefined ||
         search.messageKind !== undefined ||
         search.messageResource !== undefined ||
-        search.messageVoucher !== undefined)
+        search.messageVoucher !== undefined ||
+        search.helpdeskId !== undefined ||
+        search.helpdeskStatus !== undefined ||
+        search.safe !== undefined ||
+        search.safeTx !== undefined)
     ) {
       throw redirect({
         to: "/",
@@ -155,6 +164,20 @@ function IndexPage() {
   const activity = parseActivitySearch(search);
   const messageTo = parseActivityMessageTo(search.messageTo);
   const messageContext = parseActivityMessageContext(search);
+  const helpdeskId = parseActivityHelpdeskId(search.helpdeskId);
+  const helpdeskStatus = parseActivityHelpdeskStatus(search.helpdeskStatus);
+  const safeTarget = parseActivitySafeTarget(search);
+  const operator = auth.isAuthenticated && isAdminRole(auth.session?.role);
+  useEffect(() => {
+    if (
+      tab !== "activity" ||
+      parseActivitySection(search.section) !== "notifications" ||
+      !safeTarget
+    ) {
+      return;
+    }
+    useSafeSheet.getState().show(safeTarget.safe, safeTarget.safeTx);
+  }, [safeTarget?.safe, safeTarget?.safeTx, search.section, tab]);
   const clearMessageTo = () =>
     navigate({
       search: (previous) => ({
@@ -194,6 +217,9 @@ function IndexPage() {
         activitySection={parseActivitySection(search.section)}
         messageTo={messageTo}
         messageContext={messageContext}
+        helpdeskId={helpdeskId}
+        helpdeskStatus={helpdeskStatus}
+        operator={operator}
         onMessageToConsumed={clearMessageTo}
         onActivityQueryChange={onActivityQueryChange}
         onActivityTypesChange={onActivityTypesChange}
@@ -211,6 +237,9 @@ function IndexPage() {
         types={activity.types}
         messageTo={messageTo}
         messageContext={messageContext}
+        helpdeskId={helpdeskId}
+        helpdeskStatus={helpdeskStatus}
+        operator={operator}
         onMessageToConsumed={clearMessageTo}
         onQueryChange={onActivityQueryChange}
         onTypesChange={onActivityTypesChange}

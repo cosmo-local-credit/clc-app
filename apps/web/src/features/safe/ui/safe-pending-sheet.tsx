@@ -36,6 +36,7 @@ import {
  */
 export function SafePendingSheet() {
   const safe = useSafeSheet((state) => state.safe);
+  const safeTxHash = useSafeSheet((state) => state.safeTxHash);
   const close = useSafeSheet((state) => state.close);
   return (
     <SheetRoot
@@ -52,14 +53,24 @@ export function SafePendingSheet() {
               <Trans>Multisig transactions</Trans>
             </SheetTitle>
           </SheetHeader>
-          {safe ? <PendingList key={safe} safe={safe} onClose={close} /> : null}
+          {safe ? (
+            <PendingList key={safe} safe={safe} safeTxHash={safeTxHash} onClose={close} />
+          ) : null}
         </SheetContent>
       </SheetPortal>
     </SheetRoot>
   );
 }
 
-function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => void }) {
+function PendingList({
+  safe,
+  safeTxHash,
+  onClose,
+}: {
+  safe: `0x${string}`;
+  safeTxHash: `0x${string}` | null;
+  onClose: () => void;
+}) {
   const pending = useSafePending(safe);
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -71,6 +82,13 @@ function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => vo
         ) : pending.status === "error" ? (
           <p className="py-6 text-sm text-muted-foreground">
             <Trans>Proposals are unavailable here. You can still use your multisig wallet.</Trans>
+          </p>
+        ) : safeTxHash &&
+          !pending.proposals.some(
+            (proposal) => proposal.transaction.safeTxHash.toLowerCase() === safeTxHash,
+          ) ? (
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            <Trans>This proposal is no longer pending.</Trans>
           </p>
         ) : pending.proposals.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
@@ -84,6 +102,7 @@ function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => vo
                 safe={safe}
                 proposal={proposal}
                 busy={pending.confirmBusy}
+                selected={proposal.transaction.safeTxHash.toLowerCase() === safeTxHash}
               />
             ))}
           </ul>
@@ -181,15 +200,21 @@ function Proposal({
   safe,
   proposal,
   busy,
+  selected,
 }: {
   safe: `0x${string}`;
   proposal: SafePendingProposal;
   busy: boolean;
+  selected: boolean;
 }) {
   const { t } = useLingui();
   const { transaction, calls, action } = proposal;
   return (
-    <li className="space-y-2 py-3">
+    <li
+      className={
+        selected ? "space-y-2 border-primary border-s-2 bg-primary/5 py-3 ps-3" : "space-y-2 py-3"
+      }
+    >
       <div className="flex items-start justify-between gap-3">
         <span className="min-w-0 text-sm font-semibold">{proposalTitle(calls, safe)}</span>
         <Badge

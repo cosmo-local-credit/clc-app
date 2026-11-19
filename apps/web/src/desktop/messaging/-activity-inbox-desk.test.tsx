@@ -5,6 +5,14 @@ import { AMINA, conversation, message, mountDesk, VIEWER } from "./-messaging-de
 
 const mocks = vi.hoisted(() => ({
   enabled: { value: true },
+  auth: {
+    isAuthenticated: true,
+    address: "0x2a986F40d29fc7e1Bded626542d4b8f1Ca0A82f6",
+    session: {
+      address: "0x2a986F40d29fc7e1Bded626542d4b8f1Ca0A82f6",
+      role: "USER" as string,
+    },
+  },
   client: {
     unread: vi.fn(),
     list: vi.fn(),
@@ -13,6 +21,14 @@ const mocks = vi.hoisted(() => ({
     markRead: vi.fn(),
     helpdesk: vi.fn(),
     request: vi.fn(),
+  },
+  admin: {
+    counts: vi.fn(),
+    helpdeskQueue: vi.fn(),
+    helpdeskItem: vi.fn(),
+    helpdeskMessages: vi.fn(),
+    reply: vi.fn(),
+    setHelpdeskStatus: vi.fn(),
   },
   getAccountActivity: vi.fn(),
   visit: vi.fn(),
@@ -26,9 +42,12 @@ vi.mock("#/lib/messaging-config", () => ({
   },
 }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: true, address: VIEWER, session: { address: VIEWER } }),
+  useAuthStatus: () => mocks.auth,
 }));
-vi.mock("#/lib/api/messaging", () => ({ messagingClient: mocks.client }));
+vi.mock("#/lib/api/messaging", () => ({
+  messagingClient: mocks.client,
+  adminMessagingClient: mocks.admin,
+}));
 vi.mock("#/lib/api/accounts", () => ({
   accountsClient: { getAccountActivity: mocks.getAccountActivity },
 }));
@@ -55,12 +74,23 @@ vi.mock("#/features/notifications/storage/notification-db", () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.enabled.value = true;
+  mocks.auth = {
+    isAuthenticated: true,
+    address: VIEWER,
+    session: { address: VIEWER, role: "USER" },
+  };
   mocks.client.unread.mockResolvedValue({ direct: 3, requests: 1, helpdesk: 2 });
   mocks.client.list.mockResolvedValue({ items: [], nextCursor: null });
   mocks.client.markRead.mockResolvedValue(undefined);
   mocks.getAccountActivity.mockResolvedValue({ activity: [], last: undefined });
   mocks.inbox.mockResolvedValue([]);
   mocks.search.mockReturnValue({ data: undefined, isDebouncing: false, isFetching: false });
+  mocks.admin.counts.mockResolvedValue({ helpdeskNeedsReply: 0, abuseReportsOpen: 0 });
+  mocks.admin.helpdeskQueue.mockResolvedValue({ items: [], nextCursor: null });
+  mocks.admin.helpdeskItem.mockRejectedValue(new Error("Unexpected Helpdesk item read"));
+  mocks.admin.helpdeskMessages.mockRejectedValue(new Error("Unexpected Helpdesk message read"));
+  mocks.admin.reply.mockRejectedValue(new Error("Unexpected Helpdesk reply"));
+  mocks.admin.setHelpdeskStatus.mockRejectedValue(new Error("Unexpected Helpdesk status write"));
 });
 
 function sections() {
@@ -280,10 +310,118 @@ describe("desktop Helpdesk", () => {
     // The support reply is on screen, so the marker moves to it.
     await waitFor(() => expect(mocks.client.markRead).toHaveBeenCalledWith(11, 31));
   });
+
+  it("shows the operator queue instead of Contact support to a Superadmin", async () => {
+    mocks.auth = {
+      isAuthenticated: true,
+      address: VIEWER,
+      session: { address: VIEWER, role: "SUPERADMIN" },
+    };
+    mocks.admin.counts.mockResolvedValue({ helpdeskNeedsReply: 1, abuseReportsOpen: 0 });
+    mocks.admin.helpdeskQueue.mockResolvedValue({
+      items: [
+        {
+          id: 21,
+          status: "open",
+          user: { address: AMINA, username: "amina", avatar: null },
+          lastMessage: {
+            id: 31,
+            conversationId: 21,
+            clientId: "00000000-0000-4000-8000-000000000031",
+            sender: "user",
+            adminAddress: null,
+            body: "Please help with my voucher",
+            imageUrls: [],
+            createdAt: "2026-11-09T10:00:00Z",
+          },
+          lastMessageAt: "2026-11-09T10:00:00Z",
+          needsReply: true,
+          createdAt: "2026-11-09T09:00:00Z",
+          updatedAt: "2026-11-09T10:00:00Z",
+        },
+      ],
+      nextCursor: null,
+    });
+
+    mountDesk("/?tab=activity&section=helpdesk", true);
+
+    expect(await screen.findByText("amina")).toBeTruthy();
+    expect(screen.getByText("Please help with my voucher")).toBeTruthy();
+    expect(screen.getByText("Needs reply")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Contact support" })).toBeNull();
+    expect(screen.getByText("No helpdesk conversation open")).toBeTruthy();
+  });
+
+  it("lets a Superadmin reply to and resolve a Helpdesk conversation in place", async () => {
+    mocks.auth = {
+      isAuthenticated: true,
+      address: VIEWER,
+      session: { address: VIEWER, role: "SUPERADMIN" },
+    };
+    const item = {
+      id: 21,
+      status: "open" as const,
+      user: { address: AMINA, username: "amina", avatar: null },
+      lastMessage: null,
+      lastMessageAt: "2026-11-09T10:00:00Z",
+      needsReply: true,
+      createdAt: "2026-11-09T09:00:00Z",
+      updatedAt: "2026-11-09T10:00:00Z",
+    };
+    mocks.admin.helpdeskItem.mockResolvedValue(item);
+    mocks.admin.helpdeskMessages.mockResolvedValue({
+      items: [
+        {
+          id: 31,
+          conversationId: 21,
+          clientId: "00000000-0000-4000-8000-000000000031",
+          sender: "user",
+          adminAddress: null,
+          body: "Please help with my voucher",
+          imageUrls: [],
+          createdAt: "2026-11-09T10:00:00Z",
+        },
+      ],
+      hasMore: false,
+    });
+    mocks.admin.reply.mockResolvedValue({
+      id: 32,
+      conversationId: 21,
+      clientId: "00000000-0000-4000-8000-000000000032",
+      sender: "support",
+      adminAddress: VIEWER,
+      body: "I can help",
+      imageUrls: [],
+      createdAt: "2026-11-09T10:01:00Z",
+    });
+    mocks.admin.setHelpdeskStatus.mockResolvedValue({
+      ...item,
+      status: "resolved",
+      needsReply: false,
+    });
+
+    mountDesk("/?tab=activity&section=helpdesk&helpdeskId=21", true);
+
+    expect(await screen.findByText("Please help with my voucher")).toBeTruthy();
+    fireEvent.change(screen.getByPlaceholderText("Write a reply"), {
+      target: { value: "I can help" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send reply" }));
+    await waitFor(() =>
+      expect(mocks.admin.reply).toHaveBeenCalledWith(21, {
+        clientId: expect.any(String),
+        body: "I can help",
+      }),
+    );
+    expect(await screen.findByText("I can help")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Resolve" }));
+    await waitFor(() => expect(mocks.admin.setHelpdeskStatus).toHaveBeenCalledWith(21, "resolved"));
+  });
 });
 
 describe("desktop Notifications", () => {
-  it("lists the inbox without message kinds", async () => {
+  it("lists approval notifications without transaction or message kinds", async () => {
     mocks.inbox.mockResolvedValue([
       {
         notificationId: "n1",
@@ -294,6 +432,19 @@ describe("desktop Notifications", () => {
         createdAt: "2026-11-09T10:00:00Z",
         receivedAt: "2026-11-09T10:00:00Z",
         priority: "high",
+      },
+      {
+        notificationId: "n3",
+        kind: "safe.approved",
+        title: "Safe action approved",
+        body: "amina signed a Safe action.",
+        targetUrl: `/?tab=activity&section=notifications&safe=${AMINA}&safeTx=0x${"a".repeat(64)}`,
+        createdAt: "2026-11-09T10:02:00Z",
+        receivedAt: "2026-11-09T10:02:00Z",
+        priority: "high",
+        actorAddress: AMINA,
+        actorUsername: "amina",
+        resources: [{ kind: "pool", address: VIEWER, name: "Community Pool" }],
       },
       {
         notificationId: "n2",
@@ -308,7 +459,10 @@ describe("desktop Notifications", () => {
     ]);
     mountDesk("/?tab=activity&section=notifications");
     const list = await screen.findByRole("list", { name: "Notifications" });
-    expect(within(list).getByText("Voucher received")).toBeTruthy();
+    expect(within(list).getByText("Safe action approved")).toBeTruthy();
+    expect(within(list).getByRole("link", { name: "amina" })).toBeTruthy();
+    expect(within(list).getByRole("link", { name: "Community Pool" })).toBeTruthy();
+    expect(screen.queryByText("Voucher received")).toBeNull();
     expect(screen.queryByText("New message")).toBeNull();
   });
 

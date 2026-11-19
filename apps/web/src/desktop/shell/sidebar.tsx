@@ -29,6 +29,7 @@ import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useActivityCounts } from "#/features/messaging/hooks/use-activity-counts";
 import { cn } from "#/lib/utils";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
+import { isAdminRole } from "@clc/core/features/users/roles";
 import { DESK_SELECTED_EDGE } from "#/desktop/ui/page";
 import { PLATFORM_ABOUT_URL, PLATFORM_TERMS_URL } from "#/lib/legal";
 
@@ -89,7 +90,9 @@ export function DesktopSidebar() {
   // who clicks one only reaches the sign-in gate, so they are not offered.
   const privateNav = canReachPrivateRoutes(auth);
   // Transactions plus Messages and Helpdesk; the messaging part is zero while it is off.
-  const unreadActivity = useActivityCounts().total;
+  const unreadActivity = useActivityCounts(
+    auth.isAuthenticated && isAdminRole(auth.session?.role),
+  ).total;
   const address = auth.address;
   const name = profile.data?.name?.trim();
   const settingsCurrent = selection.nav === "settings";

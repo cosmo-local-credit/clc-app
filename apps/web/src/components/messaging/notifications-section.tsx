@@ -1,12 +1,14 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useRouter } from "@tanstack/react-router";
 
+import { NotificationContextLinks } from "#/components/messaging/notification-context-links";
 import { Button } from "#/components/ui/button";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
 import { useNotificationInbox } from "#/features/notifications/inbox/use-notification-inbox";
+import { isSafeApprovalNotificationKind } from "#/features/notifications/logic/payload-schema";
 import { cn } from "#/lib/utils";
 
-/** Activity's Notifications: the in-app inbox, retirements included, without message kinds. */
+/** Activity's Notifications: approval lifecycle events, without transaction or message kinds. */
 export function NotificationsSection() {
   const { i18n, t } = useLingui();
   const router = useRouter();
@@ -63,6 +65,9 @@ export function NotificationsSection() {
                   {i18n.date(new Date(item.createdAt), { dateStyle: "short", timeStyle: "short" })}
                 </time>
               </a>
+              {isSafeApprovalNotificationKind(item.kind) ? (
+                <NotificationContextLinks item={item} className="px-3 pb-3" />
+              ) : null}
             </li>
           ))}
         </ul>

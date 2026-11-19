@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { NotificationAckQueueEntry } from "../storage/notification-db";
+import { NOTIFICATION_KINDS } from "../logic/payload-schema";
 
 const api = vi.hoisted(() => ({
   sendClickAck: vi.fn(),
@@ -240,15 +241,7 @@ describe("declared kinds on inbox sync", () => {
       registrationId: "registration-1",
       userId: "user-1",
       syncCursor: "cursor-1",
-      workerKinds: [
-        "voucher.received",
-        "offramp.completed",
-        "pool.voucher_admitted",
-        "message.received",
-        "message.request",
-        "message.accepted",
-        "helpdesk.reply",
-      ],
+      workerKinds: [...NOTIFICATION_KINDS],
     });
     api.syncInbox.mockResolvedValue({
       hasMore: false,
@@ -266,15 +259,7 @@ describe("declared kinds on inbox sync", () => {
         deviceId: "device-1",
         lastSyncCursor: "cursor-1",
         registrationId: "registration-1",
-        kinds: [
-          "voucher.received",
-          "offramp.completed",
-          "pool.voucher_admitted",
-          "message.received",
-          "message.request",
-          "message.accepted",
-          "helpdesk.reply",
-        ],
+        kinds: [...NOTIFICATION_KINDS],
       },
       { identityEpoch: "epoch-1" },
     );

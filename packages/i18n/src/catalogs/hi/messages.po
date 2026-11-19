@@ -676,7 +676,7 @@ msgstr "सक्रिय"
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:467
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:472
-#: apps/web/src/features/home/ui/activity-inbox.tsx:66
+#: apps/web/src/features/home/ui/activity-inbox.tsx:76
 #: apps/web/src/features/home/ui/activity-page.tsx:129
 #: apps/web/src/features/home/ui/activity-page.tsx:173
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:50
@@ -737,6 +737,7 @@ msgstr "एक संदेश जोड़ें या ऑर्डर दे�
 msgid "Add a phone number to your profile to use MPESA."
 msgstr "MPESA का उपयोग करने के लिए अपनी प्रोफ़ाइल में एक फ़ोन नंबर जोड़ें।"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:86
 #: apps/web/src/components/ui/avatar-picker.tsx:66
 #: apps/web/src/desktop/messaging/composer-desk.tsx:114
 #: apps/web/src/features/messaging/ui/message-composer.tsx:127
@@ -1011,8 +1012,8 @@ msgstr "भेजने से पहले हमेशा पुष्टि �
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:120
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:425
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1007
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:146
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:155
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:163
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:172
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:113
 #: apps/web/src/desktop/wallet/send-desk.tsx:217
 #: apps/web/src/desktop/wallet/send-desk.tsx:224
@@ -1028,8 +1029,8 @@ msgstr "भेजने से पहले हमेशा पुष्टि �
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:112
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:127
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:405
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:157
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:166
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:176
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:87
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:176
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:318
@@ -1166,7 +1167,7 @@ msgstr "आवश्यक स्वीकृतियाँ"
 msgid "Approve {0}"
 msgstr "{0} को स्वीकृत करें"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:131
+#: apps/web/src/components/messaging/resource-context-card.tsx:215
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:699
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:62
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:100
@@ -1179,6 +1180,7 @@ msgstr "{0} को स्वीकृत करें"
 msgid "Approve voucher"
 msgstr "वाउचर स्वीकृत करें"
 
+#: apps/web/src/components/messaging/resource-context-card.tsx:175
 #: apps/web/src/features/posts/ui/post-status-badge.tsx:20
 msgid "Approved"
 msgstr "स्वीकृत"
@@ -1274,6 +1276,10 @@ msgstr "अनुमोदन की प्रतीक्षा है"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:116
 msgid "Back"
 msgstr "वापस"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:163
+msgid "Back to helpdesk"
+msgstr "सहायता केंद्र पर वापस जाएँ"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:131
 #: apps/web/src/desktop/auth/auth-gate-desk.tsx:72
@@ -1568,7 +1574,7 @@ msgstr "कैटलॉग की तस्वीर"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "कैटलॉग सहेजा गया। आइटम जोड़ा नहीं जा सका। फिर से प्रयास करें।"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:104
+#: apps/web/src/components/messaging/resource-context-card.tsx:111
 msgid "Catalog:"
 msgstr "कैटलॉग:"
 
@@ -1681,6 +1687,10 @@ msgstr "हस्तांतरण की स्थिति जाँचें
 #: apps/web/src/features/wallet/ui/collect-page.tsx:444
 msgid "Checking"
 msgstr "जाँच हो रही है"
+
+#: apps/web/src/components/messaging/resource-context-card.tsx:208
+msgid "Checking approval…"
+msgstr "अनुमोदन की जाँच की जा रही है…"
 
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:151
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:810
@@ -2026,12 +2036,12 @@ msgstr "स्पष्ट खोज"
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:66
 #: apps/web/src/desktop/pools/detail/pool-side-panel.tsx:103
 #: apps/web/src/desktop/posts/post-desk.tsx:503
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:52
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:53
 #: apps/web/src/desktop/ui/inspector.tsx:107
 #: apps/web/src/desktop/vouchers/detail/voucher-dialog.tsx:56
 #: apps/web/src/desktop/wants/want-place-desk.tsx:62
 #: apps/web/src/features/home/ui/report-page.tsx:285
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:105
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:124
 msgid "Close"
 msgstr "बंद करें"
 
@@ -2177,9 +2187,9 @@ msgid "Complete your profile"
 msgstr "अपना प्रोफ़ाइल पूरा करें"
 
 #: apps/web/src/desktop/credit/review-dialog.tsx:161
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:244
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:267
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:725
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:240
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:265
 msgid "Confirm"
 msgstr "पुष्टि करें"
 
@@ -2256,24 +2266,24 @@ msgstr "अपनी पासकी से पुष्टि करें। �
 #: apps/web/src/desktop/activity/transactions-desk.tsx:836
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:280
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:223
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:246
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:361
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:105
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:202
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:46
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:72
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:257
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:219
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:244
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:232
 msgid "Confirmed"
 msgstr "पुष्टि की गई"
 
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1093
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:244
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:267
 #: apps/web/src/features/home/hooks/use-passkey-settings.ts:41
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:367
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:240
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:265
 msgid "Confirming"
 msgstr "पुष्टि कर रहा है"
 
@@ -2498,6 +2508,7 @@ msgstr "अनुबंध का पता"
 msgid "Contract address copied"
 msgstr "अनुबंध का पता कॉपी किया गया"
 
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:195
 #: apps/web/src/desktop/messaging/thread-desk.tsx:63
 #: apps/web/src/features/messaging/ui/thread-page.tsx:57
 msgid "Conversation"
@@ -3006,6 +3017,7 @@ msgstr "बाज़ार के परिणाम लोड नहीं क�
 
 #: apps/web/src/components/messaging/messages-section.tsx:39
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:63
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:237
 #: apps/web/src/desktop/messaging/thread-desk.tsx:115
 #: apps/web/src/features/messaging/ui/thread-page.tsx:190
 msgid "Couldn't load messages."
@@ -3015,8 +3027,8 @@ msgstr "संदेश लोड नहीं हो सके।"
 msgid "Couldn't load more"
 msgstr "और लोड नहीं किया जा सका"
 
-#: apps/web/src/components/messaging/notifications-section.tsx:23
-#: apps/web/src/desktop/messaging/notifications-desk.tsx:31
+#: apps/web/src/components/messaging/notifications-section.tsx:25
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:33
 msgid "Couldn't load notifications."
 msgstr "सूचनाएं लोड नहीं हो सकीं।"
 
@@ -3097,7 +3109,9 @@ msgid "Couldn't load that voucher."
 msgstr "वह वाउचर लोड नहीं हो सका।"
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:29
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:57
 #: apps/web/src/desktop/messaging/helpdesk-desk.tsx:52
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:85
 msgid "Couldn't load the helpdesk."
 msgstr "हेल्पडेस्क लोड नहीं हो सका।"
 
@@ -3111,6 +3125,8 @@ msgstr "निजी अनुलग्नक लोड नहीं किय�
 msgid "Couldn't load the Want form."
 msgstr "ज़रूरत फ़ॉर्म लोड नहीं हो सका।"
 
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:173
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:218
 #: apps/web/src/desktop/messaging/thread-desk.tsx:88
 #: apps/web/src/features/messaging/ui/thread-page.tsx:76
 msgid "Couldn't load this conversation."
@@ -3376,6 +3392,7 @@ msgstr "खोज नहीं हो सकी। पुनः प्रया�
 msgid "Couldn't send the request. Try again."
 msgstr "अनुरोध नहीं भेजा जा सका। पुनः प्रयास करें।"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:64
 #: apps/web/src/desktop/messaging/composer-desk.tsx:94
 #: apps/web/src/features/messaging/ui/message-composer.tsx:94
 msgid "Couldn't send. Your message is kept; send it again."
@@ -4453,13 +4470,13 @@ msgstr "विनिमय जारी है"
 msgid "Exchanging…"
 msgstr "विनिमय जारी है…"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:251
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:247
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:274
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:272
 msgid "Execute it in Safe."
 msgstr "Safe में इसे निष्पादित करें।"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:235
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:236
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:258
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:261
 msgid "Executing…"
 msgstr "निष्पादित हो रहा है…"
 
@@ -4915,10 +4932,16 @@ msgstr "स्वास्थ्य"
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:28
 #: apps/web/src/components/messaging/helpdesk-section.tsx:42
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:81
 #: apps/web/src/desktop/activity/activity-header.tsx:49
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:58
 #: apps/web/src/features/messaging/ui/thread-page.tsx:50
 msgid "Helpdesk"
 msgstr "हेल्पडेस्क"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:37
+msgid "Helpdesk status"
+msgstr "सहायता केंद्र की स्थिति"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:732
 #~ msgid "Helps members find and understand your pool"
@@ -5570,6 +5593,7 @@ msgstr "पिछले संदेश लोड करें"
 #: apps/web/src/components/account-retirement/recovery-page.tsx:224
 #: apps/web/src/components/market-search.tsx:310
 #: apps/web/src/components/messaging/messages-section.tsx:86
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:96
 #: apps/web/src/components/offerings/offerings-panel.tsx:246
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:382
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:517
@@ -5581,6 +5605,7 @@ msgstr "पिछले संदेश लोड करें"
 #: apps/web/src/desktop/market/market-map-desk.tsx:253
 #: apps/web/src/desktop/market/market-search-field.tsx:450
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:110
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:119
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:128
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:93
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
@@ -5648,6 +5673,8 @@ msgstr "नकद गतिविधि लोड हो रही है..."
 msgid "Loading contact information…"
 msgstr "संपर्क जानकारी लोड हो रही है…"
 
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:167
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:231
 #: apps/web/src/desktop/messaging/thread-desk.tsx:108
 #: apps/web/src/features/messaging/ui/thread-page.tsx:67
 msgid "Loading conversation…"
@@ -5659,7 +5686,9 @@ msgid "Loading credit limits…"
 msgstr "क्रेडिट सीमा लोड हो रही है..."
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:24
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:53
 #: apps/web/src/desktop/messaging/helpdesk-desk.tsx:46
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:79
 msgid "Loading helpdesk…"
 msgstr "हेल्पडेस्क लोड हो रहा है…"
 
@@ -5702,8 +5731,8 @@ msgstr "संदेश लोड हो रहे हैं…"
 msgid "Loading more…"
 msgstr "और अधिक लोड हो रहा है..."
 
-#: apps/web/src/components/messaging/notifications-section.tsx:18
-#: apps/web/src/desktop/messaging/notifications-desk.tsx:25
+#: apps/web/src/components/messaging/notifications-section.tsx:20
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:27
 msgid "Loading notifications…"
 msgstr "सूचनाएं लोड हो रही हैं…"
 
@@ -5874,7 +5903,7 @@ msgstr "आपकी प्रोफ़ाइल लोड हो रही ह�
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:69
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:128
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:864
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:72
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:79
 #: apps/web/src/desktop/shell/desk-loading.tsx:19
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:157
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
@@ -5894,7 +5923,7 @@ msgstr "आपकी प्रोफ़ाइल लोड हो रही ह�
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:112
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1069
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:69
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:80
 #: apps/web/src/features/wallet/hooks/use-send-payment.ts:129
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:245
 msgid "Loading…"
@@ -6309,9 +6338,9 @@ msgid "Multisig owned · {0} signers"
 msgstr "मल्टीसिग के स्वामित्व में · {0} हस्ताक्षरकर्ता"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:72
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:50
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:51
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:93
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:52
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:53
 msgid "Multisig transactions"
 msgstr "मल्टीसिग लेनदेन"
 
@@ -6432,6 +6461,11 @@ msgstr "नाम, चिन्ह या पता"
 msgid "Natural building"
 msgstr "प्राकृतिक निर्माण"
 
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:129
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:159
+msgid "Needs reply"
+msgstr "उत्तर आवश्यक"
+
 #: apps/web/src/desktop/messaging/thread-menu-desk.tsx:146
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:102
 msgid "Neither of you can send messages. Only you can ask to talk again."
@@ -6469,8 +6503,8 @@ msgstr "नया"
 msgid "New message"
 msgstr "नया संदेश"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:159
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:163
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:176
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:182
 msgid "New owner"
 msgstr "नया मालिक"
 
@@ -6726,6 +6760,10 @@ msgstr "कोई फ़ीड नहीं"
 msgid "No future posts."
 msgstr "कोई आगामी पोस्ट नहीं है।"
 
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:39
+msgid "No helpdesk conversation open"
+msgstr "सहायता केंद्र की कोई बातचीत खुली नहीं है"
+
 #: apps/web/src/components/account-retirement/recovery-page.tsx:150
 msgid "No holdings."
 msgstr "कोई जोत नहीं।"
@@ -6798,8 +6836,14 @@ msgstr "कोई मिलता-जुलता वाउचर नहीं�
 msgid "No message recipient is available."
 msgstr "कोई संदेश प्राप्तकर्ता उपलब्ध नहीं है।"
 
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:135
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:168
+msgid "No messages"
+msgstr "कोई संदेश नहीं"
+
 #: apps/web/src/components/messaging/messages-section.tsx:53
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:72
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:249
 #: apps/web/src/desktop/messaging/thread-desk.tsx:134
 #: apps/web/src/features/messaging/ui/thread-page.tsx:213
 msgid "No messages yet."
@@ -6809,8 +6853,8 @@ msgstr "अभी तक कोई संदेश नहीं।"
 msgid "No more results"
 msgstr "और कोई परिणाम नहीं"
 
-#: apps/web/src/components/messaging/notifications-section.tsx:37
-#: apps/web/src/desktop/messaging/notifications-desk.tsx:40
+#: apps/web/src/components/messaging/notifications-section.tsx:39
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:42
 msgid "No notifications yet."
 msgstr "अभी तक कोई सूचना नहीं।"
 
@@ -6825,6 +6869,11 @@ msgstr "आपके क्रेडिट पूल के माध्यम �
 #: apps/web/src/features/home/ui/offers-page.tsx:158
 msgid "No offers match this search."
 msgstr "इस खोज से कोई ऑफ़र मेल नहीं खाता।"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:72
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:95
+msgid "No open helpdesk conversations."
+msgstr "सहायता केंद्र की कोई खुली बातचीत नहीं है।"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:57
 #~ msgid "No passkey is linked to this wallet."
@@ -6900,10 +6949,15 @@ msgstr "अभी तक कोई पोस्ट नहीं."
 msgid "No QR code found. Try again with a clearer image."
 msgstr "कोई QR कोड नहीं मिला. स्पष्ट छवि के साथ पुनः प्रयास करें."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:80
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:77
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:94
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:95
 msgid "No queued proposals found."
 msgstr "कतार में कोई प्रस्ताव नहीं मिला।"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:74
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:97
+msgid "No resolved helpdesk conversations."
+msgstr "सहायता केंद्र की कोई सुलझी हुई बातचीत नहीं है।"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:214
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:217
@@ -7064,8 +7118,8 @@ msgid "No. of participants"
 msgstr "प्रतिभागियों की संख्या"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:180
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:203
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:203
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:228
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -7169,11 +7223,11 @@ msgid "Notification storage is unavailable"
 msgstr "अधिसूचना संग्रहण अनुपलब्ध है"
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:27
-#: apps/web/src/components/messaging/notifications-section.tsx:41
+#: apps/web/src/components/messaging/notifications-section.tsx:43
 #: apps/web/src/desktop/account/settings-desk.tsx:378
 #: apps/web/src/desktop/account/settings-desk.tsx:416
 #: apps/web/src/desktop/activity/activity-header.tsx:48
-#: apps/web/src/desktop/messaging/notifications-desk.tsx:46
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:48
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:33
 msgid "Notifications"
 msgstr "सूचनाएं"
@@ -7293,6 +7347,13 @@ msgstr "ऑनरैंप"
 msgid "Onramp details"
 msgstr "ऑनरैंप विवरण"
 
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:48
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:194
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:70
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:201
+msgid "Open"
+msgstr "खुली"
+
 #: apps/web/src/desktop/ui/phone-only.tsx:41
 msgid "Open CLC in Chrome on Android to collect with an NFC card."
 msgstr "NFC कार्ड से वसूल करने के लिए Android पर Chrome में CLC खोलें।"
@@ -7307,8 +7368,8 @@ msgid "Open in Maps"
 msgstr "मानचित्र में खोलें"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:102
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:100
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:117
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:119
 msgid "Open in Safe"
 msgstr "Safe में खोलें"
 
@@ -7601,9 +7662,9 @@ msgstr "पासकी स्थिति की जाँच नहीं क�
 #~ msgstr "पासकी Safe 1.5 या उसके बाद के मल्टीसिग वॉलेट के लिए हस्ताक्षर कर सकती "
 #~ "हैं। अपने पेपर वॉलेट का उपयोग करें।"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:253
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:276
 #: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:249
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:274
 msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in "
 "card."
 msgstr "पासकी Safe 1.5 या उसके बाद के मल्टीसिग वॉलेट के लिए हस्ताक्षर कर सकती "
@@ -7710,7 +7771,7 @@ msgstr "भुगतान स्थिति अज्ञात"
 #: apps/web/src/desktop/messaging/thread-desk.tsx:67
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1095
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:145
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:223
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:246
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:85
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:160
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:384
@@ -7808,8 +7869,10 @@ msgid "Phone unavailable"
 msgstr "फ़ोन उपलब्ध नहीं है"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:57
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:135
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:217
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:191
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:166
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:284
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:579
 msgid "Photo"
@@ -7835,6 +7898,7 @@ msgstr "तस्वीरें"
 #~ msgid "Photos appear in the order you add them."
 #~ msgstr "फ़ोटो उसी क्रम में दिखाई देती हैं जिस क्रम में आप उन्हें जोड़ते हैं।"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:31
 #: apps/web/src/desktop/messaging/composer-desk.tsx:62
 #: apps/web/src/features/messaging/ui/message-composer.tsx:62
 msgid "Photos to send"
@@ -8107,7 +8171,7 @@ msgstr "पूल टैग"
 msgid "Pool tracking details are missing."
 msgstr "पूल ट्रैकिंग विवरण गायब हैं।"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:98
+#: apps/web/src/components/messaging/resource-context-card.tsx:105
 msgid "Pool:"
 msgstr "पूल:"
 
@@ -8474,8 +8538,8 @@ msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "प्रस्ताव कतार में जोड़ा गया। Safe में इसकी पुष्टि करें और इसे निष्पादित "
 "करें।"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:76
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:73
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:83
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:84
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "यहाँ प्रस्ताव उपलब्ध नहीं हैं। आप अभी भी अपने मल्टीसिग वॉलेट का उपयोग "
 "कर सकते हैं।"
@@ -8490,7 +8554,7 @@ msgstr "प्रस्तावित करें"
 msgid "Propose a voucher"
 msgstr "वाउचर प्रस्तावित करें"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:114
+#: apps/web/src/components/messaging/resource-context-card.tsx:121
 msgid "Proposed voucher"
 msgstr "प्रस्तावित वाउचर"
 
@@ -8805,8 +8869,8 @@ msgstr "हाल के प्राप्तकर्ता"
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:365
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:380
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:494
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:138
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:152
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:155
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:169
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:377
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:389
 #: apps/web/src/desktop/wallet/send-desk.tsx:321
@@ -8815,8 +8879,8 @@ msgstr "हाल के प्राप्तकर्ता"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:353
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:369
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:490
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:144
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:154
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:163
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:173
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:327
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:613
@@ -8990,6 +9054,7 @@ msgstr "पूल से निकालें"
 msgid "Remove link {0}"
 msgstr "लिंक {0} हटाएँ"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:44
 #: apps/web/src/desktop/messaging/composer-desk.tsx:74
 #: apps/web/src/features/messaging/ui/message-composer.tsx:74
 msgid "Remove photo"
@@ -9038,6 +9103,14 @@ msgstr "{0} को हटाने से इस पूल के अंदर �
 msgid "Removing…"
 msgstr "हटाया जा रहा है..."
 
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:210
+msgid "Reopen"
+msgstr "फिर से खोलें"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:223
+msgid "Reopen conversation"
+msgstr "बातचीत फिर से खोलें"
+
 #: apps/web/src/desktop/account/sign-in-card-settings-desk.tsx:33
 #: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:29
 #: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:132
@@ -9057,6 +9130,7 @@ msgstr "बदला जा रहा है…"
 msgid "Replay"
 msgstr "फिर से चलाएँ"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:94
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:239
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:248
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:343
@@ -9175,6 +9249,18 @@ msgstr "लोगो रीसेट करें"
 msgid "Reset resources"
 msgstr "संसाधन रीसेट करें"
 
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:210
+msgid "Resolve"
+msgstr "सुलझाएँ"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:221
+msgid "Resolve conversation"
+msgstr "बातचीत सुलझाएँ"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:48
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:194
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:70
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:201
 #: apps/web/src/desktop/messaging/thread-desk.tsx:72
 msgid "Resolved"
 msgstr "हल हो गया"
@@ -9304,6 +9390,7 @@ msgstr "एकांत विश्राम"
 #: apps/web/src/components/creditable-browse-control.tsx:123
 #: apps/web/src/components/messaging/conversation-lookup-state.tsx:24
 #: apps/web/src/components/messaging/new-message-sheet.tsx:197
+#: apps/web/src/components/messaging/resource-context-card.tsx:195
 #: apps/web/src/components/messaging/resource-owner-contact.tsx:64
 #: apps/web/src/components/messaging/resource-owner-contact.tsx:118
 #: apps/web/src/components/messaging/voucher-proposal-picker.tsx:161
@@ -9445,8 +9532,8 @@ msgstr "वापस किया गया"
 msgid "Review"
 msgstr "जाँचें"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:257
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:253
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:280
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:278
 msgid "Review this transaction in your multisig wallet."
 msgstr "अपने मल्टीसिग वॉलेट में इस लेनदेन की समीक्षा करें।"
 
@@ -10024,6 +10111,10 @@ msgid "Send from your Gnosis wallet through Jumper to an exchange, then "
 msgstr "अपने Gnosis वॉलेट से Jumper के माध्यम से एक्सचेंज पर भेजें, फिर अपने "
 "बैंक या M-Pesa में निकालें।"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:123
+msgid "Send reply"
+msgstr "उत्तर भेजें"
+
 #: apps/web/src/components/reviews/review-editor.tsx:145
 #: apps/web/src/desktop/messaging/thread-menu-desk.tsx:189
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:494
@@ -10062,6 +10153,7 @@ msgstr "निर्देश के अनुसार xDAI भेजें।"
 msgid "Sending"
 msgstr "भेजा जा रहा है"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:123
 #: apps/web/src/desktop/messaging/composer-desk.tsx:143
 #: apps/web/src/desktop/wallet/send-desk.tsx:387
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:110
@@ -10437,7 +10529,7 @@ msgstr "साइन-इन कार्ड"
 #~ msgstr "साइन-इन विधियाँ"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:201
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:195
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:218
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:178
 msgid "Signers"
 msgstr "हस्ताक्षरकर्ता"
@@ -11025,6 +11117,8 @@ msgstr "शर्तें URL"
 msgid "Test with a small amount first."
 msgstr "पहले छोटी राशि से जाँच करें।"
 
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:228
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:265
 #: apps/web/src/desktop/messaging/thread-desk.tsx:201
 #: apps/web/src/desktop/messaging/thread-desk.tsx:241
 #: apps/web/src/desktop/messaging/thread-menu-desk.tsx:167
@@ -11225,6 +11319,7 @@ msgstr "भुगतान अस्वीकार कर दिया गय�
 msgid "The payment was refused. Nothing was charged."
 msgstr "भुगतान से इनकार कर दिया गया. कुछ भी शुल्क नहीं लिया गया."
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:58
 #: apps/web/src/desktop/messaging/composer-desk.tsx:88
 #: apps/web/src/features/messaging/ui/message-composer.tsx:88
 msgid "The photo didn't upload. Remove it and try again."
@@ -11608,6 +11703,11 @@ msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "यह पोस्ट सहेजने के लिए बहुत बड़ी है. टेक्स्ट को छोटा करें या कुछ मीडिया "
 "हटा दें."
 
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:90
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:91
+msgid "This proposal is no longer pending."
+msgstr "यह प्रस्ताव अब लंबित नहीं है।"
+
 #: apps/web/src/components/auth/use-sign-in.ts:282
 msgid "This QR code does not contain a valid private key."
 msgstr "इस QR कोड में वैध निजी कुंजी नहीं है।"
@@ -11851,7 +11951,9 @@ msgstr "यात्रा"
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/messaging/helpdesk-section.tsx:37
 #: apps/web/src/components/messaging/messages-section.tsx:47
-#: apps/web/src/components/messaging/notifications-section.tsx:31
+#: apps/web/src/components/messaging/notifications-section.tsx:33
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:65
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:183
 #: apps/web/src/components/nfc-card-prompt.tsx:112
 #: apps/web/src/components/offerings/offerings-panel.tsx:187
 #: apps/web/src/components/reviews/redemption-review-prompt.tsx:42
@@ -11866,7 +11968,10 @@ msgstr "यात्रा"
 #: apps/web/src/desktop/market/market-search-field.tsx:442
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:66
 #: apps/web/src/desktop/messaging/helpdesk-desk.tsx:55
-#: apps/web/src/desktop/messaging/notifications-desk.tsx:34
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:36
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:88
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:221
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:240
 #: apps/web/src/desktop/messaging/thread-desk.tsx:98
 #: apps/web/src/desktop/messaging/thread-desk.tsx:122
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:199
@@ -12216,6 +12321,7 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 msgstr "अपने Gnosis वॉलेट में धन भेजने के लिए <0>Binance</0> या किसी अन्य "
 "स्थानीय एक्सचेंज और फिर <1>Jumper</1> का उपयोग करें।"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:56
 #: apps/web/src/desktop/messaging/composer-desk.tsx:86
 #: apps/web/src/features/messaging/ui/message-composer.tsx:86
 msgid "Use a JPEG, PNG or WebP photo under 8 MB."
@@ -12423,6 +12529,10 @@ msgstr "ब्लॉक एक्सप्लोरर पर देखें"
 msgid "View pool"
 msgstr "पूल देखें"
 
+#: apps/web/src/components/messaging/notification-context-links.tsx:61
+msgid "View the proposal for more resources."
+msgstr "अधिक संसाधनों के लिए प्रस्ताव देखें।"
+
 #: apps/web/src/components/market-empty-message.tsx:51
 msgid "View this location on the map"
 msgstr "इस स्थान को मानचित्र पर देखें"
@@ -12615,7 +12725,7 @@ msgstr "वाउचर टैग"
 msgid "Voucher tracking details are missing."
 msgstr "वाउचर ट्रैकिंग विवरण गायब हैं।"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:100
+#: apps/web/src/components/messaging/resource-context-card.tsx:107
 msgid "Voucher:"
 msgstr "वाउचर:"
 
@@ -12783,7 +12893,7 @@ msgstr "ज़रूरतों की सीमा पूरी हो गई 
 msgid "Want picture"
 msgstr "ज़रूरत की तस्वीर"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:102
+#: apps/web/src/components/messaging/resource-context-card.tsx:109
 msgid "Want:"
 msgstr "ज़रूरत:"
 
@@ -12987,6 +13097,10 @@ msgstr "संदेश लिखें"
 msgid "Write a post"
 msgstr "एक पोस्ट लिखें"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:100
+msgid "Write a reply"
+msgstr "उत्तर लिखें"
+
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:183
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:71
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:340
@@ -13100,8 +13214,8 @@ msgstr "आप इस व्यक्ति को संदेश नहीं 
 msgid "You can't message yourself."
 msgstr "आप स्वयं को संदेश नहीं भेज सकते।"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:249
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:245
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:272
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:270
 msgid "You confirmed"
 msgstr "आपने पुष्टि की"
 

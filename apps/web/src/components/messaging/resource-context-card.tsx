@@ -11,10 +11,17 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { Button } from "#/components/ui/button";
+import { Badge } from "#/components/ui/badge";
+import {
+  usePoolTokenMembership,
+  poolTokenRegistryAddress,
+} from "#/features/pools/hooks/use-pool-registry";
+import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
 import { catalogsClient } from "#/lib/api/catalogs";
 import { marketClient } from "#/lib/api/market";
 import { poolsClient } from "#/lib/api/pools";
 import { wantsClient } from "#/lib/api/wants";
+import { resolvePoolProposalApprovalState } from "./resource-proposal-status";
 
 /** Draft names are display metadata. The send still contains only identifiers. */
 function DraftContextCard({ context }: { context: MessageContextInput }) {
@@ -122,18 +129,92 @@ function ContextCard({ context, approve }: { context: MessageResourceContext; ap
             {proposed.symbol ? ` (${proposed.symbol})` : ""}
           </Link>
           {approve && context.kind === "pool" ? (
-            <Button asChild variant="outline" className="mt-1 justify-self-start">
-              <Link
-                to="/pools/$poolAddress"
-                params={{ poolAddress: context.resourceId }}
-                search={{ tab: "holdings", tool: "approve", candidate: proposed.address }}
-              >
-                <Trans>Approve voucher</Trans>
-              </Link>
-            </Button>
+            <PoolProposalAction
+              poolAddress={context.resourceId}
+              voucherAddress={proposed.address}
+            />
           ) : null}
         </div>
       ) : null}
     </div>
+  );
+}
+
+function PoolProposalAction({
+  poolAddress,
+  voucherAddress,
+}: {
+  poolAddress: string;
+  voucherAddress: string;
+}) {
+  const pool = useQuery({ ...poolQueryOptions(poolsClient, poolAddress), retry: false });
+  const membership = usePoolTokenMembership(pool.data, voucherAddress);
+  const legacy = usePoolVouchersWithStatus(pool.data, { all: true });
+  const hasRegistry = poolTokenRegistryAddress(pool.data) !== null;
+  const state = resolvePoolProposalApprovalState({
+    poolPending: pool.isPending,
+    poolLoaded: pool.isSuccess,
+    poolError: pool.isError,
+    hasRegistry,
+    membership: membership.data,
+    membershipPending: membership.isPending,
+    membershipError: membership.isError,
+    legacyPending: legacy.isPending,
+    legacyError: legacy.isError,
+    legacyApproved: legacy.vouchers.some(
+      (voucher) => voucher.tokenAddress.toLowerCase() === voucherAddress.toLowerCase(),
+    ),
+  });
+  const approved = state === "approved";
+  const checking = state === "checking";
+  const unavailable = state === "unavailable";
+
+  if (approved) {
+    return (
+      <Badge size="sm" variant="primary" className="mt-1 justify-self-start">
+        <Trans>Approved</Trans>
+      </Badge>
+    );
+  }
+  if (unavailable) {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        className="mt-1 justify-self-start"
+        onClick={() => {
+          if (pool.isError) {
+            void pool.refetch();
+          } else if (hasRegistry) {
+            void membership.refetch();
+          } else {
+            void legacy.refetch();
+          }
+        }}
+      >
+        <Trans>Retry</Trans>
+      </Button>
+    );
+  }
+  return (
+    <Button
+      asChild={!checking}
+      variant="outline"
+      className="mt-1 justify-self-start"
+      disabled={checking}
+      pending={checking}
+    >
+      {checking ? (
+        <Trans>Checking approval…</Trans>
+      ) : (
+        <Link
+          to="/pools/$poolAddress"
+          params={{ poolAddress }}
+          search={{ tab: "holdings", tool: "approve", candidate: voucherAddress }}
+        >
+          <Trans>Approve voucher</Trans>
+        </Link>
+      )}
+    </Button>
   );
 }

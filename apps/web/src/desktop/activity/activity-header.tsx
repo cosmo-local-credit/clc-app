@@ -19,16 +19,20 @@ export function ActivityHeader({
   section,
   sections,
   threadOpen = false,
+  operator = false,
 }: {
   section: ActivitySection;
   /** False while messaging is off: Activity is the Transactions table alone. */
   sections: boolean;
   threadOpen?: boolean;
+  operator?: boolean;
 }) {
   return (
     <div className="grid min-w-0 gap-4">
       <DeskTitleRow title={<Trans>Activity</Trans>} />
-      {sections ? <ActivitySectionTabs current={section} threadOpen={threadOpen} /> : null}
+      {sections ? (
+        <ActivitySectionTabs current={section} threadOpen={threadOpen} operator={operator} />
+      ) : null}
     </div>
   );
 }
@@ -36,12 +40,14 @@ export function ActivityHeader({
 function ActivitySectionTabs({
   current,
   threadOpen,
+  operator,
 }: {
   current: ActivitySection;
   threadOpen: boolean;
+  operator: boolean;
 }) {
   const { t } = useLingui();
-  const counts = useActivityCounts();
+  const counts = useActivityCounts(operator);
   const labels: Record<ActivitySection, string> = {
     transactions: t`Transactions`,
     messages: t`Messages`,

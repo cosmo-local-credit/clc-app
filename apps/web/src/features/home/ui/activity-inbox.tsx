@@ -1,8 +1,10 @@
 import type { ActivityKind } from "@clc/api/features/accounts/client";
+import type { HelpdeskStatus } from "@clc/core/features/messaging/logic";
 import { useLingui } from "@lingui/react/macro";
 
 import { ActivitySectionTabs } from "#/components/messaging/activity-section-tabs";
 import { HelpdeskSection } from "#/components/messaging/helpdesk-section";
+import { OperatorHelpdeskSection } from "#/components/messaging/operator-helpdesk-section";
 import { MessagesSection } from "#/components/messaging/messages-section";
 import { NotificationsSection } from "#/components/messaging/notifications-section";
 import { useActivityCounts } from "#/features/messaging/hooks/use-activity-counts";
@@ -24,6 +26,9 @@ export function ActivityInbox({
   messageTo,
   messageContext,
   onMessageToConsumed,
+  helpdeskId,
+  helpdeskStatus = "open",
+  operator = false,
 }: {
   section: ActivitySection;
   address?: string;
@@ -34,9 +39,12 @@ export function ActivityInbox({
   messageTo?: `0x${string}`;
   messageContext?: MessageContextInput;
   onMessageToConsumed?: () => void;
+  helpdeskId?: number;
+  helpdeskStatus?: HelpdeskStatus;
+  operator?: boolean;
 }) {
   const { t } = useLingui();
-  const counts = useActivityCounts();
+  const counts = useActivityCounts(operator);
   const tabs = (
     <ActivitySectionTabs
       current={section}
@@ -75,7 +83,13 @@ export function ActivityInbox({
         />
       ) : null}
       {section === "notifications" ? <NotificationsSection /> : null}
-      {section === "helpdesk" ? <HelpdeskSection /> : null}
+      {section === "helpdesk" ? (
+        operator ? (
+          <OperatorHelpdeskSection status={helpdeskStatus} conversationId={helpdeskId} />
+        ) : (
+          <HelpdeskSection />
+        )
+      ) : null}
     </div>
   );
 }

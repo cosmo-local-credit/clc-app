@@ -1,5 +1,6 @@
 import { Outlet, useMatches, useSearch } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
+import { isAdminRole } from "@clc/core/features/users/roles";
 
 import { isRecoverySession } from "#/features/account-retirement/logic/lifecycle";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -22,7 +23,9 @@ const BOTTOM_NAV_OFFSET = "calc(4rem + env(safe-area-inset-bottom))";
 export function NavigationShell() {
   const auth = useAuthStatus();
   // Transactions plus Messages and Helpdesk; the messaging part is zero while it is off.
-  const unreadActivity = useActivityCounts().total;
+  const unreadActivity = useActivityCounts(
+    auth.isAuthenticated && isAdminRole(auth.session?.role),
+  ).total;
   const navOwner = useMatches({
     select: (matches) => matches.at(-1)?.staticData.navOwner,
   }) as NavOwner | undefined;

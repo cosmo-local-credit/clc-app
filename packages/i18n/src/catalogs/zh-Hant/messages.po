@@ -655,7 +655,7 @@ msgstr "啟用"
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:467
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:472
-#: apps/web/src/features/home/ui/activity-inbox.tsx:66
+#: apps/web/src/features/home/ui/activity-inbox.tsx:76
 #: apps/web/src/features/home/ui/activity-page.tsx:129
 #: apps/web/src/features/home/ui/activity-page.tsx:173
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:50
@@ -720,6 +720,7 @@ msgstr "新增留言或提交訂單"
 msgid "Add a phone number to your profile to use MPESA."
 msgstr "將電話號碼新增到您的個人資料中以使用 MPESA。"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:86
 #: apps/web/src/components/ui/avatar-picker.tsx:66
 #: apps/web/src/desktop/messaging/composer-desk.tsx:114
 #: apps/web/src/features/messaging/ui/message-composer.tsx:127
@@ -988,8 +989,8 @@ msgstr "傳送前請務必確認代幣和網路相符。"
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:120
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:425
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1007
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:146
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:155
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:163
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:172
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:113
 #: apps/web/src/desktop/wallet/send-desk.tsx:217
 #: apps/web/src/desktop/wallet/send-desk.tsx:224
@@ -1005,8 +1006,8 @@ msgstr "傳送前請務必確認代幣和網路相符。"
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:112
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:127
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:405
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:157
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:166
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:176
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:87
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:176
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:318
@@ -1141,7 +1142,7 @@ msgstr "所需核准數"
 msgid "Approve {0}"
 msgstr "核准 {0}"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:131
+#: apps/web/src/components/messaging/resource-context-card.tsx:215
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:699
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:62
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:100
@@ -1154,6 +1155,7 @@ msgstr "核准 {0}"
 msgid "Approve voucher"
 msgstr "批准代金券"
 
+#: apps/web/src/components/messaging/resource-context-card.tsx:175
 #: apps/web/src/features/posts/ui/post-status-badge.tsx:20
 msgid "Approved"
 msgstr "已批准"
@@ -1249,6 +1251,10 @@ msgstr "等待批准"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:116
 msgid "Back"
 msgstr "返回"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:163
+msgid "Back to helpdesk"
+msgstr "返回服務台"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:131
 #: apps/web/src/desktop/auth/auth-gate-desk.tsx:72
@@ -1542,7 +1548,7 @@ msgstr "目錄圖片"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "目錄已儲存，但無法新增項目。請重試。"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:104
+#: apps/web/src/components/messaging/resource-context-card.tsx:111
 msgid "Catalog:"
 msgstr "目錄："
 
@@ -1655,6 +1661,10 @@ msgstr "查看轉讓狀態"
 #: apps/web/src/features/wallet/ui/collect-page.tsx:444
 msgid "Checking"
 msgstr "正在檢查"
+
+#: apps/web/src/components/messaging/resource-context-card.tsx:208
+msgid "Checking approval…"
+msgstr "正在檢查核准狀態…"
 
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:151
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:810
@@ -1997,12 +2007,12 @@ msgstr "清除搜尋"
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:66
 #: apps/web/src/desktop/pools/detail/pool-side-panel.tsx:103
 #: apps/web/src/desktop/posts/post-desk.tsx:503
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:52
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:53
 #: apps/web/src/desktop/ui/inspector.tsx:107
 #: apps/web/src/desktop/vouchers/detail/voucher-dialog.tsx:56
 #: apps/web/src/desktop/wants/want-place-desk.tsx:62
 #: apps/web/src/features/home/ui/report-page.tsx:285
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:105
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:124
 msgid "Close"
 msgstr "關閉"
 
@@ -2147,9 +2157,9 @@ msgid "Complete your profile"
 msgstr "完成您的個人資料"
 
 #: apps/web/src/desktop/credit/review-dialog.tsx:161
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:244
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:267
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:725
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:240
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:265
 msgid "Confirm"
 msgstr "確認"
 
@@ -2224,24 +2234,24 @@ msgstr "請使用通行金鑰確認。您的舊卡將無法再於任何裝置上
 #: apps/web/src/desktop/activity/transactions-desk.tsx:836
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:280
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:223
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:246
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:361
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:105
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:202
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:46
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:72
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:257
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:219
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:244
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:232
 msgid "Confirmed"
 msgstr "已確認"
 
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1093
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:244
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:267
 #: apps/web/src/features/home/hooks/use-passkey-settings.ts:41
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:367
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:240
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:265
 msgid "Confirming"
 msgstr "正在確認"
 
@@ -2460,6 +2470,7 @@ msgstr "合約地址"
 msgid "Contract address copied"
 msgstr "合約地址已複製"
 
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:195
 #: apps/web/src/desktop/messaging/thread-desk.tsx:63
 #: apps/web/src/features/messaging/ui/thread-page.tsx:57
 msgid "Conversation"
@@ -2965,6 +2976,7 @@ msgstr "無法載入市場結果。"
 
 #: apps/web/src/components/messaging/messages-section.tsx:39
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:63
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:237
 #: apps/web/src/desktop/messaging/thread-desk.tsx:115
 #: apps/web/src/features/messaging/ui/thread-page.tsx:190
 msgid "Couldn't load messages."
@@ -2974,8 +2986,8 @@ msgstr "無法載入訊息。"
 msgid "Couldn't load more"
 msgstr "無法載入更多"
 
-#: apps/web/src/components/messaging/notifications-section.tsx:23
-#: apps/web/src/desktop/messaging/notifications-desk.tsx:31
+#: apps/web/src/components/messaging/notifications-section.tsx:25
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:33
 msgid "Couldn't load notifications."
 msgstr "無法載入通知。"
 
@@ -3056,7 +3068,9 @@ msgid "Couldn't load that voucher."
 msgstr "無法載入該代金券。"
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:29
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:57
 #: apps/web/src/desktop/messaging/helpdesk-desk.tsx:52
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:85
 msgid "Couldn't load the helpdesk."
 msgstr "無法載入說明中心。"
 
@@ -3070,6 +3084,8 @@ msgstr "無法載入私密附件。"
 msgid "Couldn't load the Want form."
 msgstr "無法載入需求表單。"
 
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:173
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:218
 #: apps/web/src/desktop/messaging/thread-desk.tsx:88
 #: apps/web/src/features/messaging/ui/thread-page.tsx:76
 msgid "Couldn't load this conversation."
@@ -3328,6 +3344,7 @@ msgstr "搜尋失敗。請再試一次。"
 msgid "Couldn't send the request. Try again."
 msgstr "無法傳送請求。請再試一次。"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:64
 #: apps/web/src/desktop/messaging/composer-desk.tsx:94
 #: apps/web/src/features/messaging/ui/message-composer.tsx:94
 msgid "Couldn't send. Your message is kept; send it again."
@@ -4399,13 +4416,13 @@ msgstr "正在兌換"
 msgid "Exchanging…"
 msgstr "正在兌換…"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:251
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:247
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:274
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:272
 msgid "Execute it in Safe."
 msgstr "請在 Safe 中執行。"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:235
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:236
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:258
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:261
 msgid "Executing…"
 msgstr "執行中…"
 
@@ -4860,10 +4877,16 @@ msgstr "健康"
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:28
 #: apps/web/src/components/messaging/helpdesk-section.tsx:42
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:81
 #: apps/web/src/desktop/activity/activity-header.tsx:49
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:58
 #: apps/web/src/features/messaging/ui/thread-page.tsx:50
 msgid "Helpdesk"
 msgstr "說明中心"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:37
+msgid "Helpdesk status"
+msgstr "服務台狀態"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:732
 #~ msgid "Helps members find and understand your pool"
@@ -5504,6 +5527,7 @@ msgstr "載入更早的訊息"
 #: apps/web/src/components/account-retirement/recovery-page.tsx:224
 #: apps/web/src/components/market-search.tsx:310
 #: apps/web/src/components/messaging/messages-section.tsx:86
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:96
 #: apps/web/src/components/offerings/offerings-panel.tsx:246
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:382
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:517
@@ -5515,6 +5539,7 @@ msgstr "載入更早的訊息"
 #: apps/web/src/desktop/market/market-map-desk.tsx:253
 #: apps/web/src/desktop/market/market-search-field.tsx:450
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:110
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:119
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:128
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:93
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
@@ -5582,6 +5607,8 @@ msgstr "正在載入現金活動…"
 msgid "Loading contact information…"
 msgstr "正在載入聯絡資訊…"
 
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:167
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:231
 #: apps/web/src/desktop/messaging/thread-desk.tsx:108
 #: apps/web/src/features/messaging/ui/thread-page.tsx:67
 msgid "Loading conversation…"
@@ -5593,7 +5620,9 @@ msgid "Loading credit limits…"
 msgstr "正在載入信用額度…"
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:24
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:53
 #: apps/web/src/desktop/messaging/helpdesk-desk.tsx:46
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:79
 msgid "Loading helpdesk…"
 msgstr "說明中心載入中…"
 
@@ -5636,8 +5665,8 @@ msgstr "訊息載入中…"
 msgid "Loading more…"
 msgstr "載入更多…"
 
-#: apps/web/src/components/messaging/notifications-section.tsx:18
-#: apps/web/src/desktop/messaging/notifications-desk.tsx:25
+#: apps/web/src/components/messaging/notifications-section.tsx:20
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:27
 msgid "Loading notifications…"
 msgstr "通知載入中…"
 
@@ -5808,7 +5837,7 @@ msgstr "正在載入您的個人資料…"
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:69
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:128
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:864
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:72
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:79
 #: apps/web/src/desktop/shell/desk-loading.tsx:19
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:157
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
@@ -5828,7 +5857,7 @@ msgstr "正在載入您的個人資料…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:112
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1069
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:69
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:80
 #: apps/web/src/features/wallet/hooks/use-send-payment.ts:129
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:245
 msgid "Loading…"
@@ -6242,9 +6271,9 @@ msgid "Multisig owned · {0} signers"
 msgstr "由多簽錢包持有 · {0} 位簽署者"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:72
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:50
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:51
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:93
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:52
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:53
 msgid "Multisig transactions"
 msgstr "多簽交易"
 
@@ -6365,6 +6394,11 @@ msgstr "名稱、符號或地址"
 msgid "Natural building"
 msgstr "自然建築"
 
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:129
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:159
+msgid "Needs reply"
+msgstr "需要回覆"
+
 #: apps/web/src/desktop/messaging/thread-menu-desk.tsx:146
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:102
 msgid "Neither of you can send messages. Only you can ask to talk again."
@@ -6401,8 +6435,8 @@ msgstr "新"
 msgid "New message"
 msgstr "新訊息"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:159
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:163
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:176
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:182
 msgid "New owner"
 msgstr "新所有者"
 
@@ -6656,6 +6690,10 @@ msgstr "無價格來源"
 msgid "No future posts."
 msgstr "沒有未來的貼文。"
 
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:39
+msgid "No helpdesk conversation open"
+msgstr "未開啟服務台對話"
+
 #: apps/web/src/components/account-retirement/recovery-page.tsx:150
 msgid "No holdings."
 msgstr "沒有持有的代金券。"
@@ -6726,8 +6764,14 @@ msgstr "沒有符合的代金券。"
 msgid "No message recipient is available."
 msgstr "沒有可用的訊息收件人。"
 
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:135
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:168
+msgid "No messages"
+msgstr "沒有訊息"
+
 #: apps/web/src/components/messaging/messages-section.tsx:53
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:72
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:249
 #: apps/web/src/desktop/messaging/thread-desk.tsx:134
 #: apps/web/src/features/messaging/ui/thread-page.tsx:213
 msgid "No messages yet."
@@ -6737,8 +6781,8 @@ msgstr "還沒有訊息。"
 msgid "No more results"
 msgstr "沒有更多結果"
 
-#: apps/web/src/components/messaging/notifications-section.tsx:37
-#: apps/web/src/desktop/messaging/notifications-desk.tsx:40
+#: apps/web/src/components/messaging/notifications-section.tsx:39
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:42
 msgid "No notifications yet."
 msgstr "還沒有通知。"
 
@@ -6753,6 +6797,11 @@ msgstr "您的信用資金池中沒有可用的商品或服務項目。"
 #: apps/web/src/features/home/ui/offers-page.tsx:158
 msgid "No offers match this search."
 msgstr "沒有與此搜尋相符的商品或服務項目。"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:72
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:95
+msgid "No open helpdesk conversations."
+msgstr "沒有待處理的服務台對話。"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:57
 #~ msgid "No passkey is linked to this wallet."
@@ -6828,10 +6877,15 @@ msgstr "還沒有貼文。"
 msgid "No QR code found. Try again with a clearer image."
 msgstr "未找到QR 碼。請使用更清晰的圖片重試。"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:80
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:77
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:94
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:95
 msgid "No queued proposals found."
 msgstr "找不到佇列中的提案。"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:74
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:97
+msgid "No resolved helpdesk conversations."
+msgstr "沒有已解決的服務台對話。"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:214
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:217
@@ -6992,8 +7046,8 @@ msgid "No. of participants"
 msgstr "參加人數"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:180
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:203
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:203
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:228
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -7100,11 +7154,11 @@ msgid "Notification storage is unavailable"
 msgstr "通知儲存不可用"
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:27
-#: apps/web/src/components/messaging/notifications-section.tsx:41
+#: apps/web/src/components/messaging/notifications-section.tsx:43
 #: apps/web/src/desktop/account/settings-desk.tsx:378
 #: apps/web/src/desktop/account/settings-desk.tsx:416
 #: apps/web/src/desktop/activity/activity-header.tsx:48
-#: apps/web/src/desktop/messaging/notifications-desk.tsx:46
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:48
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:33
 msgid "Notifications"
 msgstr "通知"
@@ -7221,6 +7275,13 @@ msgstr "儲值"
 msgid "Onramp details"
 msgstr "儲值詳情"
 
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:48
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:194
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:70
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:201
+msgid "Open"
+msgstr "待處理"
+
 #: apps/web/src/desktop/ui/phone-only.tsx:41
 msgid "Open CLC in Chrome on Android to collect with an NFC card."
 msgstr "請在 Android 上的 Chrome 中開啟 CLC，以使用 NFC 卡收款。"
@@ -7235,8 +7296,8 @@ msgid "Open in Maps"
 msgstr "在地圖中開啟"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:102
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:100
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:117
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:119
 msgid "Open in Safe"
 msgstr "在 Safe 中開啟"
 
@@ -7525,9 +7586,9 @@ msgstr "無法檢查通行金鑰狀態。"
 #~ "wallet."
 #~ msgstr "通行金鑰可為 Safe 1.5 及更新版本的多簽錢包簽署。請使用您的紙錢包。"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:253
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:276
 #: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:249
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:274
 msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in "
 "card."
 msgstr "通行金鑰可為 Safe 1.5 及更新版本的多簽錢包簽署。請使用您的登入卡。"
@@ -7633,7 +7694,7 @@ msgstr "付款狀態未知"
 #: apps/web/src/desktop/messaging/thread-desk.tsx:67
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1095
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:145
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:223
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:246
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:85
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:160
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:384
@@ -7728,8 +7789,10 @@ msgid "Phone unavailable"
 msgstr "電話不可用"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:57
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:135
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:217
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:191
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:166
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:284
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:579
 msgid "Photo"
@@ -7755,6 +7818,7 @@ msgstr "照片"
 #~ msgid "Photos appear in the order you add them."
 #~ msgstr "照片會按新增順序顯示。"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:31
 #: apps/web/src/desktop/messaging/composer-desk.tsx:62
 #: apps/web/src/features/messaging/ui/message-composer.tsx:62
 msgid "Photos to send"
@@ -8026,7 +8090,7 @@ msgstr "資金池標籤"
 msgid "Pool tracking details are missing."
 msgstr "資金池跟蹤詳細資訊丟失。"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:98
+#: apps/web/src/components/messaging/resource-context-card.tsx:105
 msgid "Pool:"
 msgstr "資金池："
 
@@ -8392,8 +8456,8 @@ msgstr "個人資料已更新"
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "提案已加入佇列。請在 Safe 中確認並執行。"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:76
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:73
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:83
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:84
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "此處暫時無法使用提案。你仍可使用多簽錢包。"
 
@@ -8407,7 +8471,7 @@ msgstr "提議"
 msgid "Propose a voucher"
 msgstr "提議代用券"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:114
+#: apps/web/src/components/messaging/resource-context-card.tsx:121
 msgid "Proposed voucher"
 msgstr "提議的代用券"
 
@@ -8722,8 +8786,8 @@ msgstr "最近的接收方"
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:365
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:380
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:494
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:138
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:152
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:155
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:169
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:377
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:389
 #: apps/web/src/desktop/wallet/send-desk.tsx:321
@@ -8732,8 +8796,8 @@ msgstr "最近的接收方"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:353
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:369
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:490
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:144
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:154
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:163
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:173
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:327
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:613
@@ -8911,6 +8975,7 @@ msgstr "從資金池中刪除"
 msgid "Remove link {0}"
 msgstr "刪除連結 {0}"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:44
 #: apps/web/src/desktop/messaging/composer-desk.tsx:74
 #: apps/web/src/features/messaging/ui/message-composer.tsx:74
 msgid "Remove photo"
@@ -8957,6 +9022,14 @@ msgstr "刪除 {0} 後，將無法再將其兌入或兌出此資金池。其匯�
 msgid "Removing…"
 msgstr "正在刪除…"
 
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:210
+msgid "Reopen"
+msgstr "重新開啟"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:223
+msgid "Reopen conversation"
+msgstr "重新開啟對話"
+
 #: apps/web/src/desktop/account/sign-in-card-settings-desk.tsx:33
 #: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:29
 #: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:132
@@ -8976,6 +9049,7 @@ msgstr "正在更換…"
 msgid "Replay"
 msgstr "重播"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:94
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:239
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:248
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:343
@@ -9094,6 +9168,18 @@ msgstr "重置徽標"
 msgid "Reset resources"
 msgstr "重設資源"
 
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:210
+msgid "Resolve"
+msgstr "解決"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:221
+msgid "Resolve conversation"
+msgstr "解決對話"
+
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:48
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:194
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:70
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:201
 #: apps/web/src/desktop/messaging/thread-desk.tsx:72
 msgid "Resolved"
 msgstr "已解決"
@@ -9221,6 +9307,7 @@ msgstr "靜修"
 #: apps/web/src/components/creditable-browse-control.tsx:123
 #: apps/web/src/components/messaging/conversation-lookup-state.tsx:24
 #: apps/web/src/components/messaging/new-message-sheet.tsx:197
+#: apps/web/src/components/messaging/resource-context-card.tsx:195
 #: apps/web/src/components/messaging/resource-owner-contact.tsx:64
 #: apps/web/src/components/messaging/resource-owner-contact.tsx:118
 #: apps/web/src/components/messaging/voucher-proposal-picker.tsx:161
@@ -9362,8 +9449,8 @@ msgstr "已回滾"
 msgid "Review"
 msgstr "核對"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:257
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:253
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:280
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:278
 msgid "Review this transaction in your multisig wallet."
 msgstr "請在多簽錢包中檢視此交易。"
 
@@ -9936,6 +10023,10 @@ msgid "Send from your Gnosis wallet through Jumper to an exchange, then "
 "withdraw to your bank or M-Pesa."
 msgstr "從您的 Gnosis 錢包透過 Jumper 傳送至交易所，然後提領至銀行帳戶或 M-Pesa。"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:123
+msgid "Send reply"
+msgstr "傳送回覆"
+
 #: apps/web/src/components/reviews/review-editor.tsx:145
 #: apps/web/src/desktop/messaging/thread-menu-desk.tsx:189
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:494
@@ -9974,6 +10065,7 @@ msgstr "按照說明傳送 xDAI。"
 msgid "Sending"
 msgstr "傳送中"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:123
 #: apps/web/src/desktop/messaging/composer-desk.tsx:143
 #: apps/web/src/desktop/wallet/send-desk.tsx:387
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:110
@@ -10345,7 +10437,7 @@ msgstr "登入卡"
 #~ msgstr "登入方式"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:201
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:195
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:218
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:178
 msgid "Signers"
 msgstr "簽署者"
@@ -10930,6 +11022,8 @@ msgstr "條款 URL"
 msgid "Test with a small amount first."
 msgstr "請先以小額資金測試。"
 
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:228
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:265
 #: apps/web/src/desktop/messaging/thread-desk.tsx:201
 #: apps/web/src/desktop/messaging/thread-desk.tsx:241
 #: apps/web/src/desktop/messaging/thread-menu-desk.tsx:167
@@ -11121,6 +11215,7 @@ msgstr "付款被拒絕：{detail}"
 msgid "The payment was refused. Nothing was charged."
 msgstr "付款被拒絕。沒有收取任何費用。"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:58
 #: apps/web/src/desktop/messaging/composer-desk.tsx:88
 #: apps/web/src/features/messaging/ui/message-composer.tsx:88
 msgid "The photo didn't upload. Remove it and try again."
@@ -11487,6 +11582,11 @@ msgstr "此資金池的存入額度已更改。請檢查更新後的金額並重
 msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "這篇貼文太大，無法儲存。請縮短文字或移除部分媒體。"
 
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:90
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:91
+msgid "This proposal is no longer pending."
+msgstr "此提案已不再等待處理。"
+
 #: apps/web/src/components/auth/use-sign-in.ts:282
 msgid "This QR code does not contain a valid private key."
 msgstr "此QR 碼不包含有效的私鑰。"
@@ -11729,7 +11829,9 @@ msgstr "旅行"
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/messaging/helpdesk-section.tsx:37
 #: apps/web/src/components/messaging/messages-section.tsx:47
-#: apps/web/src/components/messaging/notifications-section.tsx:31
+#: apps/web/src/components/messaging/notifications-section.tsx:33
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:65
+#: apps/web/src/components/messaging/operator-helpdesk-section.tsx:183
 #: apps/web/src/components/nfc-card-prompt.tsx:112
 #: apps/web/src/components/offerings/offerings-panel.tsx:187
 #: apps/web/src/components/reviews/redemption-review-prompt.tsx:42
@@ -11744,7 +11846,10 @@ msgstr "旅行"
 #: apps/web/src/desktop/market/market-search-field.tsx:442
 #: apps/web/src/desktop/messaging/conversation-list-desk.tsx:66
 #: apps/web/src/desktop/messaging/helpdesk-desk.tsx:55
-#: apps/web/src/desktop/messaging/notifications-desk.tsx:34
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:36
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:88
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:221
+#: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:240
 #: apps/web/src/desktop/messaging/thread-desk.tsx:98
 #: apps/web/src/desktop/messaging/thread-desk.tsx:122
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:199
@@ -12097,6 +12202,7 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 "funds to your Gnosis wallet."
 msgstr "使用 <0>Binance</0> 或其他本地交易所，再透過 <1>Jumper</1> 將資金傳送到您的 Gnosis 錢包。"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:56
 #: apps/web/src/desktop/messaging/composer-desk.tsx:86
 #: apps/web/src/features/messaging/ui/message-composer.tsx:86
 msgid "Use a JPEG, PNG or WebP photo under 8 MB."
@@ -12301,6 +12407,10 @@ msgstr "在區塊瀏覽器上查看"
 msgid "View pool"
 msgstr "查看資金池"
 
+#: apps/web/src/components/messaging/notification-context-links.tsx:61
+msgid "View the proposal for more resources."
+msgstr "查看提案以瞭解更多資源。"
+
 #: apps/web/src/components/market-empty-message.tsx:51
 msgid "View this location on the map"
 msgstr "在地圖上查看此位置"
@@ -12493,7 +12603,7 @@ msgstr "代金券標籤"
 msgid "Voucher tracking details are missing."
 msgstr "缺少代金券跟蹤詳情。"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:100
+#: apps/web/src/components/messaging/resource-context-card.tsx:107
 msgid "Voucher:"
 msgstr "代金券："
 
@@ -12661,7 +12771,7 @@ msgstr "已達需求數量上限。請聯絡管理員提高你的限額。"
 msgid "Want picture"
 msgstr "需求圖片"
 
-#: apps/web/src/components/messaging/resource-context-card.tsx:102
+#: apps/web/src/components/messaging/resource-context-card.tsx:109
 msgid "Want:"
 msgstr "需求："
 
@@ -12862,6 +12972,10 @@ msgstr "輸入訊息"
 msgid "Write a post"
 msgstr "寫一篇文章"
 
+#: apps/web/src/components/messaging/operator-helpdesk-composer.tsx:100
+msgid "Write a reply"
+msgstr "撰寫回覆"
+
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:183
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:71
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:340
@@ -12974,8 +13088,8 @@ msgstr "您無法傳訊息給此人。"
 msgid "You can't message yourself."
 msgstr "不能傳訊息給自己。"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:249
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:245
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:272
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:270
 msgid "You confirmed"
 msgstr "您已確認"
 
