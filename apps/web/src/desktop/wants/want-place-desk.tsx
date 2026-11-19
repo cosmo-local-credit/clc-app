@@ -29,6 +29,7 @@ import {
   useWantShare,
 } from "#/components/wants/use-want-detail";
 import { WantPicture } from "#/components/wants/want-row";
+import { WantMessageButton } from "#/components/wants/want-message-button";
 import { DeskKV } from "#/desktop/ui/kv";
 import { DeskRowList } from "#/desktop/ui/page";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -120,6 +121,7 @@ function WantPlaceBody({
           ))}
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          <WantMessageButton want={want} />
           {mine.data ? (
             <Button asChild variant="ghost" size="icon" aria-label={t`Edit Want`}>
               <Link to="/wallet/wants/$wantId/edit" params={{ wantId: want.id }}>
@@ -199,7 +201,11 @@ function WantPlaceBody({
 
       <PlaceSection title={<Trans>Contact</Trans>}>
         {want.ownerAddress ? (
-          <ResourceOwnerContact ownerAddress={want.ownerAddress} className="mb-3" />
+          <ResourceOwnerContact
+            ownerAddress={want.ownerAddress}
+            context={{ kind: "want", resourceId: want.id }}
+            className="mb-3"
+          />
         ) : null}
         <AuthenticatedDetailsGate>
           <WantContact wantId={want.id} />

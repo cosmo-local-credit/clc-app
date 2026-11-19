@@ -1,5 +1,6 @@
 import { ownerInfoQueryOptions } from "@clc/api/features/safe/queries";
 import type { OwnerMessageTarget } from "@clc/core/features/safe/logic";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -17,10 +18,12 @@ export function ResourceOwnerContact({
   ownerAddress,
   label,
   className,
+  context,
 }: {
   ownerAddress: string;
   label?: string;
   className?: string;
+  context?: MessageContextInput;
 }) {
   const { t } = useLingui();
   const auth = useAuthStatus();
@@ -43,7 +46,12 @@ export function ResourceOwnerContact({
         {query.isPending ? (
           <Skeleton className="mt-1 h-4 w-32 rounded-none" />
         ) : (
-          <OwnerIdentity ownerAddress={ownerAddress} targets={targets} messageable={available} />
+          <OwnerIdentity
+            ownerAddress={ownerAddress}
+            targets={targets}
+            messageable={available}
+            context={context}
+          />
         )}
         {query.isError ? (
           <Button
@@ -62,6 +70,7 @@ export function ResourceOwnerContact({
           ownerAddress={ownerAddress}
           targets={targets}
           excludeAddress={auth.isAuthenticated ? auth.session?.address : undefined}
+          context={context}
         />
       ) : null}
     </div>
@@ -72,9 +81,11 @@ export function ResourceOwnerContact({
 export function ResourceOwnerContactValue({
   ownerAddress,
   className,
+  context,
 }: {
   ownerAddress: string;
   className?: string;
+  context?: MessageContextInput;
 }) {
   const auth = useAuthStatus();
   const query = useQuery({ ...ownerInfoQueryOptions(safeClient, ownerAddress), retry: false });
@@ -89,7 +100,12 @@ export function ResourceOwnerContactValue({
       {query.isPending ? (
         <Skeleton className="h-4 w-32 rounded-none" />
       ) : (
-        <OwnerIdentity ownerAddress={ownerAddress} targets={targets} messageable={available} />
+        <OwnerIdentity
+          ownerAddress={ownerAddress}
+          targets={targets}
+          messageable={available}
+          context={context}
+        />
       )}
       {query.isError ? (
         <Button
@@ -108,6 +124,7 @@ export function ResourceOwnerContactValue({
           targets={targets}
           excludeAddress={auth.isAuthenticated ? auth.session?.address : undefined}
           className="mt-2"
+          context={context}
         />
       ) : null}
     </div>
@@ -120,11 +137,13 @@ export function OwnerMessageButton({
   targets: suppliedTargets,
   excludeAddress,
   className,
+  context,
 }: {
   ownerAddress: string;
   targets?: readonly OwnerMessageTarget[];
   excludeAddress?: string;
   className?: string;
+  context?: MessageContextInput;
 }) {
   const query = useQuery({
     ...ownerInfoQueryOptions(safeClient, suppliedTargets ? undefined : ownerAddress),
@@ -137,7 +156,17 @@ export function OwnerMessageButton({
 
   return (
     <Button asChild variant="outline" tap className={className}>
-      <Link to="/" search={{ tab: "activity", section: "messages", messageTo: ownerAddress }}>
+      <Link
+        to="/"
+        search={{
+          tab: "activity",
+          section: "messages",
+          messageTo: ownerAddress,
+          messageKind: context?.kind,
+          messageResource: context?.resourceId,
+          messageVoucher: context?.kind === "pool" ? context.proposedVoucherAddress : undefined,
+        }}
+      >
         <RiMailLine aria-hidden="true" />
         <Trans>Message</Trans>
       </Link>
@@ -149,10 +178,12 @@ function OwnerIdentity({
   ownerAddress,
   targets,
   messageable,
+  context,
 }: {
   ownerAddress: string;
   targets: readonly OwnerMessageTarget[];
   messageable: boolean;
+  context?: MessageContextInput;
 }) {
   const first = targets[0];
   const identity = first ? (
@@ -181,7 +212,14 @@ function OwnerIdentity({
   return (
     <Link
       to="/"
-      search={{ tab: "activity", section: "messages", messageTo: ownerAddress }}
+      search={{
+        tab: "activity",
+        section: "messages",
+        messageTo: ownerAddress,
+        messageKind: context?.kind,
+        messageResource: context?.resourceId,
+        messageVoucher: context?.kind === "pool" ? context.proposedVoucherAddress : undefined,
+      }}
       className="block min-w-0 underline-offset-2 focus-visible:outline-2 focus-visible:outline-primary hover:underline"
     >
       {identity}

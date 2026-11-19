@@ -10,6 +10,28 @@ export const ABUSE_REPORT_COMMENT_MAX = 1000;
 const idSchema = z.number().int().positive();
 const timestampSchema = z.string().datetime({ offset: true });
 const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
+
+const messageContextInputSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("pool"),
+    resourceId: addressSchema,
+    proposedVoucherAddress: addressSchema.optional(),
+  }),
+  z.object({ kind: z.literal("voucher"), resourceId: addressSchema }),
+  z.object({ kind: z.literal("want"), resourceId: z.string().regex(/^[1-9][0-9]*$/) }),
+  z.object({ kind: z.literal("catalog"), resourceId: z.string().regex(/^[1-9][0-9]*$/) }),
+]);
+export type MessageContextInput = z.infer<typeof messageContextInputSchema>;
+
+const messageResourceContextSchema = z.object({
+  kind: z.enum(["pool", "voucher", "want", "catalog"]),
+  resourceId: z.string().min(1),
+  resourceName: z.string().min(1),
+  proposedVoucher: z
+    .object({ address: addressSchema, name: z.string().min(1), symbol: z.string() })
+    .optional(),
+});
+export type MessageResourceContext = z.infer<typeof messageResourceContextSchema>;
 const imageUrlSchema = z
   .string()
   .refine(isHttpUrl, { message: "The image must be an http(s) URL" });
@@ -48,6 +70,7 @@ export const messageSchema = z.object({
   sender: z.enum(["self", "peer", "support"]),
   body: z.string().nullable(),
   imageUrls: z.array(imageUrlSchema).max(MESSAGE_IMAGE_MAX),
+  context: messageResourceContextSchema.nullable().default(null),
   createdAt: timestampSchema,
 });
 export type Message = z.infer<typeof messageSchema>;
@@ -103,15 +126,23 @@ export const sendMessageInputSchema = z
     clientId: z.uuid(),
     body: z.string().max(MESSAGE_BODY_MAX).optional(),
     imageUrls: z.array(imageUrlSchema).max(MESSAGE_IMAGE_MAX).optional(),
+    context: messageContextInputSchema.optional(),
   })
-  .refine((input) => (input.body?.trim() ?? "") !== "" || (input.imageUrls?.length ?? 0) > 0, {
-    message: "A message needs text or an image",
-  });
+  .refine(
+    (input) =>
+      (input.body?.trim() ?? "") !== "" ||
+      (input.imageUrls?.length ?? 0) > 0 ||
+      input.context !== undefined,
+    {
+      message: "A message needs text, an image, or resource context",
+    },
+  );
 export type SendMessageInput = z.infer<typeof sendMessageInputSchema>;
 
 const conversationRequestInputSchema = z.object({
   recipientAddress: addressSchema,
   intro: z.string().trim().max(CONVERSATION_INTRO_MAX).optional(),
+  context: messageContextInputSchema.optional(),
 });
 export type ConversationRequestInput = z.infer<typeof conversationRequestInputSchema>;
 

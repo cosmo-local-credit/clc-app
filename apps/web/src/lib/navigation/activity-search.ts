@@ -1,4 +1,5 @@
 import type { ActivityKind } from "@clc/api/features/accounts/client";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 import { getAddress, isAddress } from "viem";
 
 export const ACTIVITY_KIND_ORDER = [
@@ -37,6 +38,15 @@ export type ActivityRouteSearch = {
   tx?: string;
   /** Resource-owner address used to prefill New message. */
   messageTo?: string | readonly string[];
+  messageKind?: string | readonly string[];
+  messageResource?: string | readonly string[];
+  messageVoucher?: string | readonly string[];
+  /** Admin/Superadmin Helpdesk conversation selected in Activity. */
+  helpdeskId?: string | readonly string[];
+  /** Admin/Superadmin Helpdesk queue; Open is the omitted default. */
+  helpdeskStatus?: string | readonly string[];
+  safe?: string | readonly string[];
+  safeTx?: string | readonly string[];
 };
 
 export type ActivitySearch = {
@@ -53,6 +63,13 @@ export function pickActivitySearch(search: unknown): ActivityRouteSearch {
   const activityRange = pickStringSearchValue(record.activityRange);
   const tx = typeof record.tx === "string" && record.tx.length > 0 ? record.tx : undefined;
   const messageTo = pickStringSearchValue(record.messageTo);
+  const messageKind = pickStringSearchValue(record.messageKind);
+  const messageResource = pickStringSearchValue(record.messageResource);
+  const messageVoucher = pickStringSearchValue(record.messageVoucher);
+  const helpdeskId = pickPositiveIntegerSearchValue(record.helpdeskId);
+  const helpdeskStatus = pickStringSearchValue(record.helpdeskStatus);
+  const safe = pickStringSearchValue(record.safe);
+  const safeTx = pickStringSearchValue(record.safeTx);
   const section = typeof record.section === "string" ? record.section : undefined;
   return {
     ...(section !== undefined ? { section } : {}),
@@ -62,6 +79,13 @@ export function pickActivitySearch(search: unknown): ActivityRouteSearch {
     ...(activityRange !== undefined ? { activityRange } : {}),
     ...(tx !== undefined ? { tx } : {}),
     ...(messageTo !== undefined ? { messageTo } : {}),
+    ...(messageKind !== undefined ? { messageKind } : {}),
+    ...(messageResource !== undefined ? { messageResource } : {}),
+    ...(messageVoucher !== undefined ? { messageVoucher } : {}),
+    ...(helpdeskId !== undefined ? { helpdeskId } : {}),
+    ...(helpdeskStatus !== undefined ? { helpdeskStatus } : {}),
+    ...(safe !== undefined ? { safe } : {}),
+    ...(safeTx !== undefined ? { safeTx } : {}),
   };
 }
 
@@ -108,6 +132,10 @@ export function canonicalActivityRouteSearch(search: unknown): ActivityRouteSear
   const desk = parseActivityDeskFilters(raw);
   const section = parseActivitySection(raw.section);
   const messageTo = parseActivityMessageTo(raw.messageTo);
+  const messageContext = parseActivityMessageContext(raw);
+  const helpdeskId = parseActivityHelpdeskId(raw.helpdeskId);
+  const helpdeskStatus = parseActivityHelpdeskStatus(raw.helpdeskStatus);
+  const safe = parseActivitySafeTarget(raw);
   const canonical: ActivityRouteSearch = {
     section: section === "transactions" ? undefined : section,
     activityQ: parsed.q || undefined,
@@ -115,6 +143,19 @@ export function canonicalActivityRouteSearch(search: unknown): ActivityRouteSear
     ...(raw.activityVoucher !== undefined ? { activityVoucher: desk.voucher } : {}),
     ...(raw.activityRange !== undefined ? { activityRange: desk.range } : {}),
     ...(raw.messageTo !== undefined ? { messageTo } : {}),
+    ...(raw.messageKind !== undefined ? { messageKind: messageContext?.kind } : {}),
+    ...(raw.messageResource !== undefined ? { messageResource: messageContext?.resourceId } : {}),
+    ...(raw.messageVoucher !== undefined && messageContext?.kind === "pool"
+      ? { messageVoucher: messageContext.proposedVoucherAddress }
+      : {}),
+    ...(raw.helpdeskId !== undefined
+      ? { helpdeskId: helpdeskId ? String(helpdeskId) : undefined }
+      : {}),
+    ...(raw.helpdeskStatus !== undefined
+      ? { helpdeskStatus: helpdeskStatus === "resolved" ? "resolved" : undefined }
+      : {}),
+    ...(raw.safe !== undefined ? { safe: safe?.safe } : {}),
+    ...(raw.safeTx !== undefined ? { safeTx: safe?.safeTx } : {}),
   };
   if (
     raw.section === canonical.section &&
@@ -122,11 +163,29 @@ export function canonicalActivityRouteSearch(search: unknown): ActivityRouteSear
     raw.activityTypes === canonical.activityTypes &&
     raw.activityVoucher === canonical.activityVoucher &&
     raw.activityRange === canonical.activityRange &&
-    raw.messageTo === canonical.messageTo
+    raw.messageTo === canonical.messageTo &&
+    raw.messageKind === canonical.messageKind &&
+    raw.messageResource === canonical.messageResource &&
+    raw.messageVoucher === canonical.messageVoucher &&
+    raw.helpdeskId === canonical.helpdeskId &&
+    raw.helpdeskStatus === canonical.helpdeskStatus &&
+    raw.safe === canonical.safe &&
+    raw.safeTx === canonical.safeTx
   ) {
     return null;
   }
   return canonical;
+}
+
+export function parseActivityHelpdeskId(value: unknown): number | undefined {
+  const raw = toValues(pickPositiveIntegerSearchValue(value))[0];
+  if (!raw || !/^[1-9][0-9]*$/.test(raw)) return undefined;
+  const id = Number(raw);
+  return Number.isSafeInteger(id) ? id : undefined;
+}
+
+export function parseActivityHelpdeskStatus(value: unknown): "open" | "resolved" {
+  return toValues(pickStringSearchValue(value))[0] === "resolved" ? "resolved" : "open";
 }
 
 export function clearActivityRouteSearch(): ActivityRouteSearch {
@@ -138,7 +197,55 @@ export function clearActivityRouteSearch(): ActivityRouteSearch {
     activityRange: undefined,
     tx: undefined,
     messageTo: undefined,
+    messageKind: undefined,
+    messageResource: undefined,
+    messageVoucher: undefined,
+    helpdeskId: undefined,
+    helpdeskStatus: undefined,
+    safe: undefined,
+    safeTx: undefined,
   };
+}
+
+export function parseActivitySafeTarget(
+  value: unknown,
+): { safe: `0x${string}`; safeTx: `0x${string}` } | undefined {
+  const raw = pickActivitySearch(value);
+  const safe = toValues(raw.safe)[0];
+  const safeTx = toValues(raw.safeTx)[0];
+  if (
+    !safe ||
+    !safeTx ||
+    !isAddress(safe, { strict: false }) ||
+    !/^0x[a-fA-F0-9]{64}$/.test(safeTx)
+  ) {
+    return undefined;
+  }
+  return { safe: getAddress(safe), safeTx: safeTx.toLowerCase() as `0x${string}` };
+}
+
+export function parseActivityMessageContext(value: unknown): MessageContextInput | undefined {
+  const raw = pickActivitySearch(value);
+  const kind = toValues(raw.messageKind)[0];
+  const resourceId = toValues(raw.messageResource)[0];
+  const proposedVoucherAddress = toValues(raw.messageVoucher)[0];
+  if (!kind || !resourceId) return undefined;
+  if (kind === "pool" || kind === "voucher") {
+    if (!isAddress(resourceId, { strict: false })) return undefined;
+    const canonicalResource = getAddress(resourceId);
+    if (kind === "voucher") return { kind, resourceId: canonicalResource };
+    return {
+      kind,
+      resourceId: canonicalResource,
+      ...(proposedVoucherAddress && isAddress(proposedVoucherAddress, { strict: false })
+        ? { proposedVoucherAddress: getAddress(proposedVoucherAddress) }
+        : {}),
+    };
+  }
+  if ((kind === "want" || kind === "catalog") && /^[1-9][0-9]*$/.test(resourceId)) {
+    return { kind, resourceId };
+  }
+  return undefined;
 }
 
 export function parseActivityMessageTo(value: unknown): `0x${string}` | undefined {
@@ -156,6 +263,11 @@ function pickStringSearchValue(value: unknown): string | readonly string[] | und
     return value;
   }
   return value === undefined ? undefined : ["__invalid__"];
+}
+
+function pickPositiveIntegerSearchValue(value: unknown): string | readonly string[] | undefined {
+  if (typeof value === "number" && Number.isSafeInteger(value) && value > 0) return String(value);
+  return pickStringSearchValue(value);
 }
 
 function toValues(value: string | readonly string[] | undefined): readonly string[] {

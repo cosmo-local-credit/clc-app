@@ -34,6 +34,7 @@ import { SAFE_APP_PREFIX } from "#/lib/safe-config";
 export function SafePendingDesk() {
   const { t } = useLingui();
   const safe = useSafeSheet((state) => state.safe);
+  const safeTxHash = useSafeSheet((state) => state.safeTxHash);
   const close = useSafeSheet((state) => state.close);
   return (
     <Dialog.Root
@@ -53,14 +54,20 @@ export function SafePendingDesk() {
               <RiCloseLine aria-hidden="true" />
             </Button>
           </div>
-          {safe ? <PendingBody key={safe} safe={safe} /> : null}
+          {safe ? <PendingBody key={safe} safe={safe} safeTxHash={safeTxHash} /> : null}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>
   );
 }
 
-function PendingBody({ safe }: { safe: `0x${string}` }) {
+function PendingBody({
+  safe,
+  safeTxHash,
+}: {
+  safe: `0x${string}`;
+  safeTxHash: `0x${string}` | null;
+}) {
   const pending = useSafePending(safe);
   const signers = useSafeSigners(safe);
   return (
@@ -75,6 +82,13 @@ function PendingBody({ safe }: { safe: `0x${string}` }) {
           <p className="text-sm text-muted-foreground">
             <Trans>Proposals are unavailable here. You can still use your multisig wallet.</Trans>
           </p>
+        ) : safeTxHash &&
+          !pending.proposals.some(
+            (proposal) => proposal.transaction.safeTxHash.toLowerCase() === safeTxHash,
+          ) ? (
+          <p className="text-sm text-muted-foreground">
+            <Trans>This proposal is no longer pending.</Trans>
+          </p>
         ) : pending.proposals.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             <Trans>No queued proposals found.</Trans>
@@ -87,6 +101,7 @@ function PendingBody({ safe }: { safe: `0x${string}` }) {
               proposal={proposal}
               busy={pending.confirmBusy}
               signers={signers?.signers}
+              selected={proposal.transaction.safeTxHash.toLowerCase() === safeTxHash}
             />
           ))
         )}
@@ -113,11 +128,13 @@ function Proposal({
   proposal,
   busy,
   signers,
+  selected,
 }: {
   safe: `0x${string}`;
   proposal: SafePendingProposal;
   busy: boolean;
   signers: readonly `0x${string}`[] | undefined;
+  selected: boolean;
 }) {
   const { i18n } = useLingui();
   const { transaction, calls, action } = proposal;
@@ -172,7 +189,13 @@ function Proposal({
   }
 
   return (
-    <section className="grid gap-3 border-border border-b pb-4 last:border-b-0 last:pb-0">
+    <section
+      className={
+        selected
+          ? "grid gap-3 border-primary border-s-2 border-b bg-primary/5 py-3 ps-3"
+          : "grid gap-3 border-border border-b pb-4 last:border-b-0 last:pb-0"
+      }
+    >
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="text-sm font-semibold">{proposalTitle(calls, safe)}</h3>

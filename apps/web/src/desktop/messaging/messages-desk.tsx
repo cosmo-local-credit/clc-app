@@ -1,4 +1,5 @@
 import { Trans } from "@lingui/react/macro";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 import type { ReactNode } from "react";
 import { RiChat3Line } from "react-icons/ri";
 
@@ -15,11 +16,17 @@ export function MessagesDesk({
   header,
   conversationId,
   messageTo,
+  messageContext,
+  threadContext,
+  onThreadContextSent,
   onMessageToConsumed,
 }: {
   header: ReactNode;
   conversationId?: number;
   messageTo?: `0x${string}`;
+  messageContext?: MessageContextInput;
+  threadContext?: MessageContextInput;
+  onThreadContextSent?: () => void;
   onMessageToConsumed?: () => void;
 }) {
   return (
@@ -27,6 +34,7 @@ export function MessagesDesk({
       <ConversationListDesk
         selectedId={conversationId}
         messageTo={messageTo}
+        messageContext={messageContext}
         onMessageToConsumed={onMessageToConsumed}
       />
       {conversationId === undefined ? (
@@ -37,7 +45,12 @@ export function MessagesDesk({
           </p>
         </div>
       ) : (
-        <ThreadDesk key={conversationId} conversationId={conversationId} />
+        <ThreadDesk
+          key={conversationId}
+          conversationId={conversationId}
+          initialContext={threadContext}
+          onContextSent={onThreadContextSent}
+        />
       )}
     </DeskInboxFrame>
   );

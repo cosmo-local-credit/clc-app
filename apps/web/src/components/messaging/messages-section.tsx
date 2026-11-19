@@ -1,4 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 
 import { Button } from "#/components/ui/button";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
@@ -9,9 +10,11 @@ import { NewMessageSheet } from "./new-message-sheet";
 /** Activity's Messages: requests waiting on the caller first, then every conversation. */
 export function MessagesSection({
   messageTo,
+  messageContext,
   onMessageToConsumed,
 }: {
   messageTo?: `0x${string}`;
+  messageContext?: MessageContextInput;
   onMessageToConsumed?: () => void;
 }) {
   const { t } = useLingui();
@@ -23,8 +26,8 @@ export function MessagesSection({
   return (
     <div className="space-y-3">
       <NewMessageSheet
-        existing={list.conversations}
         messageTo={messageTo}
+        messageContext={messageContext}
         onMessageToConsumed={onMessageToConsumed}
       />
       {list.isPending && list.fetchStatus !== "idle" ? (

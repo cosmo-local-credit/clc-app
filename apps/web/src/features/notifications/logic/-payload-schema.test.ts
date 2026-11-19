@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vite-plus/test";
 import {
   getNotificationKindPolicy,
+  isActivityApprovalNotificationKind,
   isMessagingNotificationKind,
+  isSafeApprovalNotificationKind,
   NOTIFICATION_KINDS,
   type NotificationKind,
   notificationKindSchema,
@@ -26,6 +28,10 @@ describe("notificationKindSchema", () => {
   it.each<NotificationKind>([
     "voucher.received",
     "offramp.completed",
+    "pool.voucher_admitted",
+    "safe.proposed",
+    "safe.confirmed",
+    "safe.approved",
     "message.received",
     "message.request",
     "message.accepted",
@@ -228,10 +234,14 @@ describe("parseNotificationPayload", () => {
 });
 
 describe("messaging notification kinds", () => {
-  it("declares the v1 kinds plus the four messaging kinds", () => {
+  it("declares the resource and messaging kinds", () => {
     expect(NOTIFICATION_KINDS).toEqual([
       "voucher.received",
       "offramp.completed",
+      "pool.voucher_admitted",
+      "safe.proposed",
+      "safe.confirmed",
+      "safe.approved",
       "message.received",
       "message.request",
       "message.accepted",
@@ -246,6 +256,50 @@ describe("messaging notification kinds", () => {
       "message.accepted",
       "helpdesk.reply",
     ]);
+  });
+
+  it("keeps only semantic approval events in Activity notifications", () => {
+    expect(NOTIFICATION_KINDS.filter(isActivityApprovalNotificationKind)).toEqual([
+      "pool.voucher_admitted",
+      "safe.proposed",
+      "safe.confirmed",
+      "safe.approved",
+    ]);
+    expect(NOTIFICATION_KINDS.filter(isSafeApprovalNotificationKind)).toEqual([
+      "safe.proposed",
+      "safe.confirmed",
+      "safe.approved",
+    ]);
+  });
+
+  it("parses Safe actor and resource context", () => {
+    const result = parseNotificationPayload(
+      {
+        ...basePayload,
+        kind: "safe.approved",
+        targetUrl:
+          "/?tab=activity&section=notifications&safe=0x1234567890abcdef1234567890abcdef12345678&safeTx=0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        actorAddress: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+        actorUsername: "amina",
+        safeAddress: "0x1234567890abcdef1234567890abcdef12345678",
+        safeTxHash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        resources: [
+          {
+            kind: "pool",
+            address: "0x2222222222222222222222222222222222222222",
+            name: "Community Pool",
+          },
+        ],
+      },
+      { appOrigin: APP_ORIGIN },
+    );
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.payload).toMatchObject({
+      actorUsername: "amina",
+      safeTxHash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      resources: [{ kind: "pool", name: "Community Pool" }],
+    });
   });
 
   it("parses a message notification with its thread URL and conversation id", () => {

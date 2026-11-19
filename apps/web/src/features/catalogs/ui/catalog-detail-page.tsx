@@ -3,7 +3,10 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { CatalogPicture } from "#/components/catalogs/catalog-row";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
-import { ResourceOwnerContact } from "#/components/messaging/resource-owner-contact";
+import {
+  OwnerMessageButton,
+  ResourceOwnerContact,
+} from "#/components/messaging/resource-owner-contact";
 import { Button } from "#/components/ui/button";
 import {
   SheetBackdrop,
@@ -23,7 +26,7 @@ import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 export function CatalogDetailPage({ id, editor }: { id: string; editor?: CatalogEditor }) {
   const { t } = useLingui();
-  const { query, catalog, owner } = useCatalogDetail(id);
+  const { query, catalog, owner, viewerAddress } = useCatalogDetail(id);
   const [localEditing, setLocalEditing] = useState(false);
   const editing = editor?.editing ?? localEditing;
   const openEditor = editor?.open ?? (() => setLocalEditing(true));
@@ -86,6 +89,11 @@ export function CatalogDetailPage({ id, editor }: { id: string; editor?: Catalog
               ))}
             </div>
           ) : null}
+          <OwnerMessageButton
+            ownerAddress={catalog.ownerAddress}
+            excludeAddress={viewerAddress}
+            context={{ kind: "catalog", resourceId: catalog.id }}
+          />
           {owner ? (
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" tap onClick={openEditor}>
@@ -95,7 +103,10 @@ export function CatalogDetailPage({ id, editor }: { id: string; editor?: Catalog
           ) : null}
           <CatalogMembers catalogId={id} kind="pool" canEdit={owner} />
           <CatalogMembers catalogId={id} kind="voucher" canEdit={owner} />
-          <ResourceOwnerContact ownerAddress={catalog.ownerAddress} />
+          <ResourceOwnerContact
+            ownerAddress={catalog.ownerAddress}
+            context={{ kind: "catalog", resourceId: id }}
+          />
           {owner ? (
             <SheetRoot
               open={editing}

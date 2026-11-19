@@ -4,8 +4,12 @@ import {
   canonicalActivityRouteSearch,
   clearActivityRouteSearch,
   parseActivityDeskFilters,
+  parseActivityHelpdeskId,
+  parseActivityHelpdeskStatus,
+  parseActivityMessageContext,
   parseActivityMessageTo,
   parseActivitySearch,
+  parseActivitySafeTarget,
   parseActivitySection,
   pickActivitySearch,
 } from "./activity-search";
@@ -55,9 +59,33 @@ describe("activity search", () => {
       activityQ: undefined,
       activityTypes: undefined,
       messageTo: undefined,
+      messageKind: undefined,
+      messageResource: undefined,
+      messageVoucher: undefined,
+      helpdeskId: undefined,
+      helpdeskStatus: undefined,
+      safe: undefined,
+      safeTx: undefined,
       section: undefined,
       tx: undefined,
     });
+  });
+
+  it("canonicalizes an exact Safe proposal target", () => {
+    const safe = "0x5c0d0000000000000000000000000000000e7e21";
+    const safeTx = `0x${"a".repeat(64)}`;
+    expect(parseActivitySafeTarget({ safe, safeTx })).toEqual({
+      safe: "0x5C0d0000000000000000000000000000000E7E21",
+      safeTx,
+    });
+    expect(canonicalActivityRouteSearch({ section: "notifications", safe, safeTx })).toEqual({
+      section: "notifications",
+      activityQ: undefined,
+      activityTypes: undefined,
+      safe: "0x5C0d0000000000000000000000000000000E7E21",
+      safeTx,
+    });
+    expect(parseActivitySafeTarget({ safe, safeTx: "not-a-hash" })).toBeUndefined();
   });
 
   it("marks malformed non-string values for canonical removal", () => {
@@ -89,6 +117,38 @@ describe("activity search", () => {
     expect(parseActivitySection("helpdesk")).toBe("helpdesk");
     expect(parseActivitySection("bogus")).toBe("transactions");
     expect(parseActivitySection(undefined)).toBe("transactions");
+  });
+
+  it("canonicalizes the operator Helpdesk queue and selected conversation", () => {
+    expect(parseActivityHelpdeskId("42")).toBe(42);
+    expect(parseActivityHelpdeskId(["7"])).toBe(7);
+    expect(parseActivityHelpdeskId("0")).toBeUndefined();
+    expect(parseActivityHelpdeskId("not-an-id")).toBeUndefined();
+    expect(parseActivityHelpdeskId("9007199254740992")).toBeUndefined();
+    expect(parseActivityHelpdeskStatus("resolved")).toBe("resolved");
+    expect(parseActivityHelpdeskStatus("unknown")).toBe("open");
+    expect(
+      canonicalActivityRouteSearch({
+        section: "helpdesk",
+        helpdeskId: ["42"],
+        helpdeskStatus: "resolved",
+      }),
+    ).toEqual({
+      section: "helpdesk",
+      activityQ: undefined,
+      activityTypes: undefined,
+      helpdeskId: "42",
+      helpdeskStatus: "resolved",
+    });
+    expect(canonicalActivityRouteSearch({ section: "helpdesk", helpdeskStatus: "open" })).toEqual({
+      section: "helpdesk",
+      activityQ: undefined,
+      activityTypes: undefined,
+      helpdeskStatus: undefined,
+    });
+    expect(canonicalActivityRouteSearch({ section: "helpdesk", helpdeskId: "0" })).toMatchObject({
+      helpdeskId: undefined,
+    });
   });
 
   it("keeps a valid sub-tab and drops the default or an unknown one", () => {
@@ -123,5 +183,60 @@ describe("activity search", () => {
       activityTypes: undefined,
       messageTo: undefined,
     });
+  });
+
+  it("canonicalizes resource context and an optional Pool voucher proposal", () => {
+    const pool = "0x5c0d0000000000000000000000000000000e7e21";
+    const voucher = "0x1111111111111111111111111111111111111111";
+    const context = parseActivityMessageContext({
+      messageKind: "pool",
+      messageResource: pool,
+      messageVoucher: voucher,
+    });
+
+    expect(context).toEqual({
+      kind: "pool",
+      resourceId: "0x5C0d0000000000000000000000000000000E7E21",
+      proposedVoucherAddress: voucher,
+    });
+    expect(
+      canonicalActivityRouteSearch({
+        section: "messages",
+        messageKind: "pool",
+        messageResource: pool,
+        messageVoucher: voucher,
+      }),
+    ).toEqual({
+      section: "messages",
+      activityQ: undefined,
+      activityTypes: undefined,
+      messageKind: "pool",
+      messageResource: "0x5C0d0000000000000000000000000000000E7E21",
+      messageVoucher: voucher,
+    });
+  });
+
+  it("accepts Want and Catalog context while dropping invalid combinations", () => {
+    expect(parseActivityMessageContext({ messageKind: "want", messageResource: "42" })).toEqual({
+      kind: "want",
+      resourceId: "42",
+    });
+    expect(parseActivityMessageContext({ messageKind: "catalog", messageResource: "7" })).toEqual({
+      kind: "catalog",
+      resourceId: "7",
+    });
+    expect(
+      parseActivityMessageContext({
+        messageKind: "voucher",
+        messageResource: "not-an-address",
+      }),
+    ).toBeUndefined();
+    expect(
+      parseActivityMessageContext({
+        messageKind: "want",
+        messageResource: "42",
+        messageVoucher: "0x1111111111111111111111111111111111111111",
+      }),
+    ).toEqual({ kind: "want", resourceId: "42" });
   });
 });

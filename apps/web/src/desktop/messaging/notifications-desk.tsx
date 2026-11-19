@@ -2,10 +2,12 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useRouter } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
+import { NotificationContextLinks } from "#/components/messaging/notification-context-links";
 import { Button } from "#/components/ui/button";
 import { Spinner } from "#/components/ui/spinner";
 import { DeskCanvas } from "#/desktop/ui/page";
 import { useNotificationInbox } from "#/features/notifications/inbox/use-notification-inbox";
+import { isSafeApprovalNotificationKind } from "#/features/notifications/logic/payload-schema";
 
 /**
  * Activity's Notifications: the in-app inbox, retirements included. Message
@@ -46,7 +48,7 @@ export function NotificationsDesk({ header }: { header: ReactNode }) {
           aria-label={t`Notifications`}
         >
           {items.map((item) => (
-            <li key={item.notificationId}>
+            <li key={item.notificationId} className="grid">
               {/* The target is a normalized same-origin path from the payload schema. */}
               <a
                 href={item.targetUrl}
@@ -68,6 +70,9 @@ export function NotificationsDesk({ header }: { header: ReactNode }) {
                   {i18n.date(new Date(item.createdAt), { dateStyle: "short", timeStyle: "short" })}
                 </time>
               </a>
+              {isSafeApprovalNotificationKind(item.kind) ? (
+                <NotificationContextLinks item={item} className="px-3.5 pb-2.5" />
+              ) : null}
             </li>
           ))}
         </ul>

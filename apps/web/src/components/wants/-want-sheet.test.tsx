@@ -50,6 +50,11 @@ vi.mock("#/components/wants/want-detail", () => ({
   WantDetail: () => <div>Full Want details</div>,
   WantShareButton: () => null,
 }));
+vi.mock("#/components/wants/want-message-button", () => ({
+  WantMessageButton: ({ want }: { want: Want }) => (
+    <a href={`/?messageKind=want&messageResource=${want.id}`}>Message</a>
+  ),
+}));
 
 beforeEach(() => {
   mocks.close.mockReset();
@@ -75,6 +80,9 @@ describe("Want map sheet privacy", () => {
 
     expect(screen.getByRole("heading", { name: "Bicycle repair" })).toBeTruthy();
     expect(screen.getByText("Nairobi Market")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Message" }).getAttribute("href")).toBe(
+      `/?messageKind=want&messageResource=${WANT.id}`,
+    );
     expect(screen.queryByText(/Wanted by/)).toBeNull();
     expect(screen.queryByText(/Amina/)).toBeNull();
   });

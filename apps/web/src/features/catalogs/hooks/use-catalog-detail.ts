@@ -9,8 +9,9 @@ export function useCatalogDetail(id: string) {
   const auth = useAuthStatus();
   const query = useQuery({ ...catalogDetailQueryOptions(catalogsClient, id), retry: false });
   const catalog = query.data;
-  const owner =
-    auth.isAuthenticated &&
-    catalog?.ownerAddress.toLowerCase() === auth.session?.address.toLowerCase();
-  return { query, catalog, owner };
+  const viewerAddress = auth.isAuthenticated ? auth.session?.address : undefined;
+  const owner = Boolean(
+    viewerAddress && catalog?.ownerAddress.toLowerCase() === viewerAddress.toLowerCase(),
+  );
+  return { query, catalog, owner, viewerAddress };
 }

@@ -14,6 +14,8 @@ import { SettingsPage } from "./settings-page";
 import { isPrivateHomeTab, type HomeTab } from "#/lib/navigation/home-tabs";
 import { WalletPage } from "./wallet-page";
 import type { ActivityKind } from "@clc/api/features/accounts/client";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
+import type { HelpdeskStatus } from "@clc/core/features/messaging/logic";
 
 export type HomePageProps = {
   activeTab?: HomeTab;
@@ -24,6 +26,10 @@ export type HomePageProps = {
   /** Activity's sub-tab; read only when messaging is on. */
   activitySection?: ActivitySection;
   messageTo?: `0x${string}`;
+  messageContext?: MessageContextInput;
+  helpdeskId?: number;
+  helpdeskStatus?: HelpdeskStatus;
+  operator?: boolean;
   onMessageToConsumed?: () => void;
   onActivityQueryChange?: (query: string) => void;
   onActivityTypesChange?: (types: readonly ActivityKind[]) => void;
@@ -37,6 +43,10 @@ export function HomePage({
   activityTypes,
   activitySection = "transactions",
   messageTo,
+  messageContext,
+  helpdeskId,
+  helpdeskStatus,
+  operator = false,
   onMessageToConsumed,
   onActivityQueryChange,
   onActivityTypesChange,
@@ -71,6 +81,10 @@ export function HomePage({
                 query={activityQ}
                 types={activityTypes}
                 messageTo={messageTo}
+                messageContext={messageContext}
+                helpdeskId={helpdeskId}
+                helpdeskStatus={helpdeskStatus}
+                operator={operator}
                 onMessageToConsumed={onMessageToConsumed}
                 onQueryChange={onActivityQueryChange}
                 onTypesChange={onActivityTypesChange}

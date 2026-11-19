@@ -1,8 +1,12 @@
-import { CONVERSATION_INTRO_MAX, type Conversation } from "@clc/core/features/messaging/logic";
+import {
+  CONVERSATION_INTRO_MAX,
+  type MessageContextInput,
+} from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { RiQuillPenLine } from "react-icons/ri";
+import { ConversationLookupState } from "#/components/messaging/conversation-lookup-state";
 
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
@@ -20,6 +24,8 @@ import { Textarea } from "#/components/ui/textarea";
 import { RecipientIdentityText } from "#/components/wallet/recipient-identity-label";
 import { EllipsizedAddress } from "#/components/wallet/wallet-address";
 import { useNewMessage } from "#/features/messaging/hooks/use-new-message";
+import { ResourceContextCard } from "./resource-context-card";
+import { VoucherProposalPicker } from "./voucher-proposal-picker";
 
 /**
  * Finds a person through the recipient search and asks to message them. Only
@@ -27,27 +33,34 @@ import { useNewMessage } from "#/features/messaging/hooks/use-new-message";
  * opens their existing thread instead of a second request.
  */
 export function NewMessageSheet({
-  existing,
   messageTo,
+  messageContext,
   onMessageToConsumed,
 }: {
-  existing: readonly Conversation[];
   messageTo?: `0x${string}`;
+  messageContext?: MessageContextInput;
   onMessageToConsumed?: () => void;
 }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const flow = useNewMessage(
-    existing,
-    (conversationId) => {
+    (conversationId, context) => {
       changeOpen(false);
       void navigate({
         to: "/messages/$conversationId",
         params: { conversationId: String(conversationId) },
+        search: context
+          ? {
+              messageKind: context.kind,
+              messageResource: context.resourceId,
+              messageVoucher: context.kind === "pool" ? context.proposedVoucherAddress : undefined,
+            }
+          : {},
       });
     },
     messageTo,
+    messageContext,
   );
   const { term, search, users, selected, intro, request, failure } = flow;
   const shownUsers = messageTo ? flow.ownerUsers : users;
@@ -57,12 +70,18 @@ export function NewMessageSheet({
   }, [messageTo]);
 
   useEffect(() => {
-    if (!messageTo || !flow.ownerSearch.isSuccess || flow.ownerUsers.length !== 1 || selected) {
+    if (
+      !messageTo ||
+      !flow.ownerSearch.isSuccess ||
+      flow.ownerUsers.length !== 1 ||
+      selected ||
+      flow.lookupStatus !== "idle"
+    ) {
       return;
     }
     onMessageToConsumed?.();
-    flow.choose(flow.ownerUsers[0]!);
-  }, [flow, messageTo, onMessageToConsumed, selected]);
+    flow.choose(flow.ownerUsers[0]!, messageContext);
+  }, [flow, messageContext, messageTo, onMessageToConsumed, selected]);
 
   function changeOpen(next: boolean) {
     setOpen(next);
@@ -74,7 +93,7 @@ export function NewMessageSheet({
 
   function choose(match: (typeof shownUsers)[number]) {
     if (messageTo) onMessageToConsumed?.();
-    flow.choose(match);
+    flow.choose(match, messageContext);
   }
 
   return (
@@ -93,7 +112,9 @@ export function NewMessageSheet({
               </SheetTitle>
             </SheetHeader>
             <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pb-2">
-              {selected ? (
+              {flow.lookupStatus !== "idle" ? (
+                <ConversationLookupState state={flow.lookupStatus} onRetry={flow.retryLookup} />
+              ) : selected ? (
                 <>
                   <div className="border border-border bg-card p-3">
                     <RecipientIdentityText
@@ -102,6 +123,15 @@ export function NewMessageSheet({
                     />
                     <EllipsizedAddress address={selected.address} className="mt-1 block" />
                   </div>
+                  {flow.context ? <ResourceContextCard context={flow.context} /> : null}
+                  {flow.context?.kind === "pool" ? (
+                    <VoucherProposalPicker
+                      key={flow.context.resourceId}
+                      poolAddress={flow.context.resourceId}
+                      value={flow.context.proposedVoucherAddress}
+                      onChange={flow.setProposedVoucher}
+                    />
+                  ) : null}
                   <Field label={t`Introduce yourself`} htmlFor="new-message-intro">
                     <Textarea
                       id="new-message-intro"
@@ -226,12 +256,12 @@ export function NewMessageSheet({
                 </>
               )}
             </div>
-            {selected ? (
+            {selected && flow.lookupStatus === "idle" ? (
               <SheetFooter>
                 <Button tap pending={request.isPending} onClick={flow.submit}>
                   <Trans>Send request</Trans>
                 </Button>
-                <Button variant="outline" tap onClick={flow.unselect}>
+                <Button variant="outline" tap disabled={request.isPending} onClick={flow.unselect}>
                   <Trans>Back</Trans>
                 </Button>
               </SheetFooter>

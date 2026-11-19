@@ -1,9 +1,10 @@
 name: CI
 
-# Contributors run checks locally before they commit. CI runs when a commit
-# lands on develop or master. Pull requests do not run it; maintainers merge
-# into develop, and that push is what starts the workflow.
+# Contributors run checks locally before they commit. CI repeats them on pull
+# requests and after a commit lands on develop or master.
 on:
+  pull_request:
+    branches: [master, develop]
   push:
     branches: [master, develop]
 
@@ -11,6 +12,8 @@ jobs:
   test:
     name: Test & Coverage
     runs-on: ubuntu-24.04
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     steps:
       - uses: actions/checkout@v6
@@ -56,34 +59,38 @@ jobs:
         run: vp build
         working-directory: apps/web
         env:
-          CI: "true"
+          # Fork pull requests do not receive repository secrets. They still
+          # build the client; only Codecov's bundle upload is disabled.
+          CI: ${{ env.CODECOV_TOKEN != '' && 'true' || 'false' }}
           # Compare production browser output across both branches. Staging's
           # deployment still keeps its full React errors and unminified client.
           VITE_FULL_REACT_ERRORS: "false"
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload coverage — workspace
+        if: env.CODECOV_TOKEN != ''
         uses: codecov/codecov-action@v6
         with:
           files: coverage/lcov.info
           disable_search: true
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ env.CODECOV_TOKEN }}
 
       - name: Upload coverage — core
+        if: env.CODECOV_TOKEN != ''
         uses: codecov/codecov-action@v6
         with:
           files: coverage/core/lcov.info
           flags: core
           disable_search: true
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ env.CODECOV_TOKEN }}
 
       - name: Upload coverage — web
+        if: env.CODECOV_TOKEN != ''
         uses: codecov/codecov-action@v6
         with:
           files: coverage/web/lcov.info
           flags: web
           disable_search: true
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ env.CODECOV_TOKEN }}

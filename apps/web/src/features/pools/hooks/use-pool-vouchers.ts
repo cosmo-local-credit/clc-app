@@ -50,12 +50,12 @@ export function usePoolVouchersWithStatus(
     all ? POOL_VOUCHERS_MAX_PAGE_SIZE : DEFAULT_POOL_VOUCHERS_PAGE_SIZE,
     owner,
   );
-  const { fetchNextPage, hasNextPage, isFetchingNextPage } = query;
+  const { fetchNextPage, hasNextPage, isFetchNextPageError, isFetchingNextPage } = query;
 
   useEffect(() => {
-    if (!all || !hasNextPage || isFetchingNextPage) return;
+    if (!all || !hasNextPage || isFetchNextPageError || isFetchingNextPage) return;
     void fetchNextPage();
-  }, [all, fetchNextPage, hasNextPage, isFetchingNextPage]);
+  }, [all, fetchNextPage, hasNextPage, isFetchNextPageError, isFetchingNextPage]);
 
   return {
     vouchers: query.data?.pages.flatMap((page) => page.vouchers) ?? [],
@@ -66,7 +66,7 @@ export function usePoolVouchersWithStatus(
     isPending: query.isPending || (all && (hasNextPage || isFetchingNextPage)),
     isError: query.isError,
     isFetching: query.isFetching,
-    refetch: query.refetch,
+    refetch: isFetchNextPageError ? fetchNextPage : query.refetch,
   };
 }
 

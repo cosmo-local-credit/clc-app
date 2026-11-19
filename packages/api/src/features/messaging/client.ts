@@ -37,6 +37,8 @@ export type ConversationListParams = {
   kind?: ConversationKind;
   cursor?: string;
   limit?: number;
+  /** Exact direct peer lookup. Supply kind=direct without a cursor. */
+  peerAddress?: string;
 };
 
 /** `before` and `after` are message ids and exclusive; the server refuses both together. */
@@ -73,6 +75,7 @@ export function createMessagingClient(http: HttpClient) {
         kind: params.kind,
         cursor: params.cursor,
         limit: params.limit,
+        peerAddress: params.peerAddress,
       });
       return conversationPageSchema.parse(await http.request(path, { ...NO_STORE, signal }));
     },

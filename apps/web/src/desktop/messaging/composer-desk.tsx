@@ -1,4 +1,5 @@
 import { MESSAGE_BODY_MAX } from "@clc/core/features/messaging/logic";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useId, useRef } from "react";
 import { RiCloseLine, RiImageAddLine } from "react-icons/ri";
@@ -6,14 +7,24 @@ import { RiCloseLine, RiImageAddLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import { Textarea } from "#/components/ui/textarea";
 import { useMessageComposer } from "#/features/messaging/hooks/use-message-composer";
+import { ResourceContextCard } from "#/components/messaging/resource-context-card";
+import { VoucherProposalPicker } from "#/components/messaging/voucher-proposal-picker";
 
 /**
  * The thread pane's composer. Enter sends and Shift+Enter starts a new line.
  * A failed send keeps the draft, and sending it again reuses its `clientId`.
  */
-export function ComposerDesk({ conversationId }: { conversationId: number }) {
+export function ComposerDesk({
+  conversationId,
+  initialContext,
+  onContextSent,
+}: {
+  conversationId: number;
+  initialContext?: MessageContextInput;
+  onContextSent?: () => void;
+}) {
   const { t } = useLingui();
-  const composer = useMessageComposer(conversationId);
+  const composer = useMessageComposer(conversationId, initialContext, onContextSent);
   const fileInput = useRef<HTMLInputElement>(null);
   const bodyId = useId();
   return (
@@ -24,6 +35,29 @@ export function ComposerDesk({ conversationId }: { conversationId: number }) {
         composer.submit();
       }}
     >
+      {composer.context ? (
+        <div className="relative">
+          <ResourceContextCard context={composer.context} />
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute top-1 end-1"
+            aria-label={t`Remove resource`}
+            onClick={composer.clearContext}
+          >
+            <RiCloseLine aria-hidden="true" />
+          </Button>
+        </div>
+      ) : null}
+      {composer.context?.kind === "pool" ? (
+        <VoucherProposalPicker
+          key={composer.context.resourceId}
+          compact
+          poolAddress={composer.context.resourceId}
+          value={composer.context.proposedVoucherAddress}
+          onChange={composer.setProposedVoucher}
+        />
+      ) : null}
       {composer.images.length > 0 ? (
         <ul className="flex gap-3" aria-label={t`Photos to send`}>
           {composer.images.map((image) => (

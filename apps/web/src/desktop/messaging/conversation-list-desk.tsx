@@ -1,4 +1,5 @@
 import type { Conversation } from "@clc/core/features/messaging/logic";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
@@ -22,10 +23,12 @@ import { cn } from "#/lib/utils";
 export function ConversationListDesk({
   selectedId,
   messageTo,
+  messageContext,
   onMessageToConsumed,
 }: {
   selectedId?: number;
   messageTo?: `0x${string}`;
+  messageContext?: MessageContextInput;
   onMessageToConsumed?: () => void;
 }) {
   const { t } = useLingui();
@@ -39,8 +42,8 @@ export function ConversationListDesk({
     <div className="flex min-h-0 w-[340px] shrink-0 flex-col border-border border-e">
       <div className="shrink-0 border-border border-b p-3">
         <NewMessageDialog
-          existing={list.conversations}
           messageTo={messageTo}
+          messageContext={messageContext}
           onMessageToConsumed={onMessageToConsumed}
         />
       </div>
@@ -180,6 +183,8 @@ function ConversationRowDesk({
             {last ? (
               last.body ? (
                 last.body
+              ) : last.context ? (
+                <Trans>Resource shared</Trans>
               ) : (
                 <span className="inline-flex items-center gap-1">
                   <RiImageLine className="size-3.5" aria-hidden="true" />

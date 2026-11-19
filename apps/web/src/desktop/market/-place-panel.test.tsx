@@ -10,9 +10,18 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const ADDRESS = "0xd524d0ed7bc970185ed9c6c9a65a8a02e8897363";
+const OWNER = "0x1111111111111111111111111111111111111111";
 const detailOverrides = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
 
 vi.mock("wagmi", () => ({ useConnection: () => ({ address: undefined }) }));
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({ isAuthenticated: false }),
+}));
+vi.mock("#/components/messaging/resource-owner-contact", () => ({
+  OwnerMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
+    <a href={`/?messageKind=${context?.kind}&messageResource=${context?.resourceId}`}>Message</a>
+  ),
+}));
 vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
   useVoucherSheetSelection: () => ({ voucher: ADDRESS, open: vi.fn(), close: vi.fn() }),
 }));
@@ -46,7 +55,7 @@ vi.mock("#/components/vouchers/voucher-labels", () => ({ useMarketDistanceLabel:
 vi.mock("#/desktop/wants/want-place-desk", () => ({ WantPlaceDesk: () => null }));
 vi.mock("#/desktop/vouchers/detail/voucher-actions", () => ({ VoucherActionCells: () => null }));
 vi.mock("#/desktop/vouchers/detail/voucher-catalog-button", () => ({
-  VoucherCatalogButton: () => null,
+  VoucherCatalogButton: () => <button type="button">Add to catalog</button>,
 }));
 vi.mock("#/desktop/vouchers/detail/voucher-info", () => ({
   useCanEditVoucher: () => ({ canEdit: false }),
@@ -97,6 +106,15 @@ afterEach(() => {
 });
 
 describe("MarketPlacePanel voucher card", () => {
+  it("places a contextual Message after Add to catalog", async () => {
+    detailOverrides.current = { ownerAddress: OWNER };
+    renderPanel();
+    const add = await screen.findByRole("button", { name: "Add to catalog" });
+    const message = screen.getByRole("link", { name: "Message" });
+    expect(add.nextElementSibling).toBe(message);
+    expect(message.getAttribute("href")).toBe(`/?messageKind=voucher&messageResource=${ADDRESS}`);
+  });
+
   it("tells the viewer when the voucher's managing account has closed", async () => {
     detailOverrides.current = { managerClosure: { state: "CLOSED", closesAt: null } };
     renderPanel();

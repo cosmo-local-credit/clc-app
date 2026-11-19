@@ -12,7 +12,11 @@ import { render } from "@testing-library/react";
 
 import { ActivityDesk } from "#/desktop/activity/activity-desk";
 import { ConversationDesk } from "#/desktop/messaging/conversation-desk";
-import { parseActivitySection } from "#/lib/navigation/activity-search";
+import {
+  parseActivityHelpdeskId,
+  parseActivityHelpdeskStatus,
+  parseActivitySection,
+} from "#/lib/navigation/activity-search";
 
 export const VIEWER = "0x2a986F40d29fc7e1Bded626542d4b8f1Ca0A82f6";
 export const AMINA = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
@@ -51,6 +55,7 @@ export function message(
     sender,
     body,
     imageUrls: [],
+    context: null,
     createdAt: "2026-11-09T10:00:00Z",
   };
 }
@@ -59,7 +64,7 @@ export function message(
  * Desktop Activity at `/` and the thread route at `/messages/$id`, over a real
  * memory router and a real QueryClient.
  */
-export function mountDesk(entry: string) {
+export function mountDesk(entry: string, operator = false) {
   const root = createRootRoute({ component: Outlet });
   const home = createRoute({
     getParentRoute: () => root,
@@ -67,10 +72,23 @@ export function mountDesk(entry: string) {
     validateSearch: (search: Record<string, unknown>) => ({
       tab: typeof search.tab === "string" ? search.tab : undefined,
       section: typeof search.section === "string" ? search.section : undefined,
+      helpdeskId:
+        typeof search.helpdeskId === "string" || typeof search.helpdeskId === "number"
+          ? search.helpdeskId
+          : undefined,
+      helpdeskStatus: typeof search.helpdeskStatus === "string" ? search.helpdeskStatus : undefined,
     }),
     component: function Home() {
-      const { section } = home.useSearch();
-      return <ActivityDesk section={parseActivitySection(section)} address={VIEWER} />;
+      const { section, helpdeskId, helpdeskStatus } = home.useSearch();
+      return (
+        <ActivityDesk
+          section={parseActivitySection(section)}
+          address={VIEWER}
+          operator={operator}
+          helpdeskId={parseActivityHelpdeskId(helpdeskId)}
+          helpdeskStatus={parseActivityHelpdeskStatus(helpdeskStatus)}
+        />
+      );
     },
   });
   const thread = createRoute({

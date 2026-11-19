@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { isMessagingNotificationKind } from "../logic/payload-schema";
+import { isActivityApprovalNotificationKind } from "../logic/payload-schema";
 import { NOTIFICATION_INBOX_CHANGED_EVENT } from "../realtime/events";
 import {
   isNotificationStorageAvailable,
@@ -28,7 +28,7 @@ export function useNotificationInbox() {
     queryFn: async () => {
       if (!address || !isNotificationStorageAvailable()) return [];
       const messages = await listNotificationInboxMessages(address);
-      return messages.filter((message) => !isMessagingNotificationKind(message.kind));
+      return messages.filter((message) => isActivityApprovalNotificationKind(message.kind));
     },
     enabled: address !== undefined,
     staleTime: Number.POSITIVE_INFINITY,

@@ -108,7 +108,11 @@ function PoolInfoBody({ pool }: { pool: UserPool }) {
               [
                 <Trans key="label">Owner</Trans>,
                 pool.ownerAddress ? (
-                  <ResourceOwnerContactValue key="value" ownerAddress={pool.ownerAddress} />
+                  <ResourceOwnerContactValue
+                    key="value"
+                    ownerAddress={pool.ownerAddress}
+                    context={{ kind: "pool", resourceId: pool.address }}
+                  />
                 ) : (
                   "—"
                 ),

@@ -14,11 +14,20 @@ import {
 } from "../hooks/use-conversation-actions";
 import { useConversationThread, useMarkConversationRead } from "../hooks/use-conversation-thread";
 import { MessageComposer } from "./message-composer";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 import { MessageList } from "./message-list";
 import { ThreadMenuSheet } from "./thread-menu-sheet";
 
 /** One conversation, full screen. Back returns to the inbox it was opened from. */
-export function ThreadPage({ conversationId }: { conversationId: number }) {
+export function ThreadPage({
+  conversationId,
+  initialContext,
+  onContextSent,
+}: {
+  conversationId: number;
+  initialContext?: MessageContextInput;
+  onContextSent?: () => void;
+}) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const { conversation, messages, loadOlder } = useConversationThread(conversationId);
@@ -208,7 +217,11 @@ export function ThreadPage({ conversationId }: { conversationId: number }) {
 
       {current && actions?.canSend ? (
         <footer className="sticky bottom-0 border-border border-t bg-background px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
-          <MessageComposer conversationId={conversationId} />
+          <MessageComposer
+            conversationId={conversationId}
+            initialContext={initialContext}
+            onContextSent={onContextSent}
+          />
         </footer>
       ) : null}
     </div>

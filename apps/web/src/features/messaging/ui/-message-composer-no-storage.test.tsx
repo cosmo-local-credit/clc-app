@@ -36,6 +36,7 @@ describe("MessageComposer without VITE_STORAGE_URL", () => {
       sender: "self",
       body: "Hello",
       imageUrls: [],
+      context: null,
       createdAt: "2026-11-09T10:00:00Z",
     };
     mocks.send.mockResolvedValueOnce(message);

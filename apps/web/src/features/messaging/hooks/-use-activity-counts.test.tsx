@@ -8,10 +8,12 @@ const VIEWER = "0x2a986F40d29fc7e1Bded626542d4b8f1Ca0A82f6";
 
 const mocks = vi.hoisted(() => ({
   unread: vi.fn(),
+  adminCounts: vi.fn(),
   enabled: { value: true },
   auth: {
     isAuthenticated: true,
     address: "0x2a986F40d29fc7e1Bded626542d4b8f1Ca0A82f6" as string | undefined,
+    session: undefined as { address: string; role: string } | undefined,
   },
 }));
 
@@ -21,25 +23,29 @@ vi.mock("#/lib/messaging-config", () => ({
   },
 }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => mocks.auth }));
-vi.mock("#/lib/api/messaging", () => ({ messagingClient: { unread: mocks.unread } }));
+vi.mock("#/lib/api/messaging", () => ({
+  messagingClient: { unread: mocks.unread },
+  adminMessagingClient: { counts: mocks.adminCounts },
+}));
 vi.mock("#/features/wallet/hooks/use-activity-unseen", () => ({
   useActivityUnseen: () => ({ count: 2 }),
 }));
 
 import { useActivityCounts } from "./use-activity-counts";
 
-function render() {
+function render(operator = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={client}>{children}</QueryClientProvider>
   );
-  return renderHook(() => useActivityCounts(), { wrapper });
+  return renderHook(() => useActivityCounts(operator), { wrapper });
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.enabled.value = true;
-  mocks.auth = { isAuthenticated: true, address: VIEWER };
+  mocks.auth = { isAuthenticated: true, address: VIEWER, session: undefined };
+  mocks.unread.mockResolvedValue({ direct: 3, requests: 1, helpdesk: 2 });
 });
 
 describe("useActivityCounts", () => {
@@ -62,8 +68,23 @@ describe("useActivityCounts", () => {
     mocks.enabled.value = false;
     expect(render().result.current.total).toBe(2);
     mocks.enabled.value = true;
-    mocks.auth = { isAuthenticated: false, address: undefined };
+    mocks.auth = { isAuthenticated: false, address: undefined, session: undefined };
     expect(render().result.current.total).toBe(2);
     expect(mocks.unread).not.toHaveBeenCalled();
+  });
+
+  it("uses the operator Helpdesk count and skips the user Helpdesk read for an Admin", async () => {
+    mocks.auth = {
+      isAuthenticated: true,
+      address: VIEWER,
+      session: { address: VIEWER, role: "ADMIN" },
+    };
+    mocks.adminCounts.mockResolvedValue({ helpdeskNeedsReply: 5, abuseReportsOpen: 1 });
+
+    const { result } = render(true);
+
+    await waitFor(() => expect(result.current.helpdesk).toBe(5));
+    expect(result.current).toEqual({ transactions: 2, messages: 4, helpdesk: 5, total: 11 });
+    expect(mocks.unread).toHaveBeenCalledTimes(1);
   });
 });

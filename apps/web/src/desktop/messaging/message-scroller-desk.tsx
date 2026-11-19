@@ -4,6 +4,7 @@ import { type ReactNode, type Ref, useEffect, useLayoutEffect, useRef } from "re
 
 import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
+import { ResourceContextCard } from "#/components/messaging/resource-context-card";
 
 /**
  * The thread pane's scrolling body: anything the thread shows above its
@@ -135,6 +136,7 @@ function MessageBubbleDesk({ message, ref }: { message: Message; ref?: Ref<HTMLL
             : "border-border bg-background text-foreground",
         )}
       >
+        {message.context ? <ResourceContextCard context={message.context} approve={!own} /> : null}
         {message.imageUrls.length > 0 ? (
           <div className={cn("grid gap-1", message.imageUrls.length > 1 && "grid-cols-2")}>
             {message.imageUrls.map((url) => (

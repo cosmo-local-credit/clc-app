@@ -75,6 +75,17 @@ describe("messaging client", () => {
     });
   });
 
+  it("looks up an exact direct peer without an inbox cursor", async () => {
+    const fetcher = stub({ items: [CONVERSATION], nextCursor: null });
+    await createMessagingClient(http()).list({ kind: "direct", peerAddress: PEER.address });
+    expect(call(fetcher)).toMatchObject({
+      path: "/api/v2/conversations",
+      query: { kind: "direct", peerAddress: PEER.address },
+      cache: "no-store",
+    });
+    expect(call(fetcher).query).not.toHaveProperty("cursor");
+  });
+
   it("requests a conversation by address", async () => {
     const fetcher = stub(CONVERSATION, 201);
     await createMessagingClient(http()).request({ recipientAddress: PEER.address, intro: "Hi" });

@@ -6,6 +6,7 @@ import { RiArrowLeftSLine } from "react-icons/ri";
 import { useConnection } from "wagmi";
 
 import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
+import { OwnerMessageButton } from "#/components/messaging/resource-owner-contact";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
@@ -22,6 +23,7 @@ import { useCanEditVoucher, VoucherInfoDesk } from "#/desktop/vouchers/detail/vo
 import { VoucherOfferingsDesk } from "#/desktop/vouchers/detail/voucher-offerings";
 import { VoucherPostsDesk } from "#/desktop/vouchers/detail/voucher-posts";
 import { VoucherReviewsDesk } from "#/desktop/vouchers/detail/voucher-reviews";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import {
   VoucherBalanceLine,
   VoucherRatingLine,
@@ -79,6 +81,7 @@ function VoucherPlace({
   const tabId = (id: Section) => `${tabsId}-tab-${id}`;
   const detailQuery = useMarketVoucherDetail(address);
   const detail = detailQuery.data;
+  const auth = useAuthStatus();
   const name = detail?.name ?? "";
   const symbol = detail?.symbol ?? "";
   const lat = detail?.lat ?? null;
@@ -202,8 +205,15 @@ function VoucherPlace({
             size="panel"
           />
           {detail ? (
-            <div className="flex">
+            <div className="flex flex-wrap gap-2">
               <VoucherCatalogButton resourceId={detail.id} address={detail.address} />
+              {detail.active && detail.ownerAddress ? (
+                <OwnerMessageButton
+                  ownerAddress={detail.ownerAddress}
+                  excludeAddress={auth.isAuthenticated ? auth.session?.address : undefined}
+                  context={{ kind: "voucher", resourceId: detail.address }}
+                />
+              ) : null}
             </div>
           ) : null}
           {/* Local content tabs: the tablist pattern, not route links. */}

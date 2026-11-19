@@ -1,12 +1,15 @@
 import type { ActivityKind } from "@clc/api/features/accounts/client";
+import type { HelpdeskStatus } from "@clc/core/features/messaging/logic";
 import { useLingui } from "@lingui/react/macro";
 
 import { ActivitySectionTabs } from "#/components/messaging/activity-section-tabs";
 import { HelpdeskSection } from "#/components/messaging/helpdesk-section";
+import { OperatorHelpdeskSection } from "#/components/messaging/operator-helpdesk-section";
 import { MessagesSection } from "#/components/messaging/messages-section";
 import { NotificationsSection } from "#/components/messaging/notifications-section";
 import { useActivityCounts } from "#/features/messaging/hooks/use-activity-counts";
 import type { ActivitySection } from "#/lib/navigation/activity-search";
+import type { MessageContextInput } from "@clc/core/features/messaging/logic";
 import { ActivityPage } from "./activity-page";
 
 /**
@@ -21,7 +24,11 @@ export function ActivityInbox({
   onQueryChange,
   onTypesChange,
   messageTo,
+  messageContext,
   onMessageToConsumed,
+  helpdeskId,
+  helpdeskStatus = "open",
+  operator = false,
 }: {
   section: ActivitySection;
   address?: string;
@@ -30,10 +37,14 @@ export function ActivityInbox({
   onQueryChange?: (query: string) => void;
   onTypesChange?: (types: readonly ActivityKind[]) => void;
   messageTo?: `0x${string}`;
+  messageContext?: MessageContextInput;
   onMessageToConsumed?: () => void;
+  helpdeskId?: number;
+  helpdeskStatus?: HelpdeskStatus;
+  operator?: boolean;
 }) {
   const { t } = useLingui();
-  const counts = useActivityCounts();
+  const counts = useActivityCounts(operator);
   const tabs = (
     <ActivitySectionTabs
       current={section}
@@ -65,10 +76,20 @@ export function ActivityInbox({
         {tabs}
       </div>
       {section === "messages" ? (
-        <MessagesSection messageTo={messageTo} onMessageToConsumed={onMessageToConsumed} />
+        <MessagesSection
+          messageTo={messageTo}
+          messageContext={messageContext}
+          onMessageToConsumed={onMessageToConsumed}
+        />
       ) : null}
       {section === "notifications" ? <NotificationsSection /> : null}
-      {section === "helpdesk" ? <HelpdeskSection /> : null}
+      {section === "helpdesk" ? (
+        operator ? (
+          <OperatorHelpdeskSection status={helpdeskStatus} conversationId={helpdeskId} />
+        ) : (
+          <HelpdeskSection />
+        )
+      ) : null}
     </div>
   );
 }

@@ -111,6 +111,9 @@ vi.mock("#/features/home/hooks/use-ip-camera", () => ({
 vi.mock("sonner", () => ({ toast: { success: mocks.success, error: mocks.error } }));
 vi.mock("#/components/wallet", () => ({ BackChevron: () => <a href="/">Back</a> }));
 vi.mock("#/components/messaging/resource-owner-contact", () => ({
+  OwnerMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
+    <a href={`/?messageKind=${context?.kind}&messageResource=${context?.resourceId}`}>Message</a>
+  ),
   ResourceOwnerContact: ({ ownerAddress }: { ownerAddress: string }) => (
     <div data-testid="catalog-owner-contact">{ownerAddress}</div>
   ),
@@ -487,6 +490,10 @@ describe("catalog curation", () => {
     expect(screen.queryByRole("button", { name: "Add a pool" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Add a voucher" })).toBeNull();
     expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
+    const message = screen.getByRole("link", { name: "Message" });
+    expect(message.getAttribute("href")).toBe("/?messageKind=catalog&messageResource=7");
+    const pools = await screen.findByRole("region", { name: "Pools" });
+    expect(message.compareDocumentPosition(pools) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
   });
   it("places the owner contact after both member sections", async () => {
     mount(<CatalogDetailPage id="7" />);

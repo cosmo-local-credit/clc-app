@@ -27,7 +27,14 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
 
 import { ResourceOwnerContact, ResourceOwnerContactValue } from "./resource-owner-contact";
 
-function mount(embedded = false) {
+function mount(
+  embedded = false,
+  context?: {
+    kind: "pool";
+    resourceId: `0x${string}`;
+    proposedVoucherAddress?: `0x${string}`;
+  },
+) {
   const root = createRootRoute();
   const home = createRoute({
     getParentRoute: () => root,
@@ -35,9 +42,9 @@ function mount(embedded = false) {
     validateSearch: (search: Record<string, unknown>) => search,
     component: () =>
       embedded ? (
-        <ResourceOwnerContactValue ownerAddress={OWNER} />
+        <ResourceOwnerContactValue ownerAddress={OWNER} context={context} />
       ) : (
-        <ResourceOwnerContact ownerAddress={OWNER} label="Issuer" />
+        <ResourceOwnerContact ownerAddress={OWNER} label="Issuer" context={context} />
       ),
   });
   const router = createRouter({
@@ -88,6 +95,27 @@ describe("ResourceOwnerContact", () => {
         tab: "activity",
         section: "messages",
         messageTo: OWNER,
+      }),
+    );
+  });
+
+  it("preserves the originating Pool and proposed Voucher in both owner links", async () => {
+    const context = {
+      kind: "pool" as const,
+      resourceId: "0x4444444444444444444444444444444444444444" as const,
+      proposedVoucherAddress: "0x5555555555555555555555555555555555555555" as const,
+    };
+    const router = mount(false, context);
+
+    fireEvent.click(await screen.findByRole("link", { name: "amina" }));
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({
+        tab: "activity",
+        section: "messages",
+        messageTo: OWNER,
+        messageKind: "pool",
+        messageResource: context.resourceId,
+        messageVoucher: context.proposedVoucherAddress,
       }),
     );
   });

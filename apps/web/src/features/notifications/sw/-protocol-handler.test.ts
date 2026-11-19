@@ -4,6 +4,7 @@ import {
   type NotificationProtocolHandlerDependencies,
 } from "./protocol-handler";
 import type { NotificationWorkerMessage } from "./protocol";
+import { NOTIFICATION_KINDS } from "../logic/payload-schema";
 
 describe("handleNotificationProtocolMessage", () => {
   let dependencies: NotificationProtocolHandlerDependencies;
@@ -33,14 +34,7 @@ describe("handleNotificationProtocolMessage", () => {
 
     expect(respond).toHaveBeenCalledWith({
       compatible: true,
-      kinds: [
-        "voucher.received",
-        "offramp.completed",
-        "message.received",
-        "message.request",
-        "message.accepted",
-        "helpdesk.reply",
-      ],
+      kinds: [...NOTIFICATION_KINDS],
       protocolVersion: 1,
       requestId: "request-1",
       type: "notification:compatibility-result",

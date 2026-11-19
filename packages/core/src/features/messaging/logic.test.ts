@@ -119,11 +119,21 @@ describe("messaging wire schemas", () => {
 describe("sendMessageInputSchema", () => {
   const clientId = "0f8c2a7e-1d2b-4c3d-8e4f-5a6b7c8d9e0f";
 
-  it("needs text or an image", () => {
+  it("needs text, an image or resource context", () => {
     expect(sendMessageInputSchema.safeParse({ clientId, body: "  " }).success).toBe(false);
     expect(sendMessageInputSchema.safeParse({ clientId, body: "Hi" }).success).toBe(true);
     expect(
       sendMessageInputSchema.safeParse({ clientId, imageUrls: ["https://s.test/a.webp"] }).success,
+    ).toBe(true);
+    expect(
+      sendMessageInputSchema.safeParse({
+        clientId,
+        context: {
+          kind: "pool",
+          resourceId: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+          proposedVoucherAddress: "0x4bdd98432CC70Db26Ff19E23D7da39365b819F38",
+        },
+      }).success,
     ).toBe(true);
   });
 

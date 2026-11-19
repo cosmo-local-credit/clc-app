@@ -9,7 +9,9 @@ vi.mock("#/components/messaging/resource-owner-contact", () => ({
   ResourceOwnerContactValue: ({ ownerAddress }: { ownerAddress: string }) => (
     <span>{`issuer:${ownerAddress}`}</span>
   ),
-  OwnerMessageButton: () => null,
+  OwnerMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
+    <a href={`/?messageKind=${context?.kind}&messageResource=${context?.resourceId}`}>Message</a>
+  ),
 }));
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -758,8 +760,11 @@ describe("VoucherDetailPage", () => {
     expect(screen.getByText("Agriculture")).toBeTruthy();
 
     const actions = screen.getByLabelText("Voucher actions");
-    expect(actions.textContent).toBe("GetSendRedeemDirectionsCallWebsiteAdd to catalog");
+    expect(actions.textContent).toBe("GetSendRedeemDirectionsCallWebsiteAdd to catalogMessage");
     const addToCatalog = within(actions).getByRole("button", { name: "Add to catalog" });
+    const message = within(actions).getByRole("link", { name: "Message" });
+    expect(addToCatalog.nextElementSibling).toBe(message);
+    expect(message.getAttribute("href")).toBe(`/?messageKind=voucher&messageResource=${ADDRESS}`);
     // Compact like the pills beside it, with the same padded 44px target.
     expect(addToCatalog.getAttribute("data-size")).toBeNull();
     expect(addToCatalog.getAttribute("data-tap")).toBe("true");

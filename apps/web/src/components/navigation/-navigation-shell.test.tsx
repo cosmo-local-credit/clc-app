@@ -56,6 +56,10 @@ vi.mock("#/features/messaging/hooks/use-messaging-unread", () => ({
   useMessagingUnread: () => ({ counts: undefined, messages: 0, helpdesk: 0 }),
 }));
 
+vi.mock("#/features/messaging/hooks/use-operator-helpdesk", () => ({
+  useOperatorHelpdeskCount: () => ({ data: undefined }),
+}));
+
 vi.mock("#/components/ui/clc-logo", () => ({
   CLCLogo: () => <svg data-testid="clc-logo" />,
 }));
