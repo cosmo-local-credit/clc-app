@@ -6,6 +6,7 @@ export {
   HighlightAddress,
   NetworkBadge,
   PendingClock,
+  SECTION_HEADER_ACTION_CLASS,
   SectionHeader,
   SignedAmount,
   StatusPill,

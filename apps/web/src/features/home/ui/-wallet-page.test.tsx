@@ -276,6 +276,8 @@ beforeEach(() => {
   vi.spyOn(Math, "random").mockReturnValue(0);
   safeOwners.signed = new Set();
   mocks.navigate.mockReset();
+  mocks.usage.data.pools = { used: 0, limit: 1, unlimited: false, canCreate: true };
+  mocks.usage.isPending = false;
   mocks.usage.isError = false;
   mocks.usage.isFetching = false;
   mocks.usage.refetch.mockReset();
@@ -553,6 +555,33 @@ describe("WalletPage", () => {
     expect(poolRequest).toContain("/api/v2/users/me/owned-pools?perPage=20");
   });
 
+  it("offers pool creation in the section header while an owned pool is under quota", async () => {
+    mocks.usage.data.pools = { used: 1, limit: 2, unlimited: false, canCreate: true };
+    mockEndpoints({ pools: [OWNED_POOL] });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    const pools = within(await screen.findByRole("region", { name: /My Pools/ }));
+    expect(pools.getByRole("link", { name: "Create pool" }).getAttribute("href")).toBe(
+      "/pools/create/pool",
+    );
+    expect(
+      pools
+        .getAllByRole("link")
+        .slice(0, 2)
+        .map((link) => link.textContent),
+    ).toEqual(["Create", "All pools"]);
+  });
+
+  it("withholds header creation at the pool limit while retaining All pools", async () => {
+    mocks.usage.data.pools = { used: 1, limit: 1, unlimited: false, canCreate: false };
+    mockEndpoints({ pools: [OWNED_POOL] });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    const pools = within(await screen.findByRole("region", { name: /My Pools/ }));
+    expect(pools.queryByRole("link", { name: "Create pool" })).toBeNull();
+    expect(pools.getByRole("link", { name: "All pools" }).getAttribute("href")).toBe("/pools");
+  });
+
   it("drops rows a backend without the owner filter would have returned", async () => {
     // An older clc-core ignores an unknown query parameter and answers with the
     // whole catalog; presenting that as "your pools" is worse than showing none.
@@ -587,9 +616,11 @@ describe("WalletPage", () => {
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
     expect(await screen.findByText("You haven't created a pool yet.")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Create pool" }).getAttribute("href")).toBe(
-      "/pools/create/pool",
-    );
+    expect(
+      screen
+        .getAllByRole("link", { name: "Create pool" })
+        .every((link) => link.getAttribute("href") === "/pools/create/pool"),
+    ).toBe(true);
   });
 
   it("retries a failed owned-pools request", async () => {
