@@ -143,6 +143,22 @@ describe("safe client", () => {
     );
   });
 
+  it("POSTs a canonical rejection against the original proposal", async () => {
+    const rejection = { ...proposal, to: A(1), data: "0x", transactionKind: "rejection" };
+    const { spy, safe } = client(rejection);
+    await expect(
+      safe.reject(proposal.safeTxHash as `0x${string}`, {
+        safeTxHash: `0x${"cd".repeat(32)}`,
+        signature: `0x${"22".repeat(65)}`,
+        tx: rejection as SafeTransaction,
+      }),
+    ).resolves.toMatchObject({ transactionKind: "rejection" });
+    expect(spy).toHaveBeenCalledWith(
+      `https://api.example/api/v2/safe/transactions/${proposal.safeTxHash}/reject`,
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
+
   it("lists the multisigs the signed-in account signs for", async () => {
     const safes = [{ kind: "safe", owner: A(1), signers: [A(5), A(6)], threshold: 2 }];
     const { spy, safe } = client({ safes });

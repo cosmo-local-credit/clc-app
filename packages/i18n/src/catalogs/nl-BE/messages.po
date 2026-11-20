@@ -1022,8 +1022,8 @@ msgstr "Controleer vóór het verzenden altijd of de token en het netwerk "
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:120
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:425
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1007
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:164
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:173
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:170
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:179
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:113
 #: apps/web/src/desktop/wallet/send-desk.tsx:217
 #: apps/web/src/desktop/wallet/send-desk.tsx:224
@@ -1039,8 +1039,8 @@ msgstr "Controleer vóór het verzenden altijd of de token en het netwerk "
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:112
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:127
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:405
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:166
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:176
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:182
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:87
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:176
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:318
@@ -1494,6 +1494,7 @@ msgstr "Toegang tot de camera geweigerd."
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:288
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:530
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:54
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:85
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:73
 #: apps/web/src/features/wallet/ui/collect-page.tsx:231
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:357
@@ -2054,12 +2055,12 @@ msgstr "Zoekopdracht wissen"
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:66
 #: apps/web/src/desktop/pools/detail/pool-side-panel.tsx:103
 #: apps/web/src/desktop/posts/post-desk.tsx:503
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:54
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:55
 #: apps/web/src/desktop/ui/inspector.tsx:107
 #: apps/web/src/desktop/vouchers/detail/voucher-dialog.tsx:56
 #: apps/web/src/desktop/wants/want-place-desk.tsx:62
 #: apps/web/src/features/home/ui/report-page.tsx:285
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:124
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:130
 msgid "Close"
 msgstr "Sluiten"
 
@@ -2206,9 +2207,9 @@ msgid "Complete your profile"
 msgstr "Voltooi uw profiel"
 
 #: apps/web/src/desktop/credit/review-dialog.tsx:161
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:265
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:273
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:725
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:262
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:270
 msgid "Confirm"
 msgstr "Bevestigen"
 
@@ -2285,24 +2286,24 @@ msgstr "Bevestig met uw passkey. Uw oude kaart werkt daarna op geen enkel "
 #: apps/web/src/desktop/activity/transactions-desk.tsx:836
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:280
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:247
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:253
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:361
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:105
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:202
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:46
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:72
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:257
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:244
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:250
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:232
 msgid "Confirmed"
 msgstr "Bevestigd"
 
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1093
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:265
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:273
 #: apps/web/src/features/home/hooks/use-passkey-settings.ts:41
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:367
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:262
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:270
 msgid "Confirming"
 msgstr "Bevestigen"
 
@@ -4506,12 +4507,17 @@ msgstr "Uitvoeren"
 msgid "Execute it in Safe."
 msgstr "Voer het uit in Safe."
 
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:43
+msgid "Execute rejection"
+msgstr "Weigering uitvoeren"
+
 #: apps/web/src/features/safe/ui/safe-execution-control.tsx:21
 #: apps/web/src/features/safe/ui/safe-execution-control.tsx:47
 msgid "Executing…"
 msgstr "Wordt uitgevoerd…"
 
-#: apps/web/src/features/safe/hooks/use-safe-pending.ts:115
+#: apps/web/src/features/safe/hooks/use-safe-pending.ts:136
+#: apps/web/src/features/safe/hooks/use-safe-pending.ts:164
 msgid "Execution failed"
 msgstr "Uitvoering mislukt"
 
@@ -4584,7 +4590,7 @@ msgstr "Extra ontvangen"
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:215
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:50
 #: apps/web/src/features/safe/hooks/use-multisig-signer-change.ts:112
-#: apps/web/src/features/safe/hooks/use-safe-pending.ts:107
+#: apps/web/src/features/safe/hooks/use-safe-pending.ts:128
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:59
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:141
 #: apps/web/src/features/wallet/ui/collect-page.tsx:437
@@ -5940,7 +5946,7 @@ msgstr "Uw profiel laden…"
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:69
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:128
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:864
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:80
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:81
 #: apps/web/src/desktop/shell/desk-loading.tsx:19
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:157
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
@@ -5960,7 +5966,7 @@ msgstr "Uw profiel laden…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:112
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1069
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:80
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:81
 #: apps/web/src/features/wallet/hooks/use-send-payment.ts:129
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:245
 msgid "Loading…"
@@ -6376,9 +6382,9 @@ msgid "Multisig owned · {0} signers"
 msgstr "In bezit van een multisig · {0} ondertekenaars"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:72
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:52
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:53
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:93
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:53
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:54
 msgid "Multisig transactions"
 msgstr "Multisigtransacties"
 
@@ -6541,8 +6547,8 @@ msgstr "Nieuw"
 msgid "New message"
 msgstr "Nieuw bericht"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:177
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:182
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:183
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:188
 msgid "New owner"
 msgstr "Nieuwe eigenaar"
 
@@ -6991,8 +6997,8 @@ msgid "No QR code found. Try again with a clearer image."
 msgstr "Geen QR-code gevonden. Probeer het opnieuw met een duidelijkere "
 "afbeelding."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:95
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:95
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:98
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:98
 msgid "No queued proposals found."
 msgstr "Geen voorstellen in de wachtrij gevonden."
 
@@ -7160,8 +7166,8 @@ msgid "No. of participants"
 msgstr "Aantal deelnemers"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:204
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:228
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:210
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:234
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -7411,8 +7417,8 @@ msgid "Open in Maps"
 msgstr "Openen in Kaarten"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:118
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:119
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:124
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:125
 msgid "Open in Safe"
 msgstr "Openen in Safe"
 
@@ -7710,9 +7716,9 @@ msgstr "De passkeystatus kon niet worden gecontroleerd."
 #~ msgstr "Passkeys kunnen ondertekenen voor multisigwallets vanaf Safe 1.5. "
 #~ "Gebruik je papieren portefeuille."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:272
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:280
 #: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:269
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:277
 msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in "
 "card."
 msgstr "Passkeys kunnen ondertekenen voor multisigwallets vanaf Safe 1.5. "
@@ -7819,7 +7825,7 @@ msgstr "Betalingsstatus onbekend"
 #: apps/web/src/desktop/messaging/thread-desk.tsx:67
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1095
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:145
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:247
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:253
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:85
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:160
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:384
@@ -8588,8 +8594,8 @@ msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "Voorstel in de wachtrij geplaatst. Bevestig het en voer het uit in "
 "Safe."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:84
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:84
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:85
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:85
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "Voorstellen zijn hier niet beschikbaar. Je kunt je multisigwallet nog "
 "steeds gebruiken."
@@ -8924,8 +8930,8 @@ msgstr "Recente ontvangers"
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:365
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:380
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:494
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:156
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:170
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:162
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:176
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:377
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:389
 #: apps/web/src/desktop/wallet/send-desk.tsx:321
@@ -8934,8 +8940,8 @@ msgstr "Recente ontvangers"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:353
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:369
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:490
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:163
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:173
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:169
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:179
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:327
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:613
@@ -9026,6 +9032,23 @@ msgstr "Registratie mislukt. Controleer uw verbinding en probeer het opnieuw."
 #: apps/web/src/lib/category-label.ts:43
 msgid "Rehabilitation"
 msgstr "Rehabilitatie"
+
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:72
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:83
+msgid "Reject"
+msgstr "Weigeren"
+
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:76
+msgid "Reject this multisig action?"
+msgstr "Deze multisig-actie weigeren?"
+
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:41
+msgid "Rejecting…"
+msgstr "Bezig met weigeren…"
+
+#: apps/web/src/features/safe/hooks/use-safe-pending.ts:143
+msgid "Rejection failed"
+msgstr "Weigering mislukt"
 
 #: apps/web/src/desktop/posts/post-desk.tsx:252
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:528
@@ -9591,8 +9614,8 @@ msgstr "Teruggedraaid"
 msgid "Review"
 msgstr "Controleren"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:276
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:273
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:284
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:281
 msgid "Review this transaction in your multisig wallet."
 msgstr "Controleer deze transactie in je multisigwallet."
 
@@ -10567,6 +10590,11 @@ msgstr "Afmelden"
 msgid "Sign out?"
 msgstr "Afmelden?"
 
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:72
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:83
+msgid "Sign rejection"
+msgstr "Weigering ondertekenen"
+
 #: apps/web/src/desktop/account/settings-desk.tsx:86
 #: apps/web/src/features/home/ui/settings-page.tsx:67
 msgid "Sign-in"
@@ -10591,8 +10619,12 @@ msgstr "Aanmeldkaart"
 #~ msgid "Sign-in methods"
 #~ msgstr "Aanmeldmethoden"
 
+#: apps/web/src/components/messaging/notification-context-links.tsx:79
+msgid "signers"
+msgstr "ondertekenaars"
+
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:201
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:219
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:225
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:178
 msgid "Signers"
 msgstr "Ondertekenaars"
@@ -10613,6 +10645,7 @@ msgstr "Afmelden…"
 
 #: apps/web/src/desktop/credit/review-dialog.tsx:161
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:725
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:84
 msgid "Signing…"
 msgstr "Ondertekenen…"
 
@@ -11574,6 +11607,14 @@ msgid "This copies your current profile image. Later profile changes won't "
 msgstr "Hiermee wordt je huidige profielfoto gekopieerd. Latere "
 "profielwijzigingen werken deze vraag niet bij."
 
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:78
+msgid "This creates a Safe rejection at the same nonce. It needs the same "
+"signer quorum and will cancel every pending action at this nonce when "
+"executed."
+msgstr "Dit maakt in Safe een weigering met dezelfde nonce. Hiervoor is "
+"hetzelfde quorum van ondertekenaars nodig en bij uitvoering worden alle "
+"openstaande acties met deze nonce geannuleerd."
+
 #: apps/web/src/features/home/hooks/use-passkey-settings.ts:80
 msgid "This device does not have the key from your sign-in card. Sign in with "
 "your card here, then link a passkey."
@@ -11781,8 +11822,8 @@ msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "Dit bericht is te groot om op te slaan. Kort de tekst in of verwijder "
 "media."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:91
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:91
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:94
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:94
 msgid "This proposal is no longer pending."
 msgstr "Dit voorstel is niet langer in behandeling."
 
@@ -12610,7 +12651,7 @@ msgstr "Op de blokverkenner bekijken"
 msgid "View pool"
 msgstr "Fonds bekijken"
 
-#: apps/web/src/components/messaging/notification-context-links.tsx:61
+#: apps/web/src/components/messaging/notification-context-links.tsx:74
 msgid "View the proposal for more resources."
 msgstr "Bekijk het voorstel voor meer middelen."
 
@@ -12644,6 +12685,7 @@ msgid "voucher"
 msgstr "waardebon"
 
 #: apps/web/src/components/account-retirement/retire-account-section.tsx:149
+#: apps/web/src/components/messaging/notification-context-links.tsx:84
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
 #: apps/web/src/desktop/activity/transactions-desk.tsx:388
@@ -13301,8 +13343,8 @@ msgstr "U kunt deze persoon geen bericht sturen."
 msgid "You can't message yourself."
 msgstr "Je kunt jezelf geen bericht sturen."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:270
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:267
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:278
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:275
 msgid "You confirmed"
 msgstr "Je hebt bevestigd"
 
@@ -13384,6 +13426,10 @@ msgstr "U hebt ontvangen"
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:198
 msgid "You send"
 msgstr "U verzendt"
+
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:52
+msgid "You signed the rejection"
+msgstr "Je hebt de weigering ondertekend"
 
 #: apps/web/src/desktop/credit/get-desk.tsx:114
 #: apps/web/src/desktop/credit/get-desk.tsx:120

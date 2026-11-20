@@ -27,6 +27,13 @@ const safeProposalSchema = safeTransactionSchema.extend({
   executing: z.boolean().optional(),
   /** Durable sponsored-execution state; absent from older backends. */
   executionState: safeExecutionStateSchema.optional(),
+  transactionKind: z.enum(["action", "rejection"]).optional(),
+  rejectsSafeTxHashes: z.array(z.string().regex(/^0x[a-fA-F0-9]{64}$/)).optional(),
+  rejectedBySafeTxHash: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{64}$/)
+    .nullable()
+    .optional(),
 });
 export type SafeProposal = z.infer<typeof safeProposalSchema>;
 
@@ -86,6 +93,24 @@ export function createSafeClient(http: HttpClient) {
         await http.request<unknown>(
           `/api/v2/safe/transactions/${encodeURIComponent(safeTxHash)}/execute`,
           { method: "POST" },
+        ),
+      );
+    },
+    /** Signs Safe's canonical same-nonce rejection for a pending proposal. */
+    async reject(
+      originalSafeTxHash: `0x${string}`,
+      input: { safeTxHash: `0x${string}`; signature: `0x${string}`; tx: SafeTransaction },
+    ) {
+      const tx = {
+        ...input.tx,
+        to: getAddress(input.tx.to),
+        gasToken: getAddress(input.tx.gasToken),
+        refundReceiver: getAddress(input.tx.refundReceiver),
+      };
+      return safeProposalSchema.parse(
+        await http.request<unknown>(
+          `/api/v2/safe/transactions/${encodeURIComponent(originalSafeTxHash)}/reject`,
+          { method: "POST", body: JSON.stringify({ ...input, tx }) },
         ),
       );
     },

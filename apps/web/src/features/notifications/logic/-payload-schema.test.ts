@@ -32,6 +32,9 @@ describe("notificationKindSchema", () => {
     "safe.proposed",
     "safe.confirmed",
     "safe.approved",
+    "safe.rejection_proposed",
+    "safe.rejection_confirmed",
+    "safe.rejection_approved",
     "message.received",
     "message.request",
     "message.accepted",
@@ -242,6 +245,9 @@ describe("messaging notification kinds", () => {
       "safe.proposed",
       "safe.confirmed",
       "safe.approved",
+      "safe.rejection_proposed",
+      "safe.rejection_confirmed",
+      "safe.rejection_approved",
       "message.received",
       "message.request",
       "message.accepted",
@@ -264,11 +270,17 @@ describe("messaging notification kinds", () => {
       "safe.proposed",
       "safe.confirmed",
       "safe.approved",
+      "safe.rejection_proposed",
+      "safe.rejection_confirmed",
+      "safe.rejection_approved",
     ]);
     expect(NOTIFICATION_KINDS.filter(isSafeApprovalNotificationKind)).toEqual([
       "safe.proposed",
       "safe.confirmed",
       "safe.approved",
+      "safe.rejection_proposed",
+      "safe.rejection_confirmed",
+      "safe.rejection_approved",
     ]);
   });
 
@@ -288,8 +300,14 @@ describe("messaging notification kinds", () => {
             kind: "pool",
             address: "0x2222222222222222222222222222222222222222",
             name: "Community Pool",
+            voucherAddress: "0x3333333333333333333333333333333333333333",
+            voucherName: "Community Voucher",
           },
         ],
+        approvals: 2,
+        approvalsRequired: 3,
+        safeAction: "approve_voucher",
+        transactionKind: "action",
       },
       { appOrigin: APP_ORIGIN },
     );
@@ -298,7 +316,9 @@ describe("messaging notification kinds", () => {
     expect(result.payload).toMatchObject({
       actorUsername: "amina",
       safeTxHash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      resources: [{ kind: "pool", name: "Community Pool" }],
+      approvals: 2,
+      approvalsRequired: 3,
+      resources: [{ kind: "pool", name: "Community Pool", voucherName: "Community Voucher" }],
     });
   });
 
