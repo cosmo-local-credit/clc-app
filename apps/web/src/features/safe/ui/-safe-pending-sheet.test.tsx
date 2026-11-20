@@ -107,6 +107,9 @@ async function openWith(transactions: unknown[], safeTxHash?: `0x${string}`) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.confirm.mockReset();
+  mocks.execute.mockReset();
+  mocks.reject.mockReset();
   mocks.voucher.mockResolvedValue({ decimals: 6, symbol: "MLTT" });
   mocks.execute.mockResolvedValue({});
   mocks.connectorId = "private-key";
@@ -133,6 +136,24 @@ describe("SafePendingSheet", () => {
     fireEvent.click(rejectButtons.at(-1)!);
 
     expect(mocks.reject).toHaveBeenCalledWith(tx, expect.anything());
+  });
+
+  it("reports confirmation and rejection failures through the shared write reporter", async () => {
+    const tx = proposal();
+    const sheet = await openWith([tx]);
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
+    const confirmOptions = mocks.confirm.mock.calls[0]?.[1] as {
+      onError: (error: Error) => void;
+    };
+    expect(() => confirmOptions.onError(new Error("confirmation failed"))).not.toThrow();
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Reject" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "Reject" }).at(-1)!);
+    const rejectOptions = mocks.reject.mock.calls[0]?.[1] as {
+      onError: (error: Error) => void;
+    };
+    expect(() => rejectOptions.onError(new Error("rejection failed"))).not.toThrow();
   });
 
   it("opens a rejection notification on its related action", async () => {
@@ -323,6 +344,41 @@ describe("SafePendingSheet", () => {
     );
     fireEvent.click(within(sheet).getByRole("button", { name: "Execute" }));
     await waitFor(() => expect(mocks.execute).toHaveBeenCalledWith(tx.safeTxHash));
+  });
+
+  it("reports a failed execution retry", async () => {
+    mocks.execute.mockRejectedValue(new Error("execution retry failed"));
+    const tx = proposal({
+      executionState: "failed",
+      confirmations: [
+        { owner: OTHER, signature: "0x", submittedAt: "2026-10-26" },
+        { owner: ME, signature: "0x", submittedAt: "2026-10-26" },
+      ],
+    });
+    const sheet = await openWith([tx]);
+    fireEvent.click(within(sheet).getByRole("button", { name: "Execute" }));
+    await waitFor(() => expect(mocks.execute).toHaveBeenCalledWith(tx.safeTxHash));
+  });
+
+  it("executes an approved rejection instead of the action it cancels", async () => {
+    const rejectionHash = `0x${"cd".repeat(32)}`;
+    const action = proposal({ rejectedBySafeTxHash: rejectionHash });
+    const rejection = proposal({
+      safeTxHash: rejectionHash,
+      transactionKind: "rejection",
+      rejectsSafeTxHashes: [action.safeTxHash],
+      to: SAFE,
+      data: "0x",
+      executionState: "ready",
+      confirmations: [
+        { owner: OTHER, signature: "0x", submittedAt: "2026-10-26" },
+        { owner: ME, signature: "0x", submittedAt: "2026-10-26" },
+      ],
+    });
+    const sheet = await openWith([action, rejection]);
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Execute rejection" }));
+    await waitFor(() => expect(mocks.execute).toHaveBeenCalledWith(rejectionHash));
   });
 
   it("explains when a notification proposal has left the queue", async () => {
