@@ -99,6 +99,8 @@ describe("NotificationContextLinks", () => {
     expect(screen.getByText("me").tagName).toBe("SPAN");
     expect(screen.queryByText("Four")).toBeNull();
     expect(screen.getByText("View the proposal for more resources.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("link", { name: "One" }));
+    expect(useSafeSheet.getState().safe).toBeNull();
   });
 
   it("falls back to an address, shows a username without an address, and accepts no resources", () => {
