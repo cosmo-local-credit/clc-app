@@ -11,4 +11,4 @@ export {
   SuccessCheck,
 } from "./wallet-status";
 export { AddressQRCode } from "./wallet-qr";
-export { BackChevron, SectionHeader } from "./wallet-layout";
+export { BackChevron, SECTION_HEADER_ACTION_CLASS, SectionHeader } from "./wallet-layout";

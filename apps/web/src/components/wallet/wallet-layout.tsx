@@ -5,6 +5,9 @@ import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { cn } from "#/lib/utils";
 
+export const SECTION_HEADER_ACTION_CLASS =
+  "font-medium text-foreground text-sm underline-offset-4 hover:underline";
+
 export function BackChevron({
   label,
   to,
@@ -79,6 +82,7 @@ export function SectionHeader({
   actionLabel,
   actionTo,
   onAction,
+  actions,
   className,
 }: {
   id?: string;
@@ -87,18 +91,20 @@ export function SectionHeader({
   actionLabel?: string;
   actionTo?: string;
   onAction?: () => void;
+  /** Multiple related actions, rendered at the logical end in the supplied order. */
+  actions?: ReactNode;
   className?: string;
 }) {
   return (
     <div className={cn("mb-2 flex items-center justify-between gap-3", className)}>
       <SectionHeading id={id}>{title}</SectionHeading>
-      {action ? (
+      {actions ? (
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-x-3 gap-y-1">
+          {actions}
+        </div>
+      ) : action ? (
         actionTo ? (
-          <Link
-            to={actionTo}
-            aria-label={actionLabel}
-            className="font-medium text-foreground text-sm underline-offset-4 hover:underline"
-          >
+          <Link to={actionTo} aria-label={actionLabel} className={SECTION_HEADER_ACTION_CLASS}>
             {action}
           </Link>
         ) : (
@@ -106,7 +112,7 @@ export function SectionHeader({
             type="button"
             aria-label={actionLabel}
             onClick={onAction}
-            className="font-medium text-foreground text-sm underline-offset-4 hover:underline"
+            className={SECTION_HEADER_ACTION_CLASS}
           >
             {action}
           </button>

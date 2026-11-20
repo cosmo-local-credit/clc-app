@@ -30,6 +30,7 @@ const mocks = vi.hoisted(() => ({
     refetchIssued: vi.fn(),
     refetchBalances: vi.fn(),
   },
+  ownedPools: [] as unknown[],
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -84,7 +85,7 @@ vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
 }));
 vi.mock("#/features/pools/hooks/use-user-pools", () => ({
   useOwnedPoolsInfinite: () => ({
-    data: { pages: [{ pools: [] }] },
+    data: { pages: [{ pools: mocks.ownedPools }] },
     isPending: false,
     isError: false,
     isSuccess: true,
@@ -217,6 +218,7 @@ beforeEach(() => {
   mocks.preview.holdings = [HELD];
   mocks.preview.issued = [];
   mocks.preview.isTruncated = false;
+  mocks.ownedPools = [];
 });
 
 afterEach(() => {
@@ -241,6 +243,43 @@ describe("Wallet structure", () => {
       ["Add / withdraw", "/wallet/top-up"],
       ["Other cash options", "/wallet/cash"],
     ]);
+  });
+
+  it("offers pool creation with existing pools while the allowance has room", () => {
+    mocks.ownedPools = [
+      {
+        address: "0x2222222222222222222222222222222222222222",
+        name: "Community Pool",
+        ownerAddress: ADDRESS,
+        voucherCount: 2,
+        active: true,
+      },
+    ];
+    mount();
+
+    const pools = within(section("My Pools"));
+    expect(pools.getByRole("link", { name: "Create pool" }).getAttribute("href")).toBe(
+      "/pools/create/pool",
+    );
+    expect(
+      pools
+        .getAllByRole("link")
+        .slice(0, 2)
+        .map((link) => link.textContent),
+    ).toEqual(["Create", "All pools"]);
+  });
+
+  it("withholds pool creation when the allowance is exhausted", () => {
+    const current = mocks.usage.data as ReturnType<typeof usage>;
+    mocks.usage.data = {
+      ...current,
+      pools: { used: 5, limit: 5, unlimited: false, canCreate: false },
+    };
+    mount();
+
+    const pools = within(section("My Pools"));
+    expect(pools.queryByRole("link", { name: "Create pool" })).toBeNull();
+    expect(pools.getByRole("link", { name: "All pools" }).getAttribute("href")).toBe("/pools");
   });
 });
 
