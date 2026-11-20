@@ -11,6 +11,7 @@ import {
   type Hex,
 } from "viem";
 import {
+  buildSafeRejectionTransaction,
   buildSafeSignerChangeCall,
   buildSafeTransaction,
   classifyOwnerCode,
@@ -22,6 +23,7 @@ import {
   safeSupportsContractSignatures,
   encodeMultiSend,
   isSigner,
+  isSafeRejectionTransaction,
   safeCallName,
   safeOwnerChange,
   safeSignerChangeProblem,
@@ -552,5 +554,33 @@ describe("signer change proposals", () => {
     expect(
       safeSignerChangeProblem(state, { kind: "addSigner", signer: newcomer, threshold: 4 }),
     ).toBeNull();
+  });
+});
+
+describe("Safe rejection transactions", () => {
+  it("builds and recognizes the canonical same-nonce Safe no-op", () => {
+    const tx = buildSafeRejectionTransaction(safe, "17");
+
+    expect(tx).toEqual({
+      to: safe,
+      value: "0",
+      data: "0x",
+      operation: 0,
+      safeTxGas: "0",
+      baseGas: "0",
+      gasPrice: "0",
+      gasToken: zeroAddress,
+      refundReceiver: zeroAddress,
+      nonce: "17",
+    });
+    expect(isSafeRejectionTransaction(safe, tx)).toBe(true);
+    expect(safeCallName({ to: safe, value: "0", data: "0x" }, safe)).toBe("reject");
+  });
+
+  it("rejects transactions that could move value or reimburse gas", () => {
+    const tx = buildSafeRejectionTransaction(safe, "17");
+    expect(isSafeRejectionTransaction(safe, { ...tx, value: "1" })).toBe(false);
+    expect(isSafeRejectionTransaction(safe, { ...tx, gasPrice: "1" })).toBe(false);
+    expect(isSafeRejectionTransaction(safe, { ...tx, data: "0x00" })).toBe(false);
   });
 });

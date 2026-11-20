@@ -20,6 +20,8 @@ import { SAFE_MULTISEND_CALL_ONLY } from "#/lib/safe-config";
 import { safeVersionQueryOptions } from "../api/sign-safe-transaction";
 import { useReportWriteError } from "./use-report-write-error";
 import { useSafeConfirm } from "./use-safe-confirm";
+import { useSafeExecute } from "./use-safe-execute";
+import { useSafeReject } from "./use-safe-reject";
 import { useRefreshAfterSafeExecution } from "./use-refresh-after-safe-execution";
 import { useRefreshSafeSigners } from "./use-safe-signers";
 
@@ -31,13 +33,24 @@ export interface SafePendingProposal {
   /** This proposal's confirmation is being signed. */
   confirming: boolean;
   confirm: () => void;
+  /** Sponsored execution is being queued or retried for this proposal. */
+  requestingExecution: boolean;
+  execute: () => void;
+  /** A same-nonce Safe rejection is being signed for this action. */
+  rejecting: boolean;
+  reject: () => void;
+  rejection: SafeProposal | null;
+  rejectionAction: SafeProposalAction | null;
+  requestingRejectionExecution: boolean;
+  executeRejection: () => void;
   /** The viewer signs with a passkey, which this Safe's version does not accept. */
   passkeyUnsupported: boolean;
 }
 
 /**
  * Queued proposals of one Safe and what the viewer may do with each. A signer
- * with a key the Safe accepts confirms; execution and rejection stay in Safe.
+ * with a key the Safe accepts confirms; clc-core sponsors execution and Safe
+ * remains available as the external fallback.
  */
 export function useSafePending(safe: `0x${string}`) {
   const { t } = useLingui();
@@ -79,35 +92,86 @@ export function useSafePending(safe: `0x${string}`) {
     address.toLowerCase() === viewer?.toLowerCase();
   const passkeyUnsupported = isSigner && isPasskey && version.isSuccess && !passkeyCanSign;
   const confirm = useSafeConfirm();
+  const execute = useSafeExecute();
+  const reject = useSafeReject();
   const report = useReportWriteError();
-  const proposals: SafePendingProposal[] = (query.data ?? []).map((transaction) => {
-    const calls = decodeSafeTransactionCalls(transaction, SAFE_MULTISEND_CALL_ONLY);
-    return {
-      transaction,
-      calls,
-      action: safeProposalAction({
-        safe,
-        confirmations: transaction.confirmations,
-        confirmationsRequired: transaction.confirmationsRequired,
+  const transactions = query.data ?? [];
+  const byHash = new Map(
+    transactions.map((transaction) => [transaction.safeTxHash.toLowerCase(), transaction]),
+  );
+  const proposals: SafePendingProposal[] = transactions
+    .filter((transaction) => transaction.transactionKind !== "rejection")
+    .map((transaction) => {
+      const calls = decodeSafeTransactionCalls(transaction, SAFE_MULTISEND_CALL_ONLY);
+      const rejection = transaction.rejectedBySafeTxHash
+        ? (byHash.get(transaction.rejectedBySafeTxHash.toLowerCase()) ?? null)
+        : null;
+      const rejectionCalls = rejection
+        ? decodeSafeTransactionCalls(rejection, SAFE_MULTISEND_CALL_ONLY)
+        : null;
+      return {
+        transaction,
         calls,
-        viewer,
-        canSign,
-        executing: transaction.executing,
-      }),
-      confirming: confirm.isPending && confirm.variables?.safeTxHash === transaction.safeTxHash,
-      confirm: () =>
-        confirm.mutate(transaction, {
-          onError: (error) => {
-            report(error, t`Failed`);
-          },
+        action: safeProposalAction({
+          safe,
+          confirmations: transaction.confirmations,
+          confirmationsRequired: transaction.confirmationsRequired,
+          calls,
+          viewer,
+          canSign,
+          executing: transaction.executing,
         }),
-      passkeyUnsupported,
-    };
-  });
+        confirming: confirm.isPending && confirm.variables?.safeTxHash === transaction.safeTxHash,
+        confirm: () =>
+          confirm.mutate(transaction, {
+            onError: (error) => {
+              report(error, t`Failed`);
+            },
+          }),
+        requestingExecution:
+          execute.isPending && execute.variables?.safeTxHash === transaction.safeTxHash,
+        execute: () =>
+          execute.mutate(transaction, {
+            onError: (error) => {
+              report(error, t`Execution failed`);
+            },
+          }),
+        rejecting: reject.isPending && reject.variables?.safeTxHash === transaction.safeTxHash,
+        reject: () =>
+          reject.mutate(transaction, {
+            onError: (error) => {
+              report(error, t`Rejection failed`);
+            },
+          }),
+        rejection,
+        rejectionAction: rejection
+          ? safeProposalAction({
+              safe,
+              confirmations: rejection.confirmations,
+              confirmationsRequired: rejection.confirmationsRequired,
+              calls: rejectionCalls,
+              viewer,
+              canSign,
+              executing: rejection.executing,
+            })
+          : null,
+        requestingRejectionExecution:
+          execute.isPending && execute.variables?.safeTxHash === rejection?.safeTxHash,
+        executeRejection: () => {
+          if (!rejection) return;
+          execute.mutate(rejection, {
+            onError: (error) => {
+              report(error, t`Execution failed`);
+            },
+          });
+        },
+        passkeyUnsupported,
+      };
+    });
   return {
     status: query.isPending ? "pending" : query.isError ? "error" : "ready",
     proposals,
     /** Any confirmation is being signed; the others wait for it. */
-    confirmBusy: confirm.isPending,
+    confirmBusy: confirm.isPending || execute.isPending || reject.isPending,
   } as const;
 }

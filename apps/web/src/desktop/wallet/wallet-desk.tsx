@@ -596,13 +596,11 @@ export function WalletDesk() {
           action={
             <SectionActions>
               <QuotaMeta usage={usage} kind="pools" />
-              {ownedPoolsQuery.isSuccess &&
-              ownedPools.length === 0 &&
-              usage.data?.pools.canCreate === true &&
-              !usage.isError ? (
+              {usage.data?.pools.canCreate === true && !usage.isError ? (
                 <Link
                   to="/pools/create/$step"
                   params={{ step: "pool" }}
+                  aria-label={t`Create pool`}
                   className={deskSectionLinkClass()}
                 >
                   <Trans>Create</Trans>

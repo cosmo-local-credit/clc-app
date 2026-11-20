@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -17,10 +17,12 @@ vi.mock("@tanstack/react-router", () => ({
     children,
     to,
     params,
+    onClick,
   }: {
     children: ReactNode;
     to: string;
     params?: Record<string, string>;
+    onClick?: () => void;
   }) => (
     <a
       href={
@@ -30,6 +32,7 @@ vi.mock("@tanstack/react-router", () => ({
             ? `/pools/${params?.poolAddress}`
             : `/vouchers/${params?.voucherAddress}`
       }
+      onClick={onClick}
     >
       {children}
     </a>
@@ -37,6 +40,7 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 import type { NotificationPayload } from "#/features/notifications/logic/payload-schema";
+import { useSafeSheet } from "#/features/safe/state/safe-sheet";
 import { NotificationContextLinks } from "./notification-context-links";
 
 function payload(overrides: Partial<NotificationPayload> = {}): NotificationPayload {
@@ -60,15 +64,18 @@ function payload(overrides: Partial<NotificationPayload> = {}): NotificationPayl
 
 beforeEach(() => {
   mocks.address = VIEWER;
+  useSafeSheet.getState().close();
 });
 
 describe("NotificationContextLinks", () => {
   it("links another actor and each resource type", () => {
-    render(<NotificationContextLinks item={payload()} />);
+    const safeTxHash = `0x${"ab".repeat(32)}`;
+    render(<NotificationContextLinks item={payload({ safeAddress: VIEWER, safeTxHash })} />);
     expect(screen.getByRole("link", { name: "amina" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Community Pool" }).getAttribute("href")).toBe(
-      `/pools/${VIEWER}`,
-    );
+    const pool = screen.getByRole("link", { name: "Community Pool" });
+    expect(pool.getAttribute("href")).toBe(`/pools/${VIEWER}`);
+    fireEvent.click(pool);
+    expect(useSafeSheet.getState()).toMatchObject({ safe: VIEWER, safeTxHash });
     expect(screen.getByRole("link", { name: "Garden Voucher" }).getAttribute("href")).toBe(
       `/vouchers/${ACTOR}`,
     );
@@ -92,6 +99,8 @@ describe("NotificationContextLinks", () => {
     expect(screen.getByText("me").tagName).toBe("SPAN");
     expect(screen.queryByText("Four")).toBeNull();
     expect(screen.getByText("View the proposal for more resources.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("link", { name: "One" }));
+    expect(useSafeSheet.getState().safe).toBeNull();
   });
 
   it("falls back to an address, shows a username without an address, and accepts no resources", () => {
@@ -109,5 +118,30 @@ describe("NotificationContextLinks", () => {
     );
     expect(screen.getByText("amina").tagName).toBe("SPAN");
     expect(screen.queryByText("View the proposal for more resources.")).toBeNull();
+  });
+
+  it("links an approval candidate and shows signer progress", () => {
+    render(
+      <NotificationContextLinks
+        item={payload({
+          approvals: 2,
+          approvalsRequired: 3,
+          resources: [
+            {
+              kind: "pool",
+              address: VIEWER,
+              name: "Community Pool",
+              voucherAddress: ACTOR,
+              voucherName: "Garden Voucher",
+            },
+          ],
+        })}
+      />,
+    );
+
+    expect(screen.getByText((_, element) => element?.textContent === "2/3 signers")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Garden Voucher" }).getAttribute("href")).toBe(
+      `/vouchers/${ACTOR}`,
+    );
   });
 });

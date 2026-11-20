@@ -14,6 +14,8 @@ const MULTISEND = "0x4444444444444444444444444444444444444444";
 const mocks = vi.hoisted(() => ({
   pending: vi.fn(),
   confirm: vi.fn(),
+  execute: vi.fn(),
+  reject: vi.fn(),
   voucher: vi.fn(),
   version: vi.fn(),
   connectorId: "private-key",
@@ -23,7 +25,9 @@ vi.mock("#/lib/api/market", () => ({ marketClient: { getMarketVoucher: mocks.vou
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
   useReverseRecipientResolution: () => ({ data: null, isPending: false }),
 }));
-vi.mock("#/lib/api/safe", () => ({ safeClient: { pending: mocks.pending } }));
+vi.mock("#/lib/api/safe", () => ({
+  safeClient: { pending: mocks.pending, execute: mocks.execute },
+}));
 vi.mock("#/lib/safe-config", () => ({
   SAFE_APP_PREFIX: "gno",
   SAFE_MULTISEND_CALL_ONLY: ["0x4444444444444444444444444444444444444444"],
@@ -48,6 +52,9 @@ vi.mock("../hooks/use-safe-signers", () => ({
 }));
 vi.mock("../hooks/use-safe-confirm", () => ({
   useSafeConfirm: () => ({ mutate: mocks.confirm, isPending: false, variables: undefined }),
+}));
+vi.mock("../hooks/use-safe-reject", () => ({
+  useSafeReject: () => ({ mutate: mocks.reject, isPending: false, variables: undefined }),
 }));
 
 import { encodeMultiSend } from "@clc/core/features/safe/logic";
@@ -100,7 +107,11 @@ async function openWith(transactions: unknown[], safeTxHash?: `0x${string}`) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.confirm.mockReset();
+  mocks.execute.mockReset();
+  mocks.reject.mockReset();
   mocks.voucher.mockResolvedValue({ decimals: 6, symbol: "MLTT" });
+  mocks.execute.mockResolvedValue({});
   mocks.connectorId = "private-key";
   act(() => useSafeSheet.getState().close());
 });
@@ -113,6 +124,57 @@ describe("SafePendingSheet", () => {
     expect(within(sheet).getByText("1/2")).toBeTruthy();
     fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
     expect(mocks.confirm).toHaveBeenCalledWith(tx, expect.anything());
+  });
+
+  it("requires confirmation before signing a quorum rejection", async () => {
+    const tx = proposal();
+    const sheet = await openWith([tx]);
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Reject" }));
+    expect(screen.getByText("Reject this multisig action?")).toBeTruthy();
+    const rejectButtons = screen.getAllByRole("button", { name: "Reject" });
+    fireEvent.click(rejectButtons.at(-1)!);
+
+    expect(mocks.reject).toHaveBeenCalledWith(tx, expect.anything());
+  });
+
+  it("reports confirmation and rejection failures through the shared write reporter", async () => {
+    const tx = proposal();
+    const sheet = await openWith([tx]);
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
+    const confirmOptions = mocks.confirm.mock.calls[0]?.[1] as {
+      onError: (error: Error) => void;
+    };
+    expect(() => confirmOptions.onError(new Error("confirmation failed"))).not.toThrow();
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Reject" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "Reject" }).at(-1)!);
+    const rejectOptions = mocks.reject.mock.calls[0]?.[1] as {
+      onError: (error: Error) => void;
+    };
+    expect(() => rejectOptions.onError(new Error("rejection failed"))).not.toThrow();
+  });
+
+  it("opens a rejection notification on its related action", async () => {
+    const action = proposal({
+      rejectedBySafeTxHash: `0x${"cd".repeat(32)}`,
+    });
+    const rejection = proposal({
+      safeTxHash: `0x${"cd".repeat(32)}`,
+      transactionKind: "rejection",
+      rejectsSafeTxHashes: [action.safeTxHash],
+      to: SAFE,
+      data: "0x",
+      confirmations: [{ owner: ME, signature: "0x", submittedAt: "2026-10-26" }],
+    });
+
+    const sheet = await openWith([action, rejection], rejection.safeTxHash as `0x${string}`);
+
+    expect(await within(sheet).findByText("Create vouchers")).toBeTruthy();
+    expect(within(sheet).queryByText("This proposal is no longer pending.")).toBeNull();
+    expect(within(sheet).getByText(/You signed the rejection/)).toBeTruthy();
+    expect(within(sheet).queryByText("Reject pending transaction")).toBeNull();
   });
 
   it("shows who receives a mint and how much before anyone confirms", async () => {
@@ -237,6 +299,86 @@ describe("SafePendingSheet", () => {
     ]);
     expect(within(sheet).getByRole("status").textContent).toContain("Executing…");
     expect(within(sheet).queryByText("Execute it in Safe.")).toBeNull();
+  });
+
+  it("offers sponsored execution when the approved proposal is ready", async () => {
+    const tx = proposal({
+      executionState: "ready",
+      confirmations: [
+        { owner: OTHER, signature: "0x", submittedAt: "2026-10-26" },
+        { owner: ME, signature: "0x", submittedAt: "2026-10-26" },
+      ],
+    });
+    const sheet = await openWith([tx]);
+    fireEvent.click(within(sheet).getByRole("button", { name: "Execute" }));
+    await waitFor(() => expect(mocks.execute).toHaveBeenCalledWith(tx.safeTxHash));
+  });
+
+  it("explains nonce ordering without offering a premature execution", async () => {
+    const sheet = await openWith([
+      proposal({
+        executionState: "waiting",
+        confirmations: [
+          { owner: OTHER, signature: "0x", submittedAt: "2026-10-26" },
+          { owner: ME, signature: "0x", submittedAt: "2026-10-26" },
+        ],
+      }),
+    ]);
+    expect(
+      within(sheet).getByText("Waiting for earlier multisig transactions to execute."),
+    ).toBeTruthy();
+    expect(within(sheet).queryByRole("button", { name: "Execute" })).toBeNull();
+  });
+
+  it("turns a finalized automatic failure into an explicit retry", async () => {
+    const tx = proposal({
+      executionState: "failed",
+      confirmations: [
+        { owner: OTHER, signature: "0x", submittedAt: "2026-10-26" },
+        { owner: ME, signature: "0x", submittedAt: "2026-10-26" },
+      ],
+    });
+    const sheet = await openWith([tx]);
+    expect(within(sheet).getByRole("alert").textContent).toContain(
+      "Automatic execution did not complete",
+    );
+    fireEvent.click(within(sheet).getByRole("button", { name: "Execute" }));
+    await waitFor(() => expect(mocks.execute).toHaveBeenCalledWith(tx.safeTxHash));
+  });
+
+  it("reports a failed execution retry", async () => {
+    mocks.execute.mockRejectedValue(new Error("execution retry failed"));
+    const tx = proposal({
+      executionState: "failed",
+      confirmations: [
+        { owner: OTHER, signature: "0x", submittedAt: "2026-10-26" },
+        { owner: ME, signature: "0x", submittedAt: "2026-10-26" },
+      ],
+    });
+    const sheet = await openWith([tx]);
+    fireEvent.click(within(sheet).getByRole("button", { name: "Execute" }));
+    await waitFor(() => expect(mocks.execute).toHaveBeenCalledWith(tx.safeTxHash));
+  });
+
+  it("executes an approved rejection instead of the action it cancels", async () => {
+    const rejectionHash = `0x${"cd".repeat(32)}`;
+    const action = proposal({ rejectedBySafeTxHash: rejectionHash });
+    const rejection = proposal({
+      safeTxHash: rejectionHash,
+      transactionKind: "rejection",
+      rejectsSafeTxHashes: [action.safeTxHash],
+      to: SAFE,
+      data: "0x",
+      executionState: "ready",
+      confirmations: [
+        { owner: OTHER, signature: "0x", submittedAt: "2026-10-26" },
+        { owner: ME, signature: "0x", submittedAt: "2026-10-26" },
+      ],
+    });
+    const sheet = await openWith([action, rejection]);
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Execute rejection" }));
+    await waitFor(() => expect(mocks.execute).toHaveBeenCalledWith(rejectionHash));
   });
 
   it("explains when a notification proposal has left the queue", async () => {

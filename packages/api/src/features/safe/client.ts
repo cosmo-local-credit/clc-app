@@ -12,6 +12,7 @@ import type { HttpClient } from "../../client/http-client";
 
 const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
 const hexSchema = z.string().regex(/^0x([a-fA-F0-9]{2})*$/);
+const safeExecutionStateSchema = z.enum(["ready", "queued", "submitted", "waiting", "failed"]);
 
 /** A Safe transaction as clc-core's Transaction Service proxy reports it. */
 const safeProposalSchema = safeTransactionSchema.extend({
@@ -24,6 +25,15 @@ const safeProposalSchema = safeTransactionSchema.extend({
   transactionHash: hexSchema.nullable(),
   /** clc-core has queued or sent the execution; absent from older backends. */
   executing: z.boolean().optional(),
+  /** Durable sponsored-execution state; absent from older backends. */
+  executionState: safeExecutionStateSchema.optional(),
+  transactionKind: z.enum(["action", "rejection"]).optional(),
+  rejectsSafeTxHashes: z.array(z.string().regex(/^0x[a-fA-F0-9]{64}$/)).optional(),
+  rejectedBySafeTxHash: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{64}$/)
+    .nullable()
+    .optional(),
 });
 export type SafeProposal = z.infer<typeof safeProposalSchema>;
 
@@ -75,6 +85,33 @@ export function createSafeClient(http: HttpClient) {
           method: "POST",
           body: JSON.stringify(input),
         }),
+      );
+    },
+    /** Queues or retries clc-core's sponsored execution after threshold approval. */
+    async execute(safeTxHash: `0x${string}`) {
+      return safeProposalSchema.parse(
+        await http.request<unknown>(
+          `/api/v2/safe/transactions/${encodeURIComponent(safeTxHash)}/execute`,
+          { method: "POST" },
+        ),
+      );
+    },
+    /** Signs Safe's canonical same-nonce rejection for a pending proposal. */
+    async reject(
+      originalSafeTxHash: `0x${string}`,
+      input: { safeTxHash: `0x${string}`; signature: `0x${string}`; tx: SafeTransaction },
+    ) {
+      const tx = {
+        ...input.tx,
+        to: getAddress(input.tx.to),
+        gasToken: getAddress(input.tx.gasToken),
+        refundReceiver: getAddress(input.tx.refundReceiver),
+      };
+      return safeProposalSchema.parse(
+        await http.request<unknown>(
+          `/api/v2/safe/transactions/${encodeURIComponent(originalSafeTxHash)}/reject`,
+          { method: "POST", body: JSON.stringify({ ...input, tx }) },
+        ),
       );
     },
     async pending(safe: string, signal?: AbortSignal) {

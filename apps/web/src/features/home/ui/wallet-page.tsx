@@ -15,6 +15,7 @@ import { Button } from "#/components/ui/button";
 import {
   HoldingBalance,
   PoolLogo,
+  SECTION_HEADER_ACTION_CLASS,
   SectionHeader,
   TokenLogo,
   type WalletToken,
@@ -390,8 +391,23 @@ export function WalletPage({ address }: { address?: string }) {
               <Trans>My Pools</Trans>
             </ResourceQuotaTitle>
           }
-          action={<Trans>All pools</Trans>}
-          actionTo="/pools"
+          actions={
+            <>
+              {usage.data?.pools.canCreate === true && !usage.isError ? (
+                <Link
+                  to="/pools/create/$step"
+                  params={{ step: "pool" }}
+                  aria-label={t`Create pool`}
+                  className={SECTION_HEADER_ACTION_CLASS}
+                >
+                  <Trans>Create</Trans>
+                </Link>
+              ) : null}
+              <Link to="/pools" className={SECTION_HEADER_ACTION_CLASS}>
+                <Trans>All pools</Trans>
+              </Link>
+            </>
+          }
         />
         <div className="border-border bg-card border">
           {ownedPoolsQuery.isPending ? (
