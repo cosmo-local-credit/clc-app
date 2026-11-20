@@ -213,6 +213,51 @@ export function buildSafeTransaction(input: {
   };
 }
 
+/**
+ * Safe's canonical cancellation transaction. It consumes the same nonce as
+ * the proposal being rejected by making an empty, zero-value call to the Safe
+ * itself. Safe signers approve it with the same quorum as any other action.
+ */
+export function buildSafeRejectionTransaction(safe: `0x${string}`, nonce: string): SafeTransaction {
+  return {
+    to: getAddress(safe),
+    value: "0",
+    data: "0x",
+    operation: SAFE_OPERATION_CALL,
+    nonce,
+    ...ZERO_GAS,
+  };
+}
+
+/** True only for the exact same-nonce no-op transaction Safe uses to reject proposals. */
+export function isSafeRejectionTransaction(
+  safe: `0x${string}`,
+  tx: Pick<
+    SafeTransaction,
+    | "to"
+    | "value"
+    | "data"
+    | "operation"
+    | "safeTxGas"
+    | "baseGas"
+    | "gasPrice"
+    | "gasToken"
+    | "refundReceiver"
+  >,
+): boolean {
+  return (
+    isAddressEqual(tx.to, safe) &&
+    tx.value === "0" &&
+    tx.data === "0x" &&
+    tx.operation === SAFE_OPERATION_CALL &&
+    tx.safeTxGas === "0" &&
+    tx.baseGas === "0" &&
+    tx.gasPrice === "0" &&
+    isAddressEqual(tx.gasToken, zeroAddress) &&
+    isAddressEqual(tx.refundReceiver, zeroAddress)
+  );
+}
+
 /** The queue in the hosted Safe app, a fallback place to sign and execute. */
 export function safeAppQueueUrl(appPrefix: string, safeAddress: `0x${string}`): string {
   return `https://app.safe.global/transactions/queue?safe=${appPrefix}:${safeAddress}`;
@@ -441,7 +486,10 @@ export function buildSafeSignerChangeCall(
  * the Safe itself is named by its owner change; any other by its function.
  */
 export function safeCallName(call: SafeCall, safe: `0x${string}`): string | null {
-  if (isAddressEqual(call.to, safe)) return safeOwnerChange(call, safe)?.kind ?? null;
+  if (isAddressEqual(call.to, safe)) {
+    if (call.value === "0" && call.data === "0x") return "reject";
+    return safeOwnerChange(call, safe)?.kind ?? null;
+  }
   if (size(call.data) < 4) return null;
   return SAFE_CALL_NAMES.get(slice(call.data, 0, 4)) ?? null;
 }

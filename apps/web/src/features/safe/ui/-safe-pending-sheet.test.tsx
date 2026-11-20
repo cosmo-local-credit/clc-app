@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   pending: vi.fn(),
   confirm: vi.fn(),
   execute: vi.fn(),
+  reject: vi.fn(),
   voucher: vi.fn(),
   version: vi.fn(),
   connectorId: "private-key",
@@ -51,6 +52,9 @@ vi.mock("../hooks/use-safe-signers", () => ({
 }));
 vi.mock("../hooks/use-safe-confirm", () => ({
   useSafeConfirm: () => ({ mutate: mocks.confirm, isPending: false, variables: undefined }),
+}));
+vi.mock("../hooks/use-safe-reject", () => ({
+  useSafeReject: () => ({ mutate: mocks.reject, isPending: false, variables: undefined }),
 }));
 
 import { encodeMultiSend } from "@clc/core/features/safe/logic";
@@ -117,6 +121,39 @@ describe("SafePendingSheet", () => {
     expect(within(sheet).getByText("1/2")).toBeTruthy();
     fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
     expect(mocks.confirm).toHaveBeenCalledWith(tx, expect.anything());
+  });
+
+  it("requires confirmation before signing a quorum rejection", async () => {
+    const tx = proposal();
+    const sheet = await openWith([tx]);
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Reject" }));
+    expect(screen.getByText("Reject this multisig action?")).toBeTruthy();
+    const rejectButtons = screen.getAllByRole("button", { name: "Reject" });
+    fireEvent.click(rejectButtons.at(-1)!);
+
+    expect(mocks.reject).toHaveBeenCalledWith(tx, expect.anything());
+  });
+
+  it("opens a rejection notification on its related action", async () => {
+    const action = proposal({
+      rejectedBySafeTxHash: `0x${"cd".repeat(32)}`,
+    });
+    const rejection = proposal({
+      safeTxHash: `0x${"cd".repeat(32)}`,
+      transactionKind: "rejection",
+      rejectsSafeTxHashes: [action.safeTxHash],
+      to: SAFE,
+      data: "0x",
+      confirmations: [{ owner: ME, signature: "0x", submittedAt: "2026-10-26" }],
+    });
+
+    const sheet = await openWith([action, rejection], rejection.safeTxHash as `0x${string}`);
+
+    expect(await within(sheet).findByText("Create vouchers")).toBeTruthy();
+    expect(within(sheet).queryByText("This proposal is no longer pending.")).toBeNull();
+    expect(within(sheet).getByText(/You signed the rejection/)).toBeTruthy();
+    expect(within(sheet).queryByText("Reject pending transaction")).toBeNull();
   });
 
   it("shows who receives a mint and how much before anyone confirms", async () => {

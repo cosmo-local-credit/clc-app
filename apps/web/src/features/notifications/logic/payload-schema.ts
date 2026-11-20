@@ -11,6 +11,9 @@ const SAFE_APPROVAL_NOTIFICATION_KINDS = [
   "safe.proposed",
   "safe.confirmed",
   "safe.approved",
+  "safe.rejection_proposed",
+  "safe.rejection_confirmed",
+  "safe.rejection_approved",
 ] as const;
 
 /** Kinds that open a conversation. They show in Messages and Helpdesk, not in Notifications. */
@@ -85,6 +88,9 @@ const notificationKindPolicies = {
   "safe.proposed": { ...sharedV1Policy, priority: "high" },
   "safe.confirmed": { ...sharedV1Policy, priority: "high" },
   "safe.approved": { ...sharedV1Policy, priority: "high" },
+  "safe.rejection_proposed": { ...sharedV1Policy, priority: "high" },
+  "safe.rejection_confirmed": { ...sharedV1Policy, priority: "high" },
+  "safe.rejection_approved": { ...sharedV1Policy, priority: "high" },
   "message.received": {
     ...sharedV1Policy,
     priority: "high",
@@ -137,12 +143,18 @@ export type NotificationPayload = {
   safeAddress?: string;
   safeTxHash?: string;
   resources?: NotificationResource[];
+  approvals?: number;
+  approvalsRequired?: number;
+  safeAction?: string;
+  transactionKind?: "action" | "rejection";
 };
 
 type NotificationResource = {
   kind: "pool" | "voucher";
   address: string;
   name: string;
+  voucherAddress?: string;
+  voucherName?: string;
 };
 
 export type NotificationPayloadParseResult =
@@ -186,12 +198,18 @@ const notificationOptionalMetadataSchema = z.object({
       .regex(/^0x[a-fA-F0-9]{64}$/)
       .optional(),
   ),
+  approvals: z.number().int().min(1).optional(),
+  approvalsRequired: z.number().int().min(1).optional(),
+  safeAction: optionalTrimmedString().pipe(trimmedString().min(1).max(64).optional()),
+  transactionKind: z.enum(["action", "rejection"]).optional(),
   resources: z
     .array(
       z.object({
         kind: z.enum(["pool", "voucher"]),
         address: walletAddressSchema,
         name: trimmedString().min(1).max(120),
+        voucherAddress: optionalWalletAddressSchema,
+        voucherName: optionalTrimmedString().pipe(trimmedString().min(1).max(120).optional()),
       }),
     )
     .max(100)

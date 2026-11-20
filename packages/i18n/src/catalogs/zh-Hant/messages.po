@@ -989,8 +989,8 @@ msgstr "傳送前請務必確認代幣和網路相符。"
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:120
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:425
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1007
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:164
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:173
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:170
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:179
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:113
 #: apps/web/src/desktop/wallet/send-desk.tsx:217
 #: apps/web/src/desktop/wallet/send-desk.tsx:224
@@ -1006,8 +1006,8 @@ msgstr "傳送前請務必確認代幣和網路相符。"
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:112
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:127
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:405
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:166
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:176
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:182
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:87
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:176
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:318
@@ -1458,6 +1458,7 @@ msgstr "相機存取被拒絕。"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:288
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:530
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:54
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:85
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:73
 #: apps/web/src/features/wallet/ui/collect-page.tsx:231
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:357
@@ -2011,12 +2012,12 @@ msgstr "清除搜尋"
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:66
 #: apps/web/src/desktop/pools/detail/pool-side-panel.tsx:103
 #: apps/web/src/desktop/posts/post-desk.tsx:503
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:54
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:55
 #: apps/web/src/desktop/ui/inspector.tsx:107
 #: apps/web/src/desktop/vouchers/detail/voucher-dialog.tsx:56
 #: apps/web/src/desktop/wants/want-place-desk.tsx:62
 #: apps/web/src/features/home/ui/report-page.tsx:285
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:124
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:130
 msgid "Close"
 msgstr "關閉"
 
@@ -2161,9 +2162,9 @@ msgid "Complete your profile"
 msgstr "完成您的個人資料"
 
 #: apps/web/src/desktop/credit/review-dialog.tsx:161
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:265
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:273
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:725
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:262
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:270
 msgid "Confirm"
 msgstr "確認"
 
@@ -2238,24 +2239,24 @@ msgstr "請使用通行金鑰確認。您的舊卡將無法再於任何裝置上
 #: apps/web/src/desktop/activity/transactions-desk.tsx:836
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:280
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:247
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:253
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:361
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:105
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:202
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:46
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:72
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:257
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:244
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:250
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:232
 msgid "Confirmed"
 msgstr "已確認"
 
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1093
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:265
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:273
 #: apps/web/src/features/home/hooks/use-passkey-settings.ts:41
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:367
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:262
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:270
 msgid "Confirming"
 msgstr "正在確認"
 
@@ -4428,12 +4429,17 @@ msgstr "執行"
 msgid "Execute it in Safe."
 msgstr "請在 Safe 中執行。"
 
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:43
+msgid "Execute rejection"
+msgstr "執行拒絕"
+
 #: apps/web/src/features/safe/ui/safe-execution-control.tsx:21
 #: apps/web/src/features/safe/ui/safe-execution-control.tsx:47
 msgid "Executing…"
 msgstr "執行中…"
 
-#: apps/web/src/features/safe/hooks/use-safe-pending.ts:115
+#: apps/web/src/features/safe/hooks/use-safe-pending.ts:136
+#: apps/web/src/features/safe/hooks/use-safe-pending.ts:164
 msgid "Execution failed"
 msgstr "執行失敗"
 
@@ -4506,7 +4512,7 @@ msgstr "額外收到"
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:215
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:50
 #: apps/web/src/features/safe/hooks/use-multisig-signer-change.ts:112
-#: apps/web/src/features/safe/hooks/use-safe-pending.ts:107
+#: apps/web/src/features/safe/hooks/use-safe-pending.ts:128
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:59
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:141
 #: apps/web/src/features/wallet/ui/collect-page.tsx:437
@@ -5848,7 +5854,7 @@ msgstr "正在載入您的個人資料…"
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:69
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:128
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:864
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:80
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:81
 #: apps/web/src/desktop/shell/desk-loading.tsx:19
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:157
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
@@ -5868,7 +5874,7 @@ msgstr "正在載入您的個人資料…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:112
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1069
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:80
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:81
 #: apps/web/src/features/wallet/hooks/use-send-payment.ts:129
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:245
 msgid "Loading…"
@@ -6282,9 +6288,9 @@ msgid "Multisig owned · {0} signers"
 msgstr "由多簽錢包持有 · {0} 位簽署者"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:72
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:52
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:53
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:93
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:53
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:54
 msgid "Multisig transactions"
 msgstr "多簽交易"
 
@@ -6446,8 +6452,8 @@ msgstr "新"
 msgid "New message"
 msgstr "新訊息"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:177
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:182
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:183
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:188
 msgid "New owner"
 msgstr "新所有者"
 
@@ -6888,8 +6894,8 @@ msgstr "還沒有貼文。"
 msgid "No QR code found. Try again with a clearer image."
 msgstr "未找到QR 碼。請使用更清晰的圖片重試。"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:95
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:95
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:98
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:98
 msgid "No queued proposals found."
 msgstr "找不到佇列中的提案。"
 
@@ -7057,8 +7063,8 @@ msgid "No. of participants"
 msgstr "參加人數"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:204
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:228
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:210
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:234
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -7307,8 +7313,8 @@ msgid "Open in Maps"
 msgstr "在地圖中開啟"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:118
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:119
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:124
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:125
 msgid "Open in Safe"
 msgstr "在 Safe 中開啟"
 
@@ -7597,9 +7603,9 @@ msgstr "無法檢查通行金鑰狀態。"
 #~ "wallet."
 #~ msgstr "通行金鑰可為 Safe 1.5 及更新版本的多簽錢包簽署。請使用您的紙錢包。"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:272
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:280
 #: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:269
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:277
 msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in "
 "card."
 msgstr "通行金鑰可為 Safe 1.5 及更新版本的多簽錢包簽署。請使用您的登入卡。"
@@ -7705,7 +7711,7 @@ msgstr "付款狀態未知"
 #: apps/web/src/desktop/messaging/thread-desk.tsx:67
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1095
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:145
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:247
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:253
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:85
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:160
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:384
@@ -8467,8 +8473,8 @@ msgstr "個人資料已更新"
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "提案已加入佇列。請在 Safe 中確認並執行。"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:84
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:84
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:85
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:85
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "此處暫時無法使用提案。你仍可使用多簽錢包。"
 
@@ -8801,8 +8807,8 @@ msgstr "最近的接收方"
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:365
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:380
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:494
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:156
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:170
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:162
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:176
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:377
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:389
 #: apps/web/src/desktop/wallet/send-desk.tsx:321
@@ -8811,8 +8817,8 @@ msgstr "最近的接收方"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:353
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:369
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:490
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:163
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:173
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:169
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:179
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:327
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:613
@@ -8900,6 +8906,23 @@ msgstr "註冊失敗。檢查您的連線並重試。"
 #: apps/web/src/lib/category-label.ts:43
 msgid "Rehabilitation"
 msgstr "復健"
+
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:72
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:83
+msgid "Reject"
+msgstr "拒絕"
+
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:76
+msgid "Reject this multisig action?"
+msgstr "拒絕此多重簽名操作？"
+
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:41
+msgid "Rejecting…"
+msgstr "正在拒絕…"
+
+#: apps/web/src/features/safe/hooks/use-safe-pending.ts:143
+msgid "Rejection failed"
+msgstr "拒絕失敗"
 
 #: apps/web/src/desktop/posts/post-desk.tsx:252
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:528
@@ -9464,8 +9487,8 @@ msgstr "已回滾"
 msgid "Review"
 msgstr "核對"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:276
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:273
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:284
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:281
 msgid "Review this transaction in your multisig wallet."
 msgstr "請在多簽錢包中檢視此交易。"
 
@@ -10427,6 +10450,11 @@ msgstr "退出登入"
 msgid "Sign out?"
 msgstr "退出登入？"
 
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:72
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:83
+msgid "Sign rejection"
+msgstr "簽署拒絕"
+
 #: apps/web/src/desktop/account/settings-desk.tsx:86
 #: apps/web/src/features/home/ui/settings-page.tsx:67
 msgid "Sign-in"
@@ -10451,8 +10479,12 @@ msgstr "登入卡"
 #~ msgid "Sign-in methods"
 #~ msgstr "登入方式"
 
+#: apps/web/src/components/messaging/notification-context-links.tsx:79
+msgid "signers"
+msgstr "簽署人"
+
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:201
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:219
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:225
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:178
 msgid "Signers"
 msgstr "簽署者"
@@ -10473,6 +10505,7 @@ msgstr "正在退出…"
 
 #: apps/web/src/desktop/credit/review-dialog.tsx:161
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:725
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:84
 msgid "Signing…"
 msgstr "正在簽署…"
 
@@ -11404,6 +11437,12 @@ msgid "This copies your current profile image. Later profile changes won't "
 "update this Want."
 msgstr "這會複製您目前的個人資料圖片。之後變更個人資料不會更新此需求。"
 
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:78
+msgid "This creates a Safe rejection at the same nonce. It needs the same "
+"signer quorum and will cancel every pending action at this nonce when "
+"executed."
+msgstr "這會在 Safe 中以相同 nonce 建立拒絕交易。它需要相同的簽署人門檻，執行後會取消此 nonce 下所有待處理的操作。"
+
 #: apps/web/src/features/home/hooks/use-passkey-settings.ts:80
 msgid "This device does not have the key from your sign-in card. Sign in with "
 "your card here, then link a passkey."
@@ -11597,8 +11636,8 @@ msgstr "此資金池的存入額度已更改。請檢查更新後的金額並重
 msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "這篇貼文太大，無法儲存。請縮短文字或移除部分媒體。"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:91
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:91
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:94
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:94
 msgid "This proposal is no longer pending."
 msgstr "此提案已不再等待處理。"
 
@@ -12422,7 +12461,7 @@ msgstr "在區塊瀏覽器上查看"
 msgid "View pool"
 msgstr "查看資金池"
 
-#: apps/web/src/components/messaging/notification-context-links.tsx:61
+#: apps/web/src/components/messaging/notification-context-links.tsx:74
 msgid "View the proposal for more resources."
 msgstr "查看提案以瞭解更多資源。"
 
@@ -12456,6 +12495,7 @@ msgid "voucher"
 msgstr "代金券"
 
 #: apps/web/src/components/account-retirement/retire-account-section.tsx:149
+#: apps/web/src/components/messaging/notification-context-links.tsx:84
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
 #: apps/web/src/desktop/activity/transactions-desk.tsx:388
@@ -13107,8 +13147,8 @@ msgstr "您無法傳訊息給此人。"
 msgid "You can't message yourself."
 msgstr "不能傳訊息給自己。"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:270
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:267
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:278
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:275
 msgid "You confirmed"
 msgstr "您已確認"
 
@@ -13188,6 +13228,10 @@ msgstr "您已收到"
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:198
 msgid "You send"
 msgstr "您傳送"
+
+#: apps/web/src/features/safe/ui/safe-rejection-control.tsx:52
+msgid "You signed the rejection"
+msgstr "你已簽署拒絕"
 
 #: apps/web/src/desktop/credit/get-desk.tsx:114
 #: apps/web/src/desktop/credit/get-desk.tsx:120

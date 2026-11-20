@@ -26,6 +26,7 @@ import {
   WithdrawalRecipient,
 } from "#/features/safe/ui/safe-proposal-labels";
 import { SafeExecutionControl } from "#/features/safe/ui/safe-execution-control";
+import { SafeRejectionControl } from "#/features/safe/ui/safe-rejection-control";
 import { SAFE_APP_PREFIX } from "#/lib/safe-config";
 
 /**
@@ -85,7 +86,9 @@ function PendingBody({
           </p>
         ) : safeTxHash &&
           !pending.proposals.some(
-            (proposal) => proposal.transaction.safeTxHash.toLowerCase() === safeTxHash,
+            (proposal) =>
+              proposal.transaction.safeTxHash.toLowerCase() === safeTxHash ||
+              proposal.rejection?.safeTxHash.toLowerCase() === safeTxHash,
           ) ? (
           <p className="text-sm text-muted-foreground">
             <Trans>This proposal is no longer pending.</Trans>
@@ -102,7 +105,10 @@ function PendingBody({
               proposal={proposal}
               busy={pending.confirmBusy}
               signers={signers?.signers}
-              selected={proposal.transaction.safeTxHash.toLowerCase() === safeTxHash}
+              selected={
+                proposal.transaction.safeTxHash.toLowerCase() === safeTxHash ||
+                proposal.rejection?.safeTxHash.toLowerCase() === safeTxHash
+              }
             />
           ))
         )}
@@ -253,7 +259,9 @@ function Proposal({
           </DeskRowList>
         </div>
       ) : null}
-      {action === "execute" || action === "executing" ? (
+      {proposal.rejectionAction === "execute" ||
+      proposal.rejectionAction === "executing" ? null : action === "execute" ||
+        action === "executing" ? (
         <SafeExecutionControl proposal={proposal} className="w-full" disabled={busy} />
       ) : action === "confirm" ? (
         <Button
@@ -277,6 +285,7 @@ function Proposal({
           )}
         </p>
       )}
+      <SafeRejectionControl proposal={proposal} className="w-full" disabled={busy} />
     </section>
   );
 }

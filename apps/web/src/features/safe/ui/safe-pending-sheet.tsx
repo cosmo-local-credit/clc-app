@@ -29,6 +29,7 @@ import {
   WithdrawalRecipient,
 } from "./safe-proposal-labels";
 import { SafeExecutionControl } from "./safe-execution-control";
+import { SafeRejectionControl } from "./safe-rejection-control";
 
 /**
  * Queued proposals of one Safe. A signer with a key the Safe accepts confirms
@@ -85,7 +86,9 @@ function PendingList({
           </p>
         ) : safeTxHash &&
           !pending.proposals.some(
-            (proposal) => proposal.transaction.safeTxHash.toLowerCase() === safeTxHash,
+            (proposal) =>
+              proposal.transaction.safeTxHash.toLowerCase() === safeTxHash ||
+              proposal.rejection?.safeTxHash.toLowerCase() === safeTxHash,
           ) ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
             <Trans>This proposal is no longer pending.</Trans>
@@ -102,7 +105,10 @@ function PendingList({
                 safe={safe}
                 proposal={proposal}
                 busy={pending.confirmBusy}
-                selected={proposal.transaction.safeTxHash.toLowerCase() === safeTxHash}
+                selected={
+                  proposal.transaction.safeTxHash.toLowerCase() === safeTxHash ||
+                  proposal.rejection?.safeTxHash.toLowerCase() === safeTxHash
+                }
               />
             ))}
           </ul>
@@ -255,7 +261,9 @@ function Proposal({
           ))}
         </ul>
       ) : null}
-      {action === "execute" || action === "executing" ? (
+      {proposal.rejectionAction === "execute" ||
+      proposal.rejectionAction === "executing" ? null : action === "execute" ||
+        action === "executing" ? (
         <SafeExecutionControl proposal={proposal} disabled={busy} />
       ) : action === "confirm" ? (
         <Button tap pending={proposal.confirming} disabled={busy} onClick={proposal.confirm}>
@@ -274,6 +282,7 @@ function Proposal({
           )}
         </p>
       )}
+      <SafeRejectionControl proposal={proposal} disabled={busy} />
     </li>
   );
 }
