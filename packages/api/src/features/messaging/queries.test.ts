@@ -1,4 +1,4 @@
-import { QueryClient, skipToken } from "@tanstack/react-query";
+import { isCancelledError, QueryClient, skipToken } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { AdminMessagingClient, MessagingClient } from "./client";
@@ -73,6 +73,32 @@ function fakeClient(
 }
 
 describe("conversation messages query", () => {
+  it("keeps a cleared cache empty when an in-flight poll resolves after thread removal", async () => {
+    const queryClient = new QueryClient();
+    const key = messagingKeys.messages(VIEWER, 3);
+    queryClient.setQueryData(key, { items: [message(10)], hasOlder: true, fetchedThrough: 10 });
+    let finish: (page: Page) => void = () => {};
+    const messages = vi.fn(
+      (_id: number, _params: unknown, _signal?: AbortSignal) =>
+        new Promise<Page>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const client = { messages } as unknown as MessagingClient;
+    const poll = queryClient
+      .fetchQuery(conversationMessagesQueryOptions(client, VIEWER, 3))
+      .catch((error: unknown) => error);
+    await vi.waitFor(() => expect(messages).toHaveBeenCalledOnce());
+    const signal = messages.mock.calls[0]?.[2];
+    queryClient.removeQueries({ queryKey: key });
+    expect(signal?.aborted).toBe(true);
+    // A transport can complete after cancellation. It must not restore rows.
+    finish({ items: [message(11)], hasMore: false });
+    expect(isCancelledError(await poll)).toBe(true);
+    expect(queryClient.getQueryData(key)).toBeUndefined();
+    expect(queryClient.getQueryState(key)).toBeUndefined();
+  });
+
   it("does not recreate a deleted thread when an older-page request completes late", async () => {
     const queryClient = new QueryClient();
     const key = messagingKeys.messages(VIEWER, 3);
