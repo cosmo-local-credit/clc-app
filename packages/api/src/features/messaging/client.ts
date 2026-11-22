@@ -72,7 +72,10 @@ function messagePagePath(base: string, params: MessagePageParams): string {
 const conversationPath = (id: number) => `/api/v2/conversations/${encodeURIComponent(id)}`;
 const blockPath = (address: string) => `/api/v2/blocks/${encodeURIComponent(address)}`;
 const postRequestsPath = "/api/v2/messaging/post-requests";
-const resourceTargetsSchema = z.object({ targets: z.array(ownerMessageTargetSchema) });
+const resourceTargetsSchema = z.object({
+  targets: z.array(ownerMessageTargetSchema),
+  selfOnly: z.boolean().default(false),
+});
 const postRequestsPageSchema = z.object({
   items: z.array(postContactRequestSchema),
   nextCursor: z.string().nullable(),
@@ -145,6 +148,10 @@ export function createMessagingClient(http: HttpClient) {
       return conversationSchema.parse(
         await http.request(conversationPath(id), { ...NO_STORE, signal }),
       );
+    },
+
+    async delete(id: number) {
+      await http.request(conversationPath(id), { ...NO_STORE, method: "DELETE" });
     },
 
     async setStatus(id: number, status: DirectStatusChange) {

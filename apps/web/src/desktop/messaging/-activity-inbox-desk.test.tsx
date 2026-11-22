@@ -1,3 +1,5 @@
+import { BackendApiError } from "@clc/api/client/errors";
+import { useQuery } from "@tanstack/react-query";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import type { AdminHelpdeskItem, PostContactRequest } from "@clc/core/features/messaging/logic";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -39,6 +41,7 @@ const mocks = vi.hoisted(() => ({
   visit: vi.fn(),
   inbox: vi.fn(),
   search: vi.fn(),
+  myPost: vi.fn(),
 }));
 
 vi.mock("#/lib/messaging-config", () => ({
@@ -73,6 +76,14 @@ vi.mock("#/features/images/use-image-upload", () => ({
 vi.mock("#/features/home/hooks/use-reports", () => ({
   useReport: () => ({ data: { id: "47", title: "Harvest notes" } }),
 }));
+vi.mock("#/features/posts/hooks/use-my-posts", () => ({
+  useMyPost: (id: string) =>
+    useQuery({
+      queryKey: ["test-my-post", mocks.auth.address, id],
+      queryFn: mocks.myPost,
+      retry: false,
+    }),
+}));
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: false }));
 vi.mock("#/features/notifications/storage/notification-db", () => ({
   isNotificationStorageAvailable: () => true,
@@ -94,6 +105,7 @@ beforeEach(() => {
   mocks.client.requestPostContact.mockReset();
   mocks.client.resourceTargets.mockReset().mockResolvedValue({ targets: [] });
   mocks.client.setPostRequestStatus.mockReset();
+  mocks.myPost.mockReset().mockRejectedValue(new BackendApiError(404, "not found"));
   mocks.getAccountActivity.mockResolvedValue({ activity: [], last: undefined });
   mocks.inbox.mockResolvedValue([]);
   mocks.search.mockReturnValue({ data: undefined, isDebouncing: false, isFetching: false });
@@ -180,6 +192,28 @@ describe("desktop Activity sections", () => {
 });
 
 describe("desktop Messages", () => {
+  it("shows the self-only contact notice for a resource on desktop", async () => {
+    mocks.client.resourceTargets.mockResolvedValue({ targets: [], selfOnly: true });
+    mountDesk("/?tab=activity&section=messages&messageKind=want&messageResource=42");
+    const dialog = await screen.findByRole("dialog", { name: "New message" });
+    expect((await within(dialog).findByRole("alert")).textContent).toBe(
+      "You can't message yourself.",
+    );
+    expect(within(dialog).queryByText("No message recipient is available.")).toBeNull();
+    expect(within(dialog).queryByRole("button", { name: "Send request" })).toBeNull();
+    expect(mocks.client.request).not.toHaveBeenCalled();
+  });
+
+  it("prevents an author requesting contact through their own Post on desktop", async () => {
+    mocks.myPost.mockResolvedValue({ id: "47" });
+    mountDesk("/?tab=activity&section=messages&messageKind=post&messageResource=47");
+    const dialog = await screen.findByRole("dialog", { name: "New message" });
+    expect((await within(dialog).findByRole("alert")).textContent).toBe(
+      "You can't message yourself.",
+    );
+    expect(within(dialog).queryByRole("button", { name: "Send request" })).toBeNull();
+    expect(mocks.client.requestPostContact).not.toHaveBeenCalled();
+  });
   it("opens a Post contact request directly and clears its intent when closed", async () => {
     mocks.client.requestPostContact.mockResolvedValue({
       id: "d70ea7f3-1a11-4460-8da8-4275ba25a32a",

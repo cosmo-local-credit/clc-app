@@ -64,6 +64,25 @@ function call(fetcher: ReturnType<typeof vi.fn>, index = 0) {
 const http = () => createHttpClient({ baseUrl: "https://api.test" });
 
 describe("messaging client", () => {
+  it("deletes the caller's conversation copy with an uncached DELETE", async () => {
+    const fetcher = stub(undefined, 204);
+    await expect(createMessagingClient(http()).delete(3)).resolves.toBeUndefined();
+    expect(call(fetcher)).toMatchObject({
+      path: "/api/v2/conversations/3",
+      method: "DELETE",
+      cache: "no-store",
+    });
+  });
+
+  it("retains the server history cutoff when reading a deleted conversation", async () => {
+    stub({ items: [], hasMore: false, clearedThrough: 7 });
+    await expect(createMessagingClient(http()).messages(3)).resolves.toEqual({
+      items: [],
+      hasMore: false,
+      clearedThrough: 7,
+    });
+  });
+
   it("looks up contextual recipients by resource without an owner address", async () => {
     const fetcher = stub({ targets: [PEER] });
     await expect(
@@ -71,12 +90,19 @@ describe("messaging client", () => {
         kind: "want",
         resourceId: "42",
       }),
-    ).resolves.toEqual({ targets: [PEER] });
+    ).resolves.toEqual({ targets: [PEER], selfOnly: false });
     expect(call(fetcher)).toMatchObject({
       path: "/api/v2/messaging/resource-targets",
       query: { kind: "want", resourceId: "42" },
       cache: "no-store",
     });
+  });
+
+  it("retains the private self-only result", async () => {
+    stub({ targets: [], selfOnly: true });
+    await expect(
+      createMessagingClient(http()).resourceTargets({ kind: "catalog", resourceId: "7" }),
+    ).resolves.toEqual({ targets: [], selfOnly: true });
   });
 
   it("uses the private Post request endpoints with an ID and no recipient address", async () => {

@@ -1,4 +1,8 @@
-import { backendRetryDelayMs, isRetryableBackendError } from "@clc/api/client/errors";
+import {
+  backendRetryDelayMs,
+  BackendApiError,
+  isRetryableBackendError,
+} from "@clc/api/client/errors";
 import { checkImageFile } from "@clc/api/features/images/policy";
 import { appendThreadMessage, messagingKeys } from "@clc/api/features/messaging/queries";
 import {
@@ -87,6 +91,13 @@ export function useMessageComposer(
     mutationFn: (input: SendMessageInput) => messagingClient.send(conversationId, input),
     retry: (failureCount, error) => failureCount < 2 && isRetryableBackendError(error),
     retryDelay: (attempt, error) => backendRetryDelayMs(error, attempt),
+    onError: (error) => {
+      if (viewer && error instanceof BackendApiError && error.status === 409) {
+        void queryClient.invalidateQueries({
+          queryKey: messagingKeys.conversation(viewer, conversationId),
+        });
+      }
+    },
     onSuccess: (message) => {
       const sentKey = pending.current?.key;
       pending.current = null;

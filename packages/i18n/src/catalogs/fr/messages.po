@@ -1200,6 +1200,11 @@ msgstr "Approuver le bon d’échange"
 msgid "Approved"
 msgstr "Approuvé"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:157
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:91
+msgid "Are you sure you want to delete this conversation?"
+msgstr "Voulez-vous vraiment supprimer cette conversation ?"
+
 #: apps/web/src/components/retirement/retirement-request-form.tsx:108
 msgid "Are you sure you want to request retirement of this pool?"
 msgstr "Voulez-vous vraiment demander le retrait de ce bassin ?"
@@ -1271,12 +1276,12 @@ msgstr "En attente d’approbation"
 
 #: apps/web/src/components/introduction/introduction.tsx:121
 #: apps/web/src/components/market-search.tsx:159
-#: apps/web/src/components/messaging/new-message-sheet.tsx:287
+#: apps/web/src/components/messaging/new-message-sheet.tsx:290
 #: apps/web/src/components/paper-wallet-scanner.tsx:119
 #: apps/web/src/components/paper-wallet-scanner.tsx:143
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:84
 #: apps/web/src/desktop/market/place-panel.tsx:124
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:284
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:287
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:171
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:249
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:410
@@ -1367,10 +1372,10 @@ msgstr "La biographie doit contenir au maximum 500 caractères"
 msgid "Biodiversity"
 msgstr "Biodiversité"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:112
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:186
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:137
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:184
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:129
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:228
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:150
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:227
 msgid "Block"
 msgstr "Bloquer"
 
@@ -1378,8 +1383,8 @@ msgstr "Bloquer"
 msgid "Block number"
 msgstr "Numéro de bloc"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:138
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:90
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:164
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:98
 msgid "Block this person?"
 msgstr "Bloquer cette personne ?"
 
@@ -1472,7 +1477,7 @@ msgstr "Accès à la caméra refusé."
 #: apps/web/src/desktop/account/settings-desk.tsx:176
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:185
 #: apps/web/src/desktop/credit/review-dialog.tsx:154
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:172
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:208
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:365
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:434
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:465
@@ -1493,7 +1498,7 @@ msgstr "Accès à la caméra refusé."
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:172
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:734
 #: apps/web/src/features/home/ui/settings-page.tsx:160
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:191
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:239
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:120
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:380
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:288
@@ -1974,8 +1979,8 @@ msgstr "Choisissez les taux que vous définissez ou la valeur égale lorsque "
 msgid "Choose username"
 msgstr "Choisir un nom d’utilisateur"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:225
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:224
+#: apps/web/src/components/messaging/new-message-sheet.tsx:228
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:227
 msgid "Choose who to message."
 msgstr "Choisissez la personne à qui écrire."
 
@@ -2106,7 +2111,7 @@ msgstr "Fermer le panneau au premier plan"
 msgid "Close Want"
 msgstr "Fermer la demande"
 
-#: apps/web/src/components/messaging/post-request-form.tsx:54
+#: apps/web/src/components/messaging/post-request-form.tsx:92
 #: apps/web/src/components/messaging/post-requests-section.tsx:53
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:725
 #: apps/web/src/features/home/ui/wallet-page.tsx:356
@@ -2543,9 +2548,9 @@ msgstr "Adresse du contrat copiée"
 msgid "Conversation"
 msgstr "Conversation"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:100
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:73
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:95
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:117
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:79
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:103
 msgid "Conversation options"
 msgstr "Options de la conversation"
 
@@ -3116,6 +3121,7 @@ msgid "Couldn't load price feeds."
 msgstr "Impossible de charger les flux de prix."
 
 #: apps/web/src/components/messaging/new-message-sheet.tsx:206
+#: apps/web/src/components/messaging/post-request-form.tsx:50
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:206
 msgid "Couldn't load recipients."
 msgstr "Impossible de charger les destinataires."
@@ -3179,7 +3185,7 @@ msgstr "Impossible de charger ce bassin."
 msgid "Couldn't load this pool's vouchers."
 msgstr "Impossible de charger les bons d’échange de ce bassin."
 
-#: apps/web/src/components/messaging/post-request-form.tsx:63
+#: apps/web/src/components/messaging/post-request-form.tsx:101
 #: apps/web/src/desktop/posts/post-desk.tsx:70
 #: apps/web/src/features/home/ui/report-page.tsx:53
 msgid "Couldn't load this post."
@@ -3419,14 +3425,14 @@ msgstr "Impossible de rechercher des bassins."
 msgid "Couldn't search vouchers."
 msgstr "Impossible de rechercher les bons d’échange."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:240
+#: apps/web/src/components/messaging/new-message-sheet.tsx:243
 #: apps/web/src/components/messaging/voucher-proposal-picker.tsx:197
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:240
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:243
 msgid "Couldn't search. Try again."
 msgstr "Recherche impossible. Réessayez."
 
 #: apps/web/src/components/messaging/new-message-sheet.tsx:172
-#: apps/web/src/components/messaging/post-request-form.tsx:99
+#: apps/web/src/components/messaging/post-request-form.tsx:137
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:167
 msgid "Couldn't send the request. Try again."
 msgstr "Impossible d’envoyer la demande. Réessayez."
@@ -3821,7 +3827,7 @@ msgstr "Le nombre de décimales doit être un entier compris entre 0 et 18"
 msgid "Decline"
 msgstr "Refuser"
 
-#: apps/web/src/components/messaging/post-request-form.tsx:50
+#: apps/web/src/components/messaging/post-request-form.tsx:88
 #: apps/web/src/components/messaging/post-requests-section.tsx:49
 msgid "Declined"
 msgstr "Refusée"
@@ -3851,6 +3857,13 @@ msgstr "Par défaut, votre portefeuille."
 msgid "Delegated to Calibur"
 msgstr "Délégué à Calibur"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:142
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:220
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:164
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:219
+msgid "Delete"
+msgstr "Supprimer"
+
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:158
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:183
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:158
@@ -3875,8 +3888,10 @@ msgstr "Supprimer la demande"
 
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:158
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:184
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:218
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:158
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:171
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:217
 msgid "Deleting…"
 msgstr "Suppression…"
 
@@ -5328,7 +5343,7 @@ msgstr "Installation demandée. Suivez les instructions de votre navigateur pour
 "terminer."
 
 #: apps/web/src/components/messaging/new-message-sheet.tsx:152
-#: apps/web/src/components/messaging/post-request-form.tsx:85
+#: apps/web/src/components/messaging/post-request-form.tsx:123
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:147
 msgid "Introduce yourself"
 msgstr "Présentez-vous"
@@ -5837,7 +5852,7 @@ msgstr "Chargement du bassin…"
 msgid "Loading pools…"
 msgstr "Chargement des bassins…"
 
-#: apps/web/src/components/messaging/post-request-form.tsx:77
+#: apps/web/src/components/messaging/post-request-form.tsx:115
 #: apps/web/src/desktop/posts/post-desk.tsx:56
 #: apps/web/src/features/home/ui/report-page.tsx:570
 msgid "Loading post…"
@@ -5870,6 +5885,7 @@ msgid "Loading receipt…"
 msgstr "Chargement du reçu…"
 
 #: apps/web/src/components/messaging/new-message-sheet.tsx:200
+#: apps/web/src/components/messaging/post-request-form.tsx:39
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:200
 msgid "Loading recipients…"
 msgstr "Chargement des destinataires…"
@@ -6173,8 +6189,8 @@ msgstr "Sections du marché"
 msgid "Match"
 msgstr "Correspondance"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:253
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:255
+#: apps/web/src/components/messaging/new-message-sheet.tsx:256
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:258
 msgid "Matching people"
 msgstr "Personnes correspondantes"
 
@@ -6209,12 +6225,12 @@ msgstr "Max {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "Le média doit être une URL http(s) issue d’une importation"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:267
+#: apps/web/src/components/messaging/new-message-sheet.tsx:270
 #: apps/web/src/components/messaging/resource-owner-contact.tsx:38
 #: apps/web/src/components/messaging/resource-owner-contact.tsx:215
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:155
 #: apps/web/src/desktop/messaging/composer-desk.tsx:122
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:267
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:270
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:140
 #: apps/web/src/features/messaging/ui/message-composer.tsx:98
 #: apps/web/src/features/wallet/hooks/use-send-share-form.ts:91
@@ -6545,8 +6561,8 @@ msgstr "Construction naturelle"
 msgid "Needs reply"
 msgstr "Réponse requise"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:146
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:102
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:177
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:115
 msgid "Neither of you can send messages. Only you can ask to talk again."
 msgstr "Aucun de vous ne peut envoyer de messages. Vous seul pouvez demander à "
 "reprendre contact."
@@ -6899,8 +6915,8 @@ msgstr "Aucun résultat à afficher sur le marché pour le moment."
 msgid "No matches"
 msgstr "Aucune correspondance"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:249
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:249
+#: apps/web/src/components/messaging/new-message-sheet.tsx:252
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:252
 msgid "No matching people."
 msgstr "Aucune personne correspondante."
 
@@ -6913,8 +6929,8 @@ msgstr "Aucun destinataire correspondant."
 msgid "No matching vouchers."
 msgstr "Aucun bon d’échange correspondant."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:220
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:219
+#: apps/web/src/components/messaging/new-message-sheet.tsx:223
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:222
 msgid "No message recipient is available."
 msgstr "Aucun destinataire n’est disponible."
 
@@ -7444,7 +7460,7 @@ msgstr "Ouvertes"
 msgid "Open CLC in Chrome on Android to collect with an NFC card."
 msgstr "Ouvrez CLC dans Chrome sur Android pour encaisser avec une carte NFC."
 
-#: apps/web/src/components/messaging/post-request-form.tsx:46
+#: apps/web/src/components/messaging/post-request-form.tsx:84
 #: apps/web/src/components/messaging/post-requests-section.tsx:44
 msgid "Open conversation"
 msgstr "Ouvrir la conversation"
@@ -7542,7 +7558,7 @@ msgstr "Ouverture du carte de connexion…"
 
 #: apps/web/src/components/account-retirement/retire-account-section.tsx:188
 #: apps/web/src/components/messaging/new-message-sheet.tsx:157
-#: apps/web/src/components/messaging/post-request-form.tsx:90
+#: apps/web/src/components/messaging/post-request-form.tsx:128
 #: apps/web/src/components/ui/avatar-picker.tsx:98
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:218
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:182
@@ -7550,7 +7566,7 @@ msgstr "Ouverture du carte de connexion…"
 #: apps/web/src/desktop/account/profile-desk.tsx:223
 #: apps/web/src/desktop/account/profile-desk.tsx:254
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:152
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:160
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:191
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:200
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:43
 #: apps/web/src/desktop/vouchers/create/place-step.tsx:50
@@ -7559,7 +7575,7 @@ msgstr "Ouverture du carte de connexion…"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:95
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:141
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:172
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:116
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:129
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:247
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:277
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:407
@@ -8331,7 +8347,7 @@ msgstr "Positionnez votre photo"
 msgid "Post"
 msgstr "Publication"
 
-#: apps/web/src/components/messaging/post-request-form.tsx:81
+#: apps/web/src/components/messaging/post-request-form.tsx:119
 #: apps/web/src/desktop/posts/post-desk.tsx:70
 #: apps/web/src/features/home/ui/report-page.tsx:65
 msgid "Post not found."
@@ -8370,7 +8386,7 @@ msgstr "Publication mise à jour."
 
 #. placeholder {0}: item.postTitle
 #. placeholder {0}: post.data.title
-#: apps/web/src/components/messaging/post-request-form.tsx:41
+#: apps/web/src/components/messaging/post-request-form.tsx:79
 #: apps/web/src/components/messaging/post-requests-section.tsx:26
 msgid "Post: {0}"
 msgstr "Publication : {0}"
@@ -9276,8 +9292,8 @@ msgstr "Revoir"
 msgid "Reply"
 msgstr "Répondre"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:117
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:142
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:134
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:155
 msgid "Report"
 msgstr "Signaler"
 
@@ -9309,13 +9325,13 @@ msgstr "Période du rapport"
 msgid "Report provenance"
 msgstr "Provenance du rapport"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:84
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:170
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:101
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:207
 msgid "Report sent."
 msgstr "Signalement envoyé."
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:141
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:93
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:167
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:101
 msgid "Report this person"
 msgstr "Signaler cette personne"
 
@@ -9530,7 +9546,8 @@ msgstr "Retraite"
 #: apps/web/src/components/creditable-browse-control.tsx:123
 #: apps/web/src/components/messaging/conversation-lookup-state.tsx:24
 #: apps/web/src/components/messaging/new-message-sheet.tsx:214
-#: apps/web/src/components/messaging/post-request-form.tsx:72
+#: apps/web/src/components/messaging/post-request-form.tsx:59
+#: apps/web/src/components/messaging/post-request-form.tsx:110
 #: apps/web/src/components/messaging/post-requests-section.tsx:106
 #: apps/web/src/components/messaging/resource-context-card.tsx:195
 #: apps/web/src/components/messaging/resource-owner-contact.tsx:108
@@ -9692,15 +9709,15 @@ msgstr "Avis"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "Les avis pour ce bon d’échange apparaîtront ici."
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:107
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:181
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:132
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:179
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:124
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:223
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:145
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:222
 msgid "Revoke"
 msgstr "Révoquer"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:133
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:85
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:159
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:93
 msgid "Revoke this conversation?"
 msgstr "Révoquer cette conversation ?"
 
@@ -10124,10 +10141,10 @@ msgstr "Recherche dans cette zone"
 msgid "Searching vouchers…"
 msgstr "Recherche de bons d’échange…"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:235
+#: apps/web/src/components/messaging/new-message-sheet.tsx:238
 #: apps/web/src/components/messaging/voucher-proposal-picker.tsx:192
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:214
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:235
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:238
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:828
 #: apps/web/src/desktop/shell/command-palette.tsx:387
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:237
@@ -10261,15 +10278,15 @@ msgid "Send reply"
 msgstr "Envoyer la réponse"
 
 #: apps/web/src/components/reviews/review-editor.tsx:145
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:189
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:231
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:494
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:187
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:230
 msgid "Send report"
 msgstr "Envoyer le signalement"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:279
-#: apps/web/src/components/messaging/post-request-form.tsx:107
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:287
+#: apps/web/src/components/messaging/new-message-sheet.tsx:282
+#: apps/web/src/components/messaging/post-request-form.tsx:145
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:290
 msgid "Send request"
 msgstr "Envoyer la demande"
 
@@ -11287,8 +11304,8 @@ msgstr "Faites d’abord un essai avec un petit montant."
 #: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:265
 #: apps/web/src/desktop/messaging/thread-desk.tsx:201
 #: apps/web/src/desktop/messaging/thread-desk.tsx:241
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:167
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:123
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:198
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:136
 #: apps/web/src/features/messaging/ui/thread-page.tsx:120
 #: apps/web/src/features/messaging/ui/thread-page.tsx:163
 msgid "That didn't work. Try again."
@@ -11375,7 +11392,7 @@ msgid "The account managing this voucher is scheduled to close on {date}. This "
 msgstr "Le compte qui gère ce bon d’échange sera clôturé le {date}. Ce bon "
 "d’échange reste actif."
 
-#: apps/web/src/components/messaging/post-request-form.tsx:58
+#: apps/web/src/components/messaging/post-request-form.tsx:96
 msgid "The author can open a conversation by accepting your request."
 msgstr "La personne qui a rédigé la publication peut ouvrir une conversation en "
 "acceptant votre demande."
@@ -11583,8 +11600,8 @@ msgstr "Il n’y a encore rien à échanger avec ce bon d’échange."
 msgid "These filters aren't valid."
 msgstr "Ces filtres ne sont pas valides."
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:151
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:107
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:182
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:120
 msgid "They won't be able to message you or send you requests."
 msgstr "Cette personne ne pourra plus vous écrire ni vous envoyer de demandes."
 
@@ -11657,6 +11674,12 @@ msgid "This check includes known pool holdings. Tokens not yet tracked may be "
 "missing."
 msgstr "Cette vérification porte sur les avoirs connus du bassin. Des jetons "
 "qui ne sont pas encore suivis peuvent manquer."
+
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:172
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:110
+msgid "This clears your history. New contact requires approval."
+msgstr "Cela efface votre historique. Une nouvelle prise de contact nécessite "
+"une approbation."
 
 #: apps/web/src/components/safe/recipient-owner-notice.tsx:44
 msgid "This contract does not expose a compatible multisig owner list. The "
@@ -12313,16 +12336,16 @@ msgid "Unavailable"
 msgstr "Indisponible"
 
 #: apps/web/src/desktop/messaging/thread-desk.tsx:257
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:112
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:184
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:137
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:182
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:129
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:226
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:150
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:225
 #: apps/web/src/features/messaging/ui/thread-page.tsx:182
 msgid "Unblock"
 msgstr "Débloquer"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:136
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:88
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:162
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:96
 msgid "Unblock this person?"
 msgstr "Débloquer cette personne ?"
 
@@ -13202,8 +13225,8 @@ msgstr "Bon retour parmi nous"
 msgid "What are you offering?"
 msgstr "Que proposez-vous ?"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:155
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:111
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:186
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:124
 msgid "What happened?"
 msgstr "Que s’est-il passé ?"
 
@@ -13417,9 +13440,10 @@ msgid "You can't message this person."
 msgstr "Vous ne pouvez pas écrire à cette personne."
 
 #: apps/web/src/components/messaging/new-message-sheet.tsx:164
-#: apps/web/src/components/messaging/new-message-sheet.tsx:230
+#: apps/web/src/components/messaging/new-message-sheet.tsx:233
+#: apps/web/src/components/messaging/post-request-form.tsx:32
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:159
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:229
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:232
 msgid "You can't message yourself."
 msgstr "Vous ne pouvez pas vous envoyer de message."
 
@@ -13551,7 +13575,7 @@ msgid "You'll send"
 msgstr "Vous enverrez"
 
 #: apps/web/src/components/messaging/new-message-sheet.tsx:170
-#: apps/web/src/components/messaging/post-request-form.tsx:97
+#: apps/web/src/components/messaging/post-request-form.tsx:135
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:165
 msgid "You've sent too many requests today. Try again tomorrow."
 msgstr "Vous avez envoyé trop de demandes aujourd’hui. Réessayez demain."

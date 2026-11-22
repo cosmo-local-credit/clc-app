@@ -61,6 +61,7 @@ const mocks = vi.hoisted(() => ({
   inbox: vi.fn(),
   owner: vi.fn(),
   report: vi.fn(),
+  myPost: vi.fn(),
 }));
 
 vi.mock("#/lib/messaging-config", () => ({ MESSAGING_ENABLED: true }));
@@ -78,6 +79,14 @@ vi.mock("#/features/images/use-image-upload", () => ({
 vi.mock("#/features/home/hooks/use-reports", () => ({
   useReport: (id: string) =>
     useQuery({ queryKey: ["test-post", id], queryFn: mocks.report, retry: false }),
+}));
+vi.mock("#/features/posts/hooks/use-my-posts", () => ({
+  useMyPost: (id: string) =>
+    useQuery({
+      queryKey: ["test-my-post", mocks.auth.address, id],
+      queryFn: mocks.myPost,
+      retry: false,
+    }),
 }));
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: false }));
 vi.mock("#/features/wallet/hooks/use-activity-unseen", () => ({
@@ -243,6 +252,7 @@ beforeEach(() => {
   mocks.client.requestPostContact.mockReset();
   mocks.client.setPostRequestStatus.mockReset();
   mocks.report.mockReset().mockResolvedValue({ id: "42", title: "Community garden" });
+  mocks.myPost.mockReset().mockRejectedValue(new BackendApiError(404, "not found"));
   mocks.client.resourceTargets.mockResolvedValue({
     targets: [{ address: AMINA, username: "amina", avatar: null }],
   });
@@ -291,6 +301,51 @@ describe("Activity sub-tabs", () => {
 });
 
 describe("Messages section", () => {
+  it.each([
+    ["voucher", "0x2222222222222222222222222222222222222222"],
+    ["pool", "0x2222222222222222222222222222222222222222"],
+    ["want", "42"],
+    ["catalog", "7"],
+  ])("explains a self-only %s contact without offering a send", async (kind, id) => {
+    mocks.client.resourceTargets.mockResolvedValue({ targets: [], selfOnly: true });
+    mountAt(`/?tab=activity&section=messages&messageKind=${kind}&messageResource=${id}`);
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect((await within(sheet).findByRole("alert")).textContent).toBe(
+      "You can't message yourself.",
+    );
+    expect(within(sheet).queryByText("No message recipient is available.")).toBeNull();
+    expect(within(sheet).queryByRole("button", { name: "Send request" })).toBeNull();
+    expect(mocks.client.list).not.toHaveBeenCalledWith(
+      expect.objectContaining({ peerAddress: expect.anything() }),
+      expect.anything(),
+    );
+    expect(mocks.client.request).not.toHaveBeenCalled();
+  });
+
+  it("recognizes the current account in an address-based owner lookup", async () => {
+    mocks.owner.mockResolvedValue({
+      messageTargets: [{ address: VIEWER.toLowerCase(), username: "me", avatar: null }],
+    });
+    mountAt(`/?tab=activity&section=messages&messageTo=${VIEWER}`);
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(await within(sheet).findByText("You can't message yourself.")).toBeTruthy();
+    expect(within(sheet).queryByText("No message recipient is available.")).toBeNull();
+    expect(mocks.client.request).not.toHaveBeenCalled();
+  });
+
+  it("lets a Safe signer message another eligible signer", async () => {
+    mocks.owner.mockResolvedValue({
+      messageTargets: [
+        { address: VIEWER.toLowerCase(), username: "me", avatar: null },
+        { address: AMINA, username: "amina", avatar: null },
+      ],
+    });
+    mountAt(`/?tab=activity&section=messages&messageTo=${JUMA}`);
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(await within(sheet).findByRole("button", { name: "Send request" })).toBeTruthy();
+    expect(within(sheet).getByText("amina")).toBeTruthy();
+    expect(within(sheet).queryByText("You can't message yourself.")).toBeNull();
+  });
   it("keeps private request and inbox reads disabled for a guest", async () => {
     mocks.auth.isAuthenticated = false;
     mountAt("/?tab=activity&section=messages");
@@ -594,6 +649,41 @@ describe("Post contact recovery", () => {
     conversationId: null,
     createdAt: "2026-11-09T09:00:00Z",
   };
+
+  it("waits for private ownership and prevents an author contacting their own Post", async () => {
+    let finish: (post: { id: string }) => void = () => {};
+    mocks.myPost.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    mountAt("/?tab=activity&section=messages&messageKind=post&messageResource=42");
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(await within(sheet).findByText("Loading recipients…")).toBeTruthy();
+    expect(within(sheet).queryByRole("button", { name: "Send request" })).toBeNull();
+    await act(async () => finish({ id: "42" }));
+    expect((await within(sheet).findByRole("alert")).textContent).toBe(
+      "You can't message yourself.",
+    );
+    expect(within(sheet).queryByLabelText("Introduce yourself")).toBeNull();
+    expect(mocks.client.requestPostContact).not.toHaveBeenCalled();
+  });
+
+  it.each([new Error("offline"), new BackendApiError(503, "unavailable")])(
+    "retries an unavailable private ownership read before enabling the Post form",
+    async (error) => {
+      mocks.myPost.mockRejectedValueOnce(error);
+      mountAt("/?tab=activity&section=messages&messageKind=post&messageResource=42");
+      const sheet = await screen.findByRole("dialog", { name: "New message" });
+      expect(await within(sheet).findByText("Couldn't load recipients.")).toBeTruthy();
+      expect(within(sheet).queryByRole("button", { name: "Send request" })).toBeNull();
+      fireEvent.click(within(sheet).getByRole("button", { name: "Retry" }));
+      expect(await within(sheet).findByRole("button", { name: "Send request" })).toBeTruthy();
+      expect(mocks.myPost).toHaveBeenCalledTimes(2);
+      expect(mocks.client.requestPostContact).not.toHaveBeenCalled();
+    },
+  );
 
   it("shows a missing Post without offering a contact request", async () => {
     mocks.report.mockResolvedValue(null);

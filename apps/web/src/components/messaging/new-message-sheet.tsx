@@ -215,7 +215,10 @@ export function NewMessageSheet({
                       </Button>
                     </div>
                   ) : null}
-                  {directed && flow.targetSearch.isSuccess && shownUsers.length === 0 ? (
+                  {directed &&
+                  flow.targetSearch.isSuccess &&
+                  shownUsers.length === 0 &&
+                  failure !== "self" ? (
                     <p className="text-muted-foreground text-xs">
                       <Trans>No message recipient is available.</Trans>
                     </p>

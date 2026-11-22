@@ -68,7 +68,7 @@ export const adminMessagingKeys = {
 type FetchMessagePage<M extends { id: number }> = (
   params: MessagePageParams,
   signal?: AbortSignal,
-) => Promise<{ items: M[]; hasMore: boolean }>;
+) => Promise<{ items: M[]; hasMore: boolean; clearedThrough?: number }>;
 
 /**
  * A thread's refresh: the newest page until a read has returned a message,
@@ -89,16 +89,19 @@ async function refreshThreadMessages<M extends { id: number }>(
 ): Promise<ThreadMessages<M>> {
   const cursor = client.getQueryData<ThreadMessages<M>>(queryKey)?.fetchedThrough;
   let fetched: M[] = [];
+  let clearedThrough = 0;
   let newestPageHasOlder: boolean | undefined;
   if (cursor === undefined) {
     const page = await fetchPage({ limit: THREAD_PAGE_SIZE }, signal);
     fetched = page.items;
+    clearedThrough = page.clearedThrough ?? 0;
     newestPageHasOlder = page.hasMore;
   } else {
     let after = cursor;
     for (let index = 0; index < MAX_FORWARD_PAGES; index++) {
       const page = await fetchPage({ after, limit: FORWARD_PAGE_SIZE }, signal);
       fetched = mergeMessages(fetched, page.items);
+      clearedThrough = Math.max(clearedThrough, page.clearedThrough ?? 0);
       after = newestMessageId(page.items) ?? after;
       if (!page.hasMore || page.items.length === 0) break;
     }
@@ -106,11 +109,13 @@ async function refreshThreadMessages<M extends { id: number }>(
   const latest = client.getQueryData<ThreadMessages<M>>(queryKey);
   const held = latest?.fetchedThrough ?? cursor;
   const newest = newestMessageId(fetched);
+  clearedThrough = Math.max(clearedThrough, latest?.clearedThrough ?? 0);
+  const reset = clearedThrough > (latest?.clearedThrough ?? 0);
   return {
-    items: mergeMessages(latest?.items ?? [], fetched),
-    hasOlder: newestPageHasOlder ?? latest?.hasOlder ?? false,
-    fetchedThrough:
-      newest === undefined || held === undefined ? (newest ?? held) : Math.max(held, newest),
+    items: mergeMessages(latest?.items ?? [], fetched, clearedThrough),
+    hasOlder: newestPageHasOlder ?? (reset ? false : (latest?.hasOlder ?? false)),
+    fetchedThrough: Math.max(newest ?? 0, held ?? 0, clearedThrough) || undefined,
+    ...(clearedThrough > 0 ? { clearedThrough } : {}),
   };
 }
 
@@ -124,12 +129,24 @@ async function loadOlderThreadMessages<M extends { id: number }>(
   const oldest = current?.items[0]?.id;
   if (!current || oldest === undefined || !current.hasOlder) return false;
   const page = await fetchPage({ before: oldest, limit: THREAD_PAGE_SIZE });
-  client.setQueryData<ThreadMessages<M>>(queryKey, (latest) => ({
-    ...latest,
-    items: mergeMessages(page.items, latest?.items ?? []),
-    hasOlder: page.hasMore,
-  }));
-  return page.hasMore;
+  let hasOlder = page.hasMore;
+  client.setQueryData<ThreadMessages<M>>(queryKey, (latest) => {
+    // Deletion or account cleanup may have removed the thread while this
+    // manual page was loading. It must not recreate a cleared cache entry.
+    if (!latest) {
+      hasOlder = false;
+      return undefined;
+    }
+    const clearedThrough = Math.max(page.clearedThrough ?? 0, latest.clearedThrough ?? 0);
+    hasOlder = page.hasMore && page.items.some((message) => message.id > clearedThrough);
+    return {
+      ...latest,
+      items: mergeMessages(page.items, latest.items, clearedThrough),
+      hasOlder,
+      ...(clearedThrough > 0 ? { clearedThrough } : {}),
+    };
+  });
+  return hasOlder;
 }
 
 /**
@@ -143,7 +160,7 @@ export function appendThreadMessage<M extends { id: number }>(
 ): void {
   client.setQueryData<ThreadMessages<M>>(queryKey, (current) => ({
     ...current,
-    items: mergeMessages(current?.items ?? [], [message]),
+    items: mergeMessages(current?.items ?? [], [message], current?.clearedThrough),
     hasOlder: current?.hasOlder ?? false,
   }));
 }

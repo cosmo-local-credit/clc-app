@@ -122,6 +122,7 @@ export const conversationPageSchema = z.object({
 export const messagePageSchema = z.object({
   items: z.array(messageSchema),
   hasMore: z.boolean(),
+  clearedThrough: z.number().int().nonnegative().optional(),
 });
 
 export const unreadCountsSchema = z.object({
@@ -256,17 +257,21 @@ export type ThreadMessages<M extends { id: number } = Message> = {
   items: M[];
   hasOlder: boolean;
   fetchedThrough?: number;
+  clearedThrough?: number;
 };
 
 /** Joins two runs of messages by id, ascending, later copies replacing earlier ones. */
 export function mergeMessages<M extends { id: number }>(
   current: readonly M[],
   incoming: readonly M[],
+  clearedThrough = 0,
 ): M[] {
   const byId = new Map<number, M>();
   for (const message of current) byId.set(message.id, message);
   for (const message of incoming) byId.set(message.id, message);
-  return [...byId.values()].sort((left, right) => left.id - right.id);
+  return [...byId.values()]
+    .filter((message) => message.id > clearedThrough)
+    .sort((left, right) => left.id - right.id);
 }
 
 export function newestMessageId(items: readonly { id: number }[]): number | undefined {

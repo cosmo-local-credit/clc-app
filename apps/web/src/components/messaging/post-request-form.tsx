@@ -9,6 +9,7 @@ import { Field } from "#/components/ui/field";
 import { Textarea } from "#/components/ui/textarea";
 import { useReport } from "#/features/home/hooks/use-reports";
 import { useRequestPostContact } from "#/features/messaging/hooks/use-post-requests";
+import { useMyPost } from "#/features/posts/hooks/use-my-posts";
 
 export function PostRequestForm({
   postId,
@@ -21,8 +22,45 @@ export function PostRequestForm({
   const introId = useId();
   const [intro, setIntro] = useState("");
   const post = useReport(postId);
+  const ownedPost = useMyPost(postId);
   const request = useRequestPostContact(postId);
   const conversationId = request.data?.status === "accepted" ? request.data.conversationId : null;
+
+  if (ownedPost.data?.id === postId) {
+    return (
+      <p role="alert" className="text-xs text-destructive">
+        <Trans>You can't message yourself.</Trans>
+      </p>
+    );
+  }
+  if (ownedPost.isPending) {
+    return (
+      <p role="status" className="text-xs text-muted-foreground">
+        <Trans>Loading recipients…</Trans>
+      </p>
+    );
+  }
+  if (
+    ownedPost.isError &&
+    !(ownedPost.error instanceof BackendApiError && ownedPost.error.status === 404)
+  ) {
+    return (
+      <div role="alert" className="space-y-2">
+        <p className="text-sm text-muted-foreground">
+          <Trans>Couldn't load recipients.</Trans>
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          tap
+          pending={ownedPost.isFetching}
+          onClick={() => void ownedPost.refetch()}
+        >
+          <Trans>Retry</Trans>
+        </Button>
+      </div>
+    );
+  }
   return (
     <form
       className="min-h-0 space-y-3 overflow-y-auto pb-2"
