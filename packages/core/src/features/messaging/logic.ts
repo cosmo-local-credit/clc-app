@@ -23,6 +23,9 @@ const messageContextInputSchema = z.discriminatedUnion("kind", [
 ]);
 export type MessageContextInput = z.infer<typeof messageContextInputSchema>;
 
+/** Post contact is a launch intent and never a regular message context. */
+export type MessageLaunchContext = MessageContextInput | { kind: "post"; resourceId: string };
+
 const messageResourceContextSchema = z.object({
   kind: z.enum(["pool", "voucher", "want", "catalog"]),
   resourceId: z.string().min(1),
@@ -42,6 +45,19 @@ const peerSchema = z.object({
   avatar: z.string().nullable(),
 });
 export type Peer = z.infer<typeof peerSchema>;
+
+export const postContactRequestSchema = z.object({
+  id: z.uuid(),
+  postId: z.string().regex(/^[1-9][0-9]*$/),
+  postTitle: z.string(),
+  direction: z.enum(["incoming", "outgoing"]),
+  status: z.enum(["pending", "accepted", "declined"]),
+  intro: z.string().nullable(),
+  conversationId: idSchema.nullable(),
+  requester: peerSchema.nullable(),
+  createdAt: timestampSchema,
+});
+export type PostContactRequest = z.infer<typeof postContactRequestSchema>;
 
 const conversationKindSchema = z.enum(["direct", "helpdesk"]);
 export type ConversationKind = z.infer<typeof conversationKindSchema>;
@@ -112,6 +128,7 @@ export const unreadCountsSchema = z.object({
   direct: z.number().int().nonnegative(),
   requests: z.number().int().nonnegative(),
   helpdesk: z.number().int().nonnegative(),
+  postRequests: z.number().int().nonnegative().optional(),
 });
 export type UnreadCounts = z.infer<typeof unreadCountsSchema>;
 
@@ -274,7 +291,7 @@ export function buildMessageContent(
 
 /** Unread on the Messages sub-tab: direct messages plus requests waiting on the caller. */
 export function messagesSectionUnread(counts: UnreadCounts | undefined): number {
-  return counts ? counts.direct + counts.requests : 0;
+  return counts ? counts.direct + counts.requests + (counts.postRequests ?? 0) : 0;
 }
 
 export type ConversationActions = {

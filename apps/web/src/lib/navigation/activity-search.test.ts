@@ -7,6 +7,7 @@ import {
   parseActivityHelpdeskId,
   parseActivityHelpdeskStatus,
   parseActivityMessageContext,
+  parseActivityPostContact,
   parseActivityMessageTo,
   parseActivitySearch,
   parseActivitySafeTarget,
@@ -217,7 +218,7 @@ describe("activity search", () => {
   });
 
   it("accepts Want and Catalog context while dropping invalid combinations", () => {
-    expect(parseActivityMessageContext({ messageKind: "want", messageResource: "42" })).toEqual({
+    expect(parseActivityMessageContext({ messageKind: "want", messageResource: 42 })).toEqual({
       kind: "want",
       resourceId: "42",
     });
@@ -225,6 +226,13 @@ describe("activity search", () => {
       kind: "catalog",
       resourceId: "7",
     });
+    expect(parseActivityPostContact({ messageKind: "post", messageResource: 42 })).toBe("42");
+    expect(
+      parseActivityMessageContext({ messageKind: "post", messageResource: 42 }),
+    ).toBeUndefined();
+    expect(
+      parseActivityPostContact({ messageKind: "post", messageResource: "-7" }),
+    ).toBeUndefined();
     expect(
       parseActivityMessageContext({
         messageKind: "voucher",

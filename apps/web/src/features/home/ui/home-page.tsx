@@ -14,7 +14,7 @@ import { SettingsPage } from "./settings-page";
 import { isPrivateHomeTab, type HomeTab } from "#/lib/navigation/home-tabs";
 import { WalletPage } from "./wallet-page";
 import type { ActivityKind } from "@clc/api/features/accounts/client";
-import type { MessageContextInput } from "@clc/core/features/messaging/logic";
+import type { MessageLaunchContext } from "@clc/core/features/messaging/logic";
 import type { HelpdeskStatus } from "@clc/core/features/messaging/logic";
 
 export type HomePageProps = {
@@ -26,7 +26,7 @@ export type HomePageProps = {
   /** Activity's sub-tab; read only when messaging is on. */
   activitySection?: ActivitySection;
   messageTo?: `0x${string}`;
-  messageContext?: MessageContextInput;
+  messageContext?: MessageLaunchContext;
   helpdeskId?: number;
   helpdeskStatus?: HelpdeskStatus;
   operator?: boolean;

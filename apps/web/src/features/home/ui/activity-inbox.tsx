@@ -9,7 +9,7 @@ import { MessagesSection } from "#/components/messaging/messages-section";
 import { NotificationsSection } from "#/components/messaging/notifications-section";
 import { useActivityCounts } from "#/features/messaging/hooks/use-activity-counts";
 import type { ActivitySection } from "#/lib/navigation/activity-search";
-import type { MessageContextInput } from "@clc/core/features/messaging/logic";
+import type { MessageLaunchContext } from "@clc/core/features/messaging/logic";
 import { ActivityPage } from "./activity-page";
 
 /**
@@ -37,7 +37,7 @@ export function ActivityInbox({
   onQueryChange?: (query: string) => void;
   onTypesChange?: (types: readonly ActivityKind[]) => void;
   messageTo?: `0x${string}`;
-  messageContext?: MessageContextInput;
+  messageContext?: MessageLaunchContext;
   onMessageToConsumed?: () => void;
   helpdeskId?: number;
   helpdeskStatus?: HelpdeskStatus;

@@ -91,7 +91,10 @@ vi.mock("#/features/home/hooks/use-reports", () => ({
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => mocks.auth,
+  useAuthStatus: () => ({
+    ...mocks.auth,
+    state: mocks.auth.isAuthenticated ? "authenticated" : "guest",
+  }),
 }));
 
 vi.mock("#/features/posts/hooks/use-my-posts", () => ({
@@ -213,6 +216,18 @@ beforeEach(() => {
 });
 
 describe("ReportPage", () => {
+  it("shows Message to guests and uses only the Post ID in the sign-in destination", () => {
+    render(<ReportPage reportId="3182" />);
+
+    const href = screen.getByRole("link", { name: "Message" }).getAttribute("href");
+    const signIn = new URL(href!, "https://example.test");
+    expect(signIn.pathname).toBe("/onboarding");
+    expect(signIn.searchParams.get("step")).toBe("signin");
+    expect(signIn.searchParams.get("redirect")).toBe(
+      "/?tab=activity&section=messages&messageKind=post&messageResource=3182",
+    );
+  });
+
   it("shows every image in a carousel with a position counter", () => {
     const { container } = render(<ReportPage reportId="3182" />);
 

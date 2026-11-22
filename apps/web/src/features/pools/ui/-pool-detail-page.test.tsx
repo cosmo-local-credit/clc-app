@@ -52,6 +52,7 @@ vi.mock("#/components/reports/report-list", () => ({
 const mocks = vi.hoisted(() => ({
   search: {} as Record<string, unknown>,
   auth: {
+    state: "authenticated",
     isAuthenticated: true,
     isLoading: false,
     session: { address: "0xDeF0000000000000000000000000000000000456", chainId: 100 } as
@@ -338,6 +339,7 @@ beforeEach(() => {
 
 afterEach(() => {
   queryClient.clear();
+  mocks.auth.state = "authenticated";
   mocks.auth.isAuthenticated = true;
   mocks.auth.isLoading = false;
   mocks.auth.session = { address: OWNER, chainId: 100 };
@@ -388,6 +390,24 @@ describe("PoolDetailPage Offers refresh", () => {
 });
 
 describe("PoolDetailPage pool details editor", () => {
+  it("keeps the same guest Message action across tabs with no owner address", () => {
+    mocks.auth.state = "guest";
+    mocks.auth.isAuthenticated = false;
+    mocks.auth.session = null;
+    mocks.poolResult.data = pool({ ownerAddress: null });
+    const view = render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+
+    const message = screen.getByRole("link", { name: "Message" });
+    const search = JSON.parse(message.getAttribute("data-search") ?? "{}");
+    expect(message.getAttribute("data-to")).toBe("/onboarding");
+    expect(search).toEqual({
+      step: "signin",
+      redirect: `/?tab=activity&section=messages&messageKind=pool&messageResource=${ADDRESS}`,
+    });
+    view.rerender(<PoolDetailPage poolAddress={ADDRESS} activeTab="holdings" />);
+    expect(screen.getByRole("link", { name: "Message" })).toBe(message);
+  });
+
   it("opens a retired pool on Holdings and keeps withdrawals while hiding new pool actions", () => {
     mocks.poolResult.data = pool({ active: false });
     render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
@@ -706,11 +726,17 @@ describe("PoolDetailPage pool details editor", () => {
 });
 
 describe("PoolDetailPage on-chain management", () => {
-  it("offers every pool viewer a receive action", () => {
+  it("opens and closes Receive while keeping the Message action available", async () => {
     mocks.auth.session = { address: OTHER, chainId: 100 };
     render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
 
-    expect(screen.getByRole("button", { name: "Receive" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Receive" }));
+    const sheet = await screen.findByRole("dialog", { name: "Receive vouchers" });
+    fireEvent.click(within(sheet).getByRole("button", { name: "Done" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: "Receive vouchers" })).toBeNull(),
+    );
+    expect(screen.getByRole("link", { name: "Message" })).toBeTruthy();
   });
 
   it("offers the steward controls to the pool's owner", () => {

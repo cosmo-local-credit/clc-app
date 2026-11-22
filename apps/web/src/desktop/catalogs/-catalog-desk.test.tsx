@@ -41,7 +41,7 @@ vi.mock("#/components/auth/authenticated-details-gate", () => ({
   AuthenticatedDetailsGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 vi.mock("#/components/messaging/resource-owner-contact", () => ({
-  OwnerMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
+  ResourceMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
     <a href={`/?messageKind=${context?.kind}&messageResource=${context?.resourceId}`}>Message</a>
   ),
   ResourceOwnerContact: ({ ownerAddress }: { ownerAddress: string }) => (

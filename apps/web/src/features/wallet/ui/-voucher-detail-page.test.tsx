@@ -9,7 +9,8 @@ vi.mock("#/components/messaging/resource-owner-contact", () => ({
   ResourceOwnerContactValue: ({ ownerAddress }: { ownerAddress: string }) => (
     <span>{`issuer:${ownerAddress}`}</span>
   ),
-  OwnerMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
+  OwnerMessageButton: () => null,
+  ResourceMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
     <a href={`/?messageKind=${context?.kind}&messageResource=${context?.resourceId}`}>Message</a>
   ),
 }));

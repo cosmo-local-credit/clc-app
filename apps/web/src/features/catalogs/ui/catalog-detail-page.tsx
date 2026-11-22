@@ -4,7 +4,7 @@ import { useState } from "react";
 import { CatalogPicture } from "#/components/catalogs/catalog-row";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import {
-  OwnerMessageButton,
+  ResourceMessageButton,
   ResourceOwnerContact,
 } from "#/components/messaging/resource-owner-contact";
 import { Button } from "#/components/ui/button";
@@ -26,7 +26,7 @@ import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 export function CatalogDetailPage({ id, editor }: { id: string; editor?: CatalogEditor }) {
   const { t } = useLingui();
-  const { query, catalog, owner, viewerAddress } = useCatalogDetail(id);
+  const { query, catalog, owner } = useCatalogDetail(id);
   const [localEditing, setLocalEditing] = useState(false);
   const editing = editor?.editing ?? localEditing;
   const openEditor = editor?.open ?? (() => setLocalEditing(true));
@@ -89,11 +89,7 @@ export function CatalogDetailPage({ id, editor }: { id: string; editor?: Catalog
               ))}
             </div>
           ) : null}
-          <OwnerMessageButton
-            ownerAddress={catalog.ownerAddress}
-            excludeAddress={viewerAddress}
-            context={{ kind: "catalog", resourceId: catalog.id }}
-          />
+          <ResourceMessageButton context={{ kind: "catalog", resourceId: catalog.id }} />
           {owner ? (
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" tap onClick={openEditor}>

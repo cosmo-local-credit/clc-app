@@ -23,7 +23,7 @@ import { isAddress, type Address, zeroAddress } from "viem";
 
 import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
-import { OwnerMessageButton } from "#/components/messaging/resource-owner-contact";
+import { ResourceMessageButton } from "#/components/messaging/resource-owner-contact";
 import { ReviewSummaryContent } from "#/components/reviews/review-summary";
 import { Button } from "#/components/ui/button";
 import { TagBadge } from "#/components/ui/tag-badge";
@@ -194,7 +194,6 @@ export function VoucherIdentitySummary({
   website,
   catalogResourceId,
   catalogAddress,
-  active,
   className,
 }: {
   address: string;
@@ -217,7 +216,6 @@ export function VoucherIdentitySummary({
   website?: string | null;
   catalogResourceId?: string | null;
   catalogAddress?: Address | null;
-  active?: boolean;
   className?: string;
 }) {
   return (
@@ -263,7 +261,6 @@ export function VoucherIdentitySummary({
         website={website}
         catalogResourceId={catalogResourceId}
         catalogAddress={catalogAddress}
-        active={active}
         className="mt-3"
       />
     </div>
@@ -294,7 +291,6 @@ function VoucherActionRow({
   website,
   catalogResourceId,
   catalogAddress,
-  active,
   className,
 }: {
   address: string;
@@ -308,7 +304,6 @@ function VoucherActionRow({
   website?: string | null;
   catalogResourceId?: string | null;
   catalogAddress?: Address | null;
-  active?: boolean;
   className?: string;
 }) {
   const { t } = useLingui();
@@ -396,13 +391,7 @@ function VoucherActionRow({
           tap
         />
       ) : null}
-      {active && verifiedOwnerAddress && catalogAddress ? (
-        <OwnerMessageButton
-          ownerAddress={verifiedOwnerAddress}
-          excludeAddress={auth.isAuthenticated ? auth.session?.address : undefined}
-          context={{ kind: "voucher", resourceId: catalogAddress }}
-        />
-      ) : null}
+      <ResourceMessageButton context={{ kind: "voucher", resourceId: address }} />
     </div>
   );
 }

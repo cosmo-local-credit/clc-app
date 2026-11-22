@@ -4,6 +4,7 @@ import { Suspense, useState, type ReactNode } from "react";
 import { RiArrowRightSLine, RiCloseLine, RiNavigationLine } from "react-icons/ri";
 
 import { getLocaleDirection, type SupportedLocale } from "@clc/i18n/locales";
+import { ResourceMessageButton } from "#/components/messaging/resource-owner-contact";
 import { Badge } from "#/components/ui/badge";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { Button } from "#/components/ui/button";
@@ -109,6 +110,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
               ))}
             </div>
           ) : null}
+          <ResourceMessageButton context={{ kind: "post", resourceId: report.id }} />
         </header>
 
         {report.images.length > 0 ? (

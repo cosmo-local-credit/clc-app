@@ -237,7 +237,6 @@ function VoucherCard({
           website={detail?.website}
           catalogResourceId={detail?.id}
           catalogAddress={detail?.address}
-          active={detail?.active}
           onIdentityClick={
             snap === "peek"
               ? () => onSnapChange("half")

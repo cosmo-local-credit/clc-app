@@ -25,6 +25,7 @@ import {
   parseActivitySearch,
   parseActivityMessageTo,
   parseActivityMessageContext,
+  parseActivityPostContact,
   parseActivitySection,
   parseActivitySafeTarget,
   parseActivityHelpdeskId,
@@ -163,7 +164,10 @@ function IndexPage() {
   const creditOn = parseCredit(search);
   const activity = parseActivitySearch(search);
   const messageTo = parseActivityMessageTo(search.messageTo);
-  const messageContext = parseActivityMessageContext(search);
+  const postContactId = parseActivityPostContact(search);
+  const messageContext = postContactId
+    ? { kind: "post" as const, resourceId: postContactId }
+    : parseActivityMessageContext(search);
   const helpdeskId = parseActivityHelpdeskId(search.helpdeskId);
   const helpdeskStatus = parseActivityHelpdeskStatus(search.helpdeskStatus);
   const safeTarget = parseActivitySafeTarget(search);

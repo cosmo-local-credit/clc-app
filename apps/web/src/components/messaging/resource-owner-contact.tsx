@@ -1,6 +1,6 @@
 import { ownerInfoQueryOptions } from "@clc/api/features/safe/queries";
 import type { OwnerMessageTarget } from "@clc/core/features/safe/logic";
-import type { MessageContextInput } from "@clc/core/features/messaging/logic";
+import type { MessageContextInput, MessageLaunchContext } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -11,7 +11,51 @@ import { Skeleton } from "#/components/ui/skeleton";
 import { EllipsizedAddress } from "#/components/wallet/wallet-address";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { safeClient } from "#/lib/api/safe";
+import { onboardingSearch } from "#/lib/onboarding-search";
 import { cn } from "#/lib/utils";
+
+/** Stable detail action. The authenticated composer resolves and checks the recipient. */
+export function ResourceMessageButton({
+  context,
+  className,
+}: {
+  context: MessageLaunchContext;
+  className?: string;
+}) {
+  const auth = useAuthStatus();
+  const search = {
+    tab: "activity",
+    section: "messages",
+    messageKind: context.kind,
+    messageResource: context.resourceId,
+    ...(context.kind === "pool" && context.proposedVoucherAddress
+      ? { messageVoucher: context.proposedVoucherAddress }
+      : {}),
+  } as const;
+  const label = (
+    <>
+      <RiMailLine aria-hidden="true" />
+      <Trans>Message</Trans>
+    </>
+  );
+
+  return (
+    <Button asChild variant="outline" tap className={className}>
+      {auth.state === "guest" || auth.state === "connectedNoSession" ? (
+        <Link
+          to="/onboarding"
+          search={onboardingSearch("signin", `/?${new URLSearchParams(search)}`)}
+        >
+          {label}
+        </Link>
+      ) : (
+        <Link to="/" search={search}>
+          {label}
+        </Link>
+      )}
+    </Button>
+  );
+}
 
 /** Public owner identity plus a route into the existing private message flow. */
 export function ResourceOwnerContact({

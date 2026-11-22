@@ -15,17 +15,23 @@ const SIGNER = "0x2222222222222222222222222222222222222222";
 const mocks = vi.hoisted(() => ({
   owner: vi.fn(),
   viewer: { address: "0x3333333333333333333333333333333333333333" },
+  authState: "authenticated",
 }));
 
 vi.mock("#/lib/api/safe", () => ({ safeClient: { owner: mocks.owner } }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({
-    isAuthenticated: true,
+    state: mocks.authState,
+    isAuthenticated: mocks.authState === "authenticated",
     session: { address: mocks.viewer.address },
   }),
 }));
 
-import { ResourceOwnerContact, ResourceOwnerContactValue } from "./resource-owner-contact";
+import {
+  ResourceMessageButton,
+  ResourceOwnerContact,
+  ResourceOwnerContactValue,
+} from "./resource-owner-contact";
 
 function mount(
   embedded = false,
@@ -62,6 +68,7 @@ function mount(
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.authState = "authenticated";
   mocks.viewer.address = "0x3333333333333333333333333333333333333333";
   mocks.owner.mockResolvedValue({
     kind: "safe",
@@ -70,6 +77,64 @@ beforeEach(() => {
     threshold: 1,
     messageTargets: [{ address: SIGNER, username: "amina", avatar: null }],
   });
+});
+
+function mountResourceButton(kind: "pool" | "voucher" | "want" | "catalog" | "post", id: string) {
+  const root = createRootRoute();
+  const start = createRoute({
+    getParentRoute: () => root,
+    path: "/",
+    validateSearch: (search: Record<string, unknown>) => search,
+    component: () => <ResourceMessageButton context={{ kind, resourceId: id }} />,
+  });
+  const onboarding = createRoute({
+    getParentRoute: () => root,
+    path: "/onboarding",
+    validateSearch: (search: Record<string, unknown>) => search,
+    component: () => <h1>Sign in</h1>,
+  });
+  const router = createRouter({
+    routeTree: root.addChildren([start, onboarding]),
+    history: createMemoryHistory({ initialEntries: ["/"] }),
+  });
+  render(<RouterProvider router={router} />);
+  return router;
+}
+
+describe("ResourceMessageButton", () => {
+  it.each(["guest", "connectedNoSession"])(
+    "sends a %s visitor directly to sign-in with the Post intent",
+    async (state) => {
+      mocks.authState = state;
+      const router = mountResourceButton("post", "47");
+      fireEvent.click(await screen.findByRole("link", { name: "Message" }));
+      await screen.findByRole("heading", { name: "Sign in" });
+      expect(router.state.location.search).toEqual({
+        step: "signin",
+        redirect: "/?tab=activity&section=messages&messageKind=post&messageResource=47",
+      });
+      expect(mocks.owner).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["authenticated", "loading", "sessionCheckError"])(
+    "opens Activity with the resource key in the %s state without fetching an owner",
+    async (state) => {
+      mocks.authState = state;
+      mocks.owner.mockRejectedValue(new Error("offline"));
+      const router = mountResourceButton("pool", OWNER);
+      fireEvent.click(await screen.findByRole("link", { name: "Message" }));
+      await waitFor(() =>
+        expect(router.state.location.search).toEqual({
+          tab: "activity",
+          section: "messages",
+          messageKind: "pool",
+          messageResource: OWNER,
+        }),
+      );
+      expect(mocks.owner).not.toHaveBeenCalled();
+    },
+  );
 });
 
 describe("ResourceOwnerContact", () => {

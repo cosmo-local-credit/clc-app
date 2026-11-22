@@ -64,6 +64,73 @@ function call(fetcher: ReturnType<typeof vi.fn>, index = 0) {
 const http = () => createHttpClient({ baseUrl: "https://api.test" });
 
 describe("messaging client", () => {
+  it("looks up contextual recipients by resource without an owner address", async () => {
+    const fetcher = stub({ targets: [PEER] });
+    await expect(
+      createMessagingClient(http()).resourceTargets({
+        kind: "want",
+        resourceId: "42",
+      }),
+    ).resolves.toEqual({ targets: [PEER] });
+    expect(call(fetcher)).toMatchObject({
+      path: "/api/v2/messaging/resource-targets",
+      query: { kind: "want", resourceId: "42" },
+      cache: "no-store",
+    });
+  });
+
+  it("uses the private Post request endpoints with an ID and no recipient address", async () => {
+    const item = {
+      id: MESSAGE.clientId,
+      postId: "42",
+      postTitle: "Community garden",
+      direction: "outgoing",
+      status: "pending",
+      intro: "Hello",
+      conversationId: null,
+      requester: null,
+      createdAt: MESSAGE.createdAt,
+    };
+    const client = createMessagingClient(http());
+    const create = stub(item, 201);
+    await expect(client.requestPostContact({ postId: "42", intro: "Hello" })).resolves.toEqual(
+      item,
+    );
+    expect(call(create)).toMatchObject({
+      path: "/api/v2/messaging/post-requests",
+      method: "POST",
+      body: { postId: "42", intro: "Hello" },
+      cache: "no-store",
+    });
+    const list = stub({ items: [item], nextCursor: null });
+    await expect(client.postRequests("page2")).resolves.toEqual({
+      items: [item],
+      nextCursor: null,
+    });
+    expect(call(list)).toMatchObject({
+      path: "/api/v2/messaging/post-requests",
+      query: { cursor: "page2" },
+      cache: "no-store",
+    });
+    const update = stub({
+      ...item,
+      direction: "incoming",
+      requester: PEER,
+      status: "accepted",
+      conversationId: 3,
+    });
+    await expect(client.setPostRequestStatus(item.id, "accepted")).resolves.toMatchObject({
+      status: "accepted",
+      conversationId: 3,
+    });
+    expect(call(update)).toMatchObject({
+      path: `/api/v2/messaging/post-requests/${item.id}/status`,
+      method: "PUT",
+      body: { status: "accepted" },
+      cache: "no-store",
+    });
+  });
+
   it("lists conversations by kind and cursor, uncached", async () => {
     const fetcher = stub({ items: [CONVERSATION], nextCursor: "c2" });
     const page = await createMessagingClient(http()).list({ kind: "direct", cursor: "c1" });

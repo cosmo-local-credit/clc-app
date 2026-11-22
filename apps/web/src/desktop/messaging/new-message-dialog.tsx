@@ -1,12 +1,14 @@
 import {
   CONVERSATION_INTRO_MAX,
   type MessageContextInput,
+  type MessageLaunchContext,
 } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { RiQuillPenLine, RiSearchLine } from "react-icons/ri";
 import { ConversationLookupState } from "#/components/messaging/conversation-lookup-state";
+import { PostRequestForm } from "#/components/messaging/post-request-form";
 
 import { Button } from "#/components/ui/button";
 import {
@@ -36,62 +38,71 @@ export function NewMessageDialog({
   onMessageToConsumed,
 }: {
   messageTo?: `0x${string}`;
-  messageContext?: MessageContextInput;
+  messageContext?: MessageLaunchContext;
   onMessageToConsumed?: () => void;
 }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const flow = useNewMessage(
-    (conversationId, context) => {
-      changeOpen(false);
-      void navigate({
-        to: "/messages/$conversationId",
-        params: { conversationId: String(conversationId) },
-        search: context
-          ? {
-              messageKind: context.kind,
-              messageResource: context.resourceId,
-              messageVoucher: context.kind === "pool" ? context.proposedVoucherAddress : undefined,
-            }
-          : {},
-      });
-    },
-    messageTo,
-    messageContext,
-  );
+  const post = messageContext?.kind === "post" ? messageContext : undefined;
+  const context = messageContext?.kind === "post" ? undefined : messageContext;
+  const directed = Boolean(messageTo || context);
+  const launchKey = messageContext
+    ? `${messageContext.kind}:${messageContext.resourceId}:${messageTo ?? ""}`
+    : messageTo;
+  function openThread(conversationId: number, threadContext?: MessageContextInput) {
+    changeOpen(false);
+    void navigate({
+      to: "/messages/$conversationId",
+      params: { conversationId: String(conversationId) },
+      search: threadContext
+        ? {
+            messageKind: threadContext.kind,
+            messageResource: threadContext.resourceId,
+            messageVoucher:
+              threadContext.kind === "pool" ? threadContext.proposedVoucherAddress : undefined,
+          }
+        : {},
+    });
+  }
+  const flow = useNewMessage(openThread, post ? undefined : messageTo, context);
   const { term, search, users, selected, failure } = flow;
-  const shownUsers = messageTo ? flow.ownerUsers : users;
+  const shownUsers = directed ? flow.ownerUsers : users;
 
   useEffect(() => {
-    if (messageTo) setOpen(true);
-  }, [messageTo]);
+    if (launchKey) setOpen(true);
+  }, [launchKey]);
 
   useEffect(() => {
     if (
-      !messageTo ||
-      !flow.ownerSearch.isSuccess ||
+      !open ||
+      post ||
+      !directed ||
+      !flow.targetSearch.isSuccess ||
       flow.ownerUsers.length !== 1 ||
       selected ||
       flow.lookupStatus !== "idle"
     ) {
       return;
     }
-    onMessageToConsumed?.();
-    flow.choose(flow.ownerUsers[0]!, messageContext);
-  }, [flow, messageContext, messageTo, onMessageToConsumed, selected]);
+    flow.choose(flow.ownerUsers[0]!, context);
+  }, [context, directed, flow, open, post, selected]);
 
   function changeOpen(next: boolean) {
     setOpen(next);
     if (!next) {
-      if (messageTo) onMessageToConsumed?.();
+      if (launchKey) onMessageToConsumed?.();
       flow.reset();
     }
   }
 
   function choose(match: (typeof shownUsers)[number]) {
-    if (messageTo) onMessageToConsumed?.();
-    flow.choose(match, messageContext);
+    flow.choose(match, context);
+  }
+
+  function changeRecipient() {
+    if (directed && shownUsers.length === 1) changeOpen(false);
+    else flow.unselect();
   }
 
   return (
@@ -107,7 +118,13 @@ export function NewMessageDialog({
             <DialogTitle className="shrink-0">
               <Trans>New message</Trans>
             </DialogTitle>
-            {flow.lookupStatus !== "idle" ? (
+            {post ? (
+              <PostRequestForm
+                key={post.resourceId}
+                postId={post.resourceId}
+                onOpenThread={openThread}
+              />
+            ) : flow.lookupStatus !== "idle" ? (
               <ConversationLookupState state={flow.lookupStatus} onRetry={flow.retryLookup} />
             ) : selected ? (
               <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain">
@@ -154,7 +171,7 @@ export function NewMessageDialog({
               </div>
             ) : (
               <>
-                {!messageTo ? (
+                {!directed ? (
                   <div className="relative">
                     <RiSearchLine
                       className="pointer-events-none absolute top-1/2 start-2.5 size-4 -translate-y-1/2 text-muted-foreground"
@@ -177,32 +194,32 @@ export function NewMessageDialog({
                   </div>
                 ) : null}
                 <div className="min-h-0 overflow-y-auto">
-                  {messageTo && flow.ownerSearch.isPending ? (
+                  {directed && flow.targetSearch.isPending ? (
                     <p className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Spinner />
                       <Trans>Loading recipients…</Trans>
                     </p>
                   ) : null}
-                  {messageTo && flow.ownerSearch.isError ? (
+                  {directed && flow.targetSearch.isError ? (
                     <div role="alert" className="grid justify-items-start gap-2 text-xs">
                       <p className="text-destructive">
                         <Trans>Couldn't load recipients.</Trans>
                       </p>
                       <Button
                         variant="outline"
-                        pending={flow.ownerSearch.isFetching}
-                        onClick={() => void flow.ownerSearch.refetch()}
+                        pending={flow.targetSearch.isFetching}
+                        onClick={() => void flow.targetSearch.refetch()}
                       >
                         <Trans>Retry</Trans>
                       </Button>
                     </div>
                   ) : null}
-                  {messageTo && flow.ownerSearch.isSuccess && shownUsers.length === 0 ? (
+                  {directed && flow.targetSearch.isSuccess && shownUsers.length === 0 ? (
                     <p className="text-xs text-muted-foreground">
                       <Trans>No message recipient is available.</Trans>
                     </p>
                   ) : null}
-                  {messageTo && shownUsers.length > 1 ? (
+                  {directed && shownUsers.length > 1 ? (
                     <p className="text-xs text-muted-foreground">
                       <Trans>Choose who to message.</Trans>
                     </p>
@@ -212,18 +229,18 @@ export function NewMessageDialog({
                       <Trans>You can't message yourself.</Trans>
                     </p>
                   ) : null}
-                  {!messageTo && term && (search.isDebouncing || search.isFetching) ? (
+                  {!directed && term && (search.isDebouncing || search.isFetching) ? (
                     <p className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Spinner />
                       <Trans>Searching…</Trans>
                     </p>
                   ) : null}
-                  {!messageTo && term && search.error ? (
+                  {!directed && term && search.error ? (
                     <p role="alert" className="text-xs text-destructive">
                       <Trans>Couldn't search. Try again.</Trans>
                     </p>
                   ) : null}
-                  {!messageTo &&
+                  {!directed &&
                   term &&
                   !search.isDebouncing &&
                   search.isSuccess &&
@@ -256,13 +273,13 @@ export function NewMessageDialog({
                 </div>
               </>
             )}
-            {selected && flow.lookupStatus === "idle" ? (
+            {!post && selected && flow.lookupStatus === "idle" ? (
               <div className="flex shrink-0 gap-2">
                 <Button
                   variant="outline"
                   className="flex-1"
                   disabled={flow.request.isPending}
-                  onClick={flow.unselect}
+                  onClick={changeRecipient}
                 >
                   <Trans>Back</Trans>
                 </Button>

@@ -18,7 +18,7 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({ isAuthenticated: false }),
 }));
 vi.mock("#/components/messaging/resource-owner-contact", () => ({
-  OwnerMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
+  ResourceMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
     <a href={`/?messageKind=${context?.kind}&messageResource=${context?.resourceId}`}>Message</a>
   ),
 }));
