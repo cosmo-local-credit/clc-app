@@ -9,6 +9,7 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { render } from "@testing-library/react";
+import type { ReactNode } from "react";
 
 import { ActivityDesk } from "#/desktop/activity/activity-desk";
 import { ConversationDesk } from "#/desktop/messaging/conversation-desk";
@@ -68,7 +69,7 @@ export function message(
  * Desktop Activity at `/` and the thread route at `/messages/$id`, over a real
  * memory router and a real QueryClient.
  */
-export function mountDesk(entry: string, operator = false) {
+export function mountDesk(entry: string, operator = false, threadContent?: ReactNode) {
   const root = createRootRoute({ component: Outlet });
   const home = createRoute({
     getParentRoute: () => root,
@@ -113,7 +114,7 @@ export function mountDesk(entry: string, operator = false) {
     path: "messages/$conversationId",
     component: function Thread() {
       const { conversationId } = thread.useParams();
-      return <ConversationDesk conversationId={Number(conversationId)} />;
+      return threadContent ?? <ConversationDesk conversationId={Number(conversationId)} />;
     },
   });
   const router = createRouter({

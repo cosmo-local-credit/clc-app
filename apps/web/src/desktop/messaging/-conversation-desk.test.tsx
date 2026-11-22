@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { useDeskTrail } from "#/desktop/trail";
 import { stubIntersectionObserver } from "#/lib/-fixtures/intersection-observer";
 import { AMINA, conversation, message, mountDesk, VIEWER } from "./-messaging-desk-fixtures";
+import { ThreadMenuDesk } from "./thread-menu-desk";
 
 const mocks = vi.hoisted(() => ({
   client: {
@@ -54,6 +55,24 @@ beforeEach(() => {
 });
 
 describe("desktop thread", () => {
+  it("never exposes peer actions when the menu receives a Helpdesk conversation", async () => {
+    mountDesk(
+      "/messages/11",
+      false,
+      <>
+        <h1>Helpdesk controls</h1>
+        <ThreadMenuDesk
+          conversation={conversation(11, { kind: "helpdesk", status: "open", peer: null })}
+          messages={[]}
+        />
+      </>,
+    );
+    await screen.findByRole("heading", { name: "Helpdesk controls" });
+    expect(screen.queryByRole("button", { name: "Conversation options" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+    expect(mocks.client.delete).not.toHaveBeenCalled();
+  });
+
   it("confirms deletion for the viewer, retries a failure and closes into the refreshed inbox", async () => {
     mocks.client.delete.mockRejectedValueOnce(new BackendApiError(500, "unavailable"));
     const { router } = mountDesk("/messages/1");

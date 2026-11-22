@@ -77,8 +77,9 @@ export function useNewMessage(
   const users = (search.data ?? []).filter(
     (match) => match.kind === "user" && (match.chainId === CHAIN_ID || match.chainId === 0),
   );
-  const targets = ownerAddress ? ownerSearch.data?.messageTargets : resourceSearch.data?.targets;
-  const ownerUsers: RecipientIdentity[] = (targets ?? [])
+  const targets =
+    (ownerAddress ? ownerSearch.data?.messageTargets : resourceSearch.data?.targets) ?? [];
+  const ownerUsers: RecipientIdentity[] = targets
     .filter((target) => target.address.toLowerCase() !== viewer)
     .map((target) => ({
       kind: "user",
@@ -91,7 +92,7 @@ export function useNewMessage(
     targetSearch.isSuccess &&
     ownerUsers.length === 0 &&
     (ownerAddress
-      ? (targets ?? []).some((target) => target.address.toLowerCase() === viewer)
+      ? targets.some((target) => target.address.toLowerCase() === viewer)
       : resourceSearch.data?.selfOnly === true);
 
   const failure: NewMessageFailure | null =

@@ -43,6 +43,7 @@ vi.mock("#/features/images/use-image-upload", () => ({
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: false }));
 
 import { stubIntersectionObserver } from "#/lib/-fixtures/intersection-observer";
+import { ThreadMenuSheet } from "./thread-menu-sheet";
 import { ThreadPage } from "./thread-page";
 
 function message(id: number, sender: Message["sender"] = "peer", body = `Message ${id}`): Message {
@@ -79,7 +80,7 @@ function conversation(overrides: Partial<Conversation> = {}): Conversation {
   };
 }
 
-function mount() {
+function mount(content = <ThreadPage conversationId={5} />) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const root = createRootRoute({ component: Outlet });
   const thread = createRoute({
@@ -90,11 +91,7 @@ function mount() {
     }),
     component: function Thread() {
       const search = thread.useSearch() as unknown as { section?: string };
-      return search.section === "messages" ? (
-        <h1>Messages inbox</h1>
-      ) : (
-        <ThreadPage conversationId={5} />
-      );
+      return search.section === "messages" ? <h1>Messages inbox</h1> : content;
     },
   });
   const router = createRouter({
@@ -119,6 +116,22 @@ afterEach(() => {
 });
 
 describe("ThreadPage", () => {
+  it("never exposes peer actions when the menu receives a Helpdesk conversation", async () => {
+    mount(
+      <>
+        <h1>Helpdesk controls</h1>
+        <ThreadMenuSheet
+          conversation={conversation({ kind: "helpdesk", status: "open", peer: null })}
+          messages={[]}
+        />
+      </>,
+    );
+    await screen.findByRole("heading", { name: "Helpdesk controls" });
+    expect(screen.queryByRole("button", { name: "Conversation options" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+    expect(mocks.delete).not.toHaveBeenCalled();
+  });
+
   it("confirms deletion, keeps the dialog usable after failure and returns to Messages on success", async () => {
     mocks.get.mockResolvedValue(conversation({ status: "pending", requestedBySelf: true }));
     mocks.messages.mockResolvedValue({ items: [message(1)], hasMore: false });
