@@ -214,7 +214,10 @@ export function NewMessageDialog({
                       </Button>
                     </div>
                   ) : null}
-                  {directed && flow.targetSearch.isSuccess && shownUsers.length === 0 ? (
+                  {directed &&
+                  flow.targetSearch.isSuccess &&
+                  shownUsers.length === 0 &&
+                  failure !== "self" ? (
                     <p className="text-xs text-muted-foreground">
                       <Trans>No message recipient is available.</Trans>
                     </p>

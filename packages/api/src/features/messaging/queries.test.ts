@@ -65,12 +65,97 @@ const message = (id: number) => ({
   createdAt: "2026-11-09T10:00:00Z",
 });
 
-function fakeClient(pages: Array<{ items: ReturnType<typeof message>[]; hasMore: boolean }>) {
+function fakeClient(
+  pages: Array<{ items: ReturnType<typeof message>[]; hasMore: boolean; clearedThrough?: number }>,
+) {
   const messages = vi.fn(() => Promise.resolve(pages.shift() ?? { items: [], hasMore: false }));
   return { client: { messages } as unknown as MessagingClient, messages };
 }
 
 describe("conversation messages query", () => {
+  it("does not recreate a deleted thread when an older-page request completes late", async () => {
+    const queryClient = new QueryClient();
+    const key = messagingKeys.messages(VIEWER, 3);
+    queryClient.setQueryData(key, { items: [message(10)], hasOlder: true, fetchedThrough: 10 });
+    let finish: (page: Page) => void = () => {};
+    const messages = vi.fn(
+      () =>
+        new Promise<Page>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const client = { messages } as unknown as MessagingClient;
+    const older = loadOlderConversationMessages(client, queryClient, VIEWER, 3);
+    queryClient.removeQueries({ queryKey: key });
+    finish({ items: [message(1)], hasMore: true });
+    expect(await older).toBe(false);
+    expect(queryClient.getQueryData(key)).toBeUndefined();
+  });
+
+  it("clears cached history on a remote deletion and resumes after the cutoff", async () => {
+    const queryClient = new QueryClient();
+    const { client, messages } = fakeClient([
+      { items: [message(4), message(5)], hasMore: true },
+      { items: [], hasMore: false, clearedThrough: 8 },
+      { items: [message(9)], hasMore: false, clearedThrough: 8 },
+    ]);
+    const options = conversationMessagesQueryOptions(client, VIEWER, 3);
+    await queryClient.fetchQuery(options);
+    expect(await queryClient.fetchQuery({ ...options, staleTime: 0 })).toEqual({
+      items: [],
+      hasOlder: false,
+      fetchedThrough: 8,
+      clearedThrough: 8,
+    });
+    appendThreadMessage(queryClient, options.queryKey, message(5));
+    expect(queryClient.getQueryData(options.queryKey)).toMatchObject({ items: [] });
+    const renewed = await queryClient.fetchQuery({ ...options, staleTime: 0 });
+    expect(messages).toHaveBeenLastCalledWith(3, { after: 8, limit: 100 }, expect.anything());
+    expect(renewed.items).toEqual([message(9)]);
+    expect(renewed.hasOlder).toBe(false);
+  });
+
+  it("does not restore older pages or stale refreshes after a newer cutoff arrives", async () => {
+    const queryClient = new QueryClient();
+    const key = messagingKeys.messages(VIEWER, 3);
+    queryClient.setQueryData(key, { items: [message(10)], hasOlder: true, fetchedThrough: 10 });
+    let finishPoll: (page: Page) => void = () => {};
+    let finishOlder: (page: Page) => void = () => {};
+    const messages = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise<Page>((resolve) => {
+            finishPoll = resolve;
+          }),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise<Page>((resolve) => {
+            finishOlder = resolve;
+          }),
+      );
+    const client = { messages } as unknown as MessagingClient;
+    const pending = queryClient.fetchQuery(conversationMessagesQueryOptions(client, VIEWER, 3));
+    const older = loadOlderConversationMessages(client, queryClient, VIEWER, 3);
+    await vi.waitFor(() => expect(messages).toHaveBeenCalledTimes(2));
+    queryClient.setQueryData(key, {
+      items: [],
+      hasOlder: false,
+      fetchedThrough: 12,
+      clearedThrough: 12,
+    });
+    finishOlder({ items: [message(8), message(9)], hasMore: true });
+    expect(await older).toBe(false);
+    finishPoll({ items: [message(11)], hasMore: false });
+    expect(await pending).toEqual({
+      items: [],
+      hasOlder: false,
+      fetchedThrough: 12,
+      clearedThrough: 12,
+    });
+  });
+
   it("opens on the newest page, then reads only after the newest id", async () => {
     const queryClient = new QueryClient();
     const { client, messages } = fakeClient([

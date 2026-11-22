@@ -155,6 +155,11 @@ describe("sendMessageInputSchema", () => {
 });
 
 describe("mergeMessages", () => {
+  it("keeps cleared history out of later refreshes and mutation results", () => {
+    expect(mergeMessages([message(1), message(4)], [message(2), message(5)], 4)).toEqual([
+      message(5),
+    ]);
+  });
   it("joins runs ascending by id without duplicates", () => {
     const merged = mergeMessages([message(1), message(3)], [message(3), message(2), message(4)]);
     expect(merged.map((item) => item.id)).toEqual([1, 2, 3, 4]);
@@ -207,7 +212,12 @@ describe("conversationActions", () => {
   it("lets a helpdesk user always send, with no peer actions", () => {
     expect(
       conversationActions(conversation({ kind: "helpdesk", status: "resolved", peer: null })),
-    ).toMatchObject({ canSend: true, canBlock: false, canReport: false, canRevoke: false });
+    ).toMatchObject({
+      canSend: true,
+      canBlock: false,
+      canReport: false,
+      canRevoke: false,
+    });
   });
 });
 

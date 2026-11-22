@@ -1195,6 +1195,11 @@ msgstr "Схвалити ваучер"
 msgid "Approved"
 msgstr "Схвалено"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:157
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:91
+msgid "Are you sure you want to delete this conversation?"
+msgstr "Ви впевнені, що хочете видалити цю розмову?"
+
 #: apps/web/src/components/retirement/retirement-request-form.tsx:108
 msgid "Are you sure you want to request retirement of this pool?"
 msgstr "Ви впевнені, що хочете подати запит на виведення цього пулу з обігу?"
@@ -1266,12 +1271,12 @@ msgstr "Очікує схвалення"
 
 #: apps/web/src/components/introduction/introduction.tsx:121
 #: apps/web/src/components/market-search.tsx:159
-#: apps/web/src/components/messaging/new-message-sheet.tsx:287
+#: apps/web/src/components/messaging/new-message-sheet.tsx:290
 #: apps/web/src/components/paper-wallet-scanner.tsx:119
 #: apps/web/src/components/paper-wallet-scanner.tsx:143
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:84
 #: apps/web/src/desktop/market/place-panel.tsx:124
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:284
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:287
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:171
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:249
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:410
@@ -1362,10 +1367,10 @@ msgstr "Опис профілю має містити не більше 500 си
 msgid "Biodiversity"
 msgstr "Біорізноманіття"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:112
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:186
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:137
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:184
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:129
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:228
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:150
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:227
 msgid "Block"
 msgstr "Заблокувати"
 
@@ -1373,8 +1378,8 @@ msgstr "Заблокувати"
 msgid "Block number"
 msgstr "Номер блоку"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:138
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:90
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:164
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:98
 msgid "Block this person?"
 msgstr "Заблокувати цю людину?"
 
@@ -1467,7 +1472,7 @@ msgstr "Доступ до камери заборонено."
 #: apps/web/src/desktop/account/settings-desk.tsx:176
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:185
 #: apps/web/src/desktop/credit/review-dialog.tsx:154
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:172
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:208
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:365
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:434
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:465
@@ -1488,7 +1493,7 @@ msgstr "Доступ до камери заборонено."
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:172
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:734
 #: apps/web/src/features/home/ui/settings-page.tsx:160
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:191
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:239
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:120
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:380
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:288
@@ -1968,8 +1973,8 @@ msgstr "Оберіть установлені вами курси або одн�
 msgid "Choose username"
 msgstr "Вибрати ім’я користувача"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:225
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:224
+#: apps/web/src/components/messaging/new-message-sheet.tsx:228
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:227
 msgid "Choose who to message."
 msgstr "Виберіть, кому надіслати повідомлення."
 
@@ -2100,7 +2105,7 @@ msgstr "Закрити верхню панель"
 msgid "Close Want"
 msgstr "Закрити потребу"
 
-#: apps/web/src/components/messaging/post-request-form.tsx:54
+#: apps/web/src/components/messaging/post-request-form.tsx:92
 #: apps/web/src/components/messaging/post-requests-section.tsx:53
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:725
 #: apps/web/src/features/home/ui/wallet-page.tsx:356
@@ -2533,9 +2538,9 @@ msgstr "Адресу контракту скопійовано"
 msgid "Conversation"
 msgstr "Розмова"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:100
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:73
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:95
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:117
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:79
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:103
 msgid "Conversation options"
 msgstr "Параметри розмови"
 
@@ -3104,6 +3109,7 @@ msgid "Couldn't load price feeds."
 msgstr "Не вдалося завантажити джерела цін."
 
 #: apps/web/src/components/messaging/new-message-sheet.tsx:206
+#: apps/web/src/components/messaging/post-request-form.tsx:50
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:206
 msgid "Couldn't load recipients."
 msgstr "Не вдалося завантажити одержувачів."
@@ -3167,7 +3173,7 @@ msgstr "Не вдалося завантажити цей пул."
 msgid "Couldn't load this pool's vouchers."
 msgstr "Не вдалося завантажити ваучери цього пулу."
 
-#: apps/web/src/components/messaging/post-request-form.tsx:63
+#: apps/web/src/components/messaging/post-request-form.tsx:101
 #: apps/web/src/desktop/posts/post-desk.tsx:70
 #: apps/web/src/features/home/ui/report-page.tsx:53
 msgid "Couldn't load this post."
@@ -3405,14 +3411,14 @@ msgstr "Не вдалося знайти пули."
 msgid "Couldn't search vouchers."
 msgstr "Не вдалося знайти ваучери."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:240
+#: apps/web/src/components/messaging/new-message-sheet.tsx:243
 #: apps/web/src/components/messaging/voucher-proposal-picker.tsx:197
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:240
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:243
 msgid "Couldn't search. Try again."
 msgstr "Не вдалося виконати пошук. Спробуйте ще раз."
 
 #: apps/web/src/components/messaging/new-message-sheet.tsx:172
-#: apps/web/src/components/messaging/post-request-form.tsx:99
+#: apps/web/src/components/messaging/post-request-form.tsx:137
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:167
 msgid "Couldn't send the request. Try again."
 msgstr "Не вдалося надіслати запит. Спробуйте ще раз."
@@ -3807,7 +3813,7 @@ msgstr "Кількість десяткових знаків має бути ц�
 msgid "Decline"
 msgstr "Відхилити"
 
-#: apps/web/src/components/messaging/post-request-form.tsx:50
+#: apps/web/src/components/messaging/post-request-form.tsx:88
 #: apps/web/src/components/messaging/post-requests-section.tsx:49
 msgid "Declined"
 msgstr "Відхилено"
@@ -3837,6 +3843,13 @@ msgstr "За замовчуванням — ваш гаманець."
 msgid "Delegated to Calibur"
 msgstr "Делеговано Calibur"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:142
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:220
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:164
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:219
+msgid "Delete"
+msgstr "Видалити"
+
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:158
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:183
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:158
@@ -3861,8 +3874,10 @@ msgstr "Видалити потребу"
 
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:158
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:184
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:218
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:158
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:171
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:217
 msgid "Deleting…"
 msgstr "Видалення…"
 
@@ -5304,7 +5319,7 @@ msgstr "Запит на встановлення надіслано. Щоб за
 "браузера."
 
 #: apps/web/src/components/messaging/new-message-sheet.tsx:152
-#: apps/web/src/components/messaging/post-request-form.tsx:85
+#: apps/web/src/components/messaging/post-request-form.tsx:123
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:147
 msgid "Introduce yourself"
 msgstr "Представтеся"
@@ -5808,7 +5823,7 @@ msgstr "Завантаження пулу…"
 msgid "Loading pools…"
 msgstr "Завантаження пулів…"
 
-#: apps/web/src/components/messaging/post-request-form.tsx:77
+#: apps/web/src/components/messaging/post-request-form.tsx:115
 #: apps/web/src/desktop/posts/post-desk.tsx:56
 #: apps/web/src/features/home/ui/report-page.tsx:570
 msgid "Loading post…"
@@ -5841,6 +5856,7 @@ msgid "Loading receipt…"
 msgstr "Завантаження квитанції…"
 
 #: apps/web/src/components/messaging/new-message-sheet.tsx:200
+#: apps/web/src/components/messaging/post-request-form.tsx:39
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:200
 msgid "Loading recipients…"
 msgstr "Завантаження одержувачів…"
@@ -6144,8 +6160,8 @@ msgstr "Розділи ринку"
 msgid "Match"
 msgstr "Збіг"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:253
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:255
+#: apps/web/src/components/messaging/new-message-sheet.tsx:256
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:258
 msgid "Matching people"
 msgstr "Знайдені люди"
 
@@ -6179,12 +6195,12 @@ msgstr "Макс. {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "Медіафайл має бути завантаженим URL із http(s)"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:267
+#: apps/web/src/components/messaging/new-message-sheet.tsx:270
 #: apps/web/src/components/messaging/resource-owner-contact.tsx:38
 #: apps/web/src/components/messaging/resource-owner-contact.tsx:215
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:155
 #: apps/web/src/desktop/messaging/composer-desk.tsx:122
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:267
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:270
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:140
 #: apps/web/src/features/messaging/ui/message-composer.tsx:98
 #: apps/web/src/features/wallet/hooks/use-send-share-form.ts:91
@@ -6513,8 +6529,8 @@ msgstr "Природне будівництво"
 msgid "Needs reply"
 msgstr "Потребує відповіді"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:146
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:102
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:177
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:115
 msgid "Neither of you can send messages. Only you can ask to talk again."
 msgstr "Ніхто з вас не може надсилати повідомлення. Лише ви можете попросити "
 "поновити розмову."
@@ -6864,8 +6880,8 @@ msgstr "Поки що немає результатів ринку для від
 msgid "No matches"
 msgstr "Збігів немає"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:249
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:249
+#: apps/web/src/components/messaging/new-message-sheet.tsx:252
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:252
 msgid "No matching people."
 msgstr "Нікого не знайдено."
 
@@ -6878,8 +6894,8 @@ msgstr "Відповідних отримувачів не знайдено."
 msgid "No matching vouchers."
 msgstr "Відповідних ваучерів не знайдено."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:220
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:219
+#: apps/web/src/components/messaging/new-message-sheet.tsx:223
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:222
 msgid "No message recipient is available."
 msgstr "Немає доступного одержувача повідомлення."
 
@@ -7406,7 +7422,7 @@ msgstr "Відкриті"
 msgid "Open CLC in Chrome on Android to collect with an NFC card."
 msgstr "Відкрийте CLC у Chrome на Android, щоб приймати оплату NFC-карткою."
 
-#: apps/web/src/components/messaging/post-request-form.tsx:46
+#: apps/web/src/components/messaging/post-request-form.tsx:84
 #: apps/web/src/components/messaging/post-requests-section.tsx:44
 msgid "Open conversation"
 msgstr "Відкрити розмову"
@@ -7502,7 +7518,7 @@ msgstr "Відкриття картка для входу…"
 
 #: apps/web/src/components/account-retirement/retire-account-section.tsx:188
 #: apps/web/src/components/messaging/new-message-sheet.tsx:157
-#: apps/web/src/components/messaging/post-request-form.tsx:90
+#: apps/web/src/components/messaging/post-request-form.tsx:128
 #: apps/web/src/components/ui/avatar-picker.tsx:98
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:218
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:182
@@ -7510,7 +7526,7 @@ msgstr "Відкриття картка для входу…"
 #: apps/web/src/desktop/account/profile-desk.tsx:223
 #: apps/web/src/desktop/account/profile-desk.tsx:254
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:152
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:160
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:191
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:200
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:43
 #: apps/web/src/desktop/vouchers/create/place-step.tsx:50
@@ -7519,7 +7535,7 @@ msgstr "Відкриття картка для входу…"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:95
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:141
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:172
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:116
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:129
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:247
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:277
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:407
@@ -8282,7 +8298,7 @@ msgstr "Розташуйте фото"
 msgid "Post"
 msgstr "Допис"
 
-#: apps/web/src/components/messaging/post-request-form.tsx:81
+#: apps/web/src/components/messaging/post-request-form.tsx:119
 #: apps/web/src/desktop/posts/post-desk.tsx:70
 #: apps/web/src/features/home/ui/report-page.tsx:65
 msgid "Post not found."
@@ -8321,7 +8337,7 @@ msgstr "Допис оновлено."
 
 #. placeholder {0}: item.postTitle
 #. placeholder {0}: post.data.title
-#: apps/web/src/components/messaging/post-request-form.tsx:41
+#: apps/web/src/components/messaging/post-request-form.tsx:79
 #: apps/web/src/components/messaging/post-requests-section.tsx:26
 msgid "Post: {0}"
 msgstr "Допис: {0}"
@@ -9225,8 +9241,8 @@ msgstr "Переглянути знову"
 msgid "Reply"
 msgstr "Відповісти"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:117
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:142
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:134
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:155
 msgid "Report"
 msgstr "Поскаржитися"
 
@@ -9258,13 +9274,13 @@ msgstr "Період звіту"
 msgid "Report provenance"
 msgstr "Походження звіту"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:84
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:170
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:101
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:207
 msgid "Report sent."
 msgstr "Скаргу надіслано."
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:141
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:93
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:167
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:101
 msgid "Report this person"
 msgstr "Поскаржитися на цю людину"
 
@@ -9477,7 +9493,8 @@ msgstr "Ретрит"
 #: apps/web/src/components/creditable-browse-control.tsx:123
 #: apps/web/src/components/messaging/conversation-lookup-state.tsx:24
 #: apps/web/src/components/messaging/new-message-sheet.tsx:214
-#: apps/web/src/components/messaging/post-request-form.tsx:72
+#: apps/web/src/components/messaging/post-request-form.tsx:59
+#: apps/web/src/components/messaging/post-request-form.tsx:110
 #: apps/web/src/components/messaging/post-requests-section.tsx:106
 #: apps/web/src/components/messaging/resource-context-card.tsx:195
 #: apps/web/src/components/messaging/resource-owner-contact.tsx:108
@@ -9638,15 +9655,15 @@ msgstr "Відгуки"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "Тут з’являться відгуки про цей ваучер."
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:107
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:181
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:132
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:179
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:124
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:223
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:145
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:222
 msgid "Revoke"
 msgstr "Відкликати"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:133
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:85
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:159
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:93
 msgid "Revoke this conversation?"
 msgstr "Відкликати цю розмову?"
 
@@ -10066,10 +10083,10 @@ msgstr "Пошук у цій області"
 msgid "Searching vouchers…"
 msgstr "Пошук ваучерів…"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:235
+#: apps/web/src/components/messaging/new-message-sheet.tsx:238
 #: apps/web/src/components/messaging/voucher-proposal-picker.tsx:192
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:214
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:235
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:238
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:828
 #: apps/web/src/desktop/shell/command-palette.tsx:387
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:237
@@ -10203,15 +10220,15 @@ msgid "Send reply"
 msgstr "Надіслати відповідь"
 
 #: apps/web/src/components/reviews/review-editor.tsx:145
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:189
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:231
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:494
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:187
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:230
 msgid "Send report"
 msgstr "Надіслати звіт"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:279
-#: apps/web/src/components/messaging/post-request-form.tsx:107
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:287
+#: apps/web/src/components/messaging/new-message-sheet.tsx:282
+#: apps/web/src/components/messaging/post-request-form.tsx:145
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:290
 msgid "Send request"
 msgstr "Надіслати запит"
 
@@ -11217,8 +11234,8 @@ msgstr "Спочатку перевірте з невеликою сумою."
 #: apps/web/src/desktop/messaging/operator-helpdesk-desk.tsx:265
 #: apps/web/src/desktop/messaging/thread-desk.tsx:201
 #: apps/web/src/desktop/messaging/thread-desk.tsx:241
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:167
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:123
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:198
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:136
 #: apps/web/src/features/messaging/ui/thread-page.tsx:120
 #: apps/web/src/features/messaging/ui/thread-page.tsx:163
 msgid "That didn't work. Try again."
@@ -11305,7 +11322,7 @@ msgid "The account managing this voucher is scheduled to close on {date}. This "
 msgstr "Обліковий запис, який керує цим ваучером, буде закрито {date}. Цей "
 "ваучер залишається активним."
 
-#: apps/web/src/components/messaging/post-request-form.tsx:58
+#: apps/web/src/components/messaging/post-request-form.tsx:96
 msgid "The author can open a conversation by accepting your request."
 msgstr "Автор допису може почати розмову, прийнявши ваш запит."
 
@@ -11507,8 +11524,8 @@ msgstr "Для обміну на цей ваучер поки нічого не�
 msgid "These filters aren't valid."
 msgstr "Ці фільтри недійсні."
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:151
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:107
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:182
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:120
 msgid "They won't be able to message you or send you requests."
 msgstr "Ця людина не зможе писати вам або надсилати запити."
 
@@ -11578,6 +11595,11 @@ msgid "This check includes known pool holdings. Tokens not yet tracked may be "
 "missing."
 msgstr "Ця перевірка охоплює відомі активи пулу. Токени, які ще не "
 "відстежуються, можуть бути відсутні."
+
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:172
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:110
+msgid "This clears your history. New contact requires approval."
+msgstr "Це очистить вашу історію. Для нового контакту потрібне схвалення."
 
 #: apps/web/src/components/safe/recipient-owner-notice.tsx:44
 msgid "This contract does not expose a compatible multisig owner list. The "
@@ -12224,16 +12246,16 @@ msgid "Unavailable"
 msgstr "Недоступно"
 
 #: apps/web/src/desktop/messaging/thread-desk.tsx:257
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:112
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:184
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:137
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:182
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:129
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:226
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:150
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:225
 #: apps/web/src/features/messaging/ui/thread-page.tsx:182
 msgid "Unblock"
 msgstr "Розблокувати"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:136
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:88
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:162
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:96
 msgid "Unblock this person?"
 msgstr "Розблокувати цю людину?"
 
@@ -13109,8 +13131,8 @@ msgstr "З поверненням"
 msgid "What are you offering?"
 msgstr "Що ви пропонуєте?"
 
-#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:155
-#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:111
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:186
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:124
 msgid "What happened?"
 msgstr "Що сталося?"
 
@@ -13322,9 +13344,10 @@ msgid "You can't message this person."
 msgstr "Ви не можете написати цій людині."
 
 #: apps/web/src/components/messaging/new-message-sheet.tsx:164
-#: apps/web/src/components/messaging/new-message-sheet.tsx:230
+#: apps/web/src/components/messaging/new-message-sheet.tsx:233
+#: apps/web/src/components/messaging/post-request-form.tsx:32
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:159
-#: apps/web/src/desktop/messaging/new-message-dialog.tsx:229
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:232
 msgid "You can't message yourself."
 msgstr "Ви не можете надіслати повідомлення собі."
 
@@ -13452,7 +13475,7 @@ msgid "You'll send"
 msgstr "Ви надішлете"
 
 #: apps/web/src/components/messaging/new-message-sheet.tsx:170
-#: apps/web/src/components/messaging/post-request-form.tsx:97
+#: apps/web/src/components/messaging/post-request-form.tsx:135
 #: apps/web/src/desktop/messaging/new-message-dialog.tsx:165
 msgid "You've sent too many requests today. Try again tomorrow."
 msgstr "Сьогодні ви надіслали забагато запитів. Спробуйте ще раз завтра."

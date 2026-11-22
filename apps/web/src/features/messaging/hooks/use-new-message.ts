@@ -87,9 +87,16 @@ export function useNewMessage(
       address: target.address,
       chainId: CHAIN_ID,
     }));
+  const selfOnly =
+    targetSearch.isSuccess &&
+    ownerUsers.length === 0 &&
+    (ownerAddress
+      ? (targets ?? []).some((target) => target.address.toLowerCase() === viewer)
+      : resourceSearch.data?.selfOnly === true);
 
   const failure: NewMessageFailure | null =
     localFailure ??
+    (selfOnly ? "self" : null) ??
     (request.error instanceof BackendApiError
       ? request.error.status === 404
         ? "missing"

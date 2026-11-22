@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
     block: vi.fn(),
     unblock: vi.fn(),
     report: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -53,6 +54,61 @@ beforeEach(() => {
 });
 
 describe("desktop thread", () => {
+  it("confirms deletion for the viewer, retries a failure and closes into the refreshed inbox", async () => {
+    mocks.client.delete.mockRejectedValueOnce(new BackendApiError(500, "unavailable"));
+    const { router } = mountDesk("/messages/1");
+    fireEvent.click(await screen.findByRole("button", { name: "Conversation options" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    const title = "Are you sure you want to delete this conversation?";
+    let dialog = await screen.findByRole("dialog", { name: title });
+    expect(mocks.client.delete).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(screen.getByRole("button", { name: "Conversation options" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    dialog = await screen.findByRole("dialog", { name: title });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
+    expect(await screen.findByText("That didn't work. Try again.")).toBeTruthy();
+    let finish: () => void = () => {};
+    mocks.client.delete.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    mocks.client.list.mockResolvedValue({ items: [conversation(2)], nextCursor: null });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
+    const pending = await screen.findByRole("button", { name: "Deleting…" });
+    expect((pending as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      (within(dialog).getByRole("button", { name: "Cancel" }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+    fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+    expect(screen.getByRole("dialog", { name: title })).toBeTruthy();
+    await act(async () => finish());
+    await waitFor(() => expect(router.state.location.pathname).toBe("/"));
+    expect(router.state.location.search).toEqual({ tab: "activity", section: "messages" });
+    expect(await screen.findByText("No conversation open")).toBeTruthy();
+    expect(screen.queryByRole("link", { name: /user1/ })).toBeNull();
+    expect(mocks.client.delete).toHaveBeenCalledTimes(2);
+    expect(mocks.client.delete).toHaveBeenLastCalledWith(1);
+  });
+
+  it("preserves Revoke beside Delete and confirms before revoking", async () => {
+    mocks.client.setStatus.mockResolvedValue(
+      conversation(1, { status: "revoked", canRequest: true }),
+    );
+    mountDesk("/messages/1");
+    fireEvent.click(await screen.findByRole("button", { name: "Conversation options" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Revoke" }));
+    const dialog = await screen.findByRole("dialog", { name: "Revoke this conversation?" });
+    expect(mocks.client.setStatus).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Revoke" }));
+    await waitFor(() => expect(mocks.client.setStatus).toHaveBeenCalledWith(1, "revoked"));
+    expect(await screen.findByRole("button", { name: "Ask to talk again" })).toBeTruthy();
+    expect(mocks.client.delete).not.toHaveBeenCalled();
+  });
+
   it("opens a direct link beside the Messages list and names the peer in the breadcrumb", async () => {
     mocks.client.messages.mockResolvedValue({
       items: [message(7, 1, "peer", "Hello"), message(8, 1, "self", "Hi back")],

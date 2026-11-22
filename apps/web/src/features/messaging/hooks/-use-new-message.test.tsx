@@ -8,10 +8,15 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const VIEWER = "0x1111111111111111111111111111111111111111";
 const OWNER = "0x2222222222222222222222222222222222222222";
-const mocks = vi.hoisted(() => ({ list: vi.fn(), request: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  list: vi.fn(),
+  request: vi.fn(),
+  resourceTargets: vi.fn(),
+  viewer: "0x1111111111111111111111111111111111111111",
+}));
 
 vi.mock("./use-messaging-viewer", () => ({
-  useMessagingViewer: () => VIEWER,
+  useMessagingViewer: () => mocks.viewer,
 }));
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
   useRecipientSearch: () => ({ data: [], isDebouncing: false, isFetching: false }),
@@ -60,11 +65,34 @@ function threadPage(status: Conversation["status"], blocked = false) {
 }
 
 beforeEach(() => {
+  mocks.viewer = VIEWER;
   mocks.list.mockReset().mockResolvedValue({ items: [], nextCursor: null });
   mocks.request.mockReset();
+  mocks.resourceTargets.mockReset().mockResolvedValue({ targets: [], selfOnly: false });
 });
 
 describe("useNewMessage", () => {
+  it("isolates self-only ownership results when the signed-in account changes", async () => {
+    mocks.resourceTargets.mockResolvedValueOnce({ targets: [], selfOnly: true }).mockResolvedValue({
+      targets: [{ address: VIEWER, username: "previous-owner", avatar: null }],
+      selfOnly: false,
+    });
+    const client = new QueryClient();
+    const { result, rerender } = renderHook(
+      () => useNewMessage(vi.fn(), undefined, { kind: "want", resourceId: "42" }),
+      {
+        wrapper: ({ children }: { children: ReactNode }) => (
+          <QueryClientProvider client={client}>{children}</QueryClientProvider>
+        ),
+      },
+    );
+    await waitFor(() => expect(result.current.failure).toBe("self"));
+    mocks.viewer = OWNER;
+    rerender();
+    await waitFor(() => expect(result.current.ownerUsers[0]?.address).toBe(VIEWER));
+    expect(result.current.failure).toBeNull();
+    expect(mocks.resourceTargets).toHaveBeenCalledTimes(2);
+  });
   it("opens an older accepted thread without relying on the inbox or posting a request", async () => {
     mocks.list.mockResolvedValue(threadPage("accepted"));
     const { result, openThread } = mount();
