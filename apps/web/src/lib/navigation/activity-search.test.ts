@@ -217,6 +217,25 @@ describe("activity search", () => {
     });
   });
 
+  it("canonicalizes a Post intent and drops a Voucher proposal on a Want", () => {
+    expect(
+      canonicalActivityRouteSearch({
+        section: "messages",
+        messageKind: "post",
+        messageResource: 42,
+        activityQ: "  garden  ",
+      }),
+    ).toMatchObject({ messageKind: "post", messageResource: "42" });
+    expect(
+      canonicalActivityRouteSearch({
+        section: "messages",
+        messageKind: "want",
+        messageResource: "42",
+        messageVoucher: "0x1111111111111111111111111111111111111111",
+      }),
+    ).toMatchObject({ messageKind: "want", messageResource: "42", messageVoucher: undefined });
+  });
+
   it("accepts Want and Catalog context while dropping invalid combinations", () => {
     expect(parseActivityMessageContext({ messageKind: "want", messageResource: 42 })).toEqual({
       kind: "want",

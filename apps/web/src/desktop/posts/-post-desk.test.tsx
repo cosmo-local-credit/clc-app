@@ -107,7 +107,8 @@ beforeEach(() => {
 const WRAPS = "[overflow-wrap:anywhere]";
 
 describe("a post's detail page keeps what a reader came to verify", () => {
-  it("links Message using the Post ID alone", () => {
+  it.each([false, true])("links Message using the Post ID alone with isAuthor=%s", (isAuthor) => {
+    mocks.page.isAuthor = isAuthor;
     render(<PostDesk reportId="3182" />);
 
     expect(screen.getByRole("link", { name: "Message" }).getAttribute("href")).toBe(

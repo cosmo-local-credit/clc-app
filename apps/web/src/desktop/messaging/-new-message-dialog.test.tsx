@@ -92,6 +92,24 @@ beforeEach(() => {
 });
 
 describe("NewMessageDialog resource flows", () => {
+  it.each([
+    ["Searching…", { isDebouncing: true, isFetching: false }],
+    ["Couldn't search. Try again.", { error: new Error("offline") }],
+    ["No matching people.", { isSuccess: true, data: [] }],
+  ])("shows recipient-search feedback for %s", (message, search) => {
+    mocks.flow = baseFlow({ term: "amina", search });
+    render(<NewMessageDialog />);
+    expect(screen.getByText(message)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Send request" })).toBeNull();
+  });
+
+  it("shows an unavailable recipient without enabling a request", () => {
+    mocks.flow = baseFlow({ targetSearch: { isSuccess: true } });
+    render(<NewMessageDialog messageContext={{ kind: "want", resourceId: "42" }} />);
+    expect(screen.getByText("No message recipient is available.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Send request" })).toBeNull();
+    expect(mocks.choose).not.toHaveBeenCalled();
+  });
   it("navigates with Pool proposal context and without optional context", () => {
     render(<NewMessageDialog />);
     const poolContext = {

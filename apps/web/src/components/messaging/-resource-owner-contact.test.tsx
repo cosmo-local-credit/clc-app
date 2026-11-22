@@ -79,13 +79,25 @@ beforeEach(() => {
   });
 });
 
-function mountResourceButton(kind: "pool" | "voucher" | "want" | "catalog" | "post", id: string) {
+function mountResourceButton(
+  kind: "pool" | "voucher" | "want" | "catalog" | "post",
+  id: string,
+  proposedVoucherAddress?: `0x${string}`,
+) {
   const root = createRootRoute();
   const start = createRoute({
     getParentRoute: () => root,
     path: "/",
     validateSearch: (search: Record<string, unknown>) => search,
-    component: () => <ResourceMessageButton context={{ kind, resourceId: id }} />,
+    component: () => (
+      <ResourceMessageButton
+        context={
+          kind === "pool"
+            ? { kind, resourceId: id, proposedVoucherAddress }
+            : { kind, resourceId: id }
+        }
+      />
+    ),
   });
   const onboarding = createRoute({
     getParentRoute: () => root,
@@ -102,6 +114,20 @@ function mountResourceButton(kind: "pool" | "voucher" | "want" | "catalog" | "po
 }
 
 describe("ResourceMessageButton", () => {
+  it("preserves a proposed Voucher when launching the Pool composer", async () => {
+    const router = mountResourceButton("pool", OWNER, SIGNER);
+    fireEvent.click(await screen.findByRole("link", { name: "Message" }));
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({
+        tab: "activity",
+        section: "messages",
+        messageKind: "pool",
+        messageResource: OWNER,
+        messageVoucher: SIGNER,
+      }),
+    );
+    expect(mocks.owner).not.toHaveBeenCalled();
+  });
   it.each(["guest", "connectedNoSession"])(
     "sends a %s visitor directly to sign-in with the Post intent",
     async (state) => {

@@ -157,6 +157,7 @@ function mountAt(entry: string) {
       messageTo: typeof search.messageTo === "string" ? search.messageTo : undefined,
       messageKind: search.messageKind,
       messageResource: search.messageResource,
+      messageVoucher: search.messageVoucher,
       helpdeskId:
         typeof search.helpdeskId === "string" || typeof search.helpdeskId === "number"
           ? search.helpdeskId
@@ -169,6 +170,7 @@ function mountAt(entry: string) {
         messageTo?: string;
         messageKind?: string;
         messageResource?: string | number;
+        messageVoucher?: string;
         helpdeskId?: string | number;
         helpdeskStatus?: string;
       };
@@ -193,6 +195,7 @@ function mountAt(entry: string) {
                 messageTo: undefined,
                 messageKind: undefined,
                 messageResource: undefined,
+                messageVoucher: undefined,
               }),
               replace: true,
             })
@@ -288,6 +291,70 @@ describe("Activity sub-tabs", () => {
 });
 
 describe("Messages section", () => {
+  it("keeps private request and inbox reads disabled for a guest", async () => {
+    mocks.auth.isAuthenticated = false;
+    mountAt("/?tab=activity&section=messages");
+    await screen.findByRole("button", { name: "New message" });
+    expect(mocks.client.postRequests).not.toHaveBeenCalled();
+    expect(mocks.client.list).not.toHaveBeenCalled();
+  });
+  it.each([
+    ["Searching…", { isDebouncing: true, isFetching: false }],
+    [
+      "Couldn't search. Try again.",
+      { isDebouncing: false, isFetching: false, error: new Error("offline") },
+    ],
+    ["No matching people.", { isDebouncing: false, isFetching: false, isSuccess: true, data: [] }],
+  ])("shows recipient-search feedback for %s", async (message, search) => {
+    mocks.search.mockReturnValue(search);
+    mountAt("/?tab=activity&section=messages");
+    fireEvent.click(await screen.findByRole("button", { name: "New message" }));
+    fireEvent.change(await screen.findByPlaceholderText("Username, address, or phone number"), {
+      target: { value: "amina" },
+    });
+    expect(await screen.findByText(message)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Send request" })).toBeNull();
+  });
+
+  it("keeps an unavailable resource's composer open without offering a send", async () => {
+    mocks.client.resourceTargets.mockResolvedValue({ targets: [] });
+    mountAt("/?tab=activity&section=messages&messageKind=want&messageResource=42");
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(await within(sheet).findByText("No message recipient is available.")).toBeTruthy();
+    expect(within(sheet).queryByRole("button", { name: "Send request" })).toBeNull();
+    expect(mocks.client.request).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { kind: "want", resourceId: "42" },
+    { kind: "pool", resourceId: "0x2222222222222222222222222222222222222222" },
+  ])("preserves $kind context when opening an accepted conversation", async (context) => {
+    mocks.client.list.mockImplementation(async (params: { peerAddress?: string }) => ({
+      items: params.peerAddress ? [conversation(12)] : [],
+      nextCursor: null,
+    }));
+    const { router } = mountAt(
+      `/?tab=activity&section=messages&messageKind=${context.kind}&messageResource=${context.resourceId}`,
+    );
+    await waitFor(() => expect(router.state.location.pathname).toBe("/messages/12"));
+    expect(router.state.location.search).toMatchObject({
+      messageKind: context.kind,
+      messageResource: context.resourceId,
+    });
+    expect(mocks.client.request).not.toHaveBeenCalled();
+  });
+
+  it("clears a single-recipient resource intent when Back is pressed", async () => {
+    const { router } = mountAt(
+      "/?tab=activity&section=messages&messageKind=want&messageResource=42",
+    );
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    fireEvent.click(await within(sheet).findByRole("button", { name: "Back" }));
+    await waitFor(() => expect(router.state.location.search).not.toHaveProperty("messageKind"));
+    expect(screen.queryByRole("dialog", { name: "New message" })).toBeNull();
+    expect(mocks.client.request).not.toHaveBeenCalled();
+  });
+
   it("shows its loading state while the list is pending", async () => {
     mocks.client.list.mockReturnValue(new Promise(() => {}));
     mountAt("/?tab=activity&section=messages");
@@ -527,6 +594,36 @@ describe("Post contact recovery", () => {
     conversationId: null,
     createdAt: "2026-11-09T09:00:00Z",
   };
+
+  it("shows a missing Post without offering a contact request", async () => {
+    mocks.report.mockResolvedValue(null);
+    mountAt("/?tab=activity&section=messages&messageKind=post&messageResource=42");
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(await within(sheet).findByText("Post not found.")).toBeTruthy();
+    expect(within(sheet).queryByRole("button", { name: "Send request" })).toBeNull();
+    expect(mocks.client.requestPostContact).not.toHaveBeenCalled();
+  });
+
+  it("prevents repeated submits while a Post request is pending", async () => {
+    let finish: (item: PostContactRequest) => void = () => {};
+    mocks.client.requestPostContact.mockImplementation(
+      () =>
+        new Promise<PostContactRequest>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    mountAt("/?tab=activity&section=messages&messageKind=post&messageResource=42");
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    const send = await within(sheet).findByRole("button", { name: "Send request" });
+    fireEvent.click(send);
+    await waitFor(() => expect((send as HTMLButtonElement).disabled).toBe(true));
+    fireEvent.submit(send.closest("form")!);
+    expect(mocks.client.requestPostContact).toHaveBeenCalledOnce();
+    await act(async () => finish(pending));
+    expect((await within(sheet).findByRole("status")).textContent).toContain(
+      "The author can open a conversation",
+    );
+  });
 
   it.each([
     ["accepted", 7, "Open conversation"],
