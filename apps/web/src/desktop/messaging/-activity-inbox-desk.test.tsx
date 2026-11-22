@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
-import type { AdminHelpdeskItem } from "@clc/core/features/messaging/logic";
+import type { AdminHelpdeskItem, PostContactRequest } from "@clc/core/features/messaging/logic";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { AMINA, conversation, message, mountDesk, VIEWER } from "./-messaging-desk-fixtures";
@@ -22,6 +22,10 @@ const mocks = vi.hoisted(() => ({
     markRead: vi.fn(),
     helpdesk: vi.fn(),
     request: vi.fn(),
+    resourceTargets: vi.fn(),
+    postRequests: vi.fn(),
+    requestPostContact: vi.fn(),
+    setPostRequestStatus: vi.fn(),
   },
   admin: {
     counts: vi.fn(),
@@ -66,6 +70,9 @@ vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
 vi.mock("#/features/images/use-image-upload", () => ({
   useImageUpload: () => ({ mutateAsync: vi.fn() }),
 }));
+vi.mock("#/features/home/hooks/use-reports", () => ({
+  useReport: () => ({ data: { id: "47", title: "Harvest notes" } }),
+}));
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: false }));
 vi.mock("#/features/notifications/storage/notification-db", () => ({
   isNotificationStorageAvailable: () => true,
@@ -83,6 +90,10 @@ beforeEach(() => {
   mocks.client.unread.mockResolvedValue({ direct: 3, requests: 1, helpdesk: 2 });
   mocks.client.list.mockResolvedValue({ items: [], nextCursor: null });
   mocks.client.markRead.mockResolvedValue(undefined);
+  mocks.client.postRequests.mockReset().mockResolvedValue({ items: [], nextCursor: null });
+  mocks.client.requestPostContact.mockReset();
+  mocks.client.resourceTargets.mockReset().mockResolvedValue({ targets: [] });
+  mocks.client.setPostRequestStatus.mockReset();
   mocks.getAccountActivity.mockResolvedValue({ activity: [], last: undefined });
   mocks.inbox.mockResolvedValue([]);
   mocks.search.mockReturnValue({ data: undefined, isDebouncing: false, isFetching: false });
@@ -169,6 +180,96 @@ describe("desktop Activity sections", () => {
 });
 
 describe("desktop Messages", () => {
+  it("opens a Post contact request directly and clears its intent when closed", async () => {
+    mocks.client.requestPostContact.mockResolvedValue({
+      id: "d70ea7f3-1a11-4460-8da8-4275ba25a32a",
+      postId: "47",
+      postTitle: "Harvest notes",
+      direction: "outgoing",
+      status: "pending",
+      intro: null,
+      conversationId: null,
+      requester: null,
+      createdAt: "2026-11-09T09:00:00Z",
+    });
+    const { router } = mountDesk(
+      "/?tab=activity&section=messages&messageKind=post&messageResource=47",
+    );
+    const dialog = await screen.findByRole("dialog", { name: "New message" });
+    expect(within(dialog).getByRole("link", { name: "Post: Harvest notes" })).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Send request" }));
+    expect((await within(dialog).findByRole("status")).textContent).toContain(
+      "The author can open a conversation",
+    );
+    expect(mocks.client.requestPostContact).toHaveBeenCalledWith({
+      postId: "47",
+      intro: undefined,
+    });
+    expect(mocks.client.resourceTargets).not.toHaveBeenCalled();
+    expect(mocks.client.list).not.toHaveBeenCalledWith(
+      expect.objectContaining({ peerAddress: expect.anything() }),
+      expect.anything(),
+    );
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    await waitFor(() => expect(router.state.location.search).not.toHaveProperty("messageKind"));
+  });
+
+  it("lists Post requests, accepts an incoming request, and links the accepted conversation", async () => {
+    const incoming: PostContactRequest = {
+      id: "d70ea7f3-1a11-4460-8da8-4275ba25a32a",
+      postId: "47",
+      postTitle: "Harvest notes",
+      direction: "incoming",
+      status: "pending",
+      intro: "Can I join the next harvest?",
+      conversationId: null,
+      requester: { address: AMINA, username: "amina", avatar: null },
+      createdAt: "2026-11-09T09:00:00Z",
+    };
+    const outgoing: PostContactRequest = {
+      ...incoming,
+      id: "b7f2b272-a2f1-46a2-bd53-e9d0ce060d45",
+      postId: "48",
+      postTitle: "Garden notes",
+      direction: "outgoing",
+      intro: null,
+      requester: null,
+    };
+    const accepted = { ...incoming, status: "accepted", conversationId: 40 } as const;
+    const closed: PostContactRequest = {
+      ...accepted,
+      id: "3dd38c80-bf28-4bef-a032-77ef6fbe432c",
+      postId: "49",
+      postTitle: "Closed request",
+      conversationId: null,
+      intro: null,
+    };
+    mocks.client.unread.mockResolvedValue({ direct: 3, requests: 1, helpdesk: 2, postRequests: 1 });
+    mocks.client.postRequests
+      .mockResolvedValueOnce({ items: [incoming, outgoing, closed], nextCursor: null })
+      .mockResolvedValue({ items: [accepted, outgoing, closed], nextCursor: null });
+    mocks.client.setPostRequestStatus.mockResolvedValue(accepted);
+    mountDesk("/?tab=activity&section=messages");
+
+    const heading = await screen.findByRole("heading", { name: "Post requests" });
+    const requests = within(heading.closest("section")!);
+    expect(requests.getByRole("link", { name: "Post: Harvest notes" }).getAttribute("href")).toBe(
+      "/posts/47",
+    );
+    expect(requests.getByText("Can I join the next harvest?")).toBeTruthy();
+    expect(requests.getByText("Pending")).toBeTruthy();
+    expect(requests.getByText("Closed")).toBeTruthy();
+    expect(requests.getAllByRole("button", { name: "Accept" })).toHaveLength(1);
+    expect(await screen.findByRole("link", { name: "Messages, 5 new" })).toBeTruthy();
+    fireEvent.click(requests.getByRole("button", { name: "Accept" }));
+    await waitFor(() =>
+      expect(mocks.client.setPostRequestStatus).toHaveBeenCalledWith(incoming.id, "accepted"),
+    );
+    expect(
+      (await requests.findByRole("link", { name: "Open conversation" })).getAttribute("href"),
+    ).toBe("/messages/40");
+  });
+
   it("lists requests waiting on the caller apart from the other conversations", async () => {
     mocks.client.list.mockResolvedValue({
       items: [
@@ -221,6 +322,37 @@ describe("desktop Messages", () => {
 
 describe("desktop New message", () => {
   const JUMA = "0x9b2E18f7329bb8b533E5Be0D8B176eE1ed735600";
+
+  it("opens from a resource ID alone, retries lookup, and sends with the original context", async () => {
+    mocks.client.resourceTargets
+      .mockRejectedValueOnce(new Error("owner service unavailable"))
+      .mockResolvedValue({ targets: [{ address: JUMA, username: "juma", avatar: null }] });
+    const newThread = conversation(40, { status: "pending", requestedBySelf: true });
+    mocks.client.request.mockResolvedValue(newThread);
+    mocks.client.get.mockResolvedValue(newThread);
+    mocks.client.messages.mockResolvedValue({ items: [], hasMore: false });
+    const { router } = mountDesk(
+      "/?tab=activity&section=messages&messageKind=catalog&messageResource=47",
+    );
+
+    const dialog = within(await screen.findByRole("dialog", { name: "New message" }));
+    expect(await dialog.findByText("Couldn't load recipients.")).toBeTruthy();
+    expect(router.state.location.search.messageResource).toBe("47");
+    fireEvent.click(dialog.getByRole("button", { name: "Retry" }));
+    const intro = await dialog.findByRole("textbox", { name: "Introduce yourself" });
+    expect(dialog.queryByRole("searchbox")).toBeNull();
+    expect(router.state.location.search.messageResource).toBe("47");
+    fireEvent.change(intro, { target: { value: "A question about your catalog" } });
+    fireEvent.click(dialog.getByRole("button", { name: "Send request" }));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe("/messages/40"));
+    expect(mocks.client.resourceTargets).toHaveBeenCalledTimes(2);
+    expect(mocks.client.request).toHaveBeenCalledWith({
+      recipientAddress: JUMA,
+      intro: "A question about your catalog",
+      context: { kind: "catalog", resourceId: "47" },
+    });
+  });
 
   it("asks a user found by search to talk, then opens the new thread", async () => {
     mocks.search.mockImplementation((query: string | null) => ({

@@ -13,5 +13,5 @@ export function useCatalogDetail(id: string) {
   const owner = Boolean(
     viewerAddress && catalog?.ownerAddress.toLowerCase() === viewerAddress.toLowerCase(),
   );
-  return { query, catalog, owner, viewerAddress };
+  return { query, catalog, owner };
 }

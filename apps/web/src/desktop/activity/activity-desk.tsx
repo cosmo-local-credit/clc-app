@@ -9,7 +9,7 @@ import { MessagesDesk } from "#/desktop/messaging/messages-desk";
 import { NotificationsDesk } from "#/desktop/messaging/notifications-desk";
 import { MESSAGING_ENABLED } from "#/lib/messaging-config";
 import type { ActivitySection } from "#/lib/navigation/activity-search";
-import type { MessageContextInput } from "@clc/core/features/messaging/logic";
+import type { MessageLaunchContext } from "@clc/core/features/messaging/logic";
 
 /**
  * Activity on the desktop. With messaging on, `?section=` picks one of four
@@ -36,7 +36,7 @@ export function ActivityDesk({
   onQueryChange?: (query: string) => void;
   onTypesChange?: (types: readonly ActivityKind[]) => void;
   messageTo?: `0x${string}`;
-  messageContext?: MessageContextInput;
+  messageContext?: MessageLaunchContext;
   onMessageToConsumed?: () => void;
   helpdeskId?: number;
   helpdeskStatus?: HelpdeskStatus;

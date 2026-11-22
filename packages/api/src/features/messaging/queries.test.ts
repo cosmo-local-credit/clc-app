@@ -1,4 +1,4 @@
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient, skipToken } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { AdminMessagingClient, MessagingClient } from "./client";
@@ -10,9 +10,27 @@ import {
   conversationMessagesQueryOptions,
   loadOlderConversationMessages,
   messagingKeys,
+  resourceTargetsQueryOptions,
 } from "./queries";
 
 const VIEWER = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
+
+it("disables recipient lookup for a guest and keeps signed-in results wallet-scoped", async () => {
+  const resourceTargets = vi.fn().mockResolvedValue({ targets: [] });
+  const client = { resourceTargets } as unknown as MessagingClient;
+  const resource = { kind: "want" as const, resourceId: "42" };
+  expect(resourceTargetsQueryOptions(client, undefined, resource).enabled).toBe(false);
+  const none = resourceTargetsQueryOptions(client, undefined, undefined);
+  expect(none.enabled).toBe(false);
+  expect(none.queryFn).toBe(skipToken);
+  expect(resourceTargets).not.toHaveBeenCalled();
+  const options = resourceTargetsQueryOptions(client, VIEWER, resource);
+  await new QueryClient().fetchQuery(options);
+  expect(resourceTargets).toHaveBeenCalledWith(resource, expect.any(AbortSignal));
+  expect(options.queryKey).not.toEqual(
+    resourceTargetsQueryOptions(client, undefined, resource).queryKey,
+  );
+});
 
 it("scopes a peer lookup by viewer and checks it matches the requested direct peer", async () => {
   const peer = "0xDEADBEEF00000000000000000000000000000001";

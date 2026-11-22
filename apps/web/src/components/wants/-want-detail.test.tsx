@@ -126,10 +126,18 @@ describe("Want detail", () => {
     const header = screen.getByRole("banner");
     const message = await within(header).findByRole("link", { name: "Message" });
     const query = new URL(message.getAttribute("href")!, "https://example.test").searchParams;
-    expect(query.get("messageTo")).toBe(OWNER);
+    expect(query.has("messageTo")).toBe(false);
     expect(query.get("messageKind")).toBe("want");
     expect(query.get("messageResource")).toBe(WANT.id);
-    expect(screen.getAllByRole("link", { name: "Message" })).toHaveLength(2);
+    await waitFor(() => expect(screen.getAllByRole("link", { name: "Message" })).toHaveLength(2));
+  });
+
+  it("keeps Message on a Want with no owner address in the detail payload", () => {
+    renderWant(<WantDetail want={WANT} />);
+
+    const message = within(screen.getByRole("banner")).getByRole("link", { name: "Message" });
+    expect(message.getAttribute("href")).toContain("messageResource=7");
+    expect(api.owner).not.toHaveBeenCalled();
   });
 
   it("shows scheduling, protected location, tags, description, and selected contacts to a signed-in user", async () => {

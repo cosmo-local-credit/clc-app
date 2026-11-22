@@ -1,11 +1,12 @@
 import type { Conversation } from "@clc/core/features/messaging/logic";
-import type { MessageContextInput } from "@clc/core/features/messaging/logic";
+import type { MessageLaunchContext } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { RiImageLine } from "react-icons/ri";
 
 import { PeerAvatar, PeerName } from "#/components/messaging/peer";
+import { PostRequestsSection } from "#/components/messaging/post-requests-section";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Spinner } from "#/components/ui/spinner";
@@ -13,6 +14,7 @@ import { UnreadCount, UnreadCountLabel } from "#/components/ui/unread-count";
 import { NewMessageDialog } from "#/desktop/messaging/new-message-dialog";
 import { DESK_SELECTED, DeskEyebrow } from "#/desktop/ui/page";
 import { useConversationList } from "#/features/messaging/hooks/use-conversation-list";
+import { usePostRequests } from "#/features/messaging/hooks/use-post-requests";
 import { cn } from "#/lib/utils";
 
 /**
@@ -28,11 +30,12 @@ export function ConversationListDesk({
 }: {
   selectedId?: number;
   messageTo?: `0x${string}`;
-  messageContext?: MessageContextInput;
+  messageContext?: MessageLaunchContext;
   onMessageToConsumed?: () => void;
 }) {
   const { t } = useLingui();
   const list = useConversationList("direct");
+  const postRequests = usePostRequests();
   const requests = list.conversations.filter(
     (conversation) => conversation.status === "pending" && conversation.canAccept,
   );
@@ -42,6 +45,7 @@ export function ConversationListDesk({
     <div className="flex min-h-0 w-[340px] shrink-0 flex-col border-border border-e">
       <div className="shrink-0 border-border border-b p-3">
         <NewMessageDialog
+          key={JSON.stringify([postRequests.viewer, messageTo, messageContext])}
           messageTo={messageTo}
           messageContext={messageContext}
           onMessageToConsumed={onMessageToConsumed}
@@ -51,6 +55,7 @@ export function ConversationListDesk({
         className="min-h-0 flex-1 overflow-y-auto"
         aria-busy={list.isPending && list.fetchStatus !== "idle"}
       >
+        <PostRequestsSection key={postRequests.viewer} list={postRequests} />
         {list.isPending && list.fetchStatus !== "idle" ? (
           <p className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
             <Spinner />
@@ -67,7 +72,7 @@ export function ConversationListDesk({
             </Button>
           </div>
         ) : null}
-        {list.isSuccess && list.conversations.length === 0 ? (
+        {list.isSuccess && list.conversations.length === 0 && postRequests.items.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">
             <Trans>No messages yet.</Trans>
           </p>

@@ -3,6 +3,7 @@ import {
   type ConversationKind,
   type HelpdeskStatus,
   mergeMessages,
+  type MessageContextInput,
   newestMessageId,
   type ThreadMessages,
 } from "@clc/core/features/messaging/logic";
@@ -11,6 +12,7 @@ import {
   type QueryClient,
   type QueryKey,
   queryOptions,
+  skipToken,
 } from "@tanstack/react-query";
 
 import type { AdminMessagingClient, MessagePageParams, MessagingClient } from "./client";
@@ -30,6 +32,14 @@ export const messagingKeys = {
   all: ["clc", "messaging"] as const,
   viewer: (viewer: string) => [...messagingKeys.all, viewer.toLowerCase()] as const,
   unread: (viewer: string) => [...messagingKeys.viewer(viewer), "unread"] as const,
+  resourceTargets: (viewer: string, resource?: MessageContextInput) =>
+    [
+      ...messagingKeys.viewer(viewer),
+      "resource-targets",
+      resource?.kind,
+      resource?.resourceId,
+    ] as const,
+  postRequests: (viewer: string) => [...messagingKeys.viewer(viewer), "post-requests"] as const,
   lists: (viewer: string) => [...messagingKeys.viewer(viewer), "list"] as const,
   list: (viewer: string, kind: ConversationKind) => [...messagingKeys.lists(viewer), kind] as const,
   peer: (viewer: string, peerAddress: string) =>
@@ -142,6 +152,28 @@ export function conversationUnreadQueryOptions(messaging: MessagingClient, viewe
   return queryOptions({
     queryKey: messagingKeys.unread(viewer),
     queryFn: ({ signal }) => messaging.unread(signal),
+  });
+}
+
+export function resourceTargetsQueryOptions(
+  messaging: MessagingClient,
+  viewer: string | undefined,
+  resource: MessageContextInput | undefined,
+) {
+  return queryOptions({
+    queryKey: messagingKeys.resourceTargets(viewer ?? "", resource),
+    queryFn: resource ? ({ signal }) => messaging.resourceTargets(resource, signal) : skipToken,
+    enabled: Boolean(viewer && resource),
+    retry: false,
+  });
+}
+
+export function postRequestsQueryOptions(messaging: MessagingClient, viewer: string) {
+  return infiniteQueryOptions({
+    queryKey: [...messagingKeys.postRequests(viewer), "list"],
+    queryFn: ({ pageParam, signal }) => messaging.postRequests(pageParam, signal),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor ?? undefined,
   });
 }
 

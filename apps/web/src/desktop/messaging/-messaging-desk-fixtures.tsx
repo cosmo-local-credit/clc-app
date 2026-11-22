@@ -15,7 +15,11 @@ import { ConversationDesk } from "#/desktop/messaging/conversation-desk";
 import {
   parseActivityHelpdeskId,
   parseActivityHelpdeskStatus,
+  parseActivityMessageContext,
+  parseActivityMessageTo,
+  parseActivityPostContact,
   parseActivitySection,
+  pickActivitySearch,
 } from "#/lib/navigation/activity-search";
 
 export const VIEWER = "0x2a986F40d29fc7e1Bded626542d4b8f1Ca0A82f6";
@@ -71,22 +75,35 @@ export function mountDesk(entry: string, operator = false) {
     path: "/",
     validateSearch: (search: Record<string, unknown>) => ({
       tab: typeof search.tab === "string" ? search.tab : undefined,
-      section: typeof search.section === "string" ? search.section : undefined,
-      helpdeskId:
-        typeof search.helpdeskId === "string" || typeof search.helpdeskId === "number"
-          ? search.helpdeskId
-          : undefined,
-      helpdeskStatus: typeof search.helpdeskStatus === "string" ? search.helpdeskStatus : undefined,
+      ...pickActivitySearch(search),
     }),
     component: function Home() {
-      const { section, helpdeskId, helpdeskStatus } = home.useSearch();
+      const search = home.useSearch() as unknown as ReturnType<typeof pickActivitySearch>;
+      const navigate = home.useNavigate();
+      const postId = parseActivityPostContact(search);
       return (
         <ActivityDesk
-          section={parseActivitySection(section)}
+          section={parseActivitySection(search.section)}
           address={VIEWER}
           operator={operator}
-          helpdeskId={parseActivityHelpdeskId(helpdeskId)}
-          helpdeskStatus={parseActivityHelpdeskStatus(helpdeskStatus)}
+          helpdeskId={parseActivityHelpdeskId(search.helpdeskId)}
+          helpdeskStatus={parseActivityHelpdeskStatus(search.helpdeskStatus)}
+          messageTo={parseActivityMessageTo(search.messageTo)}
+          messageContext={
+            postId ? { kind: "post", resourceId: postId } : parseActivityMessageContext(search)
+          }
+          onMessageToConsumed={() =>
+            void navigate({
+              search: (previous) => ({
+                ...previous,
+                messageTo: undefined,
+                messageKind: undefined,
+                messageResource: undefined,
+                messageVoucher: undefined,
+              }),
+              replace: true,
+            })
+          }
         />
       );
     },

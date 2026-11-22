@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import type { MessageContextInput } from "@clc/core/features/messaging/logic";
+import type { MessageContextInput, MessageLaunchContext } from "@clc/core/features/messaging/logic";
 import type { ReactNode } from "react";
 import { RiChat3Line } from "react-icons/ri";
 
@@ -24,7 +24,7 @@ export function MessagesDesk({
   header: ReactNode;
   conversationId?: number;
   messageTo?: `0x${string}`;
-  messageContext?: MessageContextInput;
+  messageContext?: MessageLaunchContext;
   threadContext?: MessageContextInput;
   onThreadContextSent?: () => void;
   onMessageToConsumed?: () => void;

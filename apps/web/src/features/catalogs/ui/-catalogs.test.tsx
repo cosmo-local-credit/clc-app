@@ -111,7 +111,7 @@ vi.mock("#/features/home/hooks/use-ip-camera", () => ({
 vi.mock("sonner", () => ({ toast: { success: mocks.success, error: mocks.error } }));
 vi.mock("#/components/wallet", () => ({ BackChevron: () => <a href="/">Back</a> }));
 vi.mock("#/components/messaging/resource-owner-contact", () => ({
-  OwnerMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
+  ResourceMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
     <a href={`/?messageKind=${context?.kind}&messageResource=${context?.resourceId}`}>Message</a>
   ),
   ResourceOwnerContact: ({ ownerAddress }: { ownerAddress: string }) => (

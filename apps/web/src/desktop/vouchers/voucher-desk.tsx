@@ -6,7 +6,7 @@ import { useConnection } from "wagmi";
 
 import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
-import { OwnerMessageButton } from "#/components/messaging/resource-owner-contact";
+import { ResourceMessageButton } from "#/components/messaging/resource-owner-contact";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { TagBadge } from "#/components/ui/tag-badge";
@@ -211,13 +211,7 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
                     {detail?.id && detail.address ? (
                       <VoucherCatalogButton resourceId={detail.id} address={detail.address} />
                     ) : null}
-                    {detail?.active && detail.ownerAddress ? (
-                      <OwnerMessageButton
-                        ownerAddress={detail.ownerAddress}
-                        excludeAddress={holdingsAddress}
-                        context={{ kind: "voucher", resourceId: detail.address }}
-                      />
-                    ) : null}
+                    <ResourceMessageButton context={{ kind: "voucher", resourceId: address }} />
                     <VoucherShareButton name={token.name} address={address} />
                   </>
                 }

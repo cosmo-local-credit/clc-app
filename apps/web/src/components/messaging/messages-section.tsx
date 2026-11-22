@@ -1,11 +1,13 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { MessageContextInput } from "@clc/core/features/messaging/logic";
+import type { MessageLaunchContext } from "@clc/core/features/messaging/logic";
 
 import { Button } from "#/components/ui/button";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
 import { useConversationList } from "#/features/messaging/hooks/use-conversation-list";
+import { usePostRequests } from "#/features/messaging/hooks/use-post-requests";
 import { ConversationRow } from "./conversation-row";
 import { NewMessageSheet } from "./new-message-sheet";
+import { PostRequestsSection } from "./post-requests-section";
 
 /** Activity's Messages: requests waiting on the caller first, then every conversation. */
 export function MessagesSection({
@@ -14,11 +16,12 @@ export function MessagesSection({
   onMessageToConsumed,
 }: {
   messageTo?: `0x${string}`;
-  messageContext?: MessageContextInput;
+  messageContext?: MessageLaunchContext;
   onMessageToConsumed?: () => void;
 }) {
   const { t } = useLingui();
   const list = useConversationList("direct");
+  const postRequests = usePostRequests();
   const requests = list.conversations.filter(
     (conversation) => conversation.status === "pending" && conversation.canAccept,
   );
@@ -26,10 +29,12 @@ export function MessagesSection({
   return (
     <div className="space-y-3">
       <NewMessageSheet
+        key={JSON.stringify([postRequests.viewer, messageTo, messageContext])}
         messageTo={messageTo}
         messageContext={messageContext}
         onMessageToConsumed={onMessageToConsumed}
       />
+      <PostRequestsSection key={postRequests.viewer} list={postRequests} />
       {list.isPending && list.fetchStatus !== "idle" ? (
         <ListSkeleton label={<Trans>Loading messages…</Trans>} count={4} />
       ) : null}
@@ -48,7 +53,7 @@ export function MessagesSection({
           </Button>
         </div>
       ) : null}
-      {list.isSuccess && list.conversations.length === 0 ? (
+      {list.isSuccess && list.conversations.length === 0 && postRequests.items.length === 0 ? (
         <p className="border border-border bg-card p-3 text-muted-foreground text-sm">
           <Trans>No messages yet.</Trans>
         </p>
