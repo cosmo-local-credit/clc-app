@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { ShareLinkButton } from "./share-link-button";
+import { ShareVoucherButton } from "./vouchers/voucher-summary";
 
 const { toast } = vi.hoisted(() => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("sonner", () => ({ toast }));
@@ -32,6 +33,25 @@ function clipboard(writeText: ((text: string) => Promise<void>) | undefined) {
 }
 
 describe("resource link sharing", () => {
+  it.each(["map", "detail"] as const)(
+    "keeps Voucher %s sharing pointed at its own destination",
+    async (destination) => {
+      const share = vi.fn().mockResolvedValue(undefined);
+      nativeShare(share);
+      const address = `0x${"a".repeat(40)}`;
+      render(
+        <ShareVoucherButton name="Harvest voucher" address={address} destination={destination} />,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Share" }));
+      await waitFor(() =>
+        expect(share).toHaveBeenCalledWith({
+          title: "Harvest voucher",
+          url: `${window.location.origin}${destination === "map" ? `/?voucher=${address}` : `/vouchers/${address}`}`,
+        }),
+      );
+    },
+  );
+
   it("shares the canonical resource URL and title", async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     nativeShare(share);

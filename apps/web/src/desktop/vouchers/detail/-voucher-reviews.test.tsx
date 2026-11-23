@@ -36,6 +36,30 @@ const access: ReviewAccess = {
 afterEach(() => activateLocale("en"));
 
 describe("the desktop review editor", () => {
+  it.each(["voucher", "pool"] as const)(
+    "keeps an already reported %s text review disabled",
+    async (kind) => {
+      mocks.list.mockResolvedValue({
+        ...page,
+        total: 1,
+        reviews: [{ id: 8, stars: 5, comment: "Review text", reply: null }],
+      });
+      mocks.access.mockResolvedValue({ ...access, isOwner: true, flaggedReviewIds: [8] });
+      render(
+        <QueryClientProvider client={new QueryClient()}>
+          <VoucherReviewsDesk
+            kind={kind}
+            address="0x2222222222222222222222222222222222222222"
+            layout="page"
+          />
+        </QueryClientProvider>,
+      );
+      const reported = await screen.findByRole("button", { name: "Reported" });
+      expect((reported as HTMLButtonElement).disabled).toBe(true);
+      expect(screen.queryByRole("button", { name: "Report inappropriate" })).toBeNull();
+      expect(screen.getByRole("button", { name: "Reply" })).toBeTruthy();
+    },
+  );
   it("keeps text reviews reportable by the resource owner", async () => {
     mocks.list.mockResolvedValue({
       ...page,

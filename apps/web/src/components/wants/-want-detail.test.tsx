@@ -4,6 +4,7 @@ import type { Want } from "@clc/core/features/wants/logic";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { WantDetail } from "./want-detail";
+import { WantEditButton } from "./want-edit-button";
 
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 const api = vi.hoisted(() => ({
@@ -149,6 +150,19 @@ describe("Want detail", () => {
     expect(screen.getByRole("link", { name: "Edit Want" }).getAttribute("href")).toBe(
       "/wallet/wants/7/edit",
     );
+  });
+
+  it("names the compact edit link and hides it when the Admin session ends", () => {
+    auth.session = { address: `0x${"a".repeat(40)}`, role: "ADMIN" };
+    const edit = <WantEditButton want={{ id: WANT.id, ownerAddress: OWNER }} iconOnly />;
+    const view = render(edit);
+    const link = screen.getByRole("link", { name: "Edit Want" });
+    expect(link.getAttribute("href")).toBe("/wallet/wants/7/edit");
+    expect(link.textContent?.trim()).toBe("");
+
+    auth.isAuthenticated = false;
+    view.rerender(<WantEditButton want={{ id: WANT.id, ownerAddress: OWNER }} iconOnly />);
+    expect(screen.queryByRole("link", { name: "Edit Want" })).toBeNull();
   });
 
   it("keeps Message on a Want with no owner address in the detail payload", () => {

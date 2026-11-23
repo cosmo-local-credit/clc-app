@@ -37,7 +37,7 @@ const OFFERING = {
   tags: [],
 } as Offering;
 
-const mocks = vi.hoisted(() => ({ update: vi.fn() }));
+const mocks = vi.hoisted(() => ({ update: vi.fn(), tags: ["Food"] as string[] | undefined }));
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 vi.mock("#/lib/api/offerings", () => ({
@@ -52,7 +52,7 @@ vi.mock("#/hooks/use-vocabulary", () => ({
 }));
 vi.mock("#/hooks/use-deployment", () => ({
   tokenTagsQueryKey: ["deployments", "token-tags"],
-  useTokenTags: () => ({ data: ["Food"] }),
+  useTokenTags: () => ({ data: mocks.tags }),
 }));
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: false }));
 vi.mock("#/hooks/use-resource-usage", () => ({
@@ -99,6 +99,7 @@ function deferred<T>() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.tags = ["Food"];
 });
 
 describe("Editing an offering across a phone/desktop view switch", () => {
@@ -124,6 +125,55 @@ describe("Editing an offering across a phone/desktop view switch", () => {
         VOUCHER,
         OFFERING.id,
         expect.objectContaining({ tags: [] }),
+      ),
+    );
+  });
+
+  it("keeps saved categories editable without suggestions and shows the limit before saving", async () => {
+    mocks.tags = undefined;
+    const tags = [
+      "Food",
+      "Agriculture",
+      "Education",
+      "Transport",
+      "Health",
+      "Construction",
+      "Clothing",
+      "Repair",
+      "Software",
+      "Livestock",
+      "Seeds",
+      "Farming",
+    ];
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <OfferingEditorSheet
+          editor={{ kind: "edit", offering: { ...OFFERING, tags } }}
+          voucherAddress={VOUCHER}
+          priceCurrency="KES"
+          defaultImageUrl={null}
+          onClose={vi.fn()}
+        />
+      </QueryClientProvider>,
+    );
+    const sheet = within(await screen.findByRole("dialog"));
+    expect(sheet.getByRole("button", { name: "Remove Food" })).toBeTruthy();
+    const search = sheet.getByRole("combobox", { name: "Search or add tags" });
+    fireEvent.focus(search);
+    fireEvent.change(search, { target: { value: "compost" } });
+    fireEvent.click(sheet.getByRole("button", { name: "Add “Compost”" }));
+    fireEvent.click(sheet.getByRole("button", { name: "Save changes" }));
+    expect(await sheet.findByText("Choose at most 12 tags")).toBeTruthy();
+    expect(mocks.update).not.toHaveBeenCalled();
+
+    mocks.update.mockResolvedValueOnce(OFFERING);
+    fireEvent.click(sheet.getByRole("button", { name: "Remove Food" }));
+    fireEvent.click(sheet.getByRole("button", { name: "Save changes" }));
+    await waitFor(() =>
+      expect(mocks.update).toHaveBeenCalledExactlyOnceWith(
+        VOUCHER,
+        OFFERING.id,
+        expect.objectContaining({ tags: [...tags.slice(1), "Compost"] }),
       ),
     );
   });

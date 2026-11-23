@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BackendApiError } from "@clc/api/client/errors";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { Want } from "@clc/core/features/wants/logic";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { WantFormPage } from "./want-form-page";
@@ -169,6 +169,8 @@ beforeEach(() => {
   mocks.close.mockReset().mockResolvedValue(undefined);
   mocks.remove.mockReset().mockResolvedValue(undefined);
   mocks.mine.mockReset().mockResolvedValue({ wants: [WANT], first: 7, last: 7 });
+  mocks.profile.data.email = "amina@example.test";
+  mocks.profile.data.phone = "+254700000000";
   mocks.profile.data.geoLat = -1.286;
   mocks.profile.data.geoLng = 36.817;
   mocks.profile.data.locationName = "Nairobi Market";
@@ -359,6 +361,49 @@ describe("Want form", () => {
     );
     fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
     expect(mocks.profile.refetch).toHaveBeenCalled();
+  });
+
+  it("retries a failed profile read for create without looking up an existing Want", () => {
+    mocks.profile.isError = true;
+    renderForm();
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.profile.refetch).toHaveBeenCalledOnce();
+    expect(mocks.mine).not.toHaveBeenCalled();
+    expect(mocks.editRecord).not.toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "Create Want" })).toBeNull();
+  });
+
+  it("lets the owner reopen a closed Want with unavailable contacts and blocks repeat submits", async () => {
+    mocks.profile.data.email = "wallet@clc.local";
+    mocks.profile.data.phone = "";
+    const closed: Want = { ...WANT, status: "CLOSED", state: "closed", contactPermission: 3 };
+    mocks.mine.mockResolvedValueOnce({ wants: [closed], first: 7, last: 7 });
+    let complete!: (want: Want) => void;
+    mocks.reopen.mockReturnValueOnce(
+      new Promise<Want>((resolve) => {
+        complete = resolve;
+      }),
+    );
+    renderForm("7");
+
+    const submit = await screen.findByRole<HTMLButtonElement>("button", {
+      name: "Save and reopen Want",
+    });
+    for (const name of ["Email unavailable", "Phone unavailable"]) {
+      const permission = screen.getByRole("checkbox", { name });
+      expect(permission.getAttribute("aria-disabled")).toBe("true");
+      expect(permission.getAttribute("aria-checked")).toBe("false");
+    }
+    fireEvent.click(submit);
+    await waitFor(() => expect(submit.getAttribute("aria-busy")).toBe("true"));
+    fireEvent.submit(submit.form!);
+    expect(mocks.reopen).toHaveBeenCalledExactlyOnceWith(
+      "7",
+      expect.objectContaining({ contactText: null, shareEmail: false, sharePhone: false }),
+    );
+    await act(async () => complete(WANT));
+    await waitFor(() => expect(mocks.navigate).toHaveBeenCalled());
   });
 
   it("requires an explicit location when the profile has none", async () => {

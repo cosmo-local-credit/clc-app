@@ -59,6 +59,17 @@ beforeEach(() => {
 });
 
 describe("voucher reviews", () => {
+  it.each(["voucher", "pool"] as const)(
+    "keeps an already reported %s text review disabled",
+    async (kind) => {
+      mocks.access.mockResolvedValue({ ...access, isOwner: true, flaggedReviewIds: [review.id] });
+      mount(kind);
+      const reported = await screen.findByRole("button", { name: "Reported" });
+      expect((reported as HTMLButtonElement).disabled).toBe(true);
+      expect(screen.queryByRole("button", { name: "Report inappropriate" })).toBeNull();
+      expect(screen.getByRole("button", { name: "Reply" })).toBeTruthy();
+    },
+  );
   it.each([
     ["voucher", "", null],
     ["voucher", "   ", "Owner reply"],

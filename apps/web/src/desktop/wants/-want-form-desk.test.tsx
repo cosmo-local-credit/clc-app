@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 const mocks = vi.hoisted(() => ({
   address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
   role: "USER",
+  contact: { email: "amina@example.org", phone: "+254712345678" },
   mine: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
@@ -28,7 +29,7 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
 }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => ({
-    data: { email: "amina@example.org", phone: "+254712345678", country: "KE" },
+    data: { ...mocks.contact, country: "KE" },
     isPending: false,
     isError: false,
     refetch: vi.fn(),
@@ -63,6 +64,7 @@ import { WantFormDesk } from "./want-form-desk";
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.role = "USER";
+  mocks.contact = { email: "amina@example.org", phone: "+254712345678" };
 });
 
 const WANT: Want = {
@@ -238,6 +240,7 @@ describe("WantFormDesk", () => {
 
   it("retains creator actions when a Superadmin edits their own closed Want", async () => {
     mocks.role = "SUPERADMIN";
+    mocks.contact = { email: "wallet@clc.local", phone: "" };
     const closed: Want = {
       ...WANT,
       ownerAddress: mocks.address.toLowerCase(),
@@ -249,13 +252,16 @@ describe("WantFormDesk", () => {
     renderForm(<WantFormDesk wantId="7" />);
 
     const save = await screen.findByRole("button", { name: "Save and reopen Want" });
-    expect(
-      screen.getByRole("checkbox", { name: "Share my email" }).getAttribute("aria-disabled"),
-    ).not.toBe("true");
+    for (const name of ["Email unavailable", "Phone unavailable"]) {
+      expect(screen.getByRole("checkbox", { name }).getAttribute("aria-disabled")).toBe("true");
+    }
     expect(screen.getByRole("button", { name: "Delete Want" })).toBeTruthy();
     fireEvent.click(save);
     await waitFor(() =>
-      expect(mocks.reopen).toHaveBeenCalledWith("7", expect.objectContaining({ name: WANT.name })),
+      expect(mocks.reopen).toHaveBeenCalledWith(
+        "7",
+        expect.objectContaining({ name: WANT.name, shareEmail: false, sharePhone: false }),
+      ),
     );
     expect(mocks.updateAsAdmin).not.toHaveBeenCalled();
   });

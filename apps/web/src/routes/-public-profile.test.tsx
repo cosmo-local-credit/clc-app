@@ -172,32 +172,63 @@ describe("public profile views", () => {
     },
   );
 
-  it("keeps hidden sections and unsafe websites absent", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(
-        reply({
-          profile: {
-            ...profile,
-            avatarUrl: null,
-            username: null,
-            name: null,
-            bio: null,
-            website: "javascript:alert(1)",
-            country: null,
-            preferredCurrency: null,
-            hasPrivateDetails: false,
-            sections: Object.fromEntries(Object.keys(profile.sections).map((key) => [key, false])),
-          },
+  it.each(["phone", "desktop"] as const)(
+    "keeps hidden %s sections and unsafe websites absent",
+    async (view) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          reply({
+            profile: {
+              ...profile,
+              avatarUrl: null,
+              username: null,
+              name: null,
+              bio: null,
+              website: "javascript:alert(1)",
+              country: null,
+              preferredCurrency: null,
+              hasPrivateDetails: false,
+              sections: Object.fromEntries(
+                Object.keys(profile.sections).map((key) => [key, false]),
+              ),
+            },
+          }),
+        ),
+      );
+      mount(view);
+      expect(await screen.findByRole("heading", { name: "Public profile" })).toBeTruthy();
+      expect(screen.queryByText("Contact and location")).toBeNull();
+      expect(document.querySelector("summary")).toBeNull();
+      expect(document.querySelector('a[href^="javascript:"]')).toBeNull();
+    },
+  );
+
+  it.each(["phone", "desktop"] as const)(
+    "uses the published name when the %s profile has no username",
+    async (view) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          reply({
+            profile: { ...profile, username: null, avatarUrl: null, hasPrivateDetails: false },
+          }),
+        ),
+      );
+      const share = vi.fn().mockResolvedValue(undefined);
+      Object.defineProperty(navigator, "share", { configurable: true, value: share });
+      mount(view);
+      expect(await screen.findByRole("heading", { name: "Alice" })).toBeTruthy();
+      expect(screen.queryByRole("img")).toBeNull();
+      fireEvent.click(screen.getByRole("button", { name: "Share" }));
+      await waitFor(() =>
+        expect(share).toHaveBeenCalledWith({
+          title: "Public profile",
+          url: `${window.location.origin}/profiles/${address}`,
         }),
-      ),
-    );
-    mount();
-    expect(await screen.findByRole("heading", { name: "Public profile" })).toBeTruthy();
-    expect(screen.queryByText("Contact and location")).toBeNull();
-    expect(document.querySelector("summary")).toBeNull();
-    expect(document.querySelector('a[href^="javascript:"]')).toBeNull();
-  });
+      );
+    },
+  );
 
   it("loads only selected authenticated details and never starts them while session is unresolved", async () => {
     auth.state = "loading";
@@ -292,8 +323,8 @@ describe("public profile views", () => {
               resourceId: address,
               name: `${section} ${second ? "two" : "one"}`,
               imageUrl: section === "vouchers" ? "https://images.example/resource.png" : null,
-              description: "Description",
-              symbol: "CLC",
+              description: section === "catalogs" ? null : "Description",
+              symbol: section === "wants" ? null : "CLC",
               management: section === "pools" ? "multisig" : "direct",
             },
           ],
@@ -327,6 +358,8 @@ describe("public profile views", () => {
         if (img) fireEvent.error(img);
       }
       if (key === "pools") expect(screen.getByText("Multisig managed")).toBeTruthy();
+      if (key === "wants") expect(screen.queryByText("CLC")).toBeNull();
+      if (key === "catalogs") expect(screen.queryByText("Description")).toBeNull();
       fireEvent.click(screen.getByText(label, { selector: "summary" }));
     }
     expect(fetch.mock.calls.some(([url]) => url.includes("bbox"))).toBe(false);
@@ -348,6 +381,13 @@ describe("public profile views", () => {
                     kind: "sent",
                     timestamp: "2026-11-23T00:00:00Z",
                   },
+                  {
+                    id: "2",
+                    txHash: `0x${"d".repeat(64)}`,
+                    chainId: 100,
+                    kind: "other-indexed-event",
+                    timestamp: "2026-11-23T00:00:00Z",
+                  },
                 ],
             nextCursor: url.searchParams.has("cursor") ? null : "two",
           }),
@@ -364,6 +404,9 @@ describe("public profile views", () => {
     fireEvent.click(screen.getByText("Transaction activity", { selector: "summary" }));
     const link = await screen.findByRole("link", { name: /Sent/ });
     expect(link.getAttribute("href")).toContain("gnosisscan.io/tx/");
+    expect(screen.getByRole("link", { name: /Transaction/ }).getAttribute("href")).toBe(
+      `https://gnosisscan.io/tx/0x${"d".repeat(64)}`,
+    );
     fireEvent.click(screen.getByRole("button", { name: "Load more" }));
     await waitFor(() => expect(screen.queryByRole("button", { name: "Load more" })).toBeNull());
   });
