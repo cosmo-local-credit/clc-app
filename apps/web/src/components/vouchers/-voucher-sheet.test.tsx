@@ -152,6 +152,9 @@ vi.mock("#/components/vouchers/voucher-offerings-panel", () => ({
 vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
   VoucherReviewsPanel: () => <div data-testid="reviews">Reviews panel</div>,
 }));
+vi.mock("#/components/vouchers/voucher-wants-panel", () => ({
+  VoucherWantsPanel: () => <div>Wants panel</div>,
+}));
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -538,6 +541,7 @@ describe("VoucherSheet continuous content", () => {
     fireEvent.click(screen.getByRole("button", { name: "Expand" }));
     expect(await screen.findByText("Offerings panel", undefined, { timeout: 5000 })).toBeTruthy();
     expect(screen.getByText("Reviews panel")).toBeTruthy();
+    expect(screen.getByText("Wants panel")).toBeTruthy();
     expect(screen.getByTestId("offerings").getAttribute("data-page-size")).toBe("3");
     fireEvent.click(screen.getByRole("button", { name: "Collapse" }));
     expect(screen.getByText("Offerings panel")).toBeTruthy();

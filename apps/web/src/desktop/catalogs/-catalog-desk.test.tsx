@@ -18,13 +18,13 @@ const { detail, members, update, remove, success, auth } = vi.hoisted(() => ({
   update: vi.fn(),
   remove: vi.fn(),
   success: vi.fn(),
-  auth: { address: "" },
+  auth: { address: "", role: "USER" },
 }));
 
 vi.mock("#/lib/api/catalogs", () => ({ catalogsClient: { detail, members, update, remove } }));
 vi.mock("sonner", () => ({ toast: { success } }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: true, session: { address: auth.address } }),
+  useAuthStatus: () => ({ isAuthenticated: true, session: auth }),
 }));
 vi.mock("#/hooks/use-deployment", () => ({
   tokenTagsQueryKey: ["deployments", "token-tags"],
@@ -91,6 +91,7 @@ function mountAt(entry: string) {
 
 beforeEach(() => {
   auth.address = OWNER;
+  auth.role = "USER";
   detail.mockResolvedValue(CATALOG);
   members.mockResolvedValue({ items: [], nextCursor: null });
   update.mockResolvedValue({ ...CATALOG, name: "Kilifi Traders Co-op" });
@@ -216,6 +217,18 @@ describe("CatalogDesk edit inspector", () => {
     await screen.findByRole("heading", { level: 1, name: "Kilifi Traders" });
     expect(screen.queryByRole("button", { name: "Edit catalog" })).toBeNull();
     expect(screen.queryByRole("complementary", { name: "Edit catalog" })).toBeNull();
+  });
+
+  it("lets an admin edit another owner's catalog and manage members without deleting it", async () => {
+    auth.address = "0x0000000000000000000000000000000000000001";
+    auth.role = "ADMIN";
+    mountAt("/catalogs/7?edit=true");
+
+    const editor = await screen.findByRole("complementary", { name: "Edit catalog" });
+    expect(within(editor).getByRole("button", { name: "Save changes" })).toBeTruthy();
+    expect(within(editor).queryByRole("button", { name: "Delete catalog" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Add a pool" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Add a voucher" })).toBeTruthy();
   });
 
   it("lays Pools and Vouchers out by the room the pane has", async () => {

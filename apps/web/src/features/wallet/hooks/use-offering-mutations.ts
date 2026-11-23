@@ -4,12 +4,16 @@ import {
   removeVoucherOfferingFromCaches,
 } from "@clc/api/features/offerings/cache";
 import type { Offering, OfferingWrite } from "@clc/api/features/offerings/client";
+import { offeringKeys } from "@clc/api/features/offerings/queries";
 import { voucherKeys } from "@clc/api/features/market/queries";
+import { marketMapKeys } from "@clc/api/features/market-map/queries";
+import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
 import { poolKeys } from "@clc/api/features/pools/queries";
 import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
 import { type QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { offeringsClient } from "#/lib/api/offerings";
+import { tokenTagsQueryKey } from "#/hooks/use-deployment";
 
 /**
  * What every offering write does to the cache, once the server has accepted it.
@@ -27,7 +31,16 @@ import { offeringsClient } from "#/lib/api/offerings";
  * that just moved. Neither read carries a browser `max-age` that could answer
  * stale — the pool route is `no-store` — so invalidation is the right tool there.
  */
-function settleOfferingWrite(queryClient: QueryClient) {
+function settleOfferingWrite(queryClient: QueryClient, tagsChanged = false) {
+  if (tagsChanged) {
+    void queryClient.invalidateQueries({ queryKey: tokenTagsQueryKey });
+    void queryClient.invalidateQueries({ queryKey: marketMapKeys.all });
+    void queryClient.invalidateQueries({ queryKey: marketplaceKeys.all });
+    void queryClient.invalidateQueries({
+      queryKey: offeringKeys.all,
+      predicate: ({ queryKey }) => queryKey[2] === "discovery" || queryKey[2] === "pool",
+    });
+  }
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: poolKeys.all }),
     queryClient.invalidateQueries({ queryKey: voucherKeys.all }),
@@ -52,9 +65,9 @@ export function useCreateVoucherOffering(voucherAddress: string) {
     onSettled: () => queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
     mutationFn: (input: OfferingWrite) =>
       offeringsClient.createVoucherOffering(voucherAddress, input),
-    onSuccess: (offering: Offering) => {
+    onSuccess: (offering: Offering, input) => {
       patchVoucherOfferingCaches(queryClient, voucherAddress, offering);
-      return settleOfferingWrite(queryClient);
+      return settleOfferingWrite(queryClient, Boolean(input.tags?.length));
     },
   });
 }
@@ -67,9 +80,9 @@ export function useUpdateVoucherOffering(voucherAddress: string) {
     onSettled: () => queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
     mutationFn: ({ id, input }: { id: string; input: OfferingWrite }) =>
       offeringsClient.updateVoucherOffering(voucherAddress, id, input),
-    onSuccess: (offering: Offering) => {
+    onSuccess: (offering: Offering, { input }) => {
       patchVoucherOfferingCaches(queryClient, voucherAddress, offering);
-      return settleOfferingWrite(queryClient);
+      return settleOfferingWrite(queryClient, input.tags !== undefined);
     },
   });
 }

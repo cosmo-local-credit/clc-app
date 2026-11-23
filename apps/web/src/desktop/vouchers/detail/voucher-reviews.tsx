@@ -248,16 +248,18 @@ export function VoucherReviewsDesk({
                         {review.reply ? t`Edit your reply` : t`Reply`}
                       </button>
                     ) : null}
-                    <button
-                      type="button"
-                      className="text-xs font-semibold text-muted-foreground hover:underline disabled:no-underline disabled:opacity-60"
-                      disabled={viewer.flaggedReviewIds.includes(review.id)}
-                      onClick={() => open({ kind: "flag", review })}
-                    >
-                      {viewer.flaggedReviewIds.includes(review.id)
-                        ? t`Reported`
-                        : t`Report inappropriate`}
-                    </button>
+                    {review.comment.trim() ? (
+                      <button
+                        type="button"
+                        className="text-xs font-semibold text-muted-foreground hover:underline disabled:no-underline disabled:opacity-60"
+                        disabled={viewer.flaggedReviewIds.includes(review.id)}
+                        onClick={() => open({ kind: "flag", review })}
+                      >
+                        {viewer.flaggedReviewIds.includes(review.id)
+                          ? t`Reported`
+                          : t`Report inappropriate`}
+                      </button>
+                    ) : null}
                   </div>
                 ) : null}
               </article>

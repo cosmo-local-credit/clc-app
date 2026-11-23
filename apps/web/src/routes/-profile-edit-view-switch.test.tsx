@@ -26,6 +26,8 @@ vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: false }));
 vi.mock("#/components/ui/location-picker", () => ({ LocationPicker: () => <div /> }));
 
+import { clearViewDrafts } from "#/lib/view-drafts";
+
 import { DESKTOP_MEDIA } from "#/desktop/layout";
 import { ProfileDesk } from "#/desktop/account/profile-desk";
 import { LayoutSwitch } from "#/desktop/switch";
@@ -101,6 +103,7 @@ function profile() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  clearViewDrafts();
   media.matches = false;
   media.listeners.clear();
   document.documentElement.dataset.layout = "mobile";
@@ -120,6 +123,25 @@ afterEach(() => {
 });
 
 describe("Edit profile across a phone/desktop view switch", () => {
+  it("preserves unsaved profile publication choices in both layout directions", async () => {
+    mockBackend();
+    render(profile());
+    fireEvent.click(await screen.findByRole("switch", { name: "Show Posts" }));
+    fireEvent.change(screen.getByLabelText(/^name$/i), { target: { value: "Alice draft" } });
+    setViewport(true);
+    expect(
+      (await screen.findByRole("switch", { name: "Show Posts" })).getAttribute("aria-checked"),
+    ).toBe("true");
+    expect((screen.getByLabelText(/^name$/i) as HTMLInputElement).value).toBe("Alice draft");
+    expect(
+      (screen.getByRole("button", { name: "Save changes" }) as HTMLButtonElement).disabled,
+    ).toBe(false);
+    setViewport(false);
+    expect(
+      (await screen.findByRole("switch", { name: "Show Posts" })).getAttribute("aria-checked"),
+    ).toBe("true");
+  });
+
   it("keeps Save busy in the other view while the first press is still saving", async () => {
     const backend = mockBackend();
     render(profile());

@@ -27,6 +27,7 @@ import { useInstallStore } from "#/features/install/install-store";
 import { useMySafes } from "#/features/safe/hooks/use-safe-signers";
 import type { CaliburDelegationStatus } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { PLATFORM_ABOUT_URL } from "#/lib/legal";
+import { ACTIVITY_SECTION_ICONS } from "#/lib/navigation/activity-section-icons";
 import { AccountSettingsSection } from "./account-settings-section";
 import { MultisigSettingsRows } from "./multisig-settings-section";
 import { NotificationSettingsSection } from "./notification-settings-section";
@@ -47,6 +48,7 @@ export function SettingsPage({
   const { t } = useLingui();
   const installed = useInstallStore((state) => state.installed);
   const mySafes = useMySafes();
+  const HelpdeskIcon = ACTIVITY_SECTION_ICONS.helpdesk;
 
   return (
     <div className="space-y-6">
@@ -56,6 +58,11 @@ export function SettingsPage({
 
       <SettingsGroup label={t`Account`}>
         <AccountSettingsSection />
+        <ActionRow
+          icon={<HelpdeskIcon className="size-4" aria-hidden="true" />}
+          label={t`Helpdesk`}
+          render={<Link to="/" search={{ tab: "activity", section: "helpdesk" }} />}
+        />
       </SettingsGroup>
 
       <SettingsGroup label={t`Preferences`}>

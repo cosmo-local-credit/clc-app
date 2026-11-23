@@ -2,12 +2,14 @@ import { BackendApiError } from "@clc/api/client/errors";
 import {
   myWantQueryOptions,
   saveWantMutationOptions,
+  wantEditQueryOptions,
   wantKeys,
 } from "@clc/api/features/wants/queries";
 import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
 import { resourceLimitKeys } from "@clc/api/features/resource-limits/queries";
 import type { LocationInput } from "@clc/core/features/location/logic";
 import type { MarkerColor } from "@clc/core/features/markers/logic";
+import { isAdminRole } from "@clc/core/features/users/roles";
 import { isHttpUrl } from "@clc/core/lib/contact";
 import {
   defaultWantStartsAt,
@@ -28,6 +30,7 @@ import { wantsClient } from "#/lib/api/wants";
 import { useViewDraft } from "#/lib/view-drafts";
 
 export type WantFormProfile = NonNullable<ReturnType<typeof useAuthProfile>["data"]>;
+type WantFormLocation = Omit<LocationInput, "country"> & { country?: string };
 
 /**
  * Names a Want's save, `"new"` for one being created, so a view that mounts
@@ -52,7 +55,7 @@ type WantDraft = {
   start: string;
   hasEnding: boolean;
   ending: string;
-  location: LocationInput | undefined;
+  location: WantFormLocation | undefined;
   contactText: string;
   shareEmail: boolean;
   sharePhone: boolean;
@@ -63,44 +66,65 @@ type WantDraft = {
 /** What the Want editor loads before it can show the form: the profile, the Want, the allowance. */
 export function useWantFormSources(id?: string) {
   const auth = useAuthStatus();
+  const adminAddress =
+    auth.isAuthenticated && isAdminRole(auth.session?.role) ? auth.session?.address : undefined;
   const ownerQuery = useQuery({
     ...myWantQueryOptions(wantsClient, auth.address ?? "", id ?? ""),
-    enabled: !!id && !!auth.address,
+    enabled: Boolean(id && auth.address && !adminAddress),
   });
+  const adminQuery = useQuery({
+    ...wantEditQueryOptions(wantsClient, id ?? "", adminAddress),
+    retry: false,
+  });
+  const wantQuery = adminAddress ? adminQuery : ownerQuery;
+  const adminEditing = Boolean(
+    adminAddress &&
+    wantQuery.data &&
+    adminAddress.toLowerCase() !== wantQuery.data.ownerAddress?.toLowerCase(),
+  );
   const profile = useAuthProfile();
   const usage = useResourceUsage(!id);
   return {
-    ownerQuery,
+    wantQuery,
+    adminEditing,
     profile,
     usage,
-    loading: profile.isPending || (!!id && ownerQuery.isPending),
-    failed: profile.isError || (!!id && ownerQuery.isError),
+    loading: profile.isPending || (!!id && wantQuery.isPending),
+    failed: profile.isError || (!!id && wantQuery.isError),
     retry: () => {
       void profile.refetch();
-      void ownerQuery.refetch();
+      if (id) void wantQuery.refetch();
     },
   };
 }
 
 /** Field state, save and the close/delete lifecycle of the Want editor. */
-export function useWantForm({ want, profile }: { want?: Want; profile: WantFormProfile }) {
+export function useWantForm({
+  want,
+  profile,
+  adminEditing = false,
+}: {
+  want?: Want;
+  profile: WantFormProfile;
+  adminEditing?: boolean;
+}) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tagsQuery = useTokenTags();
   const { address: account } = useAuthStatus();
   const viewDraft = useViewDraft<WantDraft>({
-    scope: want ? `want-edit:${want.id}` : "want-new",
+    scope: want ? `${adminEditing ? "want-admin-edit" : "want-edit"}:${want.id}` : "want-new",
     account,
   });
   const restored = viewDraft.restored;
-  const initialLocation = useMemo<LocationInput | undefined>(() => {
+  const initialLocation = useMemo<WantFormLocation | undefined>(() => {
     if (want)
       return {
         lat: want.geoLat,
         lng: want.geoLng,
         locationName: want.locationName,
-        country: profile.country,
+        country: adminEditing ? undefined : profile.country,
       };
     if (profile.geoLat == null || profile.geoLng == null || !profile.locationName) return undefined;
     return {
@@ -109,9 +133,10 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
       locationName: profile.locationName,
       country: profile.country,
     };
-  }, [profile, want]);
-  const emailAvailable = !!profile.email && !profile.email.toLowerCase().endsWith("@clc.local");
-  const phoneAvailable = !!profile.phone?.trim();
+  }, [adminEditing, profile, want]);
+  const emailAvailable =
+    adminEditing || (!!profile.email && !profile.email.toLowerCase().endsWith("@clc.local"));
+  const phoneAvailable = adminEditing || !!profile.phone?.trim();
   // The editor as it opens, before anyone has typed: the draft is only kept
   // while the fields differ from this.
   const [pristine] = useState<WantDraft>(() => ({
@@ -137,7 +162,7 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
   const [start, setStart] = useState(seed.start);
   const [hasEnding, setHasEnding] = useState(seed.hasEnding);
   const [ending, setEnding] = useState(seed.ending);
-  const [location, setLocation] = useState<LocationInput | undefined>(seed.location);
+  const [location, setLocation] = useState<WantFormLocation | undefined>(seed.location);
   const [imageUrl, setImageUrl] = useState<string | null>(seed.imageUrl ?? null);
   const [imageBusy, setImageBusy] = useState(false);
   const [contactText, setContactText] = useState(seed.contactText);
@@ -182,7 +207,13 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
   const markerColor: MarkerColor = want?.markerColor ?? "orange";
   const [error, setError] = useState<string | null>(null);
   const save = useMutation({
-    ...saveWantMutationOptions(wantsClient, queryClient, want?.id, want?.status === "CLOSED"),
+    ...saveWantMutationOptions(
+      wantsClient,
+      queryClient,
+      want?.id,
+      want?.status === "CLOSED",
+      adminEditing,
+    ),
     mutationKey: wantSaveMutationKey(want?.id),
   });
   // A save outlives the view that started it: after a phone/desktop swap the
@@ -204,7 +235,7 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
   });
 
   const submit = async () => {
-    if (inFlight) return;
+    if (inFlight || (adminEditing && !want)) return;
     setError(null);
     if (!location) {
       setError(t`Choose a location.`);
@@ -240,7 +271,7 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
         await navigate({
           to: "/wants/$wantId",
           params: { wantId: saved.id },
-          search: { from: "wallet" },
+          search: adminEditing ? {} : { from: "wallet" },
           replace: true,
         });
       } else {
@@ -260,6 +291,7 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
   };
 
   const runLifecycle = (action: "close" | "delete") => {
+    if (adminEditing) return;
     setError(null);
     lifecycle.mutate(action);
   };

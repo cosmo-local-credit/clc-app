@@ -64,6 +64,9 @@ vi.mock("#/desktop/vouchers/detail/voucher-info", () => ({
 vi.mock("#/desktop/vouchers/detail/voucher-offerings", () => ({
   VoucherOfferingsDesk: () => <p>offerings body</p>,
 }));
+vi.mock("#/desktop/vouchers/detail/voucher-wants", () => ({
+  VoucherWantsDesk: () => <p>wants body</p>,
+}));
 vi.mock("#/desktop/vouchers/detail/voucher-posts", () => ({
   VoucherPostsDesk: () => <p>posts body</p>,
 }));
@@ -153,6 +156,7 @@ describe("MarketPlacePanel voucher card", () => {
     const tabs = within(tablist).getAllByRole("tab");
     expect(tabs.map((tab) => tab.textContent)).toEqual([
       "Offerings",
+      "Wants",
       "Reviews",
       "Posts",
       "Info",
@@ -170,15 +174,15 @@ describe("MarketPlacePanel voucher card", () => {
 
     offerings.focus();
     fireEvent.keyDown(offerings, { key: "ArrowRight" });
-    const reviews = screen.getByRole("tab", { name: "Reviews" });
-    expect(document.activeElement).toBe(reviews);
-    expect(reviews.getAttribute("aria-selected")).toBe("true");
-    expect(screen.getByRole("tabpanel").textContent).toBe("reviews body");
-    expect(screen.getByRole("tabpanel").getAttribute("aria-labelledby")).toBe(reviews.id);
+    const wants = screen.getByRole("tab", { name: "Wants" });
+    expect(document.activeElement).toBe(wants);
+    expect(wants.getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("tabpanel").textContent).toBe("wants body");
+    expect(screen.getByRole("tabpanel").getAttribute("aria-labelledby")).toBe(wants.id);
     // A closed tab mounts nothing, so it runs no query.
     expect(screen.queryByText("offerings body")).toBeNull();
 
-    fireEvent.keyDown(reviews, { key: "End" });
+    fireEvent.keyDown(wants, { key: "End" });
     expect(screen.getByRole("tab", { name: "Activity" }).getAttribute("aria-selected")).toBe(
       "true",
     );

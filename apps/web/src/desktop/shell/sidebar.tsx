@@ -32,6 +32,7 @@ import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { isAdminRole } from "@clc/core/features/users/roles";
 import { DESK_SELECTED_EDGE } from "#/desktop/ui/page";
 import { PLATFORM_ABOUT_URL, PLATFORM_TERMS_URL } from "#/lib/legal";
+import { ACTIVITY_SECTION_ICONS } from "#/lib/navigation/activity-section-icons";
 
 const SCOPES: readonly DesktopScopeId[] = ["offers", "wants", "vouchers", "pools", "catalogs"];
 
@@ -123,6 +124,8 @@ export function DesktopSidebar() {
   const languageLabel = t`Language`;
   const themeLabel = t`Theme`;
   const termsLabel = t`Terms of Service`;
+  const helpdeskLabel = t`Helpdesk`;
+  const HelpdeskIcon = ACTIVITY_SECTION_ICONS.helpdesk;
 
   const settingsLink = !privateNav ? null : (
     <Link
@@ -309,6 +312,16 @@ export function DesktopSidebar() {
                 <RiFileTextLine aria-hidden="true" />
               </a>
             </RailTip>
+            <RailTip show label={helpdeskLabel}>
+              <Link
+                to="/"
+                search={{ tab: "activity", section: "helpdesk" }}
+                aria-label={helpdeskLabel}
+                className={FOOTER_ICON}
+              >
+                <HelpdeskIcon aria-hidden="true" />
+              </Link>
+            </RailTip>
           </div>
         ) : (
           <div
@@ -338,6 +351,10 @@ export function DesktopSidebar() {
               <span>{termsLabel}</span>
               <RiExternalLinkLine className="ms-auto rtl:-scale-x-100" aria-hidden="true" />
             </a>
+            <Link to="/" search={{ tab: "activity", section: "helpdesk" }} className={UTILITY_LINK}>
+              <HelpdeskIcon aria-hidden="true" />
+              <span>{helpdeskLabel}</span>
+            </Link>
           </div>
         )}
         {collapsed ? (

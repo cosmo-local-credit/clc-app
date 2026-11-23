@@ -22,6 +22,7 @@ import { VoucherCatalogButton } from "#/desktop/vouchers/detail/voucher-catalog-
 import { useCanEditVoucher, VoucherInfoDesk } from "#/desktop/vouchers/detail/voucher-info";
 import { VoucherOfferingsDesk } from "#/desktop/vouchers/detail/voucher-offerings";
 import { VoucherPostsDesk } from "#/desktop/vouchers/detail/voucher-posts";
+import { VoucherWantsDesk } from "#/desktop/vouchers/detail/voucher-wants";
 import { VoucherReviewsDesk } from "#/desktop/vouchers/detail/voucher-reviews";
 import {
   VoucherBalanceLine,
@@ -54,10 +55,11 @@ export function MarketPlacePanel({ realFix }: { realFix: Coordinates | null }) {
   return null;
 }
 
-type Section = "offerings" | "reviews" | "posts" | "info" | "activity";
+type Section = "offerings" | "wants" | "reviews" | "posts" | "info" | "activity";
 
 const SECTIONS: { id: Section; label: ReactNode }[] = [
   { id: "offerings", label: <Trans>Offerings</Trans> },
+  { id: "wants", label: <Trans>Wants</Trans> },
   { id: "reviews", label: <Trans>Reviews</Trans> },
   { id: "posts", label: <Trans>Posts</Trans> },
   { id: "info", label: <Trans>Info</Trans> },
@@ -234,6 +236,8 @@ function VoucherPlace({
                 ownerAddress={detail?.ownerAddress ?? null}
                 layout="panel"
               />
+            ) : section === "wants" ? (
+              <VoucherWantsDesk address={voucherAddress} layout="panel" />
             ) : section === "reviews" ? (
               <VoucherReviewsDesk address={voucherAddress} layout="panel" />
             ) : section === "posts" ? (

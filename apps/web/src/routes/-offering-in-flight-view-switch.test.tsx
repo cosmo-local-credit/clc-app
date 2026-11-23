@@ -50,6 +50,10 @@ vi.mock("#/lib/api/offerings", () => ({
 vi.mock("#/hooks/use-vocabulary", () => ({
   useOfferingUnits: () => ({ data: ["kg", "item"] }),
 }));
+vi.mock("#/hooks/use-deployment", () => ({
+  tokenTagsQueryKey: ["deployments", "token-tags"],
+  useTokenTags: () => ({ data: ["Food"] }),
+}));
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: false }));
 vi.mock("#/hooks/use-resource-usage", () => ({
   useResourceUsage: () => ({
@@ -64,6 +68,7 @@ vi.mock("#/hooks/use-resource-usage", () => ({
 vi.mock("#/features/vouchers/hooks/use-voucher-offerings-manager", () => ({
   useVoucherOfferingsManager: () => ({
     isOwner: true,
+    canEdit: true,
     usage: { data: undefined, isPending: false, isError: false, isFetching: false },
     query: {
       data: { pages: [{ offerings: [] }] },
@@ -97,6 +102,32 @@ beforeEach(() => {
 });
 
 describe("Editing an offering across a phone/desktop view switch", () => {
+  it("submits empty tags when the last category is explicitly removed", async () => {
+    mocks.update.mockResolvedValue(OFFERING);
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <OfferingEditorSheet
+          editor={{ kind: "edit", offering: { ...OFFERING, tags: ["Food"] } }}
+          voucherAddress={VOUCHER}
+          priceCurrency="KES"
+          defaultImageUrl={null}
+          onClose={vi.fn()}
+        />
+      </QueryClientProvider>,
+    );
+    const sheet = await screen.findByRole("dialog");
+    fireEvent.click(within(sheet).getByRole("button", { name: "Remove Food" }));
+    fireEvent.click(within(sheet).getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() =>
+      expect(mocks.update).toHaveBeenCalledWith(
+        VOUCHER,
+        OFFERING.id,
+        expect.objectContaining({ tags: [] }),
+      ),
+    );
+  });
+
   it("keeps Save busy in the other view while the first press is still saving", async () => {
     const saved = deferred<Offering>();
     mocks.update.mockReturnValue(saved.promise);
@@ -119,6 +150,7 @@ describe("Editing an offering across a phone/desktop view switch", () => {
     const sheet = await screen.findByRole("dialog");
     fireEvent.click(within(sheet).getByRole("button", { name: "Save changes" }));
     await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1));
+    expect(mocks.update.mock.calls[0]?.[2]).not.toHaveProperty("tags");
     phone.unmount();
 
     render(

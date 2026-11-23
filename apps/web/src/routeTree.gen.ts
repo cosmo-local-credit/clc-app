@@ -36,6 +36,7 @@ import { Route as NavWalletCashRouteImport } from './routes/_nav/wallet/cash'
 import { Route as NavVouchersVoucherAddressRouteImport } from './routes/_nav/vouchers/$voucherAddress'
 import { Route as NavSettingsProfileRouteImport } from './routes/_nav/settings/profile'
 import { Route as NavRoutedSwapsTrackingIdRouteImport } from './routes/_nav/routed-swaps/$trackingId'
+import { Route as NavProfilesAddressRouteImport } from './routes/_nav/profiles/$address'
 import { Route as NavPostsNewRouteImport } from './routes/_nav/posts/new'
 import { Route as NavPostsMineRouteImport } from './routes/_nav/posts/mine'
 import { Route as NavGetVoucherAddressRouteImport } from './routes/_nav/get/$voucherAddress'
@@ -190,6 +191,11 @@ const NavRoutedSwapsTrackingIdRoute =
     path: '/routed-swaps/$trackingId',
     getParentRoute: () => NavRoute,
   } as any)
+const NavProfilesAddressRoute = NavProfilesAddressRouteImport.update({
+  id: '/profiles/$address',
+  path: '/profiles/$address',
+  getParentRoute: () => NavRoute,
+} as any)
 const NavPostsNewRoute = NavPostsNewRouteImport.update({
   id: '/posts/new',
   path: '/posts/new',
@@ -296,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/get/$voucherAddress': typeof NavGetVoucherAddressRoute
   '/posts/mine': typeof NavPostsMineRoute
   '/posts/new': typeof NavPostsNewRoute
+  '/profiles/$address': typeof NavProfilesAddressRoute
   '/routed-swaps/$trackingId': typeof NavRoutedSwapsTrackingIdRoute
   '/settings/profile': typeof NavSettingsProfileRoute
   '/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
@@ -341,6 +348,7 @@ export interface FileRoutesByTo {
   '/get/$voucherAddress': typeof NavGetVoucherAddressRoute
   '/posts/mine': typeof NavPostsMineRoute
   '/posts/new': typeof NavPostsNewRoute
+  '/profiles/$address': typeof NavProfilesAddressRoute
   '/routed-swaps/$trackingId': typeof NavRoutedSwapsTrackingIdRoute
   '/settings/profile': typeof NavSettingsProfileRoute
   '/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
@@ -388,6 +396,7 @@ export interface FileRoutesById {
   '/_nav/get/$voucherAddress': typeof NavGetVoucherAddressRoute
   '/_nav/posts/mine': typeof NavPostsMineRoute
   '/_nav/posts/new': typeof NavPostsNewRoute
+  '/_nav/profiles/$address': typeof NavProfilesAddressRoute
   '/_nav/routed-swaps/$trackingId': typeof NavRoutedSwapsTrackingIdRoute
   '/_nav/settings/profile': typeof NavSettingsProfileRoute
   '/_nav/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
@@ -435,6 +444,7 @@ export interface FileRouteTypes {
     | '/get/$voucherAddress'
     | '/posts/mine'
     | '/posts/new'
+    | '/profiles/$address'
     | '/routed-swaps/$trackingId'
     | '/settings/profile'
     | '/vouchers/$voucherAddress'
@@ -480,6 +490,7 @@ export interface FileRouteTypes {
     | '/get/$voucherAddress'
     | '/posts/mine'
     | '/posts/new'
+    | '/profiles/$address'
     | '/routed-swaps/$trackingId'
     | '/settings/profile'
     | '/vouchers/$voucherAddress'
@@ -526,6 +537,7 @@ export interface FileRouteTypes {
     | '/_nav/get/$voucherAddress'
     | '/_nav/posts/mine'
     | '/_nav/posts/new'
+    | '/_nav/profiles/$address'
     | '/_nav/routed-swaps/$trackingId'
     | '/_nav/settings/profile'
     | '/_nav/vouchers/$voucherAddress'
@@ -761,6 +773,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NavRoutedSwapsTrackingIdRouteImport
       parentRoute: typeof NavRoute
     }
+    '/_nav/profiles/$address': {
+      id: '/_nav/profiles/$address'
+      path: '/profiles/$address'
+      fullPath: '/profiles/$address'
+      preLoaderRoute: typeof NavProfilesAddressRouteImport
+      parentRoute: typeof NavRoute
+    }
     '/_nav/posts/new': {
       id: '/_nav/posts/new'
       path: '/posts/new'
@@ -891,6 +910,7 @@ interface NavRouteChildren {
   NavGetVoucherAddressRoute: typeof NavGetVoucherAddressRoute
   NavPostsMineRoute: typeof NavPostsMineRoute
   NavPostsNewRoute: typeof NavPostsNewRoute
+  NavProfilesAddressRoute: typeof NavProfilesAddressRoute
   NavRoutedSwapsTrackingIdRoute: typeof NavRoutedSwapsTrackingIdRoute
   NavSettingsProfileRoute: typeof NavSettingsProfileRoute
   NavVouchersVoucherAddressRoute: typeof NavVouchersVoucherAddressRoute
@@ -928,6 +948,7 @@ const NavRouteChildren: NavRouteChildren = {
   NavGetVoucherAddressRoute: NavGetVoucherAddressRoute,
   NavPostsMineRoute: NavPostsMineRoute,
   NavPostsNewRoute: NavPostsNewRoute,
+  NavProfilesAddressRoute: NavProfilesAddressRoute,
   NavRoutedSwapsTrackingIdRoute: NavRoutedSwapsTrackingIdRoute,
   NavSettingsProfileRoute: NavSettingsProfileRoute,
   NavVouchersVoucherAddressRoute: NavVouchersVoucherAddressRoute,

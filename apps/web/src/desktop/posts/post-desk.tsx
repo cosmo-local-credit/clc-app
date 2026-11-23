@@ -6,6 +6,7 @@ import { RiArrowLeftSLine, RiArrowRightSLine, RiCloseLine } from "react-icons/ri
 
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { ResourceMessageButton } from "#/components/messaging/resource-owner-contact";
+import { ShareLinkButton } from "#/components/share-link-button";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import {
@@ -94,6 +95,12 @@ export function PostDesk({ reportId }: { reportId: string }) {
             wrap
             actions={
               <>
+                <ShareLinkButton
+                  title={report.title}
+                  path={`/posts/${encodeURIComponent(report.id)}`}
+                  variant="outline"
+                  size="icon"
+                />
                 <ResourceMessageButton context={{ kind: "post", resourceId: report.id }} />
                 {isAuthor ? (
                   <Button asChild variant="outline">

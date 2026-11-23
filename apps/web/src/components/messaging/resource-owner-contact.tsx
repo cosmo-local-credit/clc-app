@@ -1,3 +1,4 @@
+import { ResourceProfileButton } from "#/components/profile/resource-profile-button";
 import { ownerInfoQueryOptions } from "@clc/api/features/safe/queries";
 import type { OwnerMessageTarget } from "@clc/core/features/safe/logic";
 import type { MessageContextInput, MessageLaunchContext } from "@clc/core/features/messaging/logic";
@@ -40,20 +41,23 @@ export function ResourceMessageButton({
   );
 
   return (
-    <Button asChild variant="outline" tap className={className}>
-      {auth.state === "guest" || auth.state === "connectedNoSession" ? (
-        <Link
-          to="/onboarding"
-          search={onboardingSearch("signin", `/?${new URLSearchParams(search)}`)}
-        >
-          {label}
-        </Link>
-      ) : (
-        <Link to="/" search={search}>
-          {label}
-        </Link>
-      )}
-    </Button>
+    <>
+      <Button asChild variant="outline" tap className={className}>
+        {auth.state === "guest" || auth.state === "connectedNoSession" ? (
+          <Link
+            to="/onboarding"
+            search={onboardingSearch("signin", `/?${new URLSearchParams(search)}`)}
+          >
+            {label}
+          </Link>
+        ) : (
+          <Link to="/" search={search}>
+            {label}
+          </Link>
+        )}
+      </Button>
+      <ResourceProfileButton kind={context.kind} resourceId={context.resourceId} />
+    </>
   );
 }
 

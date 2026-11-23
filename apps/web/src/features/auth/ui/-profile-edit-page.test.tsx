@@ -1,7 +1,10 @@
+import { authKeys } from "@clc/api/features/auth/queries";
 import type { LocationInput } from "@clc/core/features/location/logic";
+import { DEFAULT_PROFILE_VISIBILITY } from "@clc/core/features/public-profiles/logic";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, renderHook, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { useUpdateProfile } from "#/features/auth/hooks/use-update-profile";
 
 const { account, historyBack, navigate, toastSuccess } = vi.hoisted(() => ({
   account: { address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as string | undefined },
@@ -120,7 +123,11 @@ function mockBackend(
     }
     if (url.includes("/auth/profile") && init?.method === "POST") {
       if (rejectSave) return Promise.resolve(errorResponse(409, rejectSave));
-      stored = { ...stored, ...(JSON.parse(init.body as string) as Record<string, unknown>) };
+      const { visibilityOnly: _, ...fields } = JSON.parse(init.body as string) as Record<
+        string,
+        unknown
+      >;
+      stored = { ...stored, ...fields };
       return Promise.resolve(jsonResponse(stored));
     }
     if (url.includes("/auth/profile")) {
@@ -173,6 +180,110 @@ afterEach(() => {
 });
 
 describe("ProfileEditPage", () => {
+  it("saves publication choices through the existing Save action and links to the saved public page", async () => {
+    const fetch = mockBackend();
+    renderWithQueryClient(<ProfileEditPage />);
+    const posts = await screen.findByRole("switch", { name: "Show Posts" });
+    expect(posts.getAttribute("aria-checked")).toBe("false");
+    expect(screen.getByRole("switch", { name: "Show Vouchers" }).getAttribute("aria-checked")).toBe(
+      "true",
+    );
+    fireEvent.click(posts);
+    fireEvent.click(screen.getByRole("switch", { name: "Show Email" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+    const saved = JSON.parse(postBody(fetch));
+    expect(saved).toEqual({
+      visibilityOnly: true,
+      publicProfile: { ...DEFAULT_PROFILE_VISIBILITY, posts: true, email: true },
+    });
+    expect(screen.getByText("View my public profile")).toBeTruthy();
+  });
+
+  it("lets an account with incomplete contact details disable its public profile", async () => {
+    const publicProfile = { ...DEFAULT_PROFILE_VISIBILITY, posts: true };
+    const fetch = mockBackend({
+      name: "",
+      email: "pending+abc@clc.local",
+      phone: "",
+      bio: "Stored biography",
+      publicProfile,
+    });
+    renderWithQueryClient(<ProfileEditPage />);
+    fireEvent.click(await screen.findByRole("switch", { name: "Enable public profile" }));
+    expect(screen.queryByRole("switch", { name: "Show Posts" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+    expect(JSON.parse(postBody(fetch))).toEqual({
+      visibilityOnly: true,
+      publicProfile: { ...publicProfile, enabled: false },
+    });
+    expect(screen.getByDisplayValue("Stored biography")).toBeTruthy();
+    expect(historyBack).toHaveBeenCalledOnce();
+  });
+
+  it("validates mixed detail and publication edits before saving either", async () => {
+    const fetch = mockBackend();
+    renderWithQueryClient(<ProfileEditPage />);
+    fireEvent.click(await screen.findByRole("switch", { name: "Show Posts" }));
+    fireEvent.change(screen.getByLabelText(/^name$/i), { target: { value: "" } });
+    const save = screen.getByRole<HTMLButtonElement>("button", { name: "Save changes" });
+    expect(save.disabled).toBe(true);
+    fireEvent.click(save);
+    expect(postBody(fetch)).toBeUndefined();
+
+    fireEvent.change(screen.getByLabelText(/^name$/i), { target: { value: "Alice Cooper" } });
+    expect(save.disabled).toBe(false);
+    fireEvent.click(save);
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledOnce());
+    const saved = JSON.parse(postBody(fetch));
+    expect(saved).toEqual({
+      publicProfile: { ...DEFAULT_PROFILE_VISIBILITY, posts: true },
+      name: "Alice Cooper",
+      email: "alice@example.com",
+      phone: "+254712345678",
+      country: "KE",
+      preferredCurrency: "KES",
+      bio: "",
+      website: "",
+      clearLocation: true,
+    });
+  });
+  it("keeps a late publication save out of another wallet's profile cache", async () => {
+    const firstWallet = profilePayload();
+    const firstProfileKey = authKeys.profile(firstWallet.address);
+    const queryClient = new QueryClient();
+    queryClient.setQueryData(firstProfileKey, firstWallet);
+    let completeSave!: (value: ReturnType<typeof jsonResponse>) => void;
+    const fetchMock = vi.fn(
+      () =>
+        new Promise<ReturnType<typeof jsonResponse>>((resolve) => {
+          completeSave = resolve;
+        }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const { result, rerender } = renderHook(useUpdateProfile, {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      ),
+    });
+    const publicProfile = { ...DEFAULT_PROFILE_VISIBILITY, enabled: false };
+    const saving = result.current.mutateAsync({ visibilityOnly: true, publicProfile });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+
+    account.address = "0x00000000000000000000000000000000000000b2";
+    const secondWallet = profilePayload({ name: "Second user", email: "second@example.com" });
+    const secondProfileKey = authKeys.profile(account.address);
+    queryClient.removeQueries({ queryKey: firstProfileKey });
+    queryClient.setQueryData(secondProfileKey, secondWallet);
+    rerender();
+    completeSave(jsonResponse({ ...firstWallet, publicProfile }));
+    await saving;
+
+    expect(queryClient.getQueryData(firstProfileKey)).toBeUndefined();
+    expect(queryClient.getQueryData(secondProfileKey)).toEqual(secondWallet);
+  });
+
   it("prefills the form from the loaded profile", async () => {
     mockBackend();
 
@@ -244,7 +355,7 @@ describe("ProfileEditPage", () => {
     expect(within(section).queryByRole("button", { name: /copy wallet username/i })).toBeNull();
   });
 
-  it("groups the fields into three panels: about you, contact, then location and unit", async () => {
+  it("groups profile fields and publication choices into separate panels", async () => {
     mockBackend();
 
     renderWithQueryClient(<ProfileEditPage />);
@@ -253,7 +364,7 @@ describe("ProfileEditPage", () => {
     const panels = [
       ...screen.getByRole("form", { name: /edit profile/i }).querySelectorAll(".p-4"),
     ];
-    expect(panels).toHaveLength(3);
+    expect(panels).toHaveLength(4);
     const [about, contact, place] = panels.map((panel) => within(panel as HTMLElement));
     expect(about?.getByRole("button", { name: /set photo/i })).toBeTruthy();
     expect(about?.getByLabelText(/^name$/i)).toBe(name);

@@ -8,7 +8,7 @@ import {
   VoucherSectionRegion,
 } from "./voucher-section-nav";
 
-const SECTIONS = ["offerings", "reviews", "posts", "activity"] as const;
+const SECTIONS = ["offerings", "wants", "reviews", "posts", "activity"] as const;
 
 function Reporter({
   onCount,
@@ -26,15 +26,17 @@ function Page({
   reviews,
   offerings,
   showReviews = true,
+  target,
 }: {
   reviews?: number;
   offerings?: number;
   showReviews?: boolean;
+  target?: string;
 }) {
   const { counts, report } = useVoucherSectionCounts();
   return (
     <div>
-      <VoucherSectionNav counts={counts} />
+      <VoucherSectionNav counts={counts} target={target} />
       {SECTIONS.map((id) => (
         <VoucherSectionRegion key={id} id={id}>
           <h2>{id}</h2>
@@ -57,15 +59,26 @@ afterEach(() => {
 });
 
 describe("VoucherSectionNav", () => {
-  it("lists the four sections, with a count only for those that know theirs", () => {
+  it("lists the five sections, with a count only for those that know theirs", () => {
     render(<Page reviews={4} offerings={undefined} />);
     const links = within(nav()).getAllByRole("link");
     expect(links.map((link) => link.textContent?.trim())).toEqual([
       "Offerings",
+      "Wants",
       "Reviews 4",
       "Posts",
       "Activity",
     ]);
+  });
+
+  it("focuses the Wants section from a detail deep link", () => {
+    const scroll = vi.spyOn(Element.prototype, "scrollIntoView").mockImplementation(() => {});
+    render(<Page target="wants" />);
+    expect(scroll).toHaveBeenCalledWith({ block: "start", behavior: "auto" });
+    expect(document.activeElement).toBe(screen.getByRole("region", { name: "Wants" }));
+    expect(within(nav()).getByRole("link", { name: "Wants" }).getAttribute("aria-current")).toBe(
+      "location",
+    );
   });
 
   it("shows a count of zero, which is a known count", () => {

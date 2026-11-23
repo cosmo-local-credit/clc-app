@@ -6,6 +6,7 @@ const manager = vi.hoisted(() => ({ isOwner: false }));
 vi.mock("#/features/vouchers/hooks/use-voucher-offerings-manager", () => ({
   useVoucherOfferingsManager: () => ({
     isOwner: manager.isOwner,
+    canEdit: manager.isOwner,
     usage: { data: undefined, isPending: false, isError: false, isFetching: false },
     query: {
       data: { pages: [{ offerings: [] }] },

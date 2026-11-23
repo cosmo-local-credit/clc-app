@@ -32,6 +32,7 @@ import { VoucherCatalogButton } from "./detail/voucher-catalog-button";
 import { useCanEditVoucher, VoucherInfoDesk } from "./detail/voucher-info";
 import { VoucherOfferingsDesk } from "./detail/voucher-offerings";
 import { VoucherPostsDesk } from "./detail/voucher-posts";
+import { VoucherWantsDesk } from "./detail/voucher-wants";
 import { VoucherReviewsDesk } from "./detail/voucher-reviews";
 import {
   useVoucherSectionCounts,
@@ -54,7 +55,7 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
   const { t } = useLingui();
   const infoHeadingId = useId();
   const sectionCounts = useVoucherSectionCounts();
-  const search = useSearch({ strict: false }) as { poolAddress?: unknown };
+  const search = useSearch({ strict: false }) as { poolAddress?: unknown; tab?: unknown };
   const poolAddress = typeof search.poolAddress === "string" ? search.poolAddress : undefined;
   const auth = useAuthStatus();
   const holdingsAddress = auth.isAuthenticated ? auth.session?.address : undefined;
@@ -236,7 +237,10 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
             />
           </div>
           <div className="flex min-w-0 flex-col gap-6 [&_:focus-visible]:scroll-mt-16">
-            <VoucherSectionNav counts={sectionCounts.counts} />
+            <VoucherSectionNav
+              counts={sectionCounts.counts}
+              target={typeof search.tab === "string" ? search.tab : undefined}
+            />
             <VoucherSectionRegion id="offerings">
               <VoucherOfferingsDesk
                 key={address}
@@ -248,6 +252,14 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
                 canEditDetails={canEdit}
                 layout="page"
                 onCount={sectionCounts.report.offerings}
+              />
+            </VoucherSectionRegion>
+            <VoucherSectionRegion id="wants">
+              <VoucherWantsDesk
+                key={`wants-${address}`}
+                address={address}
+                layout="page"
+                onCount={sectionCounts.report.wants}
               />
             </VoucherSectionRegion>
             <VoucherSectionRegion id="reviews">

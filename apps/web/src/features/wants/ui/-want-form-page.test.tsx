@@ -9,10 +9,13 @@ const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
+  updateAsAdmin: vi.fn(),
+  editRecord: vi.fn(),
   reopen: vi.fn(),
   close: vi.fn(),
   remove: vi.fn(),
   mine: vi.fn(),
+  auth: { role: "USER" },
   profile: {
     data: {
       email: "amina@example.test",
@@ -50,7 +53,11 @@ const WANT: Want = {
 
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => mocks.navigate }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ address: "0xabc", isAuthenticated: true }),
+  useAuthStatus: () => ({
+    address: "0xabc",
+    isAuthenticated: true,
+    session: { role: mocks.auth.role, address: "0xabc" },
+  }),
 }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({ useAuthProfile: () => mocks.profile }));
 vi.mock("#/hooks/use-resource-usage", () => ({
@@ -68,6 +75,8 @@ vi.mock("#/lib/api/wants", () => ({
   wantsClient: {
     create: mocks.create,
     update: mocks.update,
+    updateAsAdmin: mocks.updateAsAdmin,
+    editRecord: mocks.editRecord,
     reopen: mocks.reopen,
     mine: mocks.mine,
     close: mocks.close,
@@ -153,6 +162,9 @@ beforeEach(() => {
   mocks.navigate.mockReset().mockResolvedValue(undefined);
   mocks.create.mockReset().mockResolvedValue(WANT);
   mocks.update.mockReset().mockResolvedValue(WANT);
+  mocks.updateAsAdmin.mockReset().mockResolvedValue(WANT);
+  mocks.editRecord.mockReset().mockResolvedValue(WANT);
+  mocks.auth.role = "USER";
   mocks.reopen.mockReset().mockResolvedValue(WANT);
   mocks.close.mockReset().mockResolvedValue(undefined);
   mocks.remove.mockReset().mockResolvedValue(undefined);
@@ -281,6 +293,41 @@ describe("Want form", () => {
     expect(
       screen.getByRole("checkbox", { name: "Share my email" }).getAttribute("aria-checked"),
     ).toBe("true");
+  });
+
+  it("lets an admin edit contact instructions for a closed Want while leaving owner controls disabled", async () => {
+    mocks.auth.role = "ADMIN";
+    const closedWant = {
+      ...WANT,
+      ownerAddress: `0x${"a".repeat(40)}`,
+      status: "CLOSED",
+      state: "closed",
+      contactText: "Meet by the gate",
+    };
+    mocks.editRecord.mockResolvedValue(closedWant);
+    mocks.updateAsAdmin.mockResolvedValue(closedWant);
+    renderForm("7");
+
+    const instructions = await screen.findByLabelText("Contact instructions");
+    const email = screen.getByRole("checkbox", { name: "Share owner's email" });
+    expect(email.getAttribute("aria-checked")).toBe("true");
+    expect(email.getAttribute("aria-disabled")).toBe("true");
+    expect(screen.queryByRole("button", { name: "Save and reopen Want" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Delete Want" })).toBeNull();
+    expect(mocks.mine).not.toHaveBeenCalled();
+
+    fireEvent.change(instructions, { target: { value: "Meet at the market" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save Want" }));
+    await waitFor(() =>
+      expect(mocks.updateAsAdmin).toHaveBeenCalledWith(
+        "7",
+        expect.objectContaining({
+          name: WANT.name,
+          contactText: "Meet at the market",
+        }),
+      ),
+    );
+    expect(mocks.reopen).not.toHaveBeenCalled();
   });
 
   it("handles an empty start date as validation instead of throwing", async () => {

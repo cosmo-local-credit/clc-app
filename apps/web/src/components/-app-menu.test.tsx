@@ -6,6 +6,22 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { PLATFORM_ABOUT_URL, PLATFORM_TERMS_URL } from "#/lib/legal";
 
 let currentLocale: SupportedLocale = "en";
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    to,
+    search,
+    children,
+    ...props
+  }: {
+    to: string;
+    search: Record<string, string>;
+    children: ReactNode;
+  }) => (
+    <a href={`${to}?${new URLSearchParams(search)}`} {...props}>
+      {children}
+    </a>
+  ),
+}));
 const setLocale = vi.fn((locale: SupportedLocale) => {
   currentLocale = locale;
 });
@@ -80,6 +96,17 @@ describe("AppMenu", () => {
     document.documentElement.classList.remove("dark");
     useThemeStore.setState({ theme: "light" });
     mockPrefersColorScheme(false);
+  });
+
+  it("opens Helpdesk from the final menu action and closes the menu", async () => {
+    render(<AppMenu />);
+    await openMenu();
+    const help = screen.getByRole("link", { name: "Helpdesk" });
+    expect(help.getAttribute("href")).toBe("/?tab=activity&section=helpdesk");
+    expect(help.previousElementSibling?.textContent).toContain("Terms of Service");
+    expect(help.querySelector("svg")).not.toBeNull();
+    fireEvent.click(help);
+    expect(screen.queryByRole("link", { name: "Helpdesk" })).toBeNull();
   });
 
   it("opens from a square 44px trigger and links to the platform pages securely", async () => {

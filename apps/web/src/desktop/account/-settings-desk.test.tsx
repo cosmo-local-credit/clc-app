@@ -173,6 +173,14 @@ afterEach(() => {
 });
 
 describe("the top bar's notification action", () => {
+  it("links Helpdesk directly below Profile in Settings", async () => {
+    await renderInShell(<SettingsDesk address={ADDRESS} />, "/?tab=settings");
+    const help = screen.getByRole("link", { name: "Helpdesk" });
+    expect(help.getAttribute("href")).toBe("/?tab=activity&section=helpdesk");
+    expect(help.querySelector("svg")).not.toBeNull();
+    const row = help.closest(".grid");
+    expect(row?.previousElementSibling?.querySelector('a[href="/settings/profile"]')).toBeTruthy();
+  });
   it("is named for notification settings, not for an inbox", async () => {
     await renderInShell(<DesktopTopBar />);
     expect(screen.queryByRole("link", { name: "Notifications" })).toBeNull();

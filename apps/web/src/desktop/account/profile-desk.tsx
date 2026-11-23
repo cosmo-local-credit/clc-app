@@ -1,3 +1,5 @@
+import { DEFAULT_PROFILE_VISIBILITY } from "@clc/core/features/public-profiles/logic";
+import { PublicProfileFields } from "#/components/profile/public-profile-fields";
 import type { ProfileResult } from "@clc/api/features/auth/client";
 import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -68,6 +70,7 @@ function ProfileForm({ profile }: { profile: ProfileResult }) {
     avatarUrl,
     setAvatarUrl,
     avatarChanged,
+    restoredChanges,
     avatarBusy,
     setAvatarBusy,
     submitError,
@@ -93,7 +96,7 @@ function ProfileForm({ profile }: { profile: ProfileResult }) {
               <Button
                 type="submit"
                 form={FORM_ID}
-                disabled={!(isDirty || avatarChanged) || !canSubmit}
+                disabled={!(isDirty || avatarChanged || restoredChanges) || !canSubmit}
                 pending={isSubmitting || avatarBusy || inFlight}
               >
                 {avatarBusy
@@ -326,6 +329,17 @@ function ProfileForm({ profile }: { profile: ProfileResult }) {
               </div>
             );
           }}
+        </form.Field>
+
+        <form.Field name="publicProfile">
+          {(field) => (
+            <PublicProfileFields
+              value={field.state.value ?? { ...DEFAULT_PROFILE_VISIBILITY }}
+              onChange={field.handleChange}
+              address={profile.address}
+              disabled={inFlight}
+            />
+          )}
         </form.Field>
 
         <ProfilePrivacyNotice />

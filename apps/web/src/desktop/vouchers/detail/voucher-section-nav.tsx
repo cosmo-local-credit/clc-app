@@ -9,7 +9,7 @@ import {
 
 import { cn } from "#/lib/utils";
 
-const SECTION_IDS = ["offerings", "reviews", "posts", "activity"] as const;
+const SECTION_IDS = ["offerings", "wants", "reviews", "posts", "activity"] as const;
 type VoucherSectionId = (typeof SECTION_IDS)[number];
 type SectionCounts = Partial<Record<VoucherSectionId, number>>;
 type ReportCount = (count: number | undefined) => void;
@@ -28,11 +28,17 @@ function regionId(id: VoucherSectionId) {
 
 function useSectionLabels(): Record<VoucherSectionId, string> {
   const { t } = useLingui();
-  return { offerings: t`Offerings`, reviews: t`Reviews`, posts: t`Posts`, activity: t`Activity` };
+  return {
+    offerings: t`Offerings`,
+    wants: t`Wants`,
+    reviews: t`Reviews`,
+    posts: t`Posts`,
+    activity: t`Activity`,
+  };
 }
 
 /**
- * The counts the four sections have reported. A section reports a number only
+ * The counts the sections have reported. A section reports a number only
  * when the whole list has loaded (see `useReportSectionCount`), so a count in
  * the nav is never the size of a first page.
  */
@@ -105,16 +111,26 @@ function prefersReducedMotion() {
 }
 
 /**
- * A compact row for the long voucher page: Offerings, Reviews, Posts and
+ * A compact row for the long voucher page: Offerings, Wants, Reviews, Posts and
  * Activity, each with its count once that is known. It sticks under the top
  * bar while the page scrolls (the page's one scroller, no nested ones). A
  * section scrolls into view and takes focus, so a keyboard or screen-reader
  * user lands in it; the one being read is marked `aria-current="location"`.
  */
-export function VoucherSectionNav({ counts }: { counts: SectionCounts }) {
+export function VoucherSectionNav({ counts, target }: { counts: SectionCounts; target?: string }) {
   const { t } = useLingui();
   const labels = useSectionLabels();
   const [active, setActive] = useActiveSection();
+
+  useEffect(() => {
+    if (!target || !(SECTION_IDS as readonly string[]).includes(target)) return;
+    const id = target as VoucherSectionId;
+    const region = document.getElementById(regionId(id));
+    if (!region) return;
+    region.scrollIntoView({ block: "start", behavior: "auto" });
+    region.focus({ preventScroll: true });
+    setActive(id);
+  }, [target, setActive]);
 
   function go(event: ReactMouseEvent<HTMLAnchorElement>, id: VoucherSectionId) {
     const region = document.getElementById(regionId(id));

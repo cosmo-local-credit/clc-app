@@ -17,7 +17,7 @@ const auth = vi.hoisted(() => ({
   state: "authenticated",
   isLoading: false,
   isAuthenticated: true,
-  session: { address: `0x${"a".repeat(40)}` } as { address: string } | undefined,
+  session: { address: `0x${"a".repeat(40)}` } as { address: string; role?: string } | undefined,
   retry: vi.fn(),
   retrying: false,
 }));
@@ -52,6 +52,7 @@ vi.mock("@tanstack/react-router", () => ({
             : to
                 .replace("$voucherAddress", params.voucherAddress ?? "")
                 .replace("$poolAddress", params.poolAddress ?? "")
+                .replace("$wantId", params.wantId ?? "")
       }
       {...props}
     >
@@ -130,6 +131,24 @@ describe("Want detail", () => {
     expect(query.get("messageKind")).toBe("want");
     expect(query.get("messageResource")).toBe(WANT.id);
     await waitFor(() => expect(screen.getAllByRole("link", { name: "Message" })).toHaveLength(2));
+  });
+
+  it("keeps the edit destination available to the creator and Admins only", () => {
+    const detail = () => <WantDetail want={{ ...WANT, ownerAddress: OWNER }} />;
+    const view = renderWant(detail());
+    expect(screen.queryByRole("link", { name: "Edit Want" })).toBeNull();
+
+    auth.session = { address: OWNER, role: "USER" };
+    rerenderWant(view.rerender, detail());
+    expect(screen.getByRole("link", { name: "Edit Want" }).getAttribute("href")).toBe(
+      "/wallet/wants/7/edit",
+    );
+
+    auth.session = { address: `0x${"a".repeat(40)}`, role: "ADMIN" };
+    rerenderWant(view.rerender, detail());
+    expect(screen.getByRole("link", { name: "Edit Want" }).getAttribute("href")).toBe(
+      "/wallet/wants/7/edit",
+    );
   });
 
   it("keeps Message on a Want with no owner address in the detail payload", () => {

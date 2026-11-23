@@ -1,12 +1,16 @@
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import type { ProfileResult } from "@clc/api/features/auth/client";
 import { type LocationInput, locationSchema } from "@clc/core/features/location/logic";
+import {
+  DEFAULT_PROFILE_VISIBILITY,
+  profileVisibilitySchema,
+} from "@clc/core/features/public-profiles/logic";
 import { type ProfileEditInput, profileEditSchema } from "@clc/core/features/signup/logic";
 import { useForm } from "@clc/core/lib/forms";
 import { useLingui } from "@lingui/react/macro";
 import { useIsMutating } from "@tanstack/react-query";
 import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -15,6 +19,7 @@ import {
 } from "#/features/auth/hooks/use-update-profile";
 import { preferredCurrencyForCountry } from "#/lib/profile-currency";
 import { translateRecipientError } from "#/lib/recipient-error-i18n";
+import { useViewDraft } from "#/lib/view-drafts";
 
 // The signup flow stores a placeholder email for wallets created without one.
 // Treat it as empty so the edit form starts blank rather than exposing it.
@@ -40,7 +45,13 @@ export function useProfileEditForm(profile: ProfileResult) {
   const inFlight = useIsMutating({ mutationKey: updateProfileMutationKey }) > 0;
   const [submitError, setSubmitError] = useState<string | null>(null);
   const storedAvatarUrl = profile.avatarUrl ?? null;
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(storedAvatarUrl);
+  const viewDraft = useViewDraft<{ fields: ProfileEditInput; avatarUrl: string | null }>({
+    scope: "profile-edit",
+    account: profile.address,
+  });
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(
+    viewDraft.restored ? viewDraft.restored.avatarUrl : storedAvatarUrl,
+  );
   const [avatarBusy, setAvatarBusy] = useState(false);
 
   const seededLocation = locationSchema.safeParse({
@@ -54,6 +65,7 @@ export function useProfileEditForm(profile: ProfileResult) {
     : undefined;
 
   const defaultValues: ProfileEditInput = {
+    publicProfile: profile.publicProfile ?? { ...DEFAULT_PROFILE_VISIBILITY },
     name: profile.name ?? "",
     email: profile.email.endsWith(PLACEHOLDER_EMAIL_SUFFIX) ? "" : (profile.email ?? ""),
     phone: profile.phone ?? "",
@@ -66,34 +78,60 @@ export function useProfileEditForm(profile: ProfileResult) {
     website: profile.website ?? "",
   };
 
+  const [opened] = useState(() => ({
+    signature: JSON.stringify({ fields: defaultValues, avatarUrl: storedAvatarUrl }),
+    publicProfile: defaultValues.publicProfile,
+  }));
+  const restoredChanges =
+    !!viewDraft.restored && JSON.stringify(viewDraft.restored) !== opened.signature;
+  const visibilityChanged = (value: ProfileEditInput) =>
+    JSON.stringify(value.publicProfile) !== JSON.stringify(opened.publicProfile);
+  const isVisibilityOnly = (value: ProfileEditInput) =>
+    visibilityChanged(value) &&
+    JSON.stringify({ fields: { ...value, publicProfile: opened.publicProfile }, avatarUrl }) ===
+      opened.signature;
   const form = useForm({
-    defaultValues,
-    validators: { onChange: profileEditSchema },
+    defaultValues: viewDraft.restored?.fields ?? defaultValues,
+    validators: {
+      onChange: ({ value, formApi }) =>
+        isVisibilityOnly(value) && profileVisibilitySchema.safeParse(value.publicProfile).success
+          ? undefined
+          : formApi.parseValuesWithSchema(profileEditSchema),
+    },
     onSubmit: async ({ value }) => {
       if (inFlight) return;
       setSubmitError(null);
       try {
-        const parsed = profileEditSchema.parse(value);
-        await updateProfile.mutateAsync({
-          name: parsed.name,
-          email: parsed.email,
-          phone: parsed.phone,
-          country: parsed.location?.country ?? profile.country,
-          preferredCurrency: parsed.preferredCurrency,
-          bio: parsed.bio,
-          website: parsed.website,
-          ...(parsed.location
-            ? {
-                locationName: parsed.location.locationName,
-                geoLat: parsed.location.lat,
-                geoLng: parsed.location.lng,
-              }
-            : { clearLocation: true }),
-          // Sent only when it moved: an omitted key preserves whatever is
-          // stored, so a save that never touched the photo cannot disturb it.
-          // null is what the client turns into clc-core's clearAvatar flag.
-          ...(avatarUrl !== storedAvatarUrl ? { avatarUrl } : {}),
-        });
+        if (isVisibilityOnly(value)) {
+          await updateProfile.mutateAsync({
+            visibilityOnly: true,
+            publicProfile: profileVisibilitySchema.parse(value.publicProfile),
+          });
+        } else {
+          const parsed = profileEditSchema.parse(value);
+          await updateProfile.mutateAsync({
+            ...(visibilityChanged(value) ? { publicProfile: parsed.publicProfile } : {}),
+            name: parsed.name,
+            email: parsed.email,
+            phone: parsed.phone,
+            country: parsed.location?.country ?? profile.country,
+            preferredCurrency: parsed.preferredCurrency,
+            bio: parsed.bio,
+            website: parsed.website,
+            ...(parsed.location
+              ? {
+                  locationName: parsed.location.locationName,
+                  geoLat: parsed.location.lat,
+                  geoLng: parsed.location.lng,
+                }
+              : { clearLocation: true }),
+            // Sent only when it moved: an omitted key preserves whatever is
+            // stored, so a save that never touched the photo cannot disturb it.
+            // null is what the client turns into clc-core's clearAvatar flag.
+            ...(avatarUrl !== storedAvatarUrl ? { avatarUrl } : {}),
+          });
+        }
+        viewDraft.clear();
         toast.success(t`Profile updated`);
         if (canGoBack) {
           router.history.back();
@@ -113,8 +151,25 @@ export function useProfileEditForm(profile: ProfileResult) {
     },
   });
 
+  const { save: saveViewDraft, clear: clearViewDraft } = viewDraft;
+  useEffect(() => {
+    let seen: unknown;
+    const sync = () => {
+      const fields = form.store.state.values;
+      if (seen === fields) return;
+      seen = fields;
+      const current = { fields, avatarUrl };
+      if (JSON.stringify(current) === opened.signature) clearViewDraft();
+      else saveViewDraft(current);
+    };
+    sync();
+    const subscription = form.store.subscribe(sync);
+    return () => subscription.unsubscribe();
+  }, [form, avatarUrl, opened, clearViewDraft, saveViewDraft]);
+
   return {
     form,
+    restoredChanges,
     avatarUrl,
     setAvatarUrl,
     /** A new or removed photo is a change on its own, with every field untouched. */

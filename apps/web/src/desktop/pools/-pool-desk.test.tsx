@@ -641,6 +641,11 @@ describe("pool activity detail", () => {
 });
 
 describe("pool header", () => {
+  it("offers Share in the Pool header for guests", async () => {
+    setModel({ authenticated: false, owner: false });
+    mount(`/pools/${POOL}`);
+    expect(await screen.findByRole("button", { name: "Share" })).toBeTruthy();
+  });
   it("shows a guest the description and the rating, and keeps the place and address for members", async () => {
     setModel({ authenticated: false, owner: false });
     mount(`/pools/${POOL}`);

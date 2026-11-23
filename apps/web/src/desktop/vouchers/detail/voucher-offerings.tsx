@@ -11,6 +11,7 @@ import {
   useOfferingFrequencyLabel,
 } from "#/components/offerings/offering-display";
 import type { OfferingVoucherRate } from "#/components/offerings/offerings-panel";
+import { OfferingTagsField } from "#/components/offerings/offering-tags-field";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
@@ -69,7 +70,7 @@ export function VoucherOfferingsDesk({
   onCount?: (count: number | undefined) => void;
 }) {
   const manager = useVoucherOfferingsManager({ voucherAddress: address, ownerAddress });
-  const { isOwner, usage, query, editor, setEditor } = manager;
+  const { isOwner, canEdit, usage, query, editor, setEditor } = manager;
   const pageSize = layout === "page" ? 6 : 4;
   const [limit, setLimit] = useState(pageSize);
   const offerings = query.data?.pages.flatMap((page) => page.offerings) ?? [];
@@ -157,10 +158,10 @@ export function VoucherOfferingsDesk({
               rate={rate}
               linkToVoucher={layout === "panel"}
               management={
-                isOwner
+                canEdit
                   ? {
                       onEdit: () => setEditor({ kind: "edit", offering }),
-                      onDelete: () => void manager.requestDelete(offering),
+                      onDelete: isOwner ? () => void manager.requestDelete(offering) : undefined,
                       deleting: manager.deletingID === offering.id,
                     }
                   : undefined
@@ -188,7 +189,7 @@ export function VoucherOfferingsDesk({
         </Button>
       ) : null}
       <OfferingFormDialog
-        editor={editor}
+        editor={canEdit ? editor : null}
         voucherAddress={address}
         priceCurrency={voucherUoa ?? symbol}
         defaultImageUrl={manager.defaultImageUrl}
@@ -307,7 +308,7 @@ function OfferingTile({
   offering: Offering;
   rate: OfferingVoucherRate;
   linkToVoucher: boolean;
-  management?: { onEdit: () => void; onDelete: () => void; deleting: boolean };
+  management?: { onEdit: () => void; onDelete?: () => void; deleting: boolean };
 }) {
   const { t } = useLingui();
   const [open, setOpen] = useState(false);
@@ -348,24 +349,26 @@ function OfferingTile({
         </span>
       </button>
       {management ? (
-        <div className="grid grid-cols-2 border-border border-t">
+        <div className={cn("grid border-border border-t", management.onDelete && "grid-cols-2")}>
           <Button
             type="button"
             variant="ghost"
-            className="w-full border-border border-e"
+            className={cn("w-full", management.onDelete && "border-border border-e")}
             onClick={management.onEdit}
           >
             <Trans>Edit</Trans>
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            className="w-full text-destructive"
-            pending={management.deleting}
-            onClick={management.onDelete}
-          >
-            {management.deleting ? <Trans>Removing…</Trans> : <Trans>Remove</Trans>}
-          </Button>
+          {management.onDelete ? (
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full text-destructive"
+              pending={management.deleting}
+              onClick={management.onDelete}
+            >
+              {management.deleting ? <Trans>Removing…</Trans> : <Trans>Remove</Trans>}
+            </Button>
+          ) : null}
         </div>
       ) : null}
       <VoucherDialog
@@ -572,6 +575,16 @@ function OfferingForm({
             </form.Field>
           )}
         </form.Field>
+        <form.Field name="tags">
+          {(field) => (
+            <OfferingTagsField
+              tags={field.state.value}
+              onChange={field.handleChange}
+              error={getFieldError(field.state.meta.errors)}
+            />
+          )}
+        </form.Field>
+
         {isStorageConfigured ? (
           <form.Field name="imageUrl">
             {(field) => (

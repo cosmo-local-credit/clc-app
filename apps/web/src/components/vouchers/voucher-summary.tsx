@@ -7,7 +7,7 @@ import {
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import {
   RiCoinLine,
   RiFileCopyLine,
@@ -18,7 +18,6 @@ import {
   RiSendPlane2Line,
   RiShareLine,
 } from "react-icons/ri";
-import { toast } from "sonner";
 import { isAddress, type Address, zeroAddress } from "viem";
 
 import { CreditHopsBadge } from "#/components/credit/credit-hops";
@@ -32,6 +31,7 @@ import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 import { openDefaultMaps } from "#/lib/default-maps";
 import { cn } from "#/lib/utils";
+import { useShareLink } from "#/hooks/use-share-link";
 
 export type VoucherBalanceSummary =
   | { status: "hidden"; hasPositiveBalance: false }
@@ -409,47 +409,11 @@ export function useShareVoucher({
   address: string;
   destination?: "map" | "detail";
 }) {
-  const { t } = useLingui();
-  const [copyOnly, setCopyOnly] = useState(false);
-
-  function link() {
-    return destination === "detail"
-      ? `${window.location.origin}/vouchers/${address}`
-      : `${window.location.origin}/?voucher=${address}`;
-  }
-
-  function copy() {
-    if (!navigator.clipboard) {
-      toast.error(t`Couldn't copy link`);
-      return;
-    }
-    void navigator.clipboard
-      .writeText(link())
-      .then(() => toast.success(t`Link copied`))
-      .catch(() => toast.error(t`Couldn't copy link`));
-  }
-
-  async function share() {
-    if (!navigator.share) {
-      copy();
-      return;
-    }
-    try {
-      await navigator.share({ title: name, url: link() });
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
-      setCopyOnly(true);
-    }
-  }
-
-  return {
-    label: copyOnly ? t`Copy link` : t`Share`,
-    Icon: copyOnly ? RiFileCopyLine : RiShareLine,
-    run: () => {
-      if (copyOnly) copy();
-      else void share();
-    },
-  };
+  const { copyOnly, label, activate } = useShareLink({
+    title: name,
+    path: destination === "detail" ? `/vouchers/${address}` : `/?voucher=${address}`,
+  });
+  return { label, Icon: copyOnly ? RiFileCopyLine : RiShareLine, run: activate };
 }
 
 /** Native share when available, with the existing explicit copy fallback. */

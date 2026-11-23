@@ -26,8 +26,17 @@ export function CatalogForm({
 }) {
   const { t, i18n } = useLingui();
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const { form, inFlight, deleting, deleteCatalog, imageBusy, setImageBusy, error, tagOptions } =
-    useCatalogForm({ catalog, initialPlace, onSaved });
+  const {
+    form,
+    canDelete,
+    inFlight,
+    deleting,
+    deleteCatalog,
+    imageBusy,
+    setImageBusy,
+    error,
+    tagOptions,
+  } = useCatalogForm({ catalog, initialPlace, onSaved });
   return (
     <form
       className="space-y-5"
@@ -145,7 +154,7 @@ export function CatalogForm({
           </Button>
         )}
       </form.Subscribe>
-      {catalog ? (
+      {canDelete ? (
         <Button
           type="button"
           tap
@@ -159,7 +168,7 @@ export function CatalogForm({
         </Button>
       ) : null}
       <ConfirmDialog
-        open={confirmDelete}
+        open={canDelete && confirmDelete}
         title={<Trans>Delete this catalog?</Trans>}
         description={
           <Trans>

@@ -59,6 +59,23 @@ beforeEach(() => {
 });
 
 describe("voucher reviews", () => {
+  it.each([
+    ["voucher", "", null],
+    ["voucher", "   ", "Owner reply"],
+    ["pool", "", null],
+    ["pool", "   ", "Owner reply"],
+  ] as const)("keeps stars-only %s reviews unreportable", async (kind, comment, reply) => {
+    mocks.list.mockResolvedValue({ ...page, reviews: [{ ...review, comment, reply }] });
+    mocks.access.mockResolvedValue({ ...access, isOwner: true, editableReplyIds: [review.id] });
+    mount(kind);
+    const article = await screen.findByRole("article", {
+      name: kind === "pool" ? "Pool review" : "Voucher review",
+    });
+    expect(within(article).queryByRole("button", { name: "Report inappropriate" })).toBeNull();
+    expect(
+      within(article).getByRole("button", { name: reply ? "Edit your reply" : "Reply" }),
+    ).toBeTruthy();
+  });
   it("shows a simple empty state without ratings or sorting when no reviews exist", async () => {
     mocks.auth.isAuthenticated = false;
     mocks.list.mockResolvedValue({
