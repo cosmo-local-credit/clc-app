@@ -7,9 +7,10 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { PublicProfileDesk } from "#/desktop/profiles/public-profile-desk";
+import { PublicProfileContent } from "#/components/profile/public-profile-content";
 import { ResourceProfileButton } from "#/components/profile/resource-profile-button";
 import { PublicProfilePage } from "#/features/public-profiles/ui/public-profile-page";
 import { Route as ProfileRoute } from "./_nav/profiles/$address";
@@ -59,6 +60,20 @@ const reply = (result: unknown, status = 200) =>
   new Response(JSON.stringify({ ok: status < 400, result, description: "Unavailable" }), {
     status,
   });
+const resourceKinds = {
+  vouchers: "voucher",
+  offers: "offer",
+  wants: "want",
+  pools: "pool",
+  posts: "post",
+  catalogs: "catalog",
+} as const;
+function defaultProfileResponse(input: string, value = profile) {
+  const section = new URL(input).pathname.split("/").at(-1);
+  return reply(
+    section && section in resourceKinds ? { items: [], nextCursor: null } : { profile: value },
+  );
+}
 const clients: QueryClient[] = [];
 function mount(view: "phone" | "desktop" | "chooser" = "phone", kind: "pool" | "post" = "pool") {
   const root = createRootRoute();
@@ -127,7 +142,7 @@ describe("public profile views", () => {
               nextCursor: null,
             }),
           );
-        return Promise.resolve(reply({}, 400));
+        return Promise.resolve(defaultProfileResponse(input));
       });
       vi.stubGlobal("fetch", fetch);
       const root = createRootRoute();
@@ -150,13 +165,12 @@ describe("public profile views", () => {
 
       expect(await screen.findByRole("heading", { name: "alice" })).toBeTruthy();
       expect(router.state.location.pathname).toBe(`/profiles/${address.toLowerCase()}`);
-      expect(fetch).toHaveBeenCalledExactlyOnceWith(
+      expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining(`/api/v2/profiles/${address}`),
         expect.objectContaining({ credentials: "omit" }),
       );
-      fireEvent.click(screen.getByText("Vouchers", { selector: "summary" }));
       expect(await screen.findByRole("link", { name: "Community voucher" })).toBeTruthy();
-      expect(fetch).toHaveBeenLastCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining(`${base}/vouchers?perPage=20`),
         expect.objectContaining({ credentials: "omit" }),
       );
@@ -164,9 +178,9 @@ describe("public profile views", () => {
   );
 
   it.each(["phone", "desktop"] as const)(
-    "renders the %s header, canonical Share and only on-demand public sections",
+    "renders the %s header, canonical Share and expanded resource sections",
     async (view) => {
-      const fetch = vi.fn().mockImplementation(() => Promise.resolve(reply({ profile })));
+      const fetch = vi.fn((input: string) => Promise.resolve(defaultProfileResponse(input)));
       vi.stubGlobal("fetch", fetch);
       const share = vi.fn().mockResolvedValue(undefined);
       Object.defineProperty(navigator, "share", { configurable: true, value: share });
@@ -180,7 +194,13 @@ describe("public profile views", () => {
         screen.getByRole("link", { name: "https://example.test" }).getAttribute("rel"),
       ).toContain("noopener");
       expect(screen.getByRole("link", { name: "Sign in" })).toBeTruthy();
-      expect(fetch).toHaveBeenCalledTimes(1);
+      await waitFor(() => expect(fetch).toHaveBeenCalledTimes(7));
+      expect(document.querySelectorAll("details[open]")).toHaveLength(6);
+      expect(screen.queryByText("Transaction activity")).toBeNull();
+      expect(fetch.mock.calls.some(([url]) => url.includes("/activity"))).toBe(false);
+      expect(fetch.mock.calls.every(([url]) => !new URL(url).searchParams.has("cursor"))).toBe(
+        true,
+      );
       fireEvent.click(screen.getByRole("button", { name: "Share" }));
       await waitFor(() =>
         expect(share).toHaveBeenCalledWith({
@@ -264,14 +284,14 @@ describe("public profile views", () => {
                 geoLng: 36.8,
               },
             })
-          : reply({ profile }),
+          : defaultProfileResponse(url),
       ),
     );
     vi.stubGlobal("fetch", fetch);
     const { client } = mount();
     await screen.findByRole("heading", { name: "alice" });
     expect(screen.getByLabelText("Checking your session…")).toBeTruthy();
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls.filter(([url]) => url.endsWith("/details"))).toHaveLength(0);
     auth.state = "authenticated";
     auth.isLoading = false;
     auth.isAuthenticated = true;
@@ -286,13 +306,13 @@ describe("public profile views", () => {
 
   it("keeps session failures retryable without requesting details", async () => {
     Object.assign(auth, { state: "sessionCheckError" });
-    const fetch = vi.fn().mockResolvedValue(reply({ profile }));
+    const fetch = vi.fn((input: string) => Promise.resolve(defaultProfileResponse(input)));
     vi.stubGlobal("fetch", fetch);
     mount();
     await screen.findByText("We could not verify your session.");
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(auth.retry).toHaveBeenCalled();
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls.filter(([url]) => url.endsWith("/details"))).toHaveLength(0);
   });
 
   it.each(["phone", "desktop"] as const)(
@@ -302,7 +322,7 @@ describe("public profile views", () => {
         .fn()
         .mockResolvedValueOnce(reply({}, 404))
         .mockResolvedValueOnce(reply({}, 503))
-        .mockImplementation(() => Promise.resolve(reply({ profile })));
+        .mockImplementation((input: string) => Promise.resolve(defaultProfileResponse(input)));
       vi.stubGlobal("fetch", fetch);
       const { client } = mount(view);
       await screen.findByText("This public profile is unavailable.");
@@ -362,78 +382,108 @@ describe("public profile views", () => {
       posts: "Posts",
       catalogs: "Catalogs",
     })) {
-      fireEvent.click(screen.getByText(label, { selector: "summary" }));
-      expect(await screen.findByText(`${key} one`)).toBeTruthy();
+      const summary = screen.getByText(label, { selector: "summary" });
+      const section = summary.closest("details")!;
+      const sectionView = within(section);
+      expect(section.open).toBe(true);
+      expect(await sectionView.findByText(`${key} one`)).toBeTruthy();
       if (key === "vouchers") {
         fail = true;
-        fireEvent.click(screen.getByRole("button", { name: "Load more" }));
+        fireEvent.click(sectionView.getByRole("button", { name: "Load more" }));
         await screen.findByText("Couldn't load profile information.");
         expect(screen.getByText("vouchers one")).toBeTruthy();
         fireEvent.click(screen.getByRole("button", { name: "Retry" }));
         await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
-        fireEvent.click(screen.getByRole("button", { name: "Load more" }));
+        fireEvent.click(sectionView.getByRole("button", { name: "Load more" }));
         await screen.findByText("vouchers two");
         const img = document.querySelector('img[src="https://images.example/resource.png"]');
         if (img) fireEvent.error(img);
       }
       if (key === "pools") expect(screen.getByText("Multisig managed")).toBeTruthy();
-      if (key === "wants") expect(screen.queryByText("CLC")).toBeNull();
-      if (key === "catalogs") expect(screen.queryByText("Description")).toBeNull();
+      if (key === "wants") expect(sectionView.queryByText("CLC")).toBeNull();
+      if (key === "catalogs") expect(sectionView.queryByText("Description")).toBeNull();
       fireEvent.click(screen.getByText(label, { selector: "summary" }));
     }
     expect(fetch.mock.calls.some(([url]) => url.includes("bbox"))).toBe(false);
   });
 
-  it("shows an empty resource list and confirmed public Activity with pagination", async () => {
-    const fetch = vi.fn().mockImplementation((input: string) => {
-      const url = new URL(input);
-      if (url.pathname.endsWith("/activity"))
-        return Promise.resolve(
-          reply({
-            items: url.searchParams.has("cursor")
-              ? []
-              : [
-                  {
-                    id: "1",
-                    txHash: `0x${"c".repeat(64)}`,
-                    chainId: 100,
-                    kind: "sent",
-                    timestamp: "2026-11-23T00:00:00Z",
-                  },
-                  {
-                    id: "2",
-                    txHash: `0x${"d".repeat(64)}`,
-                    chainId: 100,
-                    kind: "other-indexed-event",
-                    timestamp: "2026-11-23T00:00:00Z",
-                  },
-                ],
-            nextCursor: url.searchParams.has("cursor") ? null : "two",
-          }),
-        );
-      if (url.pathname.endsWith("/vouchers"))
-        return Promise.resolve(reply({ items: [], nextCursor: null }));
-      return Promise.resolve(reply({ profile: { ...profile, hasPrivateDetails: false } }));
+  it("opens only enabled sections and ignores legacy activity publication", async () => {
+    const value = {
+      ...profile,
+      hasPrivateDetails: false,
+      sections: {
+        ...Object.fromEntries(Object.keys(resourceKinds).map((key) => [key, false])),
+        vouchers: true,
+        activity: true,
+      },
+    };
+    const fetch = vi.fn((input: string) =>
+      Promise.resolve(defaultProfileResponse(input, value as typeof profile)),
+    );
+    vi.stubGlobal("fetch", fetch);
+    mount();
+    await screen.findByText("No resources to show.");
+    expect(document.querySelectorAll("details[open]")).toHaveLength(1);
+    expect(screen.queryByText("Transaction activity")).toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch.mock.calls.some(([url]) => url.includes("/activity"))).toBe(false);
+  });
+
+  it("reopens sections when changing profiles, including already cached profiles", async () => {
+    const fetch = vi.fn(() => Promise.resolve(reply({ items: [], nextCursor: null })));
+    vi.stubGlobal("fetch", fetch);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    clients.push(client);
+    const first = { ...profile, hasPrivateDetails: false };
+    const { rerender } = render(
+      <QueryClientProvider client={client}>
+        <PublicProfileContent profile={first} />
+      </QueryClientProvider>,
+    );
+    await waitFor(() => expect(screen.getAllByText("No resources to show.")).toHaveLength(6));
+    const summary = screen.getByText("Offers", { selector: "summary" });
+    fireEvent.click(summary);
+    await waitFor(() => expect(summary.closest("details")?.open).toBe(false));
+    fireEvent.click(summary);
+    await waitFor(() => expect(summary.closest("details")?.open).toBe(true));
+    fireEvent.click(summary);
+    await waitFor(() => expect(summary.closest("details")?.open).toBe(false));
+    rerender(
+      <QueryClientProvider client={client}>
+        <PublicProfileContent profile={{ ...first, address: other }} />
+      </QueryClientProvider>,
+    );
+    await waitFor(() => expect(document.querySelectorAll("details[open]")).toHaveLength(6));
+    rerender(
+      <QueryClientProvider client={client}>
+        <PublicProfileContent profile={first} />
+      </QueryClientProvider>,
+    );
+    await waitFor(() => expect(document.querySelectorAll("details[open]")).toHaveLength(6));
+  });
+
+  it("loads expanded sections independently while another section is pending", async () => {
+    let resolveOffers!: (response: Response) => void;
+    const fetch = vi.fn((input: string) => {
+      if (new URL(input).pathname.endsWith("/offers"))
+        return new Promise<Response>((resolve) => {
+          resolveOffers = resolve;
+        });
+      return Promise.resolve(defaultProfileResponse(input));
     });
     vi.stubGlobal("fetch", fetch);
     mount();
-    await screen.findByRole("heading", { name: "alice" });
-    fireEvent.click(screen.getByText("Vouchers", { selector: "summary" }));
-    await screen.findByText("No resources to show.");
-    fireEvent.click(screen.getByText("Transaction activity", { selector: "summary" }));
-    const link = await screen.findByRole("link", { name: /Sent/ });
-    expect(link.getAttribute("href")).toContain("gnosisscan.io/tx/");
-    expect(screen.getByRole("link", { name: /Transaction/ }).getAttribute("href")).toBe(
-      `https://gnosisscan.io/tx/0x${"d".repeat(64)}`,
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Load more" }));
-    await waitFor(() => expect(screen.queryByRole("button", { name: "Load more" })).toBeNull());
+    await waitFor(() => expect(screen.getAllByText("No resources to show.")).toHaveLength(5));
+    const offers = within(screen.getByText("Offers", { selector: "summary" }).closest("details")!);
+    expect(offers.getByLabelText("Loading…")).toBeTruthy();
+    resolveOffers(reply({ items: [], nextCursor: null }));
+    await offers.findByText("No resources to show.");
+    expect(fetch).toHaveBeenCalledTimes(7);
   });
 
-  it("recovers private-detail and public Activity failures without fabricating data", async () => {
+  it("recovers private-detail failures without fabricating data", async () => {
     Object.assign(auth, { state: "authenticated", isAuthenticated: true });
     let detailsFailed = false;
-    let activityFailed = false;
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((url: string) => {
@@ -444,14 +494,7 @@ describe("public profile views", () => {
           }
           return Promise.resolve(reply({ details: {} }));
         }
-        if (url.includes("/activity?")) {
-          if (!activityFailed) {
-            activityFailed = true;
-            return Promise.resolve(reply({}, 503));
-          }
-          return Promise.resolve(reply({ items: [], nextCursor: null }));
-        }
-        return Promise.resolve(reply({ profile }));
+        return Promise.resolve(defaultProfileResponse(url));
       }),
     );
     mount();
@@ -459,10 +502,6 @@ describe("public profile views", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
     expect(screen.queryByTestId("shared-pin")).toBeNull();
-    fireEvent.click(screen.getByText("Transaction activity", { selector: "summary" }));
-    await screen.findByText("Couldn't load profile information.");
-    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
-    await screen.findByText("No transactions to show.");
   });
 });
 

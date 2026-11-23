@@ -44,23 +44,12 @@ export function profileDetailsQueryOptions(
 export function profileResourcesQueryOptions(
   client: PublicProfilesClient,
   address: string,
-  section: Exclude<ProfileSection, "activity">,
+  section: ProfileSection,
 ) {
   return infiniteQueryOptions({
     queryKey: [...publicProfileKeys.detail(address), "resources", section] as const,
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam, signal }) => client.resources(address, section, pageParam, signal),
-    getNextPageParam: (page) => page.nextCursor ?? undefined,
-    staleTime: 0,
-    retry: false,
-  });
-}
-
-export function profileActivityQueryOptions(client: PublicProfilesClient, address: string) {
-  return infiniteQueryOptions({
-    queryKey: [...publicProfileKeys.detail(address), "activity"] as const,
-    initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam, signal }) => client.activity(address, pageParam, signal),
     getNextPageParam: (page) => page.nextCursor ?? undefined,
     staleTime: 0,
     retry: false,

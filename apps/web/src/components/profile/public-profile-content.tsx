@@ -1,5 +1,4 @@
 import {
-  profileActivityQueryOptions,
   profileDetailsQueryOptions,
   profileResourcesQueryOptions,
 } from "@clc/api/features/public-profiles/queries";
@@ -43,7 +42,6 @@ export function PublicProfileContent({
     pools: t`Pools`,
     posts: t`Posts`,
     catalogs: t`Catalogs`,
-    activity: t`Transaction activity`,
   };
   return (
     <div className="space-y-6">
@@ -78,16 +76,15 @@ export function PublicProfileContent({
         </section>
       ) : null}
       {PROFILE_SECTIONS.filter((section) => profile.sections[section]).map((section) => (
-        <ProfileSectionDisclosure key={section} label={labels[section]}>
-          {section === "activity" ? (
-            <ProfileActivity address={profile.address} />
-          ) : (
-            <ProfileResources
-              address={profile.address}
-              section={section}
-              gridClassName={gridClassName}
-            />
-          )}
+        <ProfileSectionDisclosure
+          key={`${profile.address.toLowerCase()}:${section}`}
+          label={labels[section]}
+        >
+          <ProfileResources
+            address={profile.address}
+            section={section}
+            gridClassName={gridClassName}
+          />
         </ProfileSectionDisclosure>
       ))}
     </div>
@@ -95,7 +92,7 @@ export function PublicProfileContent({
 }
 
 function ProfileSectionDisclosure({ label, children }: { label: string; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   return (
     <details
       open={open}
@@ -147,7 +144,7 @@ function ProfileResources({
   gridClassName,
 }: {
   address: string;
-  section: Exclude<ProfileSection, "activity">;
+  section: ProfileSection;
   gridClassName?: string;
 }) {
   const query = useInfiniteQuery(
@@ -275,58 +272,6 @@ function ProfileResourceLink({ row }: { row: ProfileResource }) {
         </Link>
       );
   }
-}
-
-function ProfileActivity({ address }: { address: string }) {
-  const { i18n, t } = useLingui();
-  const kindLabels: Record<string, string> = {
-    creation: t`Created`,
-    sent: t`Sent`,
-    received: t`Received`,
-    swapped: t`Swap`,
-  };
-  const query = useInfiniteQuery(profileActivityQueryOptions(publicProfilesClient, address));
-  const rows = query.data?.pages.flatMap((page) => page.items) ?? [];
-  return (
-    <div className="space-y-3">
-      {query.isPending ? <ProfileLoading /> : null}
-      {rows.map((row) => (
-        <a
-          key={row.id}
-          href={`https://gnosisscan.io/tx/${row.txHash}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block space-y-1 border border-border bg-card p-3 text-sm underline"
-        >
-          <span>{kindLabels[row.kind] ?? t`Transaction`}</span>
-          <span className="block font-mono text-xs">
-            {new Intl.DateTimeFormat(i18n.locale, {
-              dateStyle: "medium",
-              timeStyle: "short",
-            }).format(new Date(row.timestamp))}
-          </span>
-        </a>
-      ))}
-      {query.isSuccess && !rows.length ? (
-        <p className="text-sm text-muted-foreground">
-          <Trans>No transactions to show.</Trans>
-        </p>
-      ) : null}
-      {query.isError ? (
-        <ProfileReadError pending={query.isFetching} retry={() => void query.refetch()} />
-      ) : null}
-      {query.hasNextPage ? (
-        <Button
-          variant="outline"
-          tap
-          pending={query.isFetchingNextPage}
-          onClick={() => void query.fetchNextPage()}
-        >
-          <Trans>Load more</Trans>
-        </Button>
-      ) : null}
-    </div>
-  );
 }
 
 export function ProfileLoading() {

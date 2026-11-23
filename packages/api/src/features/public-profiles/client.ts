@@ -1,5 +1,4 @@
 import {
-  profileActivitySchema,
   profileResourceSchema,
   publicProfileDetailsSchema,
   publicProfileIdentitySchema,
@@ -15,10 +14,6 @@ const profileResult = z.object({ profile: publicProfileSchema });
 const detailsResult = z.object({ details: publicProfileDetailsSchema });
 const resourcePage = z.object({
   items: z.array(profileResourceSchema),
-  nextCursor: z.string().nullish(),
-});
-const activityPage = z.object({
-  items: z.array(profileActivitySchema),
   nextCursor: z.string().nullish(),
 });
 const identitiesResult = z.object({ profiles: z.array(publicProfileIdentitySchema) });
@@ -60,16 +55,8 @@ export function createPublicProfilesClient(http: HttpClient) {
     async details(address: string, signal?: AbortSignal) {
       return (await read(detailsResult, `${base(address)}/details`, signal, true)).details;
     },
-    resources(
-      address: string,
-      section: Exclude<ProfileSection, "activity">,
-      cursor?: string,
-      signal?: AbortSignal,
-    ) {
+    resources(address: string, section: ProfileSection, cursor?: string, signal?: AbortSignal) {
       return read(resourcePage, pagePath(address, section, cursor), signal);
-    },
-    activity(address: string, cursor?: string, signal?: AbortSignal) {
-      return read(activityPage, pagePath(address, "activity", cursor), signal);
     },
     async forResource(kind: ProfileResourceKind, id: string, signal?: AbortSignal) {
       return (

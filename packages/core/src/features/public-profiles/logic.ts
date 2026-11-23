@@ -19,7 +19,6 @@ export const profileVisibilitySchema = z.object({
   pools: z.boolean(),
   posts: z.boolean(),
   catalogs: z.boolean(),
-  activity: z.boolean(),
 });
 
 export type ProfileVisibility = z.infer<typeof profileVisibilitySchema>;
@@ -42,7 +41,6 @@ export const DEFAULT_PROFILE_VISIBILITY: Readonly<ProfileVisibility> = {
   pools: true,
   posts: false,
   catalogs: true,
-  activity: false,
 };
 
 export const PROFILE_SECTIONS = [
@@ -52,7 +50,6 @@ export const PROFILE_SECTIONS = [
   "pools",
   "posts",
   "catalogs",
-  "activity",
 ] as const;
 export type ProfileSection = (typeof PROFILE_SECTIONS)[number];
 
@@ -76,7 +73,6 @@ export const publicProfileSchema = publicProfileIdentitySchema.extend({
     pools: z.boolean(),
     posts: z.boolean(),
     catalogs: z.boolean(),
-    activity: z.boolean(),
   }),
   hasPrivateDetails: z.boolean(),
 });
@@ -101,12 +97,3 @@ export const profileResourceSchema = z.object({
   management: z.enum(["direct", "multisig"]).nullish(),
 });
 export type ProfileResource = z.infer<typeof profileResourceSchema>;
-
-/** Public indexed facts only; this is deliberately separate from private Activity. */
-export const profileActivitySchema = z.object({
-  id: z.union([z.string(), z.number()]).transform(String),
-  txHash: z.string().regex(/^0x[0-9a-fA-F]{64}$/),
-  chainId: z.number().int().positive(),
-  timestamp: z.iso.datetime({ offset: true }),
-  kind: z.string(),
-});
