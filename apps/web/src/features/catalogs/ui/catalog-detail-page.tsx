@@ -26,7 +26,7 @@ import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 export function CatalogDetailPage({ id, editor }: { id: string; editor?: CatalogEditor }) {
   const { t } = useLingui();
-  const { query, catalog, owner } = useCatalogDetail(id);
+  const { query, catalog, canEdit } = useCatalogDetail(id);
   const [localEditing, setLocalEditing] = useState(false);
   const editing = editor?.editing ?? localEditing;
   const openEditor = editor?.open ?? (() => setLocalEditing(true));
@@ -90,20 +90,20 @@ export function CatalogDetailPage({ id, editor }: { id: string; editor?: Catalog
             </div>
           ) : null}
           <ResourceMessageButton context={{ kind: "catalog", resourceId: catalog.id }} />
-          {owner ? (
+          {canEdit ? (
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" tap onClick={openEditor}>
                 <Trans>Edit catalog</Trans>
               </Button>
             </div>
           ) : null}
-          <CatalogMembers catalogId={id} kind="pool" canEdit={owner} />
-          <CatalogMembers catalogId={id} kind="voucher" canEdit={owner} />
+          <CatalogMembers catalogId={id} kind="pool" canEdit={canEdit} />
+          <CatalogMembers catalogId={id} kind="voucher" canEdit={canEdit} />
           <ResourceOwnerContact
             ownerAddress={catalog.ownerAddress}
             context={{ kind: "catalog", resourceId: id }}
           />
-          {owner ? (
+          {canEdit ? (
             <SheetRoot
               open={editing}
               onOpenChange={(open) => (open ? openEditor() : closeEditor())}

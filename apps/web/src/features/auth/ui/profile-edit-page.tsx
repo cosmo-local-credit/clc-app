@@ -1,3 +1,5 @@
+import { DEFAULT_PROFILE_VISIBILITY } from "@clc/core/features/public-profiles/logic";
+import { PublicProfileFields } from "#/components/profile/public-profile-fields";
 import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 
@@ -63,6 +65,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
     avatarUrl,
     setAvatarUrl,
     avatarChanged,
+    restoredChanges,
     avatarBusy,
     setAvatarBusy,
     submitError,
@@ -319,6 +322,17 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
           </div>
         </div>
 
+        <form.Field name="publicProfile">
+          {(field) => (
+            <PublicProfileFields
+              value={field.state.value ?? { ...DEFAULT_PROFILE_VISIBILITY }}
+              onChange={field.handleChange}
+              address={profile.address}
+              disabled={inFlight}
+            />
+          )}
+        </form.Field>
+
         {/* Pinned above the navigation so Save is reachable from any field,
             and pushed there by mt-auto when the form is short. */}
         <div className="sticky bottom-[var(--bottom-nav-offset)] z-20 -mx-6 mt-auto border-border border-t bg-card px-6 py-3">
@@ -340,7 +354,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
               // file finished.
               <Button
                 type="submit"
-                disabled={!(isDirty || avatarChanged) || !canSubmit}
+                disabled={!(isDirty || avatarChanged || restoredChanges) || !canSubmit}
                 pending={isSubmitting || avatarBusy || inFlight}
                 tap
                 className="w-full"

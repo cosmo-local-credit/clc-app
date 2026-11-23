@@ -5,6 +5,7 @@ import { RiArrowRightSLine, RiCloseLine, RiNavigationLine } from "react-icons/ri
 
 import { getLocaleDirection, type SupportedLocale } from "@clc/i18n/locales";
 import { ResourceMessageButton } from "#/components/messaging/resource-owner-contact";
+import { ShareLinkButton } from "#/components/share-link-button";
 import { Badge } from "#/components/ui/badge";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { Button } from "#/components/ui/button";
@@ -74,6 +75,10 @@ export function ReportPage({ reportId }: { reportId: string }) {
             <h1 className="min-w-0 flex-1 font-heading text-[1.75rem] font-bold leading-tight [overflow-wrap:anywhere]">
               {report.title}
             </h1>
+            <ShareLinkButton
+              title={report.title}
+              path={`/posts/${encodeURIComponent(report.id)}`}
+            />
             {isAuthor ? (
               <Button asChild variant="outline" tap>
                 <Link to="/posts/$reportId/edit" params={{ reportId: report.id }}>

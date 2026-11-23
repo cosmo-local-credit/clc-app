@@ -81,7 +81,13 @@ export function useCatalogForm({
   const [imageBusy, setImageBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const tagsQuery = useTokenTags();
-  const { address: account } = useAuthStatus();
+  const { address: account, isAuthenticated, session } = useAuthStatus();
+  const canDelete = Boolean(
+    isAuthenticated &&
+    session?.address &&
+    catalog &&
+    session.address.toLowerCase() === catalog.ownerAddress.toLowerCase(),
+  );
   const viewDraft = useViewDraft<CatalogDraft>({
     scope: catalog ? `catalog-edit:${catalog.id}` : "catalog-create",
     account,
@@ -148,7 +154,7 @@ export function useCatalogForm({
   }, [clearViewDraft, form, opened, saveViewDraft]);
 
   const deleteCatalog = async () => {
-    if (!catalog || inFlight || deleting) return false;
+    if (!catalog || !canDelete || inFlight || deleting) return false;
     setError(null);
     try {
       await remove.mutateAsync();
@@ -165,7 +171,7 @@ export function useCatalogForm({
 
   return {
     form,
-    canDelete: !!catalog,
+    canDelete,
     inFlight,
     deleting,
     deleteCatalog,

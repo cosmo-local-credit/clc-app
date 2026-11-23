@@ -216,6 +216,10 @@ beforeEach(() => {
 });
 
 describe("ReportPage", () => {
+  it("offers Share in the Post header for guests", () => {
+    render(<ReportPage reportId="3182" />);
+    expect(screen.getByRole("button", { name: "Share" }).closest("header")).toBeTruthy();
+  });
   it("shows Message to guests and uses only the Post ID in the sign-in destination", () => {
     render(<ReportPage reportId="3182" />);
 

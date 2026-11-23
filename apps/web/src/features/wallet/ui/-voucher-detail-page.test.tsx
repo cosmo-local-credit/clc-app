@@ -171,6 +171,9 @@ vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
     </div>
   ),
 }));
+vi.mock("#/components/vouchers/voucher-wants-panel", () => ({
+  VoucherWantsPanel: () => <div>Wants panel</div>,
+}));
 
 vi.mock("#/features/reviews/hooks/use-voucher-reviews", () => ({
   useReviewSummary: () => ({ summary: mocks.reviewSummary }),
@@ -782,7 +785,7 @@ describe("VoucherDetailPage", () => {
     expect(screen.queryByRole("tab")).toBeNull();
     expect(
       screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
-    ).toEqual(["Offerings", "Reviews", "Posts", "Info", "Activity"]);
+    ).toEqual(["Offerings", "Wants", "Reviews", "Posts", "Info", "Activity"]);
     const offerings = screen.getByRole("region", { name: "Offerings" });
     expect(within(offerings).getByText("Vegetables")).toBeTruthy();
     // Price per unit, as one message: the unit is part of what the figure means.

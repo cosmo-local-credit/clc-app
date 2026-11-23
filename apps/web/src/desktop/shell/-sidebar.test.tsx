@@ -110,6 +110,21 @@ describe("the collapsed rail", () => {
 });
 
 describe("desktop app preferences", () => {
+  it.each([false, true])(
+    "keeps Helpdesk visible to guests with collapsed=%s",
+    async (collapsed) => {
+      auth.isAuthenticated = false;
+      auth.address = undefined;
+      if (collapsed) window.localStorage.setItem("clc.desktop.sidebar", "collapsed");
+      await renderInShell(<DesktopSidebar />, "/?tab=market");
+      const utilities = screen.getByRole("group", { name: "App preferences" });
+      const help = within(utilities).getByRole("link", { name: "Helpdesk" });
+      expect(help.getAttribute("href")).toBe("/?tab=activity&section=helpdesk");
+      expect(help.querySelector("svg")).not.toBeNull();
+      expect(help.parentElement?.lastElementChild).toBe(help);
+      if (collapsed) expect(await tooltipFor(help, "Helpdesk")).toBeTruthy();
+    },
+  );
   it("shows the app utilities directly in the expanded sidebar", async () => {
     await renderInShell(<DesktopSidebar />, "/?tab=market");
     const utilities = screen.getByRole("group", { name: "App preferences" });

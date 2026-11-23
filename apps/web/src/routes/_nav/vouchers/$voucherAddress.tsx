@@ -12,7 +12,10 @@ const VoucherDesk = lazy(() =>
 );
 
 const searchSchema = z.object({
-  tab: z.enum(["offerings", "activity", "info", "reviews", "posts"]).optional().catch(undefined),
+  tab: z
+    .enum(["offerings", "wants", "activity", "info", "reviews", "posts"])
+    .optional()
+    .catch(undefined),
   /** Screen the voucher was opened from; names the Back chevron. */
   from: z.enum(["market", "posts", "wallet", "vouchers", "wants"]).optional().catch(undefined),
   poolAddress: z.string().optional().catch(undefined),

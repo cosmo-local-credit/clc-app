@@ -16,8 +16,9 @@ export function ProfilePrivacyNotice({ className }: { className?: string }) {
       </p>
       <p className="px-4 py-3 text-muted-foreground text-sm leading-snug">
         <Trans>
-          People can find you only with your exact username or full phone number. Your name, email,
-          phone, and location are not shown.
+          Your username, profile photo and public resources may appear on your public profile.
+          Choose additional details to share in Profile settings. Shared contacts and location
+          require sign-in.
         </Trans>
       </p>
     </aside>

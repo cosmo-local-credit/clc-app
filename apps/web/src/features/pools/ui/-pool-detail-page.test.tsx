@@ -346,6 +346,14 @@ afterEach(() => {
 });
 
 describe("PoolDetailPage Offers refresh", () => {
+  it("offers Share in the Pool header for guests", () => {
+    mocks.auth.isAuthenticated = false;
+    mocks.auth.session = null;
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    expect(
+      screen.getByRole("button", { name: "Share" }).closest("section")?.querySelector("h1"),
+    ).toBeTruthy();
+  });
   const voucher = (tokenAddress: string) => ({ tokenAddress, active: true }) as PoolVoucher;
 
   it("refreshes this pool's Offers when vouchers are added or removed, without a reload", async () => {

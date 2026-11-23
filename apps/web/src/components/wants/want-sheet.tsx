@@ -11,6 +11,7 @@ import {
   type MapSheetSnap,
 } from "#/components/ui/map-sheet";
 import { WantDetail, WantShareButton } from "#/components/wants/want-detail";
+import { WantEditButton } from "#/components/wants/want-edit-button";
 import { WantMessageButton } from "#/components/wants/want-message-button";
 import { WantPicture } from "#/components/wants/want-row";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
@@ -102,7 +103,10 @@ export function WantSheet({
               <WantShareButton want={want} />
               <CloseWantButton label={t`Close`} onClick={selection.close} />
             </div>
-            <WantMessageButton want={want} />
+            <div className="flex flex-wrap gap-2">
+              <WantMessageButton want={want} />
+              <WantEditButton want={want} />
+            </div>
           </div>
         ) : (
           <div className="flex min-h-14 items-center gap-3">

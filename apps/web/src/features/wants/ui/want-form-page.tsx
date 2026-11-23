@@ -18,7 +18,8 @@ import { useWantForm, useWantFormSources, type WantFormProfile } from "../hooks/
 
 export function WantFormPage({ id }: { id?: string }) {
   const { t } = useLingui();
-  const { ownerQuery, profile, usage, loading, failed, retry } = useWantFormSources(id);
+  const { wantQuery, adminEditing, profile, usage, loading, failed, retry } =
+    useWantFormSources(id);
 
   return (
     <main className="min-h-[100svh] space-y-5 bg-background px-4 pb-bottom-nav pt-[calc(env(safe-area-inset-top)+0.875rem)]">
@@ -39,7 +40,9 @@ export function WantFormPage({ id }: { id?: string }) {
         </div>
       ) : profile.data ? (
         id ? (
-          <WantForm want={ownerQuery.data} profile={profile.data} />
+          wantQuery.data ? (
+            <WantForm want={wantQuery.data} profile={profile.data} adminEditing={adminEditing} />
+          ) : null
         ) : (
           <>
             <ResourceUsage resource="wants" count={false} />
@@ -51,7 +54,15 @@ export function WantFormPage({ id }: { id?: string }) {
   );
 }
 
-function WantForm({ want, profile }: { want?: Want; profile: WantFormProfile }) {
+function WantForm({
+  want,
+  profile,
+  adminEditing = false,
+}: {
+  want?: Want;
+  profile: WantFormProfile;
+  adminEditing?: boolean;
+}) {
   const { t } = useLingui();
   const {
     tagOptions,
@@ -89,7 +100,7 @@ function WantForm({ want, profile }: { want?: Want; profile: WantFormProfile }) 
     lifecycle,
     submit,
     runLifecycle,
-  } = useWantForm({ want, profile });
+  } = useWantForm({ want, profile, adminEditing });
 
   return (
     <form
@@ -218,11 +229,17 @@ function WantForm({ want, profile }: { want?: Want; profile: WantFormProfile }) 
           )}
         >
           <Checkbox
-            disabled={!emailAvailable}
+            disabled={adminEditing || !emailAvailable}
             checked={shareEmail}
             onCheckedChange={(checked) => setShareEmail(checked === true)}
           />
-          {emailAvailable ? <Trans>Share my email</Trans> : <Trans>Email unavailable</Trans>}
+          {adminEditing ? (
+            <Trans>Share owner's email</Trans>
+          ) : emailAvailable ? (
+            <Trans>Share my email</Trans>
+          ) : (
+            <Trans>Email unavailable</Trans>
+          )}
         </label>
         <label
           className={cn(
@@ -231,12 +248,23 @@ function WantForm({ want, profile }: { want?: Want; profile: WantFormProfile }) 
           )}
         >
           <Checkbox
-            disabled={!phoneAvailable}
+            disabled={adminEditing || !phoneAvailable}
             checked={sharePhone}
             onCheckedChange={(checked) => setSharePhone(checked === true)}
           />
-          {phoneAvailable ? <Trans>Share my phone number</Trans> : <Trans>Phone unavailable</Trans>}
+          {adminEditing ? (
+            <Trans>Share owner's phone number</Trans>
+          ) : phoneAvailable ? (
+            <Trans>Share my phone number</Trans>
+          ) : (
+            <Trans>Phone unavailable</Trans>
+          )}
         </label>
+        {adminEditing ? (
+          <p className="text-xs text-muted-foreground">
+            <Trans>Only the owner can change email and phone sharing.</Trans>
+          </p>
+        ) : null}
       </section>
       {error ? (
         <p role="alert" className="text-sm text-destructive">
@@ -250,7 +278,7 @@ function WantForm({ want, profile }: { want?: Want; profile: WantFormProfile }) 
         pending={inFlight || imageBusy}
         disabled={imageBusy}
       >
-        {want?.status === "CLOSED" ? (
+        {want?.status === "CLOSED" && !adminEditing ? (
           <Trans>Save and reopen Want</Trans>
         ) : want ? (
           <Trans>Save Want</Trans>
@@ -258,7 +286,7 @@ function WantForm({ want, profile }: { want?: Want; profile: WantFormProfile }) 
           <Trans>Create Want</Trans>
         )}
       </Button>
-      {want?.status === "OPEN" ? (
+      {want?.status === "OPEN" && !adminEditing ? (
         <Button
           type="button"
           variant="outline"
@@ -270,7 +298,7 @@ function WantForm({ want, profile }: { want?: Want; profile: WantFormProfile }) 
           <Trans>Close Want</Trans>
         </Button>
       ) : null}
-      {want ? (
+      {want && !adminEditing ? (
         <Button
           type="button"
           variant="destructive"

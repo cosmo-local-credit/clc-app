@@ -77,6 +77,13 @@ function group(name: string) {
 }
 
 describe("SettingsPage", () => {
+  it("keeps Helpdesk directly below the Profile section", () => {
+    render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
+    const help = within(group("Account")).getByRole("link", { name: "Helpdesk" });
+    expect(help.getAttribute("href")).toBe("/?tab=activity&section=helpdesk");
+    expect(screen.getByTestId("account-row").nextElementSibling).toBe(help);
+    expect(help.querySelector("svg")).not.toBeNull();
+  });
   it("adds Multisig after Sign-in only for someone who signs for a multisig", () => {
     mySafes.data = [{ kind: "safe", owner: ADDRESS, signers: [ADDRESS], threshold: 1 }];
     render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);

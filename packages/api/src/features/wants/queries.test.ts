@@ -1,12 +1,14 @@
 import { QueryClient } from "@tanstack/react-query";
 import type { WantWrite } from "@clc/core/features/wants/logic";
 import { describe, expect, it, vi } from "vite-plus/test";
-import type { WantsClient } from "./client";
+import { createWantsClient, type WantsClient } from "./client";
+import { createHttpClient } from "../../client/http-client";
 import { retryTransientBackendRead } from "../../client/errors";
 import {
   myWantQueryOptions,
   myWantsInfiniteQueryOptions,
   poolWantsInfiniteQueryOptions,
+  voucherWantsInfiniteQueryOptions,
   saveWantMutationOptions,
   wantCreatorPoolsInfiniteQueryOptions,
   wantCreatorVouchersInfiniteQueryOptions,
@@ -32,6 +34,8 @@ describe("Want query keys", () => {
   it("normalizes address-scoped keys and keeps resource families separate", () => {
     expect(wantKeys.mine(ADDRESS)).toEqual(wantKeys.mine(ADDRESS.toLowerCase()));
     expect(wantKeys.pool(ADDRESS)).toEqual(wantKeys.pool(ADDRESS.toLowerCase()));
+    expect(wantKeys.voucher(ADDRESS)).toEqual(wantKeys.voucher(ADDRESS.toLowerCase()));
+    expect(wantKeys.voucher(ADDRESS)).not.toEqual(wantKeys.pool(ADDRESS));
     expect(wantKeys.creatorVouchers("7")).not.toEqual(wantKeys.creatorPools("7"));
     expect(wantKeys.detail("7")).not.toEqual(wantKeys.detail("8"));
     expect(wantKeys.contact("7", ADDRESS)).toEqual(wantKeys.contact("7", ADDRESS.toLowerCase()));
@@ -51,6 +55,41 @@ describe("Want query keys", () => {
 });
 
 describe("Want infinite query options", () => {
+  it.each([
+    ["pools", poolWantsInfiniteQueryOptions],
+    ["vouchers", voucherWantsInfiniteQueryOptions],
+  ] as const)("sends a forward-page HTTP request for %s Wants", async (kind, factory) => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ ok: true, result: { wants: [], first: 0, last: 0 } })),
+      );
+    const client = createWantsClient(
+      createHttpClient({ baseUrl: "https://api.test", fetch: fetcher }),
+    );
+    const options = factory(client, ADDRESS);
+    await options.queryFn?.({ pageParam: 9, signal: SIGNAL } as never);
+    const requestUrl = fetcher.mock.calls[0]?.[0];
+    if (typeof requestUrl !== "string") throw new Error("Expected an HTTP URL string");
+    const url = new URL(requestUrl);
+    expect(url.pathname).toBe(`/api/v2/${kind}/${ADDRESS}/wants`);
+    expect(url.searchParams.get("cursor")).toBe("9");
+    expect(url.searchParams.get("next")).toBe("true");
+    expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ credentials: "omit", signal: SIGNAL });
+  });
+
+  it("paginates Voucher-owner Wants with cancellation and a resource-isolated key", async () => {
+    const voucher = vi.fn().mockResolvedValue(page(20, 8));
+    const client = { voucher } as unknown as WantsClient;
+    const options = voucherWantsInfiniteQueryOptions(client, ADDRESS);
+    expect(options.queryKey).toEqual(wantKeys.voucher(ADDRESS));
+    expect(voucherWantsInfiniteQueryOptions(client, "").enabled).toBe(false);
+    await options.queryFn?.({ pageParam: 9, signal: SIGNAL } as never);
+    expect(voucher).toHaveBeenCalledWith(ADDRESS, { perPage: 20, cursor: 9, next: true }, SIGNAL);
+    expect(options.getNextPageParam(page(20, 8) as never, [], undefined, [])).toBe(8);
+    expect(options.getNextPageParam(page(19, 8) as never, [], undefined, [])).toBeUndefined();
+    expect(options.getNextPageParam(page(20, 0) as never, [], undefined, [])).toBeUndefined();
+  });
   it("forwards list pagination and stops after short or terminal pages", async () => {
     const list = vi.fn().mockResolvedValue(page(20, 7));
     const options = wantsInfiniteQueryOptions({ list } as unknown as WantsClient, {
@@ -83,7 +122,7 @@ describe("Want infinite query options", () => {
     await poolOptions.queryFn?.({ pageParam: 5, signal: SIGNAL } as never);
     await detailOptions.queryFn?.({ signal: SIGNAL } as never);
     expect(mine).toHaveBeenCalledWith({ perPage: 20, cursor: 4 }, SIGNAL);
-    expect(pool).toHaveBeenCalledWith(ADDRESS, { perPage: 20, cursor: 5 }, SIGNAL);
+    expect(pool).toHaveBeenCalledWith(ADDRESS, { perPage: 20, cursor: 5, next: true }, SIGNAL);
     expect(detail).toHaveBeenCalledWith("7", SIGNAL);
     expect(mineOptions.getNextPageParam(page(20, 8) as never, [], undefined, [])).toBe(8);
     expect(mineOptions.getNextPageParam(page(1, 8) as never, [], undefined, [])).toBeUndefined();

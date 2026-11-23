@@ -47,6 +47,7 @@ export function VoucherOfferingsPanel({
 }) {
   const {
     isOwner,
+    canEdit,
     query,
     editor,
     setEditor,
@@ -85,10 +86,10 @@ export function VoucherOfferingsPanel({
         autoLoadMore={autoLoadMore}
         openVoucherPageAction={openVoucherPageAction}
         management={
-          isOwner
+          canEdit
             ? {
                 onEdit: (offering) => setEditor({ kind: "edit", offering }),
-                onDelete: (offering) => void requestDelete(offering),
+                onDelete: isOwner ? (offering) => void requestDelete(offering) : undefined,
                 deletingID,
               }
             : undefined
@@ -104,7 +105,7 @@ export function VoucherOfferingsPanel({
 
       {voucherAddress ? (
         <OfferingEditorSheet
-          editor={editor}
+          editor={canEdit ? editor : null}
           voucherAddress={voucherAddress}
           priceCurrency={voucherUoa ?? voucherSymbol}
           defaultImageUrl={defaultImageUrl}

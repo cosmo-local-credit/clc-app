@@ -239,16 +239,18 @@ export function ResourceReviewsPanel({
                       {review.reply ? t`Edit your reply` : t`Reply`}
                     </Button>
                   ) : null}
-                  <Button
-                    variant="ghost"
-                    tap
-                    disabled={viewer.flaggedReviewIds.includes(review.id)}
-                    onClick={() => open({ kind: "flag", review })}
-                  >
-                    {viewer.flaggedReviewIds.includes(review.id)
-                      ? t`Reported`
-                      : t`Report inappropriate`}
-                  </Button>
+                  {review.comment.trim() ? (
+                    <Button
+                      variant="ghost"
+                      tap
+                      disabled={viewer.flaggedReviewIds.includes(review.id)}
+                      onClick={() => open({ kind: "flag", review })}
+                    >
+                      {viewer.flaggedReviewIds.includes(review.id)
+                        ? t`Reported`
+                        : t`Report inappropriate`}
+                    </Button>
+                  ) : null}
                 </div>
               ) : null}
               {viewer?.isOwner &&

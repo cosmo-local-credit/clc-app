@@ -1,3 +1,4 @@
+import { profileVisibilitySchema } from "../public-profiles/logic";
 import { z } from "zod";
 import { isUnitOfAccount } from "../../lib/currencies";
 import { optionalEmailSchema, optionalPhoneSchema, optionalWebsiteSchema } from "../../lib/contact";
@@ -53,6 +54,7 @@ export type ProfileInput = z.infer<typeof profileSchema>;
 
 export const profileEditSchema = z
   .object({
+    publicProfile: profileVisibilitySchema.optional(),
     name: nameSchema,
     email: optionalEmailSchema,
     phone: optionalPhoneSchema,

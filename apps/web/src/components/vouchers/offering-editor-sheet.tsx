@@ -4,6 +4,7 @@ import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { ReactNode } from "react";
 
+import { OfferingTagsField } from "#/components/offerings/offering-tags-field";
 import { Button } from "#/components/ui/button";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
@@ -207,6 +208,16 @@ function OfferingForm({
                 </Field>
               )}
             </form.Field>
+          )}
+        </form.Field>
+
+        <form.Field name="tags">
+          {(field) => (
+            <OfferingTagsField
+              tags={field.state.value}
+              onChange={field.handleChange}
+              error={getFieldError(field.state.meta.errors)}
+            />
           )}
         </form.Field>
 

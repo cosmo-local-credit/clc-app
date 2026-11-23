@@ -41,8 +41,15 @@ import { cn } from "#/lib/utils";
 import { VoucherAbout } from "./voucher-about";
 import { VoucherContractActionsPanel } from "./voucher-contract-actions-panel";
 import { VoucherOfferingsPanel } from "./voucher-offerings-panel";
+import { VoucherWantsPanel } from "./voucher-wants-panel";
 
-export type VoucherDetailSection = "offerings" | "activity" | "info" | "reviews" | "posts";
+export type VoucherDetailSection =
+  | "offerings"
+  | "wants"
+  | "activity"
+  | "info"
+  | "reviews"
+  | "posts";
 
 type TxKind = "in" | "out";
 
@@ -142,6 +149,10 @@ export function VoucherDetailSections({
           manualPageSize={3}
           autoLoadMore={false}
         />
+      </VoucherSection>
+
+      <VoucherSection id="wants" title={<Trans>Wants</Trans>} {...{ idPrefix, headingLevel }}>
+        <VoucherWantsPanel key={address} address={address} />
       </VoucherSection>
 
       <VoucherSection id="reviews" title={<Trans>Reviews</Trans>} {...{ idPrefix, headingLevel }}>

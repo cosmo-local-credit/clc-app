@@ -14,6 +14,10 @@ import {
 } from "#/features/wallet/hooks/use-offering-mutations";
 import { useOfferingUnits } from "#/hooks/use-vocabulary";
 
+const offeringFormSchema = offeringWriteSchema.extend({
+  tags: offeringWriteSchema.shape.tags.unwrap(),
+});
+
 /**
  * The unit an issuer picked, in their language.
  *
@@ -113,18 +117,24 @@ export function useOfferingForm({
       description: offering?.description ?? "",
       unit: offering?.unit ?? "",
       pricePerUnit: offering?.pricePerUnit ?? "",
+      tags: offering?.tags ?? [],
       // A new offering starts with the issuer's profile photo, just like a
       // voucher deployment. Editing preserves the offering's own saved photo
       // (including an intentionally removed one).
       imageUrl: offering ? offering.imageUrl : defaultImageUrl,
     },
-    validators: { onSubmit: offeringWriteSchema },
+    validators: { onSubmit: offeringFormSchema },
     onSubmit: async ({ value }) => {
       if (saving) return;
       // By this point the photo is already a stored URL: the field uploads on
       // selection, so there is no upload to sequence here and a failed write
       // leaves that URL in the form rather than re-sending the bytes.
-      const input = value as OfferingWrite;
+      const { tags, ...fields } = value;
+      const tagsChanged =
+        !offering ||
+        tags.length !== offering.tags.length ||
+        tags.some((tag, index) => tag !== offering.tags[index]);
+      const input: OfferingWrite = { ...fields, ...(tagsChanged ? { tags } : {}) };
       try {
         if (offering) {
           await update.mutateAsync({ id: offering.id, input });

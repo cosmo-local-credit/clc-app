@@ -13,6 +13,7 @@ import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { ResourceMessageButton } from "#/components/messaging/resource-owner-contact";
+import { ShareLinkButton } from "#/components/share-link-button";
 import { BackChevron, PoolLogo } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { usePoolReportsInfinite } from "#/features/home/hooks/use-reports";
@@ -160,6 +161,7 @@ export function PoolDetailPage({
               ))}
             </div>
           </div>
+          <ShareLinkButton title={pool.name} path={`/pools/${pool.address}`} />
         </div>
       </section>
 

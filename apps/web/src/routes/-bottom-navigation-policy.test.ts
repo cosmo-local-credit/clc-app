@@ -13,6 +13,12 @@ const ROUTES_DIR = resolve(import.meta.dirname);
 const GENERATED_TREE = resolve(ROUTES_DIR, "../routeTree.gen.ts");
 
 const routePolicy = [
+  {
+    id: "/_nav/profiles/$address",
+    fullPath: "/profiles/$address",
+    source: "_nav/profiles/$address.tsx",
+    navOwner: "market",
+  },
   { id: "/_nav/", fullPath: "/", source: "_nav/index.tsx", navOwner: "home" },
   {
     id: "/_nav/catalogs/",

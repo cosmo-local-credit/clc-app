@@ -38,6 +38,9 @@ vi.mock("@clc/api/features/wants/queries", () => ({
 vi.mock("@tanstack/react-query", () => ({
   useQuery: () => mocks.query,
 }));
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({ isAuthenticated: false }),
+}));
 vi.mock("#/lib/navigation/use-want-sheet-selection", () => ({
   useWantSheetSelection: () => ({ want: "7", close: mocks.close }),
 }));

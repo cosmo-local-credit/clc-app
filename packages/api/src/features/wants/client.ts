@@ -157,6 +157,18 @@ export function createWantsClient(http: HttpClient) {
       );
       return { ...page, wants: page.wants.map(withoutContact) };
     },
+    async voucher(
+      voucherAddress: string,
+      params: WantsParams,
+      signal?: AbortSignal,
+    ): Promise<WantPage> {
+      const page = await read(
+        wantPageSchema,
+        listPath(`/api/v2/vouchers/${encodeURIComponent(voucherAddress)}/wants`, params),
+        { method: "GET", credentials: "omit", signal },
+      );
+      return { ...page, wants: page.wants.map(withoutContact) };
+    },
     async mine(params: WantsParams, signal?: AbortSignal): Promise<WantPage> {
       const page = await read(wantPageSchema, listPath("/api/v2/users/me/wants", params), {
         method: "GET",
@@ -171,6 +183,13 @@ export function createWantsClient(http: HttpClient) {
         signal,
       });
       return withoutContact(result.want);
+    },
+    async editRecord(id: string, signal?: AbortSignal): Promise<Want> {
+      const result = await read(wantResultSchema, `/api/v2/wants/${encodeURIComponent(id)}/edit`, {
+        method: "GET",
+        signal,
+      });
+      return withContact(result.want);
     },
     async contact(id: string, signal?: AbortSignal): Promise<WantContact | undefined> {
       const result = await read(
@@ -208,6 +227,9 @@ export function createWantsClient(http: HttpClient) {
     async update(id: string, input: WantWrite, signal?: AbortSignal): Promise<Want> {
       return save(`/api/v2/users/me/wants/${encodeURIComponent(id)}`, "PUT", input, signal);
     },
+    async updateAsAdmin(id: string, input: WantWrite, signal?: AbortSignal): Promise<Want> {
+      return save(`/api/v2/wants/${encodeURIComponent(id)}`, "PUT", input, signal, false);
+    },
     async reopen(id: string, input: WantWrite, signal?: AbortSignal): Promise<Want> {
       return save(`/api/v2/users/me/wants/${encodeURIComponent(id)}/reopen`, "POST", input, signal);
     },
@@ -230,12 +252,14 @@ export function createWantsClient(http: HttpClient) {
     method: "POST" | "PUT",
     input: WantWrite,
     signal?: AbortSignal,
+    includeSharePermissions = true,
   ) {
-    const parsed = wantWriteSchema.parse(input);
+    const { shareEmail, sharePhone, ...parsed } = wantWriteSchema.parse(input);
     const result = await read(wantResultSchema, path, {
       method,
       body: JSON.stringify({
         ...parsed,
+        ...(includeSharePermissions ? { shareEmail, sharePhone } : {}),
         locationName: parsed.location.locationName,
         geoLat: parsed.location.lat,
         geoLng: parsed.location.lng,
