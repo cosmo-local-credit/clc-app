@@ -12,7 +12,7 @@ import {
   resourceProfilesQueryOptions,
 } from "./queries";
 
-const address = `0x${"A".repeat(40)}`;
+const address = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
 const sections = {
   vouchers: true,
   offers: true,
@@ -41,9 +41,7 @@ describe("public profile transport and query lifecycle", () => {
     const fetch = respond({ profile: { ...profile, email: "secret" } });
     const signal = new AbortController().signal;
     expect(await client.detail(address, signal)).not.toHaveProperty("email");
-    expect(fetch.mock.calls[0]?.[0]).toBe(
-      `https://api.test/api/v2/profiles/${address.toLowerCase()}`,
-    );
+    expect(fetch.mock.calls[0]?.[0]).toBe(`https://api.test/api/v2/profiles/${address}`);
     expect(fetch.mock.calls[0]?.[1]).toMatchObject({
       credentials: "omit",
       cache: "no-store",
@@ -61,6 +59,54 @@ describe("public profile transport and query lifecycle", () => {
       signal,
     });
   });
+  it.each([address, address.toLowerCase()])(
+    "uses the API's checksummed path for every profile read from %s",
+    async (input) => {
+      const base = `/api/v2/profiles/${address}`;
+      const sections = ["vouchers", "offers", "wants", "pools", "posts", "catalogs"] as const;
+      const paths = [
+        base,
+        `${base}/details`,
+        ...sections.map((section) => `${base}/${section}`),
+        `${base}/activity`,
+      ];
+      const fetch = vi.fn((url: string, _init?: RequestInit) => {
+        const path = new URL(url).pathname;
+        if (!paths.includes(path)) {
+          return Promise.resolve(
+            new Response(JSON.stringify({ ok: false, code: "E04" }), { status: 400 }),
+          );
+        }
+        const result =
+          path === base
+            ? { profile }
+            : path === `${base}/details`
+              ? { details: {} }
+              : { items: [], nextCursor: null };
+        return Promise.resolve(new Response(JSON.stringify({ ok: true, result })));
+      });
+      vi.stubGlobal("fetch", fetch);
+      const signal = new AbortController().signal;
+      expect(await client.detail(input, signal)).toEqual(profile);
+      expect(await client.details(input, signal)).toEqual({});
+      for (const section of sections) {
+        expect(await client.resources(input, section, "20", signal)).toEqual({
+          items: [],
+          nextCursor: null,
+        });
+      }
+      expect(await client.activity(input, "20", signal)).toEqual({ items: [], nextCursor: null });
+      expect(fetch.mock.calls.map(([url]) => new URL(url).pathname)).toEqual(paths);
+      for (const [index, call] of fetch.mock.calls.entries()) {
+        expect(call[1]).toMatchObject({
+          credentials: index === 1 ? "include" : "omit",
+          cache: "no-store",
+          signal,
+        });
+        if (index > 1) expect(new URL(call[0]).searchParams.get("cursor")).toBe("20");
+      }
+    },
+  );
   it("passes opaque cursor and section exactly, stripping unapproved Activity metadata", async () => {
     const fetch = respond({
       items: [{ id: 1, kind: "pool", resourceId: address, name: "Pool", management: "multisig" }],

@@ -7,6 +7,7 @@ import {
   type ProfileSection,
 } from "@clc/core/features/public-profiles/logic";
 import { z } from "zod";
+import { getAddress } from "viem";
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
 
@@ -46,7 +47,7 @@ export function createPublicProfilesClient(http: HttpClient) {
     }
     return result.data;
   }
-  const base = (address: string) => `/api/v2/profiles/${encodeURIComponent(address.toLowerCase())}`;
+  const base = (address: string) => `/api/v2/profiles/${encodeURIComponent(getAddress(address))}`;
   function pagePath(address: string, section: ProfileSection, cursor?: string) {
     const params = new URLSearchParams({ perPage: "20" });
     if (cursor) params.set("cursor", cursor);

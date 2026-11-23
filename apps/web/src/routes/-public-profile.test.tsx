@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { publicProfileKeys } from "@clc/api/features/public-profiles/queries";
 import {
   createMemoryHistory,
   createRootRoute,
@@ -13,13 +14,13 @@ import { ResourceProfileButton } from "#/components/profile/resource-profile-but
 import { PublicProfilePage } from "#/features/public-profiles/ui/public-profile-page";
 import { Route as ProfileRoute } from "./_nav/profiles/$address";
 
-const address = `0x${"a".repeat(40)}`;
+const address = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
 const other = `0x${"b".repeat(40)}`;
 const auth = vi.hoisted(() => ({
   state: "guest",
   isAuthenticated: false,
   isLoading: false,
-  session: { address: `0x${"a".repeat(40)}` },
+  session: { address: "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed" },
   retrying: false,
   retry: vi.fn(),
   layout: "mobile" as "mobile" | "desktop",
@@ -112,10 +113,22 @@ afterEach(() => {
 
 describe("public profile views", () => {
   it.each(["mobile", "desktop"] as const)(
-    "opens a shared profile URL as a guest through the %s file route",
+    "loads a lowercase shared URL and its Voucher section through the %s file route",
     async (layout) => {
       auth.layout = layout;
-      const fetch = vi.fn().mockResolvedValue(reply({ profile }));
+      const base = `/api/v2/profiles/${address}`;
+      const fetch = vi.fn((input: string) => {
+        const path = new URL(input).pathname;
+        if (path === base) return Promise.resolve(reply({ profile }));
+        if (path === `${base}/vouchers`)
+          return Promise.resolve(
+            reply({
+              items: [{ id: "1", kind: "voucher", resourceId: other, name: "Community voucher" }],
+              nextCursor: null,
+            }),
+          );
+        return Promise.resolve(reply({}, 400));
+      });
       vi.stubGlobal("fetch", fetch);
       const root = createRootRoute();
       const home = createRoute({ getParentRoute: () => root, path: "/", component: () => null });
@@ -125,7 +138,7 @@ describe("public profile views", () => {
       } as never);
       const router = createRouter({
         routeTree: root.addChildren([home, route]),
-        history: createMemoryHistory({ initialEntries: [`/profiles/${address}`] }),
+        history: createMemoryHistory({ initialEntries: [`/profiles/${address.toLowerCase()}`] }),
       });
       const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
       clients.push(client);
@@ -136,9 +149,15 @@ describe("public profile views", () => {
       );
 
       expect(await screen.findByRole("heading", { name: "alice" })).toBeTruthy();
-      expect(router.state.location.pathname).toBe(`/profiles/${address}`);
+      expect(router.state.location.pathname).toBe(`/profiles/${address.toLowerCase()}`);
       expect(fetch).toHaveBeenCalledExactlyOnceWith(
         expect.stringContaining(`/api/v2/profiles/${address}`),
+        expect.objectContaining({ credentials: "omit" }),
+      );
+      fireEvent.click(screen.getByText("Vouchers", { selector: "summary" }));
+      expect(await screen.findByRole("link", { name: "Community voucher" })).toBeTruthy();
+      expect(fetch).toHaveBeenLastCalledWith(
+        expect.stringContaining(`${base}/vouchers?perPage=20`),
         expect.objectContaining({ credentials: "omit" }),
       );
     },
@@ -256,7 +275,7 @@ describe("public profile views", () => {
     auth.state = "authenticated";
     auth.isLoading = false;
     auth.isAuthenticated = true;
-    client.setQueryData(["clc", "public-profiles", address], { ...profile, name: "Alice updated" });
+    client.setQueryData(publicProfileKeys.detail(address), { ...profile, name: "Alice updated" });
     expect(await screen.findByText("shared@example.test")).toBeTruthy();
     expect(screen.getByText("+25400000")).toBeTruthy();
     expect(screen.getByText("Shared place")).toBeTruthy();
