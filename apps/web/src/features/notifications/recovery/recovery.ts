@@ -32,6 +32,7 @@ const deliveryAckSchema = z.object({
   receivedAt: z.string().optional(),
   serviceWorkerVersion: z.string().optional(),
   shownAt: z.string().optional(),
+  handledInApp: z.boolean().optional(),
   walletAddressTarget: z.string().optional(),
 });
 
