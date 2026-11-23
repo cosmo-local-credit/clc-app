@@ -34,7 +34,6 @@ export function PublicProfileFields({
     ["pools", t`Pools`],
     ["posts", t`Posts`],
     ["catalogs", t`Catalogs`],
-    ["activity", t`Transaction activity`],
   ];
   return (
     <section aria-label={t`Public profile`} className="space-y-4 border border-border bg-card p-4">

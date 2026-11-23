@@ -31,7 +31,7 @@ describe("profile publication boundary", () => {
         pools: true,
         catalogs: true,
         posts: false,
-        activity: false,
+        activity: true,
       },
       hasPrivateDetails: false,
       email: "secret@example.test",
@@ -41,6 +41,13 @@ describe("profile publication boundary", () => {
     expect(result).not.toHaveProperty("email");
     expect(result).not.toHaveProperty("role");
     expect(result).not.toHaveProperty("maxPools");
+    expect(result.sections).not.toHaveProperty("activity");
+  });
+  it("discards the retired activity preference from legacy saved settings", () => {
+    expect(
+      profileVisibilitySchema.parse({ ...DEFAULT_PROFILE_VISIBILITY, activity: true }),
+    ).toEqual(DEFAULT_PROFILE_VISIBILITY);
+    expect(DEFAULT_PROFILE_VISIBILITY).not.toHaveProperty("activity");
   });
   it("rejects impossible protected location values", () => {
     expect(publicProfileDetailsSchema.safeParse({ geoLat: 91, geoLng: 0 }).success).toBe(false);

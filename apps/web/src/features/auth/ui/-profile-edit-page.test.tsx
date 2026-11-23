@@ -181,10 +181,11 @@ afterEach(() => {
 
 describe("ProfileEditPage", () => {
   it("saves publication choices through the existing Save action and links to the saved public page", async () => {
-    const fetch = mockBackend();
+    const fetch = mockBackend({ publicProfile: { ...DEFAULT_PROFILE_VISIBILITY, activity: true } });
     renderWithQueryClient(<ProfileEditPage />);
     const posts = await screen.findByRole("switch", { name: "Show Posts" });
     expect(posts.getAttribute("aria-checked")).toBe("false");
+    expect(screen.queryByRole("switch", { name: "Show Transaction activity" })).toBeNull();
     expect(screen.getByRole("switch", { name: "Show Vouchers" }).getAttribute("aria-checked")).toBe(
       "true",
     );

@@ -7,7 +7,6 @@ import { createPublicProfilesClient } from "./client";
 import {
   publicProfileQueryOptions,
   profileResourcesQueryOptions,
-  profileActivityQueryOptions,
   profileDetailsQueryOptions,
   resourceProfilesQueryOptions,
 } from "./queries";
@@ -20,7 +19,6 @@ const sections = {
   pools: true,
   catalogs: true,
   posts: false,
-  activity: false,
 };
 const profile = { address, username: "alice", sections, hasPrivateDetails: true };
 const http = createHttpClient({ baseUrl: "https://api.test" });
@@ -38,9 +36,13 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe("public profile transport and query lifecycle", () => {
   it("omits cookies for public reads and includes them only for chosen details", async () => {
-    const fetch = respond({ profile: { ...profile, email: "secret" } });
+    const fetch = respond({
+      profile: { ...profile, sections: { ...sections, activity: true }, email: "secret" },
+    });
     const signal = new AbortController().signal;
-    expect(await client.detail(address, signal)).not.toHaveProperty("email");
+    const result = await client.detail(address, signal);
+    expect(result).not.toHaveProperty("email");
+    expect(result.sections).not.toHaveProperty("activity");
     expect(fetch.mock.calls[0]?.[0]).toBe(`https://api.test/api/v2/profiles/${address}`);
     expect(fetch.mock.calls[0]?.[1]).toMatchObject({
       credentials: "omit",
@@ -64,12 +66,7 @@ describe("public profile transport and query lifecycle", () => {
     async (input) => {
       const base = `/api/v2/profiles/${address}`;
       const sections = ["vouchers", "offers", "wants", "pools", "posts", "catalogs"] as const;
-      const paths = [
-        base,
-        `${base}/details`,
-        ...sections.map((section) => `${base}/${section}`),
-        `${base}/activity`,
-      ];
+      const paths = [base, `${base}/details`, ...sections.map((section) => `${base}/${section}`)];
       const fetch = vi.fn((url: string, _init?: RequestInit) => {
         const path = new URL(url).pathname;
         if (!paths.includes(path)) {
@@ -95,7 +92,6 @@ describe("public profile transport and query lifecycle", () => {
           nextCursor: null,
         });
       }
-      expect(await client.activity(input, "20", signal)).toEqual({ items: [], nextCursor: null });
       expect(fetch.mock.calls.map(([url]) => new URL(url).pathname)).toEqual(paths);
       for (const [index, call] of fetch.mock.calls.entries()) {
         expect(call[1]).toMatchObject({
@@ -107,7 +103,7 @@ describe("public profile transport and query lifecycle", () => {
       }
     },
   );
-  it("passes opaque cursor and section exactly, stripping unapproved Activity metadata", async () => {
+  it("passes opaque resource cursors and sections exactly", async () => {
     const fetch = respond({
       items: [{ id: 1, kind: "pool", resourceId: address, name: "Pool", management: "multisig" }],
       nextCursor: "cursor+/=",
@@ -124,40 +120,6 @@ describe("public profile transport and query lifecycle", () => {
     await client.resources(address, "pools", next ?? undefined);
     expect(new URL(fetch.mock.calls[1]?.[0]).searchParams.get("cursor")).toBe("cursor+/=");
     expect(options.getNextPageParam({ items: [] }, [], undefined, [])).toBeUndefined();
-    fetch.mockImplementationOnce(() =>
-      Promise.resolve(
-        new Response(
-          JSON.stringify({
-            ok: true,
-            result: {
-              items: [
-                {
-                  id: "1",
-                  txHash: `0x${"b".repeat(64)}`,
-                  chainId: 100,
-                  timestamp: "2026-11-23T00:00:00Z",
-                  kind: "transfer",
-                  hasNote: true,
-                  attachments: ["private"],
-                },
-              ],
-              nextCursor: null,
-            },
-          }),
-        ),
-      ),
-    );
-    const activity = await query.fetchInfiniteQuery(profileActivityQueryOptions(client, address));
-    expect(activity.pages[0]?.items[0]).not.toHaveProperty("hasNote");
-    expect(activity.pages[0]?.items[0]).not.toHaveProperty("attachments");
-    expect(
-      profileActivityQueryOptions(client, address).getNextPageParam(
-        { items: [], nextCursor: null },
-        [],
-        undefined,
-        [],
-      ),
-    ).toBeUndefined();
     query.clear();
   });
   it("keeps viewer identity and resource kind in keys and resolves public signers", async () => {
