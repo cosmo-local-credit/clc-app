@@ -305,6 +305,28 @@ describe("notification API wrappers", () => {
     });
   });
 
+  it("acknowledges in-app handling without claiming display or reading", async () => {
+    const { calls, fetcher } = createJsonFetcher({ accepted: true });
+
+    await sendNotificationDeliveryAck(
+      {
+        deviceId: "device-1",
+        notificationId: "notification-quiet",
+        receivedAt: "2026-06-05T12:00:00.000Z",
+        handledInApp: true,
+      },
+      { baseUrl: "https://push.example", fetcher },
+    );
+
+    expect(await requestJson(calls[0])).toEqual({
+      registrationId: "registration-1",
+      deviceId: "device-1",
+      notificationId: "notification-quiet",
+      receivedAt: "2026-06-05T12:00:00.000Z",
+      handledInApp: true,
+    });
+  });
+
   it("posts inbox sync requests and defaults message priority by kind", async () => {
     const { calls, fetcher } = createJsonFetcher({
       hasMore: false,
@@ -400,6 +422,27 @@ describe("tolerant inbox parsing", () => {
     expect(page.messages.map((message) => message.notificationId)).toEqual(["n-1", "n-4"]);
     expect(page.messages[1]?.conversationId).toBe("4");
     expect(page.nextSyncCursor).toBe("cursor-2");
+  });
+
+  it("retains the server's in-app receipt independently from shown and read state", async () => {
+    const handledInAppAt = "2026-06-05T12:00:02.000Z";
+    const { fetcher } = createJsonFetcher({
+      hasMore: false,
+      resetRequired: false,
+      deletions: [],
+      deletedIds: [],
+      messages: [{ ...item("message.received", "quiet"), handledInAppAt }],
+      nextSyncCursor: "cursor-2",
+    });
+
+    const page = await syncNotificationInbox(
+      { deviceId: "device-1" },
+      { baseUrl: "https://push.example", fetcher },
+    );
+
+    expect(page.messages[0]?.handledInAppAt).toBe(handledInAppAt);
+    expect(page.messages[0]?.shownAt).toBeUndefined();
+    expect(page.messages[0]?.readAt).toBeUndefined();
   });
 });
 

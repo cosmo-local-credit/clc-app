@@ -80,6 +80,24 @@ describe("notification realtime ownership", () => {
     stop();
     expect(client?.disconnect).toHaveBeenCalledOnce();
   });
+
+  it("keeps durable inbox updates running when Activity presentation handles the alert quietly", async () => {
+    const activity = {
+      current: vi.fn(() => ({ section: "messages" as const })),
+      subscribe: vi.fn(),
+    };
+    const changed = vi.fn();
+    const stop = await connectNotificationRealtime({
+      ...identity,
+      activity,
+      onInboxChanged: changed,
+    });
+    const payload = { notificationId: "n1", revision: 1 };
+    mocks.clients[0]?.listeners.get("publication")?.({ data: payload });
+    await vi.waitFor(() => expect(changed).toHaveBeenCalledOnce());
+    expect(mocks.show).toHaveBeenCalledWith(payload, "epoch-1", "user-1", undefined, activity);
+    stop();
+  });
   it("rejects a token refresh belonging to another account", async () => {
     const changed = vi.fn();
     const stop = await connectNotificationRealtime({ ...identity, onIdentityChanged: changed });

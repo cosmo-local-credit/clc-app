@@ -126,6 +126,18 @@ describe("notification session lifecycle", () => {
     stop();
   });
 
+  it("passes the live Activity source through without changing session identity", async () => {
+    const activity = {
+      current: vi.fn(() => ({ section: "messages" as const })),
+      subscribe: vi.fn(),
+    };
+    const stop = await startNotificationSession({ ...options(), activity });
+    expect(mocks.connect).toHaveBeenCalledWith(
+      expect.objectContaining({ activity, identityEpoch: "epoch-1" }),
+    );
+    stop();
+  });
+
   it("registers a missing device before recovery and keeps the existing sync cursor", async () => {
     mocks.begin.mockResolvedValue({
       ...identity,

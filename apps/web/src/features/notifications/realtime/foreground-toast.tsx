@@ -6,6 +6,10 @@ import {
   sendNotificationDeliveryAck,
 } from "../api/notification-client";
 import { type NotificationPayload, parseNotificationPayload } from "../logic/payload-schema";
+import {
+  isNotificationActivityVisible,
+  type NotificationActivitySource,
+} from "../logic/activity-context";
 import { flushQueuedNotificationAcks } from "../recovery/recovery";
 import { playNotificationCue } from "./alert-cue";
 import {
@@ -24,6 +28,7 @@ export async function showForegroundNotification(
   identityEpoch: string,
   userId: string,
   client?: NotificationClientOptions,
+  activity?: NotificationActivitySource,
 ): Promise<() => void> {
   const parsed = parseNotificationPayload(raw, { appOrigin: window.location.origin });
   if (!parsed.success || document.visibilityState !== "visible") return () => {};
@@ -51,6 +56,7 @@ export async function showForegroundNotification(
     display.deleted ||
     display.message?.readAt ||
     display.message?.shownAt ||
+    display.message?.handledInAppAt ||
     display.message?.actionedAt
   )
     return () => {};
@@ -59,39 +65,59 @@ export async function showForegroundNotification(
   const id = `clc:${identityEpoch}:${payload.notificationId}`;
   const receivedAt = new Date().toISOString();
   let dismissed = false;
-  let shown = false;
+  let outcome: "shown" | "handled" | undefined;
+  let toastCreated = false;
+  let unsubscribe: (() => void) | undefined;
+  function dismiss(): void {
+    dismissed = true;
+    unsubscribe?.();
+    if (toastCreated) toast.dismiss(id);
+  }
   async function current(): Promise<boolean> {
     return (
       !dismissed &&
       !client?.signal?.aborted &&
       (await isNotificationIdentityCurrent(identityEpoch)) &&
-      (await readNotificationConfig())?.registrationId === registrationId
+      (await readNotificationConfig())?.registrationId === registrationId &&
+      !dismissed &&
+      !client?.signal?.aborted
     );
   }
-  async function acknowledgeDisplay(): Promise<void> {
+  async function acknowledgeDelivery(onlyIfHandled = false): Promise<void> {
+    if (outcome || !(await current())) return;
     if (
-      shown ||
-      !(await current()) ||
+      outcome ||
       document.visibilityState !== "visible" ||
       Date.parse(payload.deliveryExpiresAt ?? "") <= Date.now()
     )
       return;
-    shown = true;
-    // The cue follows the toast, not the push. A foreground toast does not change the badge.
-    playNotificationCue();
-    const shownAt = new Date().toISOString();
-    await saveNotificationInboxMessage({ ...payload, receivedAt, shownAt }, identityEpoch);
-    await markNotificationInboxMessageShown(payload.notificationId, shownAt, identityEpoch);
+    const handled = isNotificationActivityVisible(payload, activity?.current() ?? null);
+    if (onlyIfHandled && !handled) return;
+    outcome = handled ? "handled" : "shown";
+    if (handled) dismiss();
+    else playNotificationCue();
+    const timestamp = new Date().toISOString();
+    await saveNotificationInboxMessage(
+      {
+        ...payload,
+        receivedAt,
+        ...(handled ? { handledInAppAt: timestamp } : { shownAt: timestamp }),
+      },
+      identityEpoch,
+    );
+    if (!handled)
+      await markNotificationInboxMessageShown(payload.notificationId, timestamp, identityEpoch);
     const request = {
       deviceId,
       registrationId,
       notificationId: payload.notificationId,
       receivedAt,
-      shownAt,
+      ...(handled ? { handledInApp: true } : { shownAt: timestamp }),
       walletAddressTarget: payload.walletAddressTarget,
     };
     try {
-      await sendNotificationDeliveryAck(request, { ...client, identityEpoch });
+      const response = await sendNotificationDeliveryAck(request, { ...client, identityEpoch });
+      if (!response.accepted) throw new Error("Delivery acknowledgment was not accepted.");
     } catch (error) {
       await enqueueNotificationAck({
         identityEpoch,
@@ -132,12 +158,29 @@ export async function showForegroundNotification(
       window.location.assign(payload.targetUrl);
     }
   }
-  if (!(await current())) return () => {};
+  if (!(await current())) return dismiss;
+  unsubscribe = activity?.subscribe(() => {
+    if (
+      document.visibilityState !== "visible" ||
+      !isNotificationActivityVisible(payload, activity.current())
+    )
+      return;
+    if (outcome === "shown") dismiss();
+    else void acknowledgeDelivery(true).catch(() => undefined);
+  });
+  await acknowledgeDelivery(true);
+  if (outcome || !(await current())) return dismiss;
+  if (isNotificationActivityVisible(payload, activity?.current() ?? null)) {
+    await acknowledgeDelivery(true);
+    dismiss();
+    return dismiss;
+  }
+  toastCreated = true;
   toast(
     <ForegroundNotificationContent
       payload={payload}
       onShown={() => {
-        void acknowledgeDisplay().catch(() => undefined);
+        void acknowledgeDelivery().catch(() => undefined);
       }}
       onClick={(event) => {
         void clicked(event).catch(() => undefined);
@@ -152,16 +195,15 @@ export async function showForegroundNotification(
       duration: 6000,
       onDismiss: () => {
         dismissed = true;
+        unsubscribe?.();
       },
       onAutoClose: () => {
         dismissed = true;
+        unsubscribe?.();
       },
     },
   );
-  return () => {
-    dismissed = true;
-    toast.dismiss(id);
-  };
+  return dismiss;
 }
 
 export function ForegroundNotificationContent({

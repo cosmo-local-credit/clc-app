@@ -94,6 +94,7 @@ export type NotificationConfigPatch = Omit<Partial<NotificationConfigRecord>, "k
 
 export type NotificationInboxMessage = NotificationPayload & {
   shownAt?: string;
+  handledInAppAt?: string;
   actionedAt?: string;
   readAt?: string;
   receivedAt: string;
@@ -333,16 +334,26 @@ export async function saveNotificationInboxMessage(
   const store = transaction.objectStore("inbox");
   const current = await store.get(message.notificationId);
   const revision = await transaction.objectStore("inboxRevisions").get(message.notificationId);
-  if (
-    (expectedEpoch !== undefined && config?.identityEpoch !== expectedEpoch) ||
-    (revision && (message.revision ?? -1) <= revision.revision)
-  ) {
+  if (expectedEpoch !== undefined && config?.identityEpoch !== expectedEpoch) {
+    await transaction.done;
+    return current ?? message;
+  }
+  if (revision && (message.revision ?? -1) <= revision.revision) {
+    // A feed page can win the race with foreground handling of the same
+    // publication. Keep its newer payload while recording the local receipt.
+    if (current && message.handledInAppAt && !current.handledInAppAt) {
+      const handled = { ...current, handledInAppAt: message.handledInAppAt };
+      await store.put(handled);
+      await transaction.done;
+      return handled;
+    }
     await transaction.done;
     return current ?? message;
   }
   const next: NotificationInboxMessage = {
     ...current,
     ...message,
+    handledInAppAt: message.handledInAppAt ?? current?.handledInAppAt,
     receivedAt: message.receivedAt || current?.receivedAt || nowISO(),
     // Normalized here because this is the only write path into `inbox` (reached
     // from `recovery.ts` and `sw/register-handlers.ts`) and because the schema
@@ -748,6 +759,7 @@ export async function applyNotificationInboxPage(
       ...message,
       readAt: message.readAt ?? current?.readAt,
       shownAt: message.shownAt ?? current?.shownAt,
+      handledInAppAt: message.handledInAppAt ?? current?.handledInAppAt,
       actionedAt: message.actionedAt ?? current?.actionedAt,
       walletAddressTarget: message.walletAddressTarget?.toLowerCase(),
     });

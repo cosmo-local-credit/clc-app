@@ -450,6 +450,79 @@ function deleteRawDatabase(name: string): Promise<void> {
 }
 
 describe("notification ownership and feed consistency", () => {
+  it.each([3, 4])(
+    "records a quiet receipt after revision %i was already synced",
+    async (revision) => {
+      const identity = await beginNotificationIdentity("0xaaa");
+      await applyNotificationInboxPage(identity.identityEpoch, undefined, {
+        messages: [inboxMessage({ revision: 4, body: "Current body" })],
+        deletions: [],
+        nextSyncCursor: "page-1",
+      });
+      const handledInAppAt = "2026-06-05T12:04:00.000Z";
+
+      await saveNotificationInboxMessage(
+        inboxMessage({ revision, body: "Older publication", handledInAppAt }),
+        identity.identityEpoch,
+      );
+      let saved = await getNotificationInboxMessage("notification-1");
+      expect(saved).toMatchObject({ revision: 4, body: "Current body", handledInAppAt });
+      expect(saved?.shownAt).toBeUndefined();
+      expect(saved?.readAt).toBeUndefined();
+
+      // A repeated local receipt keeps the first time; stale owner writes do nothing.
+      await saveNotificationInboxMessage(
+        inboxMessage({ revision, handledInAppAt: "2026-06-05T12:05:00.000Z" }),
+        identity.identityEpoch,
+      );
+      saved = await getNotificationInboxMessage("notification-1");
+      expect(saved?.handledInAppAt).toBe(handledInAppAt);
+    },
+  );
+
+  it("retains quiet metadata through newer payloads and pre-receipt sync pages", async () => {
+    const identity = await beginNotificationIdentity("0xaaa");
+    const handledInAppAt = "2026-06-05T12:04:00.000Z";
+    await saveNotificationInboxMessage(
+      inboxMessage({ revision: 1, handledInAppAt }),
+      identity.identityEpoch,
+    );
+    await saveNotificationInboxMessage(
+      inboxMessage({ revision: 2, handledInAppAt: undefined }),
+      identity.identityEpoch,
+    );
+    expect((await getNotificationInboxMessage("notification-1"))?.handledInAppAt).toBe(
+      handledInAppAt,
+    );
+
+    await applyNotificationInboxPage(identity.identityEpoch, undefined, {
+      messages: [inboxMessage({ revision: 3, handledInAppAt: undefined })],
+      deletions: [],
+      nextSyncCursor: "page-1",
+    });
+    const saved = await getNotificationInboxMessage("notification-1");
+    expect(saved).toMatchObject({ revision: 3, handledInAppAt });
+    expect(saved?.shownAt).toBeUndefined();
+    expect(saved?.readAt).toBeUndefined();
+  });
+
+  it("rejects quiet receipts from a previous identity or after a feed deletion", async () => {
+    const identity = await beginNotificationIdentity("0xaaa");
+    const handled = inboxMessage({ revision: 1, handledInAppAt: "2026-06-05T12:04:00.000Z" });
+    await applyNotificationInboxPage(identity.identityEpoch, undefined, {
+      messages: [],
+      deletions: [{ notificationId: "notification-1", revision: 2 }],
+      nextSyncCursor: "page-1",
+    });
+    await saveNotificationInboxMessage(handled, identity.identityEpoch);
+    expect(await getNotificationInboxMessage("notification-1")).toBeNull();
+
+    const current = await beginNotificationIdentity("0xbbb");
+    await saveNotificationInboxMessage(inboxMessage({ revision: 1 }), current.identityEpoch);
+    await saveNotificationInboxMessage(handled, identity.identityEpoch);
+    expect((await getNotificationInboxMessage("notification-1"))?.handledInAppAt).toBeUndefined();
+  });
+
   it("creates one cryptographic installation secret even under concurrent callers", async () => {
     const installations = await Promise.all(
       Array.from({ length: 10 }, () => getOrCreateNotificationInstallation()),
