@@ -96,6 +96,24 @@ describe("SafePendingDesk", () => {
     expect(mocks.retry).toHaveBeenCalledOnce();
   });
 
+  it("shows the quota limit and preserves the existing Safe link", async () => {
+    mocks.status = "quota";
+    render(<SafePendingDesk />);
+    act(() => useSafeSheet.getState().show(SAFE));
+
+    expect(await screen.findByText("Safe’s monthly request limit has been reached.")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Open in Safe" })).toBeTruthy();
+  });
+
+  it("lets a signer refresh an empty queue", async () => {
+    render(<SafePendingDesk />);
+    act(() => useSafeSheet.getState().show(SAFE));
+
+    expect(await screen.findByText("No queued proposals found.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    expect(mocks.retry).toHaveBeenCalledOnce();
+  });
+
   it("opens the exact proposal and explains when it is no longer pending", async () => {
     mocks.proposals = [proposal()];
     render(<SafePendingDesk />);

@@ -26,7 +26,7 @@ import {
   WithdrawalRecipient,
 } from "#/features/safe/ui/safe-proposal-labels";
 import { SafeExecutionControl } from "#/features/safe/ui/safe-execution-control";
-import { SafeQueueNotice } from "#/features/safe/ui/safe-queue-notice";
+import { SafeQueueNotice, SafeQueueRefresh } from "#/features/safe/ui/safe-queue-notice";
 import { SafeRejectionControl } from "#/features/safe/ui/safe-rejection-control";
 import { SAFE_APP_PREFIX } from "#/lib/safe-config";
 
@@ -86,6 +86,7 @@ function PendingBody({
             status={pending.status}
             retry={pending.retry}
             retrying={pending.retrying}
+            quotaResetAt={pending.quotaResetAt}
           />
         ) : safeTxHash &&
           !pending.proposals.some(
@@ -115,6 +116,11 @@ function PendingBody({
             />
           ))
         )}
+        {pending.status === "ready" ? (
+          <div>
+            <SafeQueueRefresh retry={pending.retry} retrying={pending.retrying} />
+          </div>
+        ) : null}
       </div>
       {SAFE_APP_PREFIX ? (
         <div className="shrink-0 border-border border-t p-4">

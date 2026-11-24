@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { BackendApiError } from "@clc/api/client/errors";
 import { encodeFunctionData, parseAbi } from "viem";
@@ -207,6 +207,91 @@ describe("SafePendingSheet", () => {
     expect(mocks.confirm).not.toHaveBeenCalled();
     expect(mocks.execute).not.toHaveBeenCalled();
     expect(mocks.reject).not.toHaveBeenCalled();
+  });
+
+  it("refreshes an empty queue manually and polls a nonempty queue only in view", async () => {
+    vi.useFakeTimers();
+    focusManager.setFocused(true);
+    try {
+      mocks.pending.mockResolvedValueOnce([]).mockResolvedValue([proposal()]);
+      renderOpenSheet();
+      await act(() => vi.advanceTimersByTimeAsync(1));
+      expect(screen.getByText("No queued proposals found.")).toBeTruthy();
+      await act(() => vi.advanceTimersByTimeAsync(60_000));
+      expect(mocks.pending).toHaveBeenCalledTimes(1);
+
+      fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+      await act(() => vi.advanceTimersByTimeAsync(1));
+      expect(screen.getByText("Nonce 1")).toBeTruthy();
+      expect(mocks.pending).toHaveBeenCalledTimes(2);
+      await act(() => vi.advanceTimersByTimeAsync(29_998));
+      expect(mocks.pending).toHaveBeenCalledTimes(2);
+      await act(() => vi.advanceTimersByTimeAsync(2));
+      expect(mocks.pending).toHaveBeenCalledTimes(3);
+
+      focusManager.setFocused(false);
+      await act(() => vi.advanceTimersByTimeAsync(60_000));
+      expect(mocks.pending).toHaveBeenCalledTimes(3);
+      act(() => useSafeSheet.getState().close());
+      focusManager.setFocused(true);
+      await act(() => vi.advanceTimersByTimeAsync(60_000));
+      expect(mocks.pending).toHaveBeenCalledTimes(3);
+    } finally {
+      focusManager.setFocused(undefined);
+      vi.useRealTimers();
+    }
+  });
+
+  it("pauses automatic quota reads and lets a signer retry after the reset", async () => {
+    vi.useFakeTimers();
+    try {
+      const quotaDelayMs = 120_000;
+      mocks.pending
+        .mockRejectedValueOnce(
+          new BackendApiError(429, "Safe quota", "E29", { retryAfterMs: quotaDelayMs }),
+        )
+        .mockResolvedValueOnce([]);
+      renderOpenSheet();
+      await act(() => vi.advanceTimersByTimeAsync(1));
+      expect(
+        screen.getByText(/^Safe’s monthly request limit has been reached\. Try again after /),
+      ).toBeTruthy();
+      expect(screen.getByRole("link", { name: "Open in Safe" })).toBeTruthy();
+      expect(screen.queryByText("No queued proposals found.")).toBeNull();
+      act(() => useSafeSheet.getState().close());
+      act(() => useSafeSheet.getState().show(SAFE));
+      await act(() => queryClient.invalidateQueries());
+      await act(() => vi.advanceTimersByTimeAsync(quotaDelayMs / 2));
+      expect(mocks.pending).toHaveBeenCalledTimes(1);
+
+      await act(() => vi.advanceTimersByTimeAsync(quotaDelayMs / 2));
+      fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+      await act(() => vi.advanceTimersByTimeAsync(1));
+      expect(screen.getByText("No queued proposals found.")).toBeTruthy();
+      expect(mocks.pending).toHaveBeenCalledTimes(2);
+      expect(mocks.confirm).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("still retries a short Safe throttle", async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.pending
+        .mockRejectedValueOnce(
+          new BackendApiError(429, "Slow down", "E09", { retryAfterMs: 1_000 }),
+        )
+        .mockResolvedValueOnce([proposal()]);
+      renderOpenSheet();
+      await act(() => vi.advanceTimersByTimeAsync(999));
+      expect(mocks.pending).toHaveBeenCalledTimes(1);
+      await act(() => vi.advanceTimersByTimeAsync(252));
+      expect(mocks.pending).toHaveBeenCalledTimes(2);
+      expect(screen.getByText("Nonce 1")).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("names the action and lets a signer confirm it", async () => {

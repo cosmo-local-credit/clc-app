@@ -1027,8 +1027,8 @@ msgstr "تأكد دائمًا من تطابق الرمز والشبكة قبل �
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:120
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:425
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1007
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:170
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:179
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:188
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:113
 #: apps/web/src/desktop/wallet/send-desk.tsx:217
 #: apps/web/src/desktop/wallet/send-desk.tsx:224
@@ -1044,8 +1044,8 @@ msgstr "تأكد دائمًا من تطابق الرمز والشبكة قبل �
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:112
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:127
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:405
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:182
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:183
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:193
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:87
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:176
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:318
@@ -2070,12 +2070,12 @@ msgstr "مسح البحث"
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:66
 #: apps/web/src/desktop/pools/detail/pool-side-panel.tsx:103
 #: apps/web/src/desktop/posts/post-desk.tsx:514
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:55
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:56
 #: apps/web/src/desktop/ui/inspector.tsx:107
 #: apps/web/src/desktop/vouchers/detail/voucher-dialog.tsx:56
 #: apps/web/src/desktop/wants/want-place-desk.tsx:61
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:130
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:141
 msgid "Close"
 msgstr "إغلاق"
 
@@ -2222,9 +2222,9 @@ msgid "Complete your profile"
 msgstr "أكمل ملفك الشخصي"
 
 #: apps/web/src/desktop/credit/review-dialog.tsx:161
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:273
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:282
 #: apps/web/src/features/credit/ui/credit-get-page.tsx:725
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:270
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:281
 msgid "Confirm"
 msgstr "تأكيد"
 
@@ -2301,24 +2301,24 @@ msgstr "أكّد باستخدام مفتاح المرور. ستتوقف بطاق
 #: apps/web/src/desktop/activity/transactions-desk.tsx:836
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:280
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:253
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:262
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:361
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:105
 #: apps/web/src/features/credit/ui/routed-swap-receipt-page.tsx:202
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:46
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:72
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:257
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:250
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:261
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:232
 msgid "Confirmed"
 msgstr "تم التأكيد"
 
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1093
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:273
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:282
 #: apps/web/src/features/home/hooks/use-passkey-settings.ts:41
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:367
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:270
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:281
 msgid "Confirming"
 msgstr "جارٍ التأكيد"
 
@@ -2787,7 +2787,7 @@ msgstr "تعذّر التحقق من توفر الرسالة."
 msgid "Couldn't check order availability."
 msgstr "تعذّر التحقق من توفر الطلب."
 
-#: apps/web/src/features/safe/hooks/use-report-write-error.ts:39
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:58
 msgid "Couldn't check the multisig queue. Try again."
 msgstr "تعذّر التحقق من قائمة انتظار المحفظة متعددة التوقيع. حاول مرة أخرى."
 
@@ -3064,7 +3064,7 @@ msgstr "تعذّر تحميل الرسائل."
 msgid "Couldn't load more"
 msgstr "تعذّر تحميل المزيد"
 
-#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:20
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:25
 msgid "Couldn't load multisig proposals."
 msgstr "تعذّر تحميل مقترحات المحفظة متعددة التوقيع."
 
@@ -3497,7 +3497,7 @@ msgstr "تعذر التحقق من جميع أرصدة المجمع."
 msgid "Couldn't verify this swap. Try again."
 msgstr "تعذّر التحقق من هذه المبادلة. حاول مرة أخرى."
 
-#: apps/web/src/features/safe/hooks/use-report-write-error.ts:48
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:67
 msgid "Couldn't verify whether the proposal was queued. Check Safe before "
 "submitting again."
 msgstr "تعذّر التحقق مما إذا أُضيف المقترح إلى قائمة الانتظار. تحقّق من Safe "
@@ -3593,7 +3593,7 @@ msgstr "إصدار المعروض"
 msgid "Create the first supply to finish publishing this voucher."
 msgstr "أصدر المعروض الأول لإكمال نشر هذه القسيمة."
 
-#: apps/web/src/features/safe/hooks/use-report-write-error.ts:30
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:74
 msgid "Create this transaction in your multisig wallet. Metadata edits are "
 "still available here."
 msgstr "أنشئ هذه المعاملة في محفظتك متعددة التوقيع. لا يزال بإمكانك تعديل "
@@ -4572,8 +4572,8 @@ msgstr "تنفيذ الرفض"
 msgid "Executing…"
 msgstr "جارٍ التنفيذ…"
 
-#: apps/web/src/features/safe/hooks/use-safe-pending.ts:136
-#: apps/web/src/features/safe/hooks/use-safe-pending.ts:164
+#: apps/web/src/features/safe/hooks/use-safe-pending.ts:165
+#: apps/web/src/features/safe/hooks/use-safe-pending.ts:193
 msgid "Execution failed"
 msgstr "فشل التنفيذ"
 
@@ -4646,7 +4646,7 @@ msgstr "مبلغ إضافي مستلَم"
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:215
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:50
 #: apps/web/src/features/safe/hooks/use-multisig-signer-change.ts:112
-#: apps/web/src/features/safe/hooks/use-safe-pending.ts:128
+#: apps/web/src/features/safe/hooks/use-safe-pending.ts:157
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:59
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:141
 #: apps/web/src/features/wallet/ui/collect-page.tsx:437
@@ -6009,7 +6009,7 @@ msgstr "جارٍ تحميل ملفك الشخصي…"
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:69
 #: apps/web/src/desktop/pools/detail/pool-posts.tsx:128
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:864
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:81
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:82
 #: apps/web/src/desktop/shell/desk-loading.tsx:19
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:157
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
@@ -6029,7 +6029,7 @@ msgstr "جارٍ تحميل ملفك الشخصي…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:112
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1069
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:81
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:82
 #: apps/web/src/features/wallet/hooks/use-send-payment.ts:129
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:245
 msgid "Loading…"
@@ -6451,9 +6451,9 @@ msgid "Multisig owned · {0} signers"
 msgstr "مملوك لمحفظة متعددة التوقيع · {0} موقّعين"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:72
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:53
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:54
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:93
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:54
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:55
 msgid "Multisig transactions"
 msgstr "معاملات متعددة التوقيع"
 
@@ -6616,8 +6616,8 @@ msgstr "جديد"
 msgid "New message"
 msgstr "رسالة جديدة"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:183
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:188
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:192
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:199
 msgid "New owner"
 msgstr "المالك الجديد"
 
@@ -7066,8 +7066,8 @@ msgstr "لا يتوفر ملف شخصي عام."
 msgid "No QR code found. Try again with a clearer image."
 msgstr "لم يُعثر على رمز QR. حاول مرة أخرى بصورة أوضح."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:98
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:98
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:102
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:104
 msgid "No queued proposals found."
 msgstr "لم يتم العثور على مقترحات في قائمة الانتظار."
 
@@ -7245,8 +7245,8 @@ msgid "No. of participants"
 msgstr "عدد المشاركين"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:210
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:234
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:219
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:245
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -7462,11 +7462,11 @@ msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 msgstr "أرسل الأصول إلى هذا العنوان على <0>شبكة {chainName}</0> فقط. قد تضيع "
 "الأصول المرسلة عبر شبكات أخرى."
 
-#: apps/web/src/features/safe/hooks/use-report-write-error.ts:37
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:56
 msgid "Only signers of this multisig can submit proposals."
 msgstr "لا يمكن إرسال المقترحات إلا للموقّعين على هذه المحفظة متعددة التوقيع."
 
-#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:18
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:21
 msgid "Only signers of this multisig can view proposals."
 msgstr "لا يمكن عرض المقترحات إلا للموقّعين على هذه المحفظة متعددة التوقيع."
 
@@ -7512,8 +7512,9 @@ msgid "Open in Maps"
 msgstr "فتح في الخرائط"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:124
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:125
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:133
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:44
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:136
 msgid "Open in Safe"
 msgstr "فتح في Safe"
 
@@ -7807,9 +7808,9 @@ msgstr "تعذّر التحقق من حالة مفتاح المرور."
 #~ msgstr "يمكن لمفاتيح المرور التوقيع للمحافظ متعددة التوقيع على Safe 1.5 أو "
 #~ "أحدث. استخدم محفظتك الورقية."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:280
-#: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:277
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:289
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:79
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:288
 msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in "
 "card."
 msgstr "يمكن لمفاتيح المرور تسجيل الدخول المتعدد على Safe 1.5 أو أحدث. استخدم "
@@ -7917,7 +7918,7 @@ msgstr "حالة الدفع غير معروفة"
 #: apps/web/src/desktop/messaging/thread-desk.tsx:67
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1095
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:145
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:253
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:262
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:85
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:160
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:384
@@ -8705,7 +8706,7 @@ msgstr "تم تحديث الملف الشخصي"
 msgid "Profiles"
 msgstr "الملفات الشخصية"
 
-#: apps/web/src/features/safe/hooks/use-report-write-error.ts:24
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:32
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "أُضيف المقترح إلى قائمة الانتظار. أكّده ونفّذه في Safe."
 
@@ -9052,8 +9053,8 @@ msgstr "المستلمون مؤخرًا"
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:365
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:380
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:494
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:162
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:176
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:171
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:185
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:377
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:389
 #: apps/web/src/desktop/wallet/send-desk.tsx:321
@@ -9062,8 +9063,8 @@ msgstr "المستلمون مؤخرًا"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:353
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:369
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:490
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:169
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:179
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:180
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:190
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:327
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:613
@@ -9124,6 +9125,10 @@ msgstr "قابلة للاسترداد في منصتنا خلال أيام الس
 msgid "Redo"
 msgstr "إعادة"
 
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:43
+msgid "Refresh"
+msgstr "تحديث"
+
 #: apps/web/src/features/pools/ui/pools-page.tsx:328
 #~ msgid "Refreshing creditable pools…"
 #~ msgstr "جارٍ تحديث الصناديق التي تقبل قسائمك…"
@@ -9165,7 +9170,7 @@ msgstr "رفض إجراء التوقيع المتعدد هذا؟"
 msgid "Rejecting…"
 msgstr "جارٍ الرفض…"
 
-#: apps/web/src/features/safe/hooks/use-safe-pending.ts:143
+#: apps/web/src/features/safe/hooks/use-safe-pending.ts:172
 msgid "Rejection failed"
 msgstr "فشل الرفض"
 
@@ -9697,7 +9702,7 @@ msgstr "الخلوة"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:387
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:213
-#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:25
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:30
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:493
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:335
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:389
@@ -9739,8 +9744,8 @@ msgstr "تم التراجع"
 msgid "Review"
 msgstr "مراجعة"
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:284
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:281
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:293
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:292
 msgid "Review this transaction in your multisig wallet."
 msgstr "راجع هذه المعاملة في محفظتك متعددة التوقيع."
 
@@ -9794,6 +9799,10 @@ msgstr "تفاصيل المسار"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:102
 msgid "Safe transactions"
 msgstr "معاملات Safe"
+
+#: apps/web/src/features/safe/hooks/use-safe-quota-message.ts:6
+msgid "Safe’s monthly request limit has been reached."
+msgstr "تم بلوغ الحد الشهري لطلبات Safe."
 
 #: apps/web/src/features/home/ui/market-page.tsx:281
 #~ msgid "Satellite view"
@@ -10687,12 +10696,12 @@ msgstr "سجّل الدخول لعرض النشاط."
 msgid "Sign in to view posts."
 msgstr "سجّل الدخول لعرض المنشورات."
 
-#: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:54
 msgid "Sign in with a signer of this multisig to continue."
 msgstr "سجّل الدخول بحساب أحد الموقّعين على هذه المحفظة متعددة التوقيع "
 "للمتابعة."
 
-#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:16
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:19
 msgid "Sign in with a signer of this multisig to view proposals."
 msgstr "سجّل الدخول بحساب أحد الموقّعين على هذه المحفظة متعددة التوقيع لعرض "
 "المقترحات."
@@ -10769,7 +10778,7 @@ msgid "signers"
 msgstr "الموقّعون"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:201
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:225
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:234
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:178
 msgid "Signers"
 msgstr "الموقّعون"
@@ -11519,7 +11528,7 @@ msgstr "الخريطة غير مدعومة على هذا الجهاز."
 msgid "The message and order must be 500 characters or fewer."
 msgstr "يجب ألا يزيد طول الرسالة والطلب على 500 حرف."
 
-#: apps/web/src/features/safe/hooks/use-report-write-error.ts:41
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:60
 msgid "The multisig proposal was rejected."
 msgstr "رُفض مقترح المحفظة متعددة التوقيع."
 
@@ -11822,7 +11831,7 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 msgstr "تم استيراد هذا العرض بالوحدة «{legacyUnit}». اختر وحدة أدناه لحفظ "
 "تغييراتك."
 
-#: apps/web/src/features/safe/hooks/use-report-write-error.ts:66
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:85
 msgid "This multisig already has a transaction waiting for signatures."
 msgstr "توجد بالفعل معاملة بانتظار التوقيعات في هذه المحفظة متعددة التوقيع."
 
@@ -11959,8 +11968,8 @@ msgstr "تغيّر حد الإيداع لهذا الصندوق. راجع الم�
 msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "هذا المنشور كبير جدًا ولا يمكن حفظه. اختصر النص أو أزل بعض الوسائط."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:94
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:94
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:98
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:100
 msgid "This proposal is no longer pending."
 msgstr "لم يعد هذا الاقتراح قيد الانتظار."
 
@@ -12299,6 +12308,10 @@ msgstr "رحلة"
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:81
 msgid "Try again"
 msgstr "حاول مرة أخرى"
+
+#: apps/web/src/features/safe/hooks/use-safe-quota-message.ts:9
+msgid "Try again after {date}."
+msgstr "حاول مرة أخرى بعد {date}."
 
 #: apps/web/src/desktop/activity/transactions-desk.tsx:301
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:54
@@ -13495,8 +13508,8 @@ msgstr "لا يمكنك مراسلة هذا الشخص."
 msgid "You can't message yourself."
 msgstr "لا يمكنك مراسلة نفسك."
 
-#: apps/web/src/desktop/safe/safe-pending-desk.tsx:278
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:275
+#: apps/web/src/desktop/safe/safe-pending-desk.tsx:287
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:286
 msgid "You confirmed"
 msgstr "لقد أكّدت"
 

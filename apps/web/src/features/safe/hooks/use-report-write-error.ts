@@ -1,5 +1,8 @@
+import { isSafeMonthlyQuotaError } from "@clc/api/features/safe/queries";
+import { safeAppQueueUrl } from "@clc/core/features/safe/logic";
 import { useLingui } from "@lingui/react/macro";
 import { toast } from "sonner";
+import { SAFE_APP_PREFIX } from "#/lib/safe-config";
 import {
   SafeDashboardRequiredError,
   SafePendingConflictError,
@@ -10,6 +13,7 @@ import {
 } from "../api/safe-transactions";
 import { isPasskeyCancellation, SafePasskeyUnsupportedError } from "../api/sign-safe-transaction";
 import { useSafeSheet } from "../state/safe-sheet";
+import { useSafeQuotaMessage } from "./use-safe-quota-message";
 
 /**
  * Reports a failed asset write. A Safe transaction that was proposed but still
@@ -21,6 +25,7 @@ import { useSafeSheet } from "../state/safe-sheet";
  */
 export function useReportWriteError() {
   const { t } = useLingui();
+  const quotaMessage = useSafeQuotaMessage();
   return (error: unknown, fallback: string): boolean => {
     if (error instanceof SafeProposedError) {
       useSafeSheet.getState().show(error.proposal.safe as `0x${string}`);
@@ -28,6 +33,22 @@ export function useReportWriteError() {
       return true;
     }
     if (error instanceof SafeProposalError) {
+      if (isSafeMonthlyQuotaError(error.cause)) {
+        const { retryAfterMs } = error.cause;
+        const queueUrl = SAFE_APP_PREFIX ? safeAppQueueUrl(SAFE_APP_PREFIX, error.safe) : undefined;
+        toast.error(
+          quotaMessage(retryAfterMs === undefined ? undefined : Date.now() + retryAfterMs),
+          {
+            action: queueUrl
+              ? {
+                  label: t`Open in Safe`,
+                  onClick: () => window.open(queueUrl, "_blank", "noopener,noreferrer"),
+                }
+              : undefined,
+          },
+        );
+        return false;
+      }
       const kind = safeQueueFailureKind(error.cause);
       if (kind === "session") {
         toast.error(t`Sign in with a signer of this multisig to continue.`);
