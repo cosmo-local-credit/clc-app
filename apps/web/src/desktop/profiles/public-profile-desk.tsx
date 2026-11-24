@@ -6,6 +6,7 @@ import {
   ProfileReadError,
 } from "#/components/profile/public-profile-content";
 import { ShareLinkButton } from "#/components/share-link-button";
+import { MessageButton } from "#/components/messaging/message-button";
 import { DeskCanvas, DeskTitleRow } from "#/desktop/ui/page";
 import { usePublicProfile } from "#/features/public-profiles/hooks/use-public-profile";
 
@@ -36,11 +37,14 @@ export function PublicProfileDesk({ address }: { address: string }) {
               </span>
             }
             actions={
-              <ShareLinkButton
-                title={profile.username ?? t`Public profile`}
-                path={`/profiles/${profile.address}`}
-                size="icon"
-              />
+              <>
+                <MessageButton recipientAddress={profile.address} />
+                <ShareLinkButton
+                  title={profile.username ?? t`Public profile`}
+                  path={`/profiles/${profile.address}`}
+                  size="icon"
+                />
+              </>
             }
           />
           {profile.avatarUrl ? (

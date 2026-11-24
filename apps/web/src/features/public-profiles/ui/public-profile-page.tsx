@@ -7,6 +7,7 @@ import {
 } from "#/components/profile/public-profile-content";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { ShareLinkButton } from "#/components/share-link-button";
+import { MessageButton } from "#/components/messaging/message-button";
 import { usePublicProfile } from "../hooks/use-public-profile";
 
 export function PublicProfilePage({ address }: { address: string }) {
@@ -57,6 +58,9 @@ export function PublicProfilePage({ address }: { address: string }) {
               path={`/profiles/${profile.address}`}
               size="icon-lg"
             />
+          </div>
+          <div className="mb-6">
+            <MessageButton recipientAddress={profile.address} />
           </div>
           <PublicProfileContent profile={profile} />
         </>

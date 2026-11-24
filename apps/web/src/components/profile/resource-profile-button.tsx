@@ -2,8 +2,8 @@ import type { ProfileResourceKind } from "@clc/api/features/public-profiles/clie
 import { resourceProfilesQueryOptions } from "@clc/api/features/public-profiles/queries";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { RiUserLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import {
@@ -63,9 +63,17 @@ function ResourceProfiles({
 }) {
   const { t } = useLingui();
   const query = useQuery(resourceProfilesQueryOptions(publicProfilesClient, kind, resourceId));
+  const navigate = useNavigate();
+  const single =
+    query.isSuccess && !query.isFetching && query.data.length === 1 ? query.data[0] : undefined;
+  useEffect(() => {
+    if (!single) return;
+    onSelect();
+    void navigate({ to: "/profiles/$address", params: { address: single.address } });
+  }, [single, navigate, onSelect]);
   return (
     <div className="mt-4 space-y-3">
-      {query.isPending ? (
+      {query.isPending || query.isFetching || single ? (
         <ProfileLoading />
       ) : query.isError ? (
         <ProfileReadError pending={query.isFetching} retry={() => void query.refetch()} />

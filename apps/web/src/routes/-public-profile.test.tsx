@@ -114,6 +114,7 @@ function mount(view: "phone" | "desktop" | "chooser" = "phone", kind: "pool" | "
   return { router, client };
 }
 beforeEach(() => {
+  auth.session.address = address;
   Object.assign(auth, {
     state: "guest",
     isAuthenticated: false,
@@ -127,6 +128,37 @@ afterEach(() => {
 });
 
 describe("public profile views", () => {
+  it.each(["phone", "desktop"] as const)(
+    "keeps the %s profile Message action available for both self and other recipients",
+    async (view) => {
+      auth.state = "authenticated";
+      auth.isAuthenticated = true;
+      vi.stubGlobal(
+        "fetch",
+        vi.fn((input: string) =>
+          Promise.resolve(defaultProfileResponse(input, { ...profile, hasPrivateDetails: false })),
+        ),
+      );
+      const { client } = mount(view);
+      await screen.findByRole("heading", { name: "alice" });
+      const target = () =>
+        new URL(
+          screen.getByRole("link", { name: "Message" }).getAttribute("href")!,
+          window.location.origin,
+        );
+      expect(target().pathname).toBe("/");
+      expect(target().searchParams.get("messageTo")).toBe(address);
+      auth.session.address = other;
+      client.setQueryData(publicProfileKeys.detail(address), {
+        ...profile,
+        hasPrivateDetails: false,
+        bio: "Updated",
+      });
+      await screen.findByText("Updated");
+      expect(target().searchParams.get("messageTo")).toBe(address);
+      expect(target().searchParams.get("section")).toBe("messages");
+    },
+  );
   it.each(["mobile", "desktop"] as const)(
     "loads a lowercase shared URL and its Voucher section through the %s file route",
     async (layout) => {
@@ -194,6 +226,15 @@ describe("public profile views", () => {
         screen.getByRole("link", { name: "https://example.test" }).getAttribute("rel"),
       ).toContain("noopener");
       expect(screen.getByRole("link", { name: "Sign in" })).toBeTruthy();
+      const message = new URL(
+        screen.getByRole("link", { name: "Message" }).getAttribute("href")!,
+        window.location.origin,
+      );
+      expect(message.pathname).toBe("/onboarding");
+      expect(message.searchParams.get("step")).toBe("signin");
+      expect(message.searchParams.get("redirect")).toBe(
+        `/?tab=activity&section=messages&messageTo=${address}`,
+      );
       await waitFor(() => expect(fetch).toHaveBeenCalledTimes(7));
       expect(document.querySelectorAll("details[open]")).toHaveLength(6);
       expect(screen.queryByText("Transaction activity")).toBeNull();
@@ -506,6 +547,61 @@ describe("public profile views", () => {
 });
 
 describe("resource Profile action", () => {
+  it("waits for current publication settings before using a cached single profile", async () => {
+    let resolve!: (response: Response) => void;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        () =>
+          new Promise<Response>((done) => {
+            resolve = done;
+          }),
+      ),
+    );
+    const { client, router } = mount("chooser");
+    client.setQueryData(publicProfileKeys.resource("pool", "1"), [
+      { address, username: "Previously public" },
+    ]);
+    fireEvent.click(await screen.findByRole("button", { name: "Profile" }));
+    await screen.findByLabelText("Loading…");
+    expect(router.state.location.pathname).toBe("/");
+    resolve(reply({ profiles: [] }));
+    await screen.findByText("No public profile is available.");
+    expect(router.state.location.pathname).toBe("/");
+    expect(screen.queryByText("Previously public")).toBeNull();
+  });
+  it("cancels a closed profile lookup without navigating on a late response", async () => {
+    let resolve!: (response: Response) => void;
+    let signal!: AbortSignal;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((_input: string, init: RequestInit) => {
+        signal = init.signal!;
+        return new Promise<Response>((done) => {
+          resolve = done;
+        });
+      }),
+    );
+    const { router } = mount("chooser");
+    fireEvent.click(await screen.findByRole("button", { name: "Profile" }));
+    await screen.findByLabelText("Loading…");
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(signal.aborted).toBe(true);
+    resolve(reply({ profiles: [{ address }] }));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/"));
+  });
+  it("opens a single published profile directly instead of asking the user to choose", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(reply({ profiles: [{ address, username: "alice" }] }))),
+    );
+    const { router } = mount("chooser");
+    fireEvent.click(await screen.findByRole("button", { name: "Profile" }));
+    await screen.findByText("Opened profile");
+    expect(router.state.location.pathname).toBe(`/profiles/${address}`);
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
   it("waits for an explicit click and includes the viewer's own profile among Safe signers", async () => {
     let resolve!: (value: Response) => void;
     const fetch = vi.fn().mockImplementation(
