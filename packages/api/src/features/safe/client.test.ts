@@ -75,6 +75,16 @@ describe("safe client", () => {
     expect(result[0]?.confirmationsRequired).toBe(2);
   });
 
+  it("looks up a proposal by hash with a cancellable, uncached read", async () => {
+    const { spy, safe } = client(proposal);
+    const { signal } = new AbortController();
+    await expect(safe.transaction(proposal.safeTxHash, signal)).resolves.toMatchObject(proposal);
+    expect(spy).toHaveBeenCalledWith(
+      `https://api.example/api/v2/safe/transactions/${proposal.safeTxHash}`,
+      expect.objectContaining({ method: "GET", signal, cache: "no-store" }),
+    );
+  });
+
   it("POSTs a proposal", async () => {
     const { spy, safe } = client(proposal);
     await safe.propose({

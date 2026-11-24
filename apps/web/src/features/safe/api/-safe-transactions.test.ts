@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { BackendApiError } from "@clc/api/client/errors";
 import { computeSafeTxHash } from "@clc/core/features/safe/logic";
 import { caliburNestedPersonalSignDigest } from "@clc/core/features/webauthn/index";
 import {
@@ -38,7 +39,12 @@ vi.mock("#/features/webauthn/api/sign-digest", () => ({
 }));
 vi.mock("#/lib/webauthn-storage", () => ({ getWebAuthnCredential: mocks.credential }));
 
-import { proposeSafeTransaction, SafePendingConflictError } from "./safe-transactions";
+import {
+  proposeSafeTransaction,
+  SafePendingConflictError,
+  SafeProposalError,
+  SafeProposalOutcomeUnknownError,
+} from "./safe-transactions";
 import { readSafeVersion, SafePasskeyUnsupportedError } from "./sign-safe-transaction";
 
 const SAFE = "0x1111111111111111111111111111111111111111";
@@ -82,6 +88,7 @@ function safeClient(queued: unknown[] = []) {
   return {
     pending: vi.fn().mockResolvedValue(queued),
     propose: vi.fn().mockImplementation(async () => proposal()),
+    transaction: vi.fn(),
     confirm: vi.fn().mockImplementation(async () => proposal()),
   };
 }
@@ -143,6 +150,74 @@ describe("proposeSafeTransaction", () => {
       { chain: {} as never, safe: client as never },
       { safe: SAFE, signer, calls: [call] },
     );
+    expect(client.propose).toHaveBeenCalledOnce();
+  });
+
+  it("stops at a failed queue check before asking for a signature", async () => {
+    const client = safeClient();
+    const cause = new BackendApiError(503, "Safe service unavailable");
+    client.pending.mockRejectedValueOnce(cause);
+    const request = proposeSafeTransaction(
+      { chain: {} as never, safe: client as never },
+      { safe: SAFE, signer, calls: [call] },
+    );
+    await expect(request).rejects.toBeInstanceOf(SafeProposalError);
+    await expect(request).rejects.toMatchObject({ safe: SAFE, stage: "check", cause });
+    expect(sign).not.toHaveBeenCalled();
+    expect(client.propose).not.toHaveBeenCalled();
+  });
+
+  it("recovers an accepted proposal after a lost response by reading its original hash", async () => {
+    const client = safeClient();
+    client.propose.mockRejectedValueOnce(new BackendApiError(0, "Connection lost"));
+    client.transaction.mockImplementation(async (safeTxHash) => proposal({ safeTxHash }));
+    const recorded = await proposeSafeTransaction(
+      { chain: {} as never, safe: client as never },
+      { safe: SAFE, signer, calls: [call] },
+    );
+    const hash = client.propose.mock.calls[0]?.[0].safeTxHash;
+    expect(recorded.safeTxHash).toBe(hash);
+    expect(client.transaction).toHaveBeenCalledExactlyOnceWith(hash);
+    expect(client.propose).toHaveBeenCalledOnce();
+    expect(sign).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    ["lookup failed", null],
+    ["different Safe", { safe: ASSET }],
+    ["different hash", { safeTxHash: `0x${"ab".repeat(32)}` }],
+    ["signature not recorded", { confirmations: [] }],
+  ])("leaves the submission unknown when %s", async (_reason, overrides) => {
+    const client = safeClient();
+    client.propose.mockRejectedValueOnce(new BackendApiError(502, "Service unavailable"));
+    client.transaction.mockImplementation(async (safeTxHash) => {
+      if (!overrides) throw new BackendApiError(404, "Proposal not found");
+      return proposal({ safeTxHash, ...overrides });
+    });
+    const request = proposeSafeTransaction(
+      { chain: {} as never, safe: client as never },
+      { safe: SAFE, signer, calls: [call] },
+    );
+    await expect(request).rejects.toBeInstanceOf(SafeProposalOutcomeUnknownError);
+    await expect(request).rejects.toMatchObject({
+      safe: SAFE,
+      safeTxHash: client.propose.mock.calls[0]?.[0].safeTxHash,
+    });
+    expect(client.transaction).toHaveBeenCalledOnce();
+    expect(client.propose).toHaveBeenCalledOnce();
+  });
+
+  it("reports a definite API refusal without a second network request", async () => {
+    const client = safeClient();
+    const cause = new BackendApiError(403, "Only signers may propose");
+    client.propose.mockRejectedValueOnce(cause);
+    await expect(
+      proposeSafeTransaction(
+        { chain: {} as never, safe: client as never },
+        { safe: SAFE, signer, calls: [call] },
+      ),
+    ).rejects.toMatchObject({ safe: SAFE, stage: "rejected", cause });
+    expect(client.transaction).not.toHaveBeenCalled();
     expect(client.propose).toHaveBeenCalledOnce();
   });
 

@@ -2,7 +2,6 @@ import type { VoucherRef } from "@clc/core/features/catalog/logic";
 import { useLingui } from "@lingui/react/macro";
 import { useSearch } from "@tanstack/react-router";
 import { useId } from "react";
-import { useConnection } from "wagmi";
 
 import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
@@ -109,7 +108,6 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
     voucherUoa: resolvedVoucherUoa,
   });
   useDeskTrailLabel(detail?.name ?? baseToken?.name);
-  const { address: walletAddress } = useConnection();
   const privateNav = canReachPrivateRoutes(auth);
   const { canEdit } = useCanEditVoucher(
     detail?.address ?? baseToken?.contractAddress ?? voucherAddress,
@@ -282,7 +280,6 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
             </VoucherSectionRegion>
             <VoucherSectionRegion id="activity">
               <VoucherActivityDesk
-                accountAddress={walletAddress}
                 contractAddress={address}
                 layout="page"
                 onCount={sectionCounts.report.activity}

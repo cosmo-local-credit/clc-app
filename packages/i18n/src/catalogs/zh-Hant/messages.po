@@ -2739,6 +2739,10 @@ msgstr "無法檢查訊息可用性。"
 msgid "Couldn't check order availability."
 msgstr "無法檢查訂單可用性。"
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:39
+msgid "Couldn't check the multisig queue. Try again."
+msgstr "無法檢查多簽錢包的交易佇列。請再試一次。"
+
 #: apps/web/src/desktop/market/market-notices.tsx:173
 #: apps/web/src/features/pools/ui/pools-page.tsx:252
 msgid "Couldn't check voucher availability."
@@ -3011,6 +3015,10 @@ msgstr "無法載入訊息。"
 #: apps/web/src/desktop/market/market-list-states.tsx:88
 msgid "Couldn't load more"
 msgstr "無法載入更多"
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:20
+msgid "Couldn't load multisig proposals."
+msgstr "無法載入多簽錢包的提案。"
 
 #: apps/web/src/components/messaging/notifications-section.tsx:25
 #: apps/web/src/desktop/messaging/notifications-desk.tsx:33
@@ -3439,6 +3447,11 @@ msgstr "無法驗證資金池的全部持有項目。"
 #: apps/web/src/features/pools/hooks/use-pool-swap-form.ts:345
 msgid "Couldn't verify this swap. Try again."
 msgstr "無法驗證此兌換。再試一次。"
+
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:48
+msgid "Couldn't verify whether the proposal was queued. Check Safe before "
+"submitting again."
+msgstr "無法確認提案是否已加入佇列。請先在 Safe 查看，再重新提交。"
 
 #: apps/web/src/features/vouchers/hooks/use-voucher-deployment-receipt.ts:119
 #: apps/web/src/features/vouchers/hooks/use-voucher-deployment-receipt.ts:256
@@ -7386,6 +7399,14 @@ msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 "Other networks may be lost."
 msgstr "請僅向此地址傳送<0>{chainName} 網路</0>上的資產。透過其他網路傳送的資產可能會丟失。"
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:37
+msgid "Only signers of this multisig can submit proposals."
+msgstr "只有此多簽錢包的簽署人可以提交提案。"
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:18
+msgid "Only signers of this multisig can view proposals."
+msgstr "只有此多簽錢包的簽署人可以查看提案。"
+
 #: apps/web/src/desktop/wants/want-form-desk.tsx:327
 #: apps/web/src/features/wants/ui/want-form-page.tsx:265
 msgid "Only the owner can change email and phone sharing."
@@ -8619,8 +8640,8 @@ msgstr "提案已加入佇列。請在 Safe 中確認並執行。"
 
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:85
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:85
-msgid "Proposals are unavailable here. You can still use your multisig wallet."
-msgstr "此處暫時無法使用提案。你仍可使用多簽錢包。"
+#~ msgid "Proposals are unavailable here. You can still use your multisig wallet."
+#~ msgstr "此處暫時無法使用提案。你仍可使用多簽錢包。"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:92
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
@@ -9606,6 +9627,7 @@ msgstr "靜修"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:387
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:213
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:25
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:493
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:335
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:389
@@ -10590,6 +10612,14 @@ msgstr "登入查看活動。"
 msgid "Sign in to view posts."
 msgstr "登入查看貼文。"
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
+msgid "Sign in with a signer of this multisig to continue."
+msgstr "請使用此多簽錢包的簽署人帳號登入以繼續。"
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:16
+msgid "Sign in with a signer of this multisig to view proposals."
+msgstr "請使用此多簽錢包的簽署人帳號登入以查看提案。"
+
 #: apps/web/src/components/auth/sign-in-panel.tsx:253
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:358
 msgid "Sign in with private key"
@@ -11406,6 +11436,10 @@ msgstr "此裝置不支援該地圖。"
 msgid "The message and order must be 500 characters or fewer."
 msgstr "訊息和訂單不得超過 500 個字元。"
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:41
+msgid "The multisig proposal was rejected."
+msgstr "多簽錢包的提案已遭拒絕。"
+
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:422
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:507
 msgid "The new owner can create vouchers and transfer ownership."
@@ -11697,6 +11731,10 @@ msgstr "此刊登項目匯入時使用單位「{legacyUnit}」。請從下方選
 #~ msgid "This listing was imported with the unit 「{legacyUnit}」. Pick one below "
 #~ "to save your changes."
 #~ msgstr "此列表是使用單位「{legacyUnit}」匯入的。選擇下面的一項來儲存您的更改。"
+
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:66
+msgid "This multisig already has a transaction waiting for signatures."
+msgstr "此多簽錢包已有一筆交易正在等待簽署。"
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:135
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:120

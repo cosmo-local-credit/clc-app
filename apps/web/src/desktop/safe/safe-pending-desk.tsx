@@ -26,6 +26,7 @@ import {
   WithdrawalRecipient,
 } from "#/features/safe/ui/safe-proposal-labels";
 import { SafeExecutionControl } from "#/features/safe/ui/safe-execution-control";
+import { SafeQueueNotice } from "#/features/safe/ui/safe-queue-notice";
 import { SafeRejectionControl } from "#/features/safe/ui/safe-rejection-control";
 import { SAFE_APP_PREFIX } from "#/lib/safe-config";
 
@@ -80,10 +81,12 @@ function PendingBody({
             <Spinner className="size-4" />
             <Trans>Loading…</Trans>
           </p>
-        ) : pending.status === "error" ? (
-          <p className="text-sm text-muted-foreground">
-            <Trans>Proposals are unavailable here. You can still use your multisig wallet.</Trans>
-          </p>
+        ) : pending.status !== "ready" ? (
+          <SafeQueueNotice
+            status={pending.status}
+            retry={pending.retry}
+            retrying={pending.retrying}
+          />
         ) : safeTxHash &&
           !pending.proposals.some(
             (proposal) =>

@@ -74,6 +74,7 @@ const mocks = vi.hoisted(() => ({
       | { avatarUrl: string }
       | undefined,
   },
+  profileOptions: vi.fn(),
   updateProfile: vi.fn(),
   createVouchers: vi.fn(),
   reportMintError: vi.fn((_error: unknown, _fallback: string) => false),
@@ -158,6 +159,7 @@ const mocks = vi.hoisted(() => ({
     refetch: vi.fn(),
   },
   transfers: [] as Array<Record<string, unknown>>,
+  transferOptions: vi.fn(),
   transfersError: false,
   transfersHaveNextPage: false,
   fetchTransfers: vi.fn(),
@@ -244,7 +246,10 @@ vi.mock("#/features/wallet/hooks/use-address-book", () => ({
 }));
 
 vi.mock("#/features/auth/hooks/use-profile", () => ({
-  useAuthProfile: () => mocks.profile,
+  useAuthProfile: (options?: { enabled?: boolean }) => {
+    mocks.profileOptions(options);
+    return mocks.profile;
+  },
 }));
 
 vi.mock("#/hooks/use-vocabulary", () => ({
@@ -340,16 +345,19 @@ vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
     ],
     isPending: false,
   }),
-  useAccountTransfersInfinite: () => ({
-    data: { pages: [{ transfers: mocks.transfers }] },
-    isPending: false,
-    isError: mocks.transfersError,
-    isSuccess: !mocks.transfersError,
-    hasNextPage: mocks.transfersHaveNextPage,
-    isFetchingNextPage: false,
-    fetchNextPage: mocks.fetchTransfers,
-    refetch: mocks.refetchTransfers,
-  }),
+  useAccountTransfersInfinite: (address?: string) => {
+    mocks.transferOptions(address);
+    return {
+      data: address ? { pages: [{ transfers: mocks.transfers }] } : undefined,
+      isPending: false,
+      isError: mocks.transfersError,
+      isSuccess: !mocks.transfersError,
+      hasNextPage: mocks.transfersHaveNextPage,
+      isFetchingNextPage: false,
+      fetchNextPage: mocks.fetchTransfers,
+      refetch: mocks.refetchTransfers,
+    };
+  },
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-vouchers", () => ({
@@ -519,6 +527,8 @@ function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
 
 beforeEach(() => {
   mocks.address = "0x1111111111111111111111111111111111111111";
+  mocks.profileOptions.mockClear();
+  mocks.transferOptions.mockClear();
   // A signed-in visitor who is not the issuer. Ownership tests override the
   // session; everything else reads the panel as a visitor would.
   mocks.auth = {
@@ -915,6 +925,25 @@ describe("VoucherDetailPage", () => {
     const info = screen.getByRole("region", { name: "Info" });
     expect(within(info).getByRole("link", { name: "Sign in" })).toBeTruthy();
     expect(within(info).queryByText("Fresh vegetables from the farm.")).toBeNull();
+  });
+
+  it("waits for a verified session before enabling private reads for a connected wallet", () => {
+    mocks.address = OTHER;
+    mocks.auth = { isAuthenticated: false, isLoading: false, session: null };
+    const page = render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+
+    expect(screen.getByRole("heading", { name: "Priscilah Malii" })).toBeTruthy();
+    expect(screen.getByText("Sign in to view activity.")).toBeTruthy();
+    expect(mocks.profileOptions).toHaveBeenLastCalledWith({ enabled: false });
+    expect(mocks.transferOptions).toHaveBeenLastCalledWith(undefined);
+
+    mocks.auth.session = { address: OTHER, chainId: 42220 };
+    mocks.auth.isAuthenticated = true;
+    page.rerender(<VoucherDetailPage voucherAddress={ADDRESS} />);
+
+    expect(screen.getByRole("heading", { name: "Priscilah Malii" })).toBeTruthy();
+    expect(mocks.profileOptions).toHaveBeenLastCalledWith({ enabled: true });
+    expect(mocks.transferOptions).toHaveBeenLastCalledWith(OTHER);
   });
 
   it("keeps Voucher Info unavailable until its protected read succeeds and retries failures", () => {

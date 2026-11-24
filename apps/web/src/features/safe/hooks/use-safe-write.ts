@@ -1,3 +1,4 @@
+import { BackendApiError } from "@clc/api/client/errors";
 import type { CaliburCall } from "@clc/core/features/webauthn/index";
 import { useQueryClient } from "@tanstack/react-query";
 import { safeKeys } from "@clc/api/features/safe/queries";
@@ -9,7 +10,10 @@ import {
   proposeSafeTransaction,
   SafeDashboardRequiredError,
   SafePendingConflictError,
+  SafeProposalError,
+  SafeProposalOutcomeUnknownError,
   SafeProposedError,
+  safeQueueFailureKind,
 } from "../api/safe-transactions";
 import { isPasskeyCancellation, SafePasskeyUnsupportedError } from "../api/sign-safe-transaction";
 
@@ -27,10 +31,20 @@ export function useSafeWrite() {
         !address ||
         !auth.isAuthenticated ||
         auth.session?.address.toLowerCase() !== address.toLowerCase()
-      )
-        throw new Error("Connect and sign in with a signer of this multisig.");
-      if (!chain || chain.chain?.id !== CHAIN_ID)
-        throw new Error("The configured chain is unavailable.");
+      ) {
+        throw new SafeProposalError(
+          input.safe,
+          "check",
+          new BackendApiError(401, "Sign in to continue."),
+        );
+      }
+      if (!chain || chain.chain?.id !== CHAIN_ID) {
+        throw new SafeProposalError(
+          input.safe,
+          "check",
+          new Error("The configured chain is unavailable."),
+        );
+      }
       const proposal = await proposeSafeTransaction(
         { chain, safe: safeClient },
         {
@@ -48,10 +62,20 @@ export function useSafeWrite() {
       // completed mint/transfer and must not trigger the caller's success path.
       throw new SafeProposedError(proposal);
     } catch (error) {
+      if (
+        error instanceof SafeProposalError &&
+        auth.isAuthenticated &&
+        safeQueueFailureKind(error.cause) === "session"
+      ) {
+        auth.retry();
+      }
       // A dismissed or unsupported passkey is reported as itself: the dashboard
       // fallback cannot help a passkey account.
       if (
         error instanceof SafeProposedError ||
+        error instanceof SafeProposalError ||
+        error instanceof SafeProposalOutcomeUnknownError ||
+        error instanceof SafeDashboardRequiredError ||
         error instanceof SafePendingConflictError ||
         error instanceof SafePasskeyUnsupportedError ||
         isPasskeyCancellation(error)

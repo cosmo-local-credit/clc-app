@@ -2784,6 +2784,10 @@ msgstr "Haikuweza kukagua upatikanaji wa ujumbe."
 msgid "Couldn't check order availability."
 msgstr "Haikuweza kukagua upatikanaji wa kuagiza."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:39
+msgid "Couldn't check the multisig queue. Try again."
+msgstr "Imeshindikana kuangalia foleni ya pochi ya sahihi nyingi. Jaribu tena."
+
 #: apps/web/src/desktop/market/market-notices.tsx:173
 #: apps/web/src/features/pools/ui/pools-page.tsx:252
 msgid "Couldn't check voucher availability."
@@ -3056,6 +3060,10 @@ msgstr "Imeshindikana kupakia jumbe."
 #: apps/web/src/desktop/market/market-list-states.tsx:88
 msgid "Couldn't load more"
 msgstr "Imeshindwa kupakia zaidi"
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:20
+msgid "Couldn't load multisig proposals."
+msgstr "Imeshindikana kupakia mapendekezo ya pochi ya sahihi nyingi."
 
 #: apps/web/src/components/messaging/notifications-section.tsx:25
 #: apps/web/src/desktop/messaging/notifications-desk.tsx:33
@@ -3491,6 +3499,12 @@ msgstr "Haikuwezekana kuthibitisha salio zote za kikundi."
 #: apps/web/src/features/pools/hooks/use-pool-swap-form.ts:345
 msgid "Couldn't verify this swap. Try again."
 msgstr "Imeshindikana kuthibitisha ubadilishaji huu. Jaribu tena."
+
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:48
+msgid "Couldn't verify whether the proposal was queued. Check Safe before "
+"submitting again."
+msgstr "Imeshindikana kuthibitisha ikiwa pendekezo limewekwa kwenye foleni. "
+"Angalia katika Safe kabla ya kulituma tena."
 
 #: apps/web/src/features/vouchers/hooks/use-voucher-deployment-receipt.ts:119
 #: apps/web/src/features/vouchers/hooks/use-voucher-deployment-receipt.ts:256
@@ -7467,6 +7481,16 @@ msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 msgstr "Tuma mali kwenye <0>mtandao wa {chainName}</0> pekee kwa anwani hii. "
 "Mitandao mingine inaweza kupotea."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:37
+msgid "Only signers of this multisig can submit proposals."
+msgstr "Ni watia saini wa pochi hii ya sahihi nyingi pekee wanaoweza kutuma "
+"mapendekezo."
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:18
+msgid "Only signers of this multisig can view proposals."
+msgstr "Ni watia saini wa pochi hii ya sahihi nyingi pekee wanaoweza kuona "
+"mapendekezo."
+
 #: apps/web/src/desktop/wants/want-form-desk.tsx:327
 #: apps/web/src/features/wants/ui/want-form-page.tsx:265
 msgid "Only the owner can change email and phone sharing."
@@ -8714,9 +8738,9 @@ msgstr "Pendekezo limewekwa kwenye foleni. Lithibitishe na ulitekeleze katika "
 
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:85
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:85
-msgid "Proposals are unavailable here. You can still use your multisig wallet."
-msgstr "Mapendekezo hayapatikani hapa. Bado unaweza kutumia pochi yako ya "
-"sahihi nyingi."
+#~ msgid "Proposals are unavailable here. You can still use your multisig wallet."
+#~ msgstr "Mapendekezo hayapatikani hapa. Bado unaweza kutumia pochi yako ya "
+#~ "sahihi nyingi."
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:92
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
@@ -9704,6 +9728,7 @@ msgstr "Mapumziko"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:387
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:213
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:25
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:493
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:335
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:389
@@ -10696,6 +10721,16 @@ msgstr "Ingia ili kuona shughuli."
 msgid "Sign in to view posts."
 msgstr "Ingia ili kuona machapisho."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
+msgid "Sign in with a signer of this multisig to continue."
+msgstr "Ingia kwa akaunti ya mtia saini wa pochi hii ya sahihi nyingi ili "
+"kuendelea."
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:16
+msgid "Sign in with a signer of this multisig to view proposals."
+msgstr "Ingia kwa akaunti ya mtia saini wa pochi hii ya sahihi nyingi ili kuona "
+"mapendekezo."
+
 #: apps/web/src/components/auth/sign-in-panel.tsx:253
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:358
 msgid "Sign in with private key"
@@ -11524,6 +11559,10 @@ msgstr "Ramani haitumiki kwenye kifaa hiki."
 msgid "The message and order must be 500 characters or fewer."
 msgstr "Ujumbe na agizo kwa pamoja lazima viwe na herufi 500 au chache."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:41
+msgid "The multisig proposal was rejected."
+msgstr "Pendekezo la pochi ya sahihi nyingi limekataliwa."
+
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:422
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:507
 msgid "The new owner can create vouchers and transfer ownership."
@@ -11827,6 +11866,10 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "Orodha hii iliingizwa na kipimo “{legacyUnit}”. Chagua kimoja hapa "
 "chini ili kuhifadhi mabadiliko yako."
+
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:66
+msgid "This multisig already has a transaction waiting for signatures."
+msgstr "Pochi hii ya sahihi nyingi tayari ina muamala unaosubiri sahihi."
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:135
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:120

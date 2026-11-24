@@ -12,10 +12,17 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 const ADDRESS = "0xd524d0ed7bc970185ed9c6c9a65a8a02e8897363";
 const OWNER = "0x1111111111111111111111111111111111111111";
 const detailOverrides = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
+const activityQuery = vi.hoisted(() => vi.fn(() => ({ isPending: true })));
 
-vi.mock("wagmi", () => ({ useConnection: () => ({ address: undefined }) }));
+vi.mock("wagmi", () => ({ useConnection: () => ({ address: OWNER }) }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: false }),
+  useAuthStatus: () => ({ state: "connectedNoSession", address: OWNER, isAuthenticated: false }),
+}));
+vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
+  useAccountTransfersInfinite: activityQuery,
+}));
+vi.mock("#/desktop/activity/transactions-desk", () => ({
+  activityRowKey: vi.fn(),
 }));
 vi.mock("#/components/messaging/resource-owner-contact", () => ({
   ResourceMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
@@ -73,10 +80,8 @@ vi.mock("#/desktop/vouchers/detail/voucher-posts", () => ({
 vi.mock("#/desktop/vouchers/detail/voucher-reviews", () => ({
   VoucherReviewsDesk: () => <p>reviews body</p>,
 }));
-vi.mock("#/desktop/vouchers/detail/voucher-activity", () => ({
-  VoucherActivityDesk: () => <p>activity body</p>,
-}));
 vi.mock("#/desktop/vouchers/detail/voucher-section-bits", () => ({
+  useReportSectionCount: vi.fn(),
   VoucherBalanceLine: () => null,
   VoucherRatingLine: () => null,
   VoucherShareButton: () => null,
@@ -106,6 +111,7 @@ function renderPanel() {
 
 afterEach(() => {
   detailOverrides.current = {};
+  activityQuery.mockClear();
 });
 
 describe("MarketPlacePanel voucher card", () => {
@@ -186,7 +192,10 @@ describe("MarketPlacePanel voucher card", () => {
     expect(screen.getByRole("tab", { name: "Activity" }).getAttribute("aria-selected")).toBe(
       "true",
     );
-    expect(screen.getByRole("tabpanel").textContent).toBe("activity body");
+    expect(
+      within(screen.getByRole("tabpanel")).getByText("Sign in to view activity."),
+    ).toBeTruthy();
+    expect(activityQuery).toHaveBeenCalledWith(undefined, { poll: true });
   });
 
   it("keeps each tab label on one line", async () => {

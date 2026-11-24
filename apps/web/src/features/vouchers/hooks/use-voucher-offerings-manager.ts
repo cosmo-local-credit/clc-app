@@ -39,7 +39,7 @@ export function useVoucherOfferingsManager({
 }) {
   const { t } = useLingui();
   const { isAuthenticated, session } = useAuthStatus();
-  const profileQuery = useAuthProfile();
+  const profileQuery = useAuthProfile({ enabled: isAuthenticated });
   const ownerInfo = useAssetOwnerInfo(voucherAddress ?? "", ownerAddress);
   const isOwner =
     !readOnly &&

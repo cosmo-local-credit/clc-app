@@ -3,7 +3,10 @@ import { toast } from "sonner";
 import {
   SafeDashboardRequiredError,
   SafePendingConflictError,
+  SafeProposalError,
+  SafeProposalOutcomeUnknownError,
   SafeProposedError,
+  safeQueueFailureKind,
 } from "../api/safe-transactions";
 import { isPasskeyCancellation, SafePasskeyUnsupportedError } from "../api/sign-safe-transaction";
 import { useSafeSheet } from "../state/safe-sheet";
@@ -24,6 +27,26 @@ export function useReportWriteError() {
       toast.info(t`Proposal queued. Confirm and execute it in Safe.`);
       return true;
     }
+    if (error instanceof SafeProposalError) {
+      const kind = safeQueueFailureKind(error.cause);
+      if (kind === "session") {
+        toast.error(t`Sign in with a signer of this multisig to continue.`);
+      } else if (kind === "signer") {
+        toast.error(t`Only signers of this multisig can submit proposals.`);
+      } else if (error.stage === "check") {
+        toast.error(t`Couldn't check the multisig queue. Try again.`);
+      } else {
+        toast.error(t`The multisig proposal was rejected.`);
+      }
+      return false;
+    }
+    if (error instanceof SafeProposalOutcomeUnknownError) {
+      useSafeSheet.getState().show(error.safe);
+      toast.error(
+        t`Couldn't verify whether the proposal was queued. Check Safe before submitting again.`,
+      );
+      return true;
+    }
     if (error instanceof SafeDashboardRequiredError) {
       useSafeSheet.getState().show(error.safe);
       toast.info(
@@ -38,7 +61,7 @@ export function useReportWriteError() {
     if (isPasskeyCancellation(error)) return false;
     if (error instanceof SafePendingConflictError) {
       useSafeSheet.getState().show(error.safe);
-      toast.error(error.message);
+      toast.error(t`This multisig already has a transaction waiting for signatures.`);
       return true;
     }
     toast.error(error instanceof Error ? error.message : fallback);
