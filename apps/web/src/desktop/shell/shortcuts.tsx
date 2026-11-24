@@ -163,9 +163,8 @@ export function DesktopShortcuts() {
         if (rows.length === 0) return;
         event.preventDefault();
         const current = document.activeElement;
-        const index = rows.findIndex(
-          (row) => row === current || (current instanceof Node && row.contains(current)),
-        );
+        const currentRow = current?.closest('[role="row"]');
+        const index = rows.findIndex((row) => row.contains(current) || currentRow?.contains(row));
         const direction = lower === "j" ? 1 : -1;
         const next =
           index < 0

@@ -15,6 +15,7 @@ import {
 import { CreditRefusal } from "#/features/credit/ui/credit-failure-notice";
 import { CreditPoolLink, CreditPoolLinks } from "#/features/credit/ui/credit-pool-link";
 import { CreditRouteCapacity } from "#/features/credit/ui/credit-route-capacity";
+import { cn } from "#/lib/utils";
 
 export function CreditRouteDetailsDesk({
   option,
@@ -164,18 +165,35 @@ export function CreditRouteDetailsDesk({
             label={t`Other ways`}
             rows={option.others}
             rowKey={creditRouteKey}
-            onSelect={(other) => get.chooseRoute(option.voucher, other)}
+            renderRow={(_other, { className, style }, cells) => (
+              <div className={cn("relative isolate", className)} style={style}>
+                {cells}
+              </div>
+            )}
             columns={[
               {
                 id: "pools",
                 header: t`Pool`,
                 width: "minmax(0,2fr)",
-                cell: (other) => (
-                  <CreditPoolLinks
-                    pools={other.hops.map((hop) => hop.pool)}
-                    className="text-xs font-semibold"
-                  />
-                ),
+                cell: (other) => {
+                  const pools = other.hops.map((hop) => hop.pool);
+                  // Choosing an alternate moves it out of this table. Keep its actions reachable by Tab.
+                  return (
+                    <>
+                      <button
+                        type="button"
+                        data-desktop-row=""
+                        aria-label={pools.map((pool) => pool.name).join(" → ")}
+                        onClick={() => get.chooseRoute(option.voucher, other)}
+                        className="absolute inset-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+                      />
+                      <CreditPoolLinks
+                        pools={pools}
+                        className="pointer-events-none relative z-10 text-xs font-semibold [&_a]:pointer-events-auto"
+                      />
+                    </>
+                  );
+                },
               },
               {
                 id: "swaps",
@@ -213,16 +231,18 @@ export function CreditRouteDetailsDesk({
                 width: "minmax(8rem,1.2fr)",
                 align: "end",
                 cell: (other) => (
-                  <CreditRouteCapacity
-                    route={other}
-                    mode={get.mode}
-                    inputVoucher={option.voucher}
-                    outputVoucher={targetAddress}
-                    labels={labels}
-                    locale={locale}
-                    onMax={() => get.fillRouteMax(option.voucher, other)}
-                    compact
-                  />
+                  <span className="pointer-events-none relative z-10 [&>button]:pointer-events-auto">
+                    <CreditRouteCapacity
+                      route={other}
+                      mode={get.mode}
+                      inputVoucher={option.voucher}
+                      outputVoucher={targetAddress}
+                      labels={labels}
+                      locale={locale}
+                      onMax={() => get.fillRouteMax(option.voucher, other)}
+                      compact
+                    />
+                  </span>
                 ),
               },
             ]}
