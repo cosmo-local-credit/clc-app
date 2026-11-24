@@ -8,10 +8,17 @@ const HASH = `0x${"ab".repeat(32)}` as const;
 
 const mocks = vi.hoisted(() => ({
   proposals: [] as SafePendingProposal[],
+  status: "ready",
+  retry: vi.fn(),
 }));
 
 vi.mock("#/features/safe/hooks/use-safe-pending", () => ({
-  useSafePending: () => ({ status: "ready", proposals: mocks.proposals }),
+  useSafePending: () => ({
+    status: mocks.status,
+    proposals: mocks.proposals,
+    retry: mocks.retry,
+    retrying: false,
+  }),
 }));
 vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
   useSafeSigners: () => ({ data: [] }),
@@ -73,10 +80,22 @@ function proposal(overrides: Partial<SafePendingProposal> = {}): SafePendingProp
 
 beforeEach(() => {
   mocks.proposals = [];
+  mocks.status = "ready";
+  mocks.retry.mockClear();
   act(() => useSafeSheet.getState().close());
 });
 
 describe("SafePendingDesk", () => {
+  it("lets a signer retry when the queue cannot load", async () => {
+    mocks.status = "temporary";
+    render(<SafePendingDesk />);
+    act(() => useSafeSheet.getState().show(SAFE));
+
+    expect(await screen.findByText("Couldn't load multisig proposals.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.retry).toHaveBeenCalledOnce();
+  });
+
   it("opens the exact proposal and explains when it is no longer pending", async () => {
     mocks.proposals = [proposal()];
     render(<SafePendingDesk />);

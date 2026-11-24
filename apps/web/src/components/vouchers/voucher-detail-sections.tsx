@@ -186,7 +186,7 @@ export function VoucherDetailSections({
       </VoucherSection>
 
       <VoucherSection id="activity" title={<Trans>Activity</Trans>} {...{ idPrefix, headingLevel }}>
-        <VoucherActivityPanel accountAddress={walletAddress} contractAddress={address} />
+        <VoucherActivityPanel contractAddress={address} />
       </VoucherSection>
     </div>
   );
@@ -397,17 +397,17 @@ function VoucherPostsPanel({
   );
 }
 
-function VoucherActivityPanel({
-  accountAddress,
-  contractAddress,
-}: {
-  accountAddress: string | undefined;
-  contractAddress: string;
-}) {
+function VoucherActivityPanel({ contractAddress }: { contractAddress: string }) {
   const { i18n } = useLingui();
   const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
-  const { transfersQuery, transfers, visibleTransfers, hasMoreTransfers, loadMore } =
-    useVoucherTransfers(accountAddress, contractAddress);
+  const {
+    accountAddress,
+    transfersQuery,
+    transfers,
+    visibleTransfers,
+    hasMoreTransfers,
+    loadMore,
+  } = useVoucherTransfers(contractAddress);
 
   return (
     <>

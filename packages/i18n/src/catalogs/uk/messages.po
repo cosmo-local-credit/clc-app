@@ -2793,6 +2793,11 @@ msgstr "Не вдалося перевірити доступність пові
 msgid "Couldn't check order availability."
 msgstr "Не вдалося перевірити можливість замовлення."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:39
+msgid "Couldn't check the multisig queue. Try again."
+msgstr "Не вдалося перевірити чергу транзакцій із мультипідписом. Спробуйте ще "
+"раз."
+
 #: apps/web/src/desktop/market/market-notices.tsx:173
 #: apps/web/src/features/pools/ui/pools-page.tsx:252
 msgid "Couldn't check voucher availability."
@@ -3066,6 +3071,10 @@ msgstr "Не вдалося завантажити повідомлення."
 #: apps/web/src/desktop/market/market-list-states.tsx:88
 msgid "Couldn't load more"
 msgstr "Не вдалося завантажити ще"
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:20
+msgid "Couldn't load multisig proposals."
+msgstr "Не вдалося завантажити пропозиції для гаманця з мультипідписом."
 
 #: apps/web/src/components/messaging/notifications-section.tsx:25
 #: apps/web/src/desktop/messaging/notifications-desk.tsx:33
@@ -3502,6 +3511,12 @@ msgstr "Не вдалося перевірити всі активи пулу."
 #: apps/web/src/features/pools/hooks/use-pool-swap-form.ts:345
 msgid "Couldn't verify this swap. Try again."
 msgstr "Не вдалося перевірити цей обмін. Спробуйте ще раз."
+
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:48
+msgid "Couldn't verify whether the proposal was queued. Check Safe before "
+"submitting again."
+msgstr "Не вдалося перевірити, чи додано пропозицію до черги. Перевірте в Safe, "
+"перш ніж надсилати її знову."
 
 #: apps/web/src/features/vouchers/hooks/use-voucher-deployment-receipt.ts:119
 #: apps/web/src/features/vouchers/hooks/use-voucher-deployment-receipt.ts:256
@@ -7466,6 +7481,16 @@ msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 msgstr "Надсилайте на цю адресу активи лише в <0>мережі {chainName}</0>. Активи "
 "з інших мереж можуть бути втрачені."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:37
+msgid "Only signers of this multisig can submit proposals."
+msgstr "Лише підписанти цього гаманця з мультипідписом можуть надсилати "
+"пропозиції."
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:18
+msgid "Only signers of this multisig can view proposals."
+msgstr "Лише підписанти цього гаманця з мультипідписом можуть переглядати "
+"пропозиції."
+
 #: apps/web/src/desktop/wants/want-form-desk.tsx:327
 #: apps/web/src/features/wants/ui/want-form-page.tsx:265
 msgid "Only the owner can change email and phone sharing."
@@ -8709,9 +8734,9 @@ msgstr "Пропозицію додано до черги. Підтвердьт�
 
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:85
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:85
-msgid "Proposals are unavailable here. You can still use your multisig wallet."
-msgstr "Пропозиції тут недоступні. Ви й надалі можете користуватися гаманцем з "
-"мультипідписом."
+#~ msgid "Proposals are unavailable here. You can still use your multisig wallet."
+#~ msgstr "Пропозиції тут недоступні. Ви й надалі можете користуватися гаманцем з "
+#~ "мультипідписом."
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:92
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
@@ -9697,6 +9722,7 @@ msgstr "Ретрит"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:387
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:213
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:25
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:493
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:335
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:389
@@ -10685,6 +10711,16 @@ msgstr "Увійдіть, щоб переглянути активність."
 msgid "Sign in to view posts."
 msgstr "Увійдіть, щоб переглянути дописи."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
+msgid "Sign in with a signer of this multisig to continue."
+msgstr "Увійдіть з обліковим записом одного з підписантів цього гаманця з "
+"мультипідписом, щоб продовжити."
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:16
+msgid "Sign in with a signer of this multisig to view proposals."
+msgstr "Увійдіть з обліковим записом одного з підписантів цього гаманця з "
+"мультипідписом, щоб переглянути пропозиції."
+
 #: apps/web/src/components/auth/sign-in-panel.tsx:253
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:358
 msgid "Sign in with private key"
@@ -11513,6 +11549,10 @@ msgstr "Мапа не підтримується на цьому пристро�
 msgid "The message and order must be 500 characters or fewer."
 msgstr "Повідомлення та замовлення разом мають містити не більше 500 символів."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:41
+msgid "The multisig proposal was rejected."
+msgstr "Пропозицію для гаманця з мультипідписом відхилено."
+
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:422
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:507
 msgid "The new owner can create vouchers and transfer ownership."
@@ -11816,6 +11856,11 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "Цю пропозицію імпортовано з одиницею «{legacyUnit}». Оберіть одиницю "
 "нижче, щоб зберегти зміни."
+
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:66
+msgid "This multisig already has a transaction waiting for signatures."
+msgstr "У цьому гаманці з мультипідписом уже є транзакція, що очікує на "
+"підписи."
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:135
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:120

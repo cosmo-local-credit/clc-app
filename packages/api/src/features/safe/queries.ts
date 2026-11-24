@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import { transientBackendReadQueryPolicy } from "../../client/errors";
 import type { SafeClient } from "./client";
 
 export const safeKeys = {
@@ -31,12 +32,19 @@ export function mySafesQueryOptions(client: SafeClient, account: string | undefi
 const POLL_MS = 5_000;
 
 /** Queued transactions of one Safe. Confirmations arrive from other signers, so it polls. */
-export function safePendingQueryOptions(client: SafeClient, safe: string | undefined) {
+export function safePendingQueryOptions(
+  client: SafeClient,
+  safe: string | undefined,
+  viewer: string | undefined,
+) {
   return queryOptions({
-    queryKey: safeKeys.pending(safe ?? "none"),
+    queryKey: [...safeKeys.pending(safe ?? "none"), viewer?.toLowerCase() ?? "none"] as const,
     queryFn: ({ signal }) => client.pending(safe!, signal),
-    enabled: Boolean(safe),
-    refetchInterval: POLL_MS,
+    enabled: Boolean(safe && viewer),
+    // Let bounded retries finish, then wait for Retry or reconnection after a
+    // failure. In particular, repeating a denied read cannot recover access.
+    refetchInterval: (query) => (query.state.status === "error" ? false : POLL_MS),
     staleTime: 0,
+    ...transientBackendReadQueryPolicy,
   });
 }

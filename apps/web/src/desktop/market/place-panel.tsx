@@ -3,7 +3,6 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useId, useState, type ReactNode } from "react";
 import { RiArrowLeftSLine } from "react-icons/ri";
-import { useConnection } from "wagmi";
 
 import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { ResourceMessageButton } from "#/components/messaging/resource-owner-contact";
@@ -97,7 +96,6 @@ function VoucherPlace({
   });
   const unavailable = !detail && detailQuery.isError;
   const voucherAddress = detail?.address ?? address;
-  const { address: walletAddress } = useConnection();
   const { canEdit } = useCanEditVoucher(voucherAddress, detail);
   const reportVoucher: VoucherRef | undefined = detail?.chainId
     ? { chainId: detail.chainId, address: voucherAddress as VoucherRef["address"] }
@@ -258,11 +256,7 @@ function VoucherPlace({
                 privateInfo={privateInfo}
               />
             ) : (
-              <VoucherActivityDesk
-                accountAddress={walletAddress}
-                contractAddress={voucherAddress}
-                layout="panel"
-              />
+              <VoucherActivityDesk contractAddress={voucherAddress} layout="panel" />
             )}
           </DeskTabPanel>
         </div>

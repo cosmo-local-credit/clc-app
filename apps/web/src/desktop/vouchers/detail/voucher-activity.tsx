@@ -24,12 +24,10 @@ type Transfer = ReturnType<typeof useVoucherTransfers>["transfers"][number];
  * transfer in Activity's inspector, the desktop's one transfer-details view.
  */
 export function VoucherActivityDesk({
-  accountAddress,
   contractAddress,
   layout,
   onCount,
 }: {
-  accountAddress: string | undefined;
   contractAddress: string;
   layout: "page" | "panel";
   /** Reports the total once the viewer's whole transfer feed has loaded. */
@@ -37,8 +35,14 @@ export function VoucherActivityDesk({
 }) {
   const { t, i18n } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
-  const { transfersQuery, transfers, visibleTransfers, hasMoreTransfers, loadMore } =
-    useVoucherTransfers(accountAddress, contractAddress);
+  const {
+    accountAddress,
+    transfersQuery,
+    transfers,
+    visibleTransfers,
+    hasMoreTransfers,
+    loadMore,
+  } = useVoucherTransfers(contractAddress);
   useReportSectionCount(
     onCount,
     transfersQuery.isSuccess && !transfersQuery.hasNextPage ? transfers.length : undefined,

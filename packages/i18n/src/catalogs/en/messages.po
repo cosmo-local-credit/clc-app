@@ -2767,6 +2767,10 @@ msgstr "Couldn't check message availability."
 msgid "Couldn't check order availability."
 msgstr "Couldn't check order availability."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:39
+msgid "Couldn't check the multisig queue. Try again."
+msgstr "Couldn't check the multisig queue. Try again."
+
 #: apps/web/src/desktop/market/market-notices.tsx:173
 #: apps/web/src/features/pools/ui/pools-page.tsx:252
 msgid "Couldn't check voucher availability."
@@ -3039,6 +3043,10 @@ msgstr "Couldn't load messages."
 #: apps/web/src/desktop/market/market-list-states.tsx:88
 msgid "Couldn't load more"
 msgstr "Couldn't load more"
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:20
+msgid "Couldn't load multisig proposals."
+msgstr "Couldn't load multisig proposals."
 
 #: apps/web/src/components/messaging/notifications-section.tsx:25
 #: apps/web/src/desktop/messaging/notifications-desk.tsx:33
@@ -3471,6 +3479,12 @@ msgstr "Couldn't verify all Pool holdings."
 #: apps/web/src/features/pools/hooks/use-pool-swap-form.ts:345
 msgid "Couldn't verify this swap. Try again."
 msgstr "Couldn't verify this swap. Try again."
+
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:48
+msgid "Couldn't verify whether the proposal was queued. Check Safe before "
+"submitting again."
+msgstr "Couldn't verify whether the proposal was queued. Check Safe before "
+"submitting again."
 
 #: apps/web/src/features/vouchers/hooks/use-voucher-deployment-receipt.ts:119
 #: apps/web/src/features/vouchers/hooks/use-voucher-deployment-receipt.ts:256
@@ -7431,6 +7445,14 @@ msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 msgstr "Only send assets on the <0>{chainName} network</0> to this address. "
 "Other networks may be lost."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:37
+msgid "Only signers of this multisig can submit proposals."
+msgstr "Only signers of this multisig can submit proposals."
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:18
+msgid "Only signers of this multisig can view proposals."
+msgstr "Only signers of this multisig can view proposals."
+
 #: apps/web/src/desktop/wants/want-form-desk.tsx:327
 #: apps/web/src/features/wants/ui/want-form-page.tsx:265
 msgid "Only the owner can change email and phone sharing."
@@ -8672,8 +8694,8 @@ msgstr "Proposal queued. Confirm and execute it in Safe."
 
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:85
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:85
-msgid "Proposals are unavailable here. You can still use your multisig wallet."
-msgstr "Proposals are unavailable here. You can still use your multisig wallet."
+#~ msgid "Proposals are unavailable here. You can still use your multisig wallet."
+#~ msgstr "Proposals are unavailable here. You can still use your multisig wallet."
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:92
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
@@ -9658,6 +9680,7 @@ msgstr "Retreat"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:387
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:213
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:25
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:493
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:335
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:389
@@ -10647,6 +10670,14 @@ msgstr "Sign in to view activity."
 msgid "Sign in to view posts."
 msgstr "Sign in to view posts."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
+msgid "Sign in with a signer of this multisig to continue."
+msgstr "Sign in with a signer of this multisig to continue."
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:16
+msgid "Sign in with a signer of this multisig to view proposals."
+msgstr "Sign in with a signer of this multisig to view proposals."
+
 #: apps/web/src/components/auth/sign-in-panel.tsx:253
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:358
 msgid "Sign in with private key"
@@ -11470,6 +11501,10 @@ msgstr "The map is not supported on this device."
 msgid "The message and order must be 500 characters or fewer."
 msgstr "The message and order must be 500 characters or fewer."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:41
+msgid "The multisig proposal was rejected."
+msgstr "The multisig proposal was rejected."
+
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:422
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:507
 msgid "The new owner can create vouchers and transfer ownership."
@@ -11770,6 +11805,10 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "This listing was imported with the unit “{legacyUnit}”. Pick one below "
 "to save your changes."
+
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:66
+msgid "This multisig already has a transaction waiting for signatures."
+msgstr "This multisig already has a transaction waiting for signatures."
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:135
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:120

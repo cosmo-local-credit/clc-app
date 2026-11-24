@@ -1,12 +1,18 @@
+import { BackendApiError } from "@clc/api/client/errors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const mocks = vi.hoisted(() => ({ propose: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  propose: vi.fn(),
+  retrySession: vi.fn(),
+  chainId: 100,
+  sessionAddress: "0x3333333333333333333333333333333333333333",
+}));
 const ME = "0x3333333333333333333333333333333333333333";
 vi.mock("wagmi", () => ({
-  useClient: () => ({ chain: { id: 100 } }),
+  useClient: () => ({ chain: { id: mocks.chainId } }),
   useConnection: () => ({
     address: "0x3333333333333333333333333333333333333333",
     connector: { id: "private-key" },
@@ -16,7 +22,8 @@ vi.mock("wagmi", () => ({
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({
     isAuthenticated: true,
-    session: { address: "0x3333333333333333333333333333333333333333" },
+    session: { address: mocks.sessionAddress },
+    retry: mocks.retrySession,
   }),
 }));
 vi.mock("#/lib/chain", () => ({ CHAIN_ID: 100, CHAIN_INFO: {} }));
@@ -29,7 +36,11 @@ vi.mock("../api/safe-transactions", async (original) => ({
   proposeSafeTransaction: mocks.propose,
 }));
 
-import { SafeDashboardRequiredError, SafeProposedError } from "../api/safe-transactions";
+import {
+  SafeDashboardRequiredError,
+  SafeProposalError,
+  SafeProposedError,
+} from "../api/safe-transactions";
 import { SafePasskeyUnsupportedError } from "../api/sign-safe-transaction";
 import { useSafeWrite } from "./use-safe-write";
 
@@ -44,7 +55,11 @@ const proposal = (required: number) => ({
 function wrapper({ children }: { children: ReactNode }) {
   return <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>;
 }
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.chainId = 100;
+  mocks.sessionAddress = ME;
+});
 
 describe("best-effort Safe proposals", () => {
   it.each([1, 2])("stops after proposing at threshold %i", async (threshold) => {
@@ -75,4 +90,30 @@ describe("best-effort Safe proposals", () => {
       SafeDashboardRequiredError,
     );
   });
+
+  it("rechecks the session after a proposal preflight returns 401", async () => {
+    const error = new SafeProposalError(SAFE, "check", new BackendApiError(401, "Session expired"));
+    mocks.propose.mockRejectedValueOnce(error);
+    const { result } = renderHook(() => useSafeWrite(), { wrapper });
+    await expect(result.current.write({ safe: SAFE, calls })).rejects.toBe(error);
+    expect(mocks.retrySession).toHaveBeenCalledOnce();
+    expect(mocks.propose).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    ["wallet session", SAFE, 100],
+    ["chain", ME, 42220],
+  ])(
+    "stops before preparing a proposal when the %s does not match",
+    async (_name, address, chain) => {
+      mocks.chainId = chain;
+      mocks.sessionAddress = address;
+      const { result } = renderHook(() => useSafeWrite(), { wrapper });
+      await expect(result.current.write({ safe: SAFE, calls })).rejects.toMatchObject({
+        safe: SAFE,
+        stage: "check",
+      });
+      expect(mocks.propose).not.toHaveBeenCalled();
+    },
+  );
 });

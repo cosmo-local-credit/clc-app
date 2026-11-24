@@ -2796,6 +2796,10 @@ msgstr "Non è stato possibile verificare la disponibilità dei messaggi."
 msgid "Couldn't check order availability."
 msgstr "Impossibile verificare la disponibilità degli ordini."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:39
+msgid "Couldn't check the multisig queue. Try again."
+msgstr "Impossibile controllare la coda del portafoglio multifirma. Riprova."
+
 #: apps/web/src/desktop/market/market-notices.tsx:173
 #: apps/web/src/features/pools/ui/pools-page.tsx:252
 msgid "Couldn't check voucher availability."
@@ -3069,6 +3073,10 @@ msgstr "Impossibile caricare i messaggi."
 #: apps/web/src/desktop/market/market-list-states.tsx:88
 msgid "Couldn't load more"
 msgstr "Non è stato possibile caricare altri risultati"
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:20
+msgid "Couldn't load multisig proposals."
+msgstr "Impossibile caricare le proposte del portafoglio multifirma."
 
 #: apps/web/src/components/messaging/notifications-section.tsx:25
 #: apps/web/src/desktop/messaging/notifications-desk.tsx:33
@@ -3508,6 +3516,12 @@ msgstr "Impossibile verificare tutte le disponibilità del pool."
 #: apps/web/src/features/pools/hooks/use-pool-swap-form.ts:345
 msgid "Couldn't verify this swap. Try again."
 msgstr "Non è stato possibile verificare questo scambio. Riprovi."
+
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:48
+msgid "Couldn't verify whether the proposal was queued. Check Safe before "
+"submitting again."
+msgstr "Impossibile verificare se la proposta è stata messa in coda. Controlla "
+"Safe prima di inviarla di nuovo."
 
 #: apps/web/src/features/vouchers/hooks/use-voucher-deployment-receipt.ts:119
 #: apps/web/src/features/vouchers/hooks/use-voucher-deployment-receipt.ts:256
@@ -7490,6 +7504,16 @@ msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 msgstr "Invii a questo indirizzo solo asset sulla <0>rete {chainName}</0>. Gli "
 "asset inviati da altre reti potrebbero andare persi."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:37
+msgid "Only signers of this multisig can submit proposals."
+msgstr "Solo i firmatari di questo portafoglio multifirma possono inviare "
+"proposte."
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:18
+msgid "Only signers of this multisig can view proposals."
+msgstr "Solo i firmatari di questo portafoglio multifirma possono visualizzare "
+"le proposte."
+
 #: apps/web/src/desktop/wants/want-form-desk.tsx:327
 #: apps/web/src/features/wants/ui/want-form-page.tsx:265
 msgid "Only the owner can change email and phone sharing."
@@ -8741,9 +8765,9 @@ msgstr "Proposta in coda. Confermala ed eseguila in Safe."
 
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:85
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:85
-msgid "Proposals are unavailable here. You can still use your multisig wallet."
-msgstr "Le proposte non sono disponibili qui. Puoi continuare a usare il tuo "
-"portafoglio multifirma."
+#~ msgid "Proposals are unavailable here. You can still use your multisig wallet."
+#~ msgstr "Le proposte non sono disponibili qui. Puoi continuare a usare il tuo "
+#~ "portafoglio multifirma."
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:92
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
@@ -9732,6 +9756,7 @@ msgstr "Ritiro"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:387
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:213
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:25
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:493
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:335
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:389
@@ -10727,6 +10752,16 @@ msgstr "Acceda per visualizzare l’attività."
 msgid "Sign in to view posts."
 msgstr "Acceda per visualizzare le pubblicazioni."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
+msgid "Sign in with a signer of this multisig to continue."
+msgstr "Accedi con l’account di un firmatario di questo portafoglio multifirma "
+"per continuare."
+
+#: apps/web/src/features/safe/ui/safe-queue-notice.tsx:16
+msgid "Sign in with a signer of this multisig to view proposals."
+msgstr "Accedi con l’account di un firmatario di questo portafoglio multifirma "
+"per visualizzare le proposte."
+
 #: apps/web/src/components/auth/sign-in-panel.tsx:253
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:358
 msgid "Sign in with private key"
@@ -11565,6 +11600,10 @@ msgid "The message and order must be 500 characters or fewer."
 msgstr "Il messaggio e l’ordine devono avere complessivamente non più di 500 "
 "caratteri."
 
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:41
+msgid "The multisig proposal was rejected."
+msgstr "La proposta del portafoglio multifirma è stata rifiutata."
+
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:422
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:507
 msgid "The new owner can create vouchers and transfer ownership."
@@ -11876,6 +11915,11 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "Questa inserzione è stata importata con l’unità “{legacyUnit}”. Ne "
 "scelga una qui sotto per salvare le modifiche."
+
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:66
+msgid "This multisig already has a transaction waiting for signatures."
+msgstr "In questo portafoglio multifirma c’è già una transazione in attesa di "
+"firme."
 
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:135
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:120
