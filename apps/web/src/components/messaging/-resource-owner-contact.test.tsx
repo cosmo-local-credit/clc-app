@@ -164,6 +164,40 @@ describe("ResourceMessageButton", () => {
 });
 
 describe("ResourceOwnerContact", () => {
+  it.each([false, true])(
+    "retains both actions through owner lookup errors and forwards resource context (embedded: %s)",
+    async (embedded) => {
+      mocks.owner.mockRejectedValueOnce(new Error("offline"));
+      const context = {
+        kind: "pool" as const,
+        resourceId: OWNER as `0x${string}`,
+        proposedVoucherAddress: SIGNER as `0x${string}`,
+      };
+      const router = mount(embedded, context);
+      await screen.findByRole("button", { name: "Retry" });
+      expect(screen.getByRole("button", { name: "Profile" })).toBeTruthy();
+      fireEvent.click(screen.getByRole("link", { name: "Message" }));
+      await waitFor(() =>
+        expect(router.state.location.search).toEqual({
+          tab: "activity",
+          section: "messages",
+          messageKind: "pool",
+          messageResource: OWNER,
+          messageVoucher: SIGNER,
+        }),
+      );
+    },
+  );
+  it.each([false, true])(
+    "keeps both resource actions available while the owner identity is unresolved (embedded: %s)",
+    async (embedded) => {
+      mocks.owner.mockReturnValue(new Promise(() => {}));
+      mount(embedded, { kind: "pool", resourceId: OWNER });
+      expect(await screen.findByRole("link", { name: "Message" })).toBeTruthy();
+      expect(screen.getByRole("button", { name: "Profile" })).toBeTruthy();
+      expect(mocks.owner).toHaveBeenCalledTimes(1);
+    },
+  );
   it("shows the public username and opens Messages with the resource owner prefill", async () => {
     const router = mount();
     expect(await screen.findByText("amina")).toBeTruthy();

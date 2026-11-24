@@ -5,14 +5,13 @@ import type { MessageContextInput, MessageLaunchContext } from "@clc/core/featur
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { RiMailLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
+import { MessageButton } from "./message-button";
 import { Skeleton } from "#/components/ui/skeleton";
 import { EllipsizedAddress } from "#/components/wallet/wallet-address";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { safeClient } from "#/lib/api/safe";
-import { onboardingSearch } from "#/lib/onboarding-search";
 import { cn } from "#/lib/utils";
 
 /** Stable detail action. The authenticated composer resolves and checks the recipient. */
@@ -23,41 +22,11 @@ export function ResourceMessageButton({
   context: MessageLaunchContext;
   className?: string;
 }) {
-  const auth = useAuthStatus();
-  const search = {
-    tab: "activity",
-    section: "messages",
-    messageKind: context.kind,
-    messageResource: context.resourceId,
-    ...(context.kind === "pool" && context.proposedVoucherAddress
-      ? { messageVoucher: context.proposedVoucherAddress }
-      : {}),
-  } as const;
-  const label = (
-    <>
-      <RiMailLine aria-hidden="true" />
-      <Trans>Message</Trans>
-    </>
-  );
-
   return (
-    <>
-      <Button asChild variant="outline" tap className={className}>
-        {auth.state === "guest" || auth.state === "connectedNoSession" ? (
-          <Link
-            to="/onboarding"
-            search={onboardingSearch("signin", `/?${new URLSearchParams(search)}`)}
-          >
-            {label}
-          </Link>
-        ) : (
-          <Link to="/" search={search}>
-            {label}
-          </Link>
-        )}
-      </Button>
+    <div className="flex flex-wrap gap-2">
+      <MessageButton context={context} className={className} />
       <ResourceProfileButton kind={context.kind} resourceId={context.resourceId} />
-    </>
+    </div>
   );
 }
 
@@ -113,7 +82,9 @@ export function ResourceOwnerContact({
           </Button>
         ) : null}
       </div>
-      {query.isSuccess ? (
+      {context ? (
+        <ResourceMessageButton context={context} />
+      ) : query.isSuccess ? (
         <OwnerMessageButton
           ownerAddress={ownerAddress}
           targets={targets}
@@ -166,7 +137,11 @@ export function ResourceOwnerContactValue({
           <Trans>Retry</Trans>
         </Button>
       ) : null}
-      {query.isSuccess ? (
+      {context ? (
+        <div className="mt-2">
+          <ResourceMessageButton context={context} />
+        </div>
+      ) : query.isSuccess ? (
         <OwnerMessageButton
           ownerAddress={ownerAddress}
           targets={targets}
@@ -202,24 +177,7 @@ export function OwnerMessageButton({
   const available = hasAvailableTarget(targets, excludeAddress);
   if (!available) return null;
 
-  return (
-    <Button asChild variant="outline" tap className={className}>
-      <Link
-        to="/"
-        search={{
-          tab: "activity",
-          section: "messages",
-          messageTo: ownerAddress,
-          messageKind: context?.kind,
-          messageResource: context?.resourceId,
-          messageVoucher: context?.kind === "pool" ? context.proposedVoucherAddress : undefined,
-        }}
-      >
-        <RiMailLine aria-hidden="true" />
-        <Trans>Message</Trans>
-      </Link>
-    </Button>
-  );
+  return <MessageButton recipientAddress={ownerAddress} context={context} className={className} />;
 }
 
 function OwnerIdentity({
