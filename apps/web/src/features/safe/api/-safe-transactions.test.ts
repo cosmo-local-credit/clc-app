@@ -153,9 +153,12 @@ describe("proposeSafeTransaction", () => {
     expect(client.propose).toHaveBeenCalledOnce();
   });
 
-  it("stops at a failed queue check before asking for a signature", async () => {
+  it.each([
+    new BackendApiError(503, "Safe service unavailable"),
+    new BackendApiError(429, "Monthly quota reached", "E29"),
+    new BackendApiError(200, "Invalid response", undefined, { kind: "protocol" }),
+  ])("stops at a failed queue check before asking for a signature (%s)", async (cause) => {
     const client = safeClient();
-    const cause = new BackendApiError(503, "Safe service unavailable");
     client.pending.mockRejectedValueOnce(cause);
     const request = proposeSafeTransaction(
       { chain: {} as never, safe: client as never },

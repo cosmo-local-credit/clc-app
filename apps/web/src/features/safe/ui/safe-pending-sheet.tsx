@@ -29,7 +29,7 @@ import {
   WithdrawalRecipient,
 } from "./safe-proposal-labels";
 import { SafeExecutionControl } from "./safe-execution-control";
-import { SafeQueueNotice } from "./safe-queue-notice";
+import { SafeQueueNotice, SafeQueueRefresh } from "./safe-queue-notice";
 import { SafeRejectionControl } from "./safe-rejection-control";
 
 /**
@@ -87,6 +87,7 @@ function PendingList({
               status={pending.status}
               retry={pending.retry}
               retrying={pending.retrying}
+              quotaResetAt={pending.quotaResetAt}
             />
           </div>
         ) : safeTxHash &&
@@ -118,6 +119,11 @@ function PendingList({
             ))}
           </ul>
         )}
+        {pending.status === "ready" ? (
+          <div className="flex justify-center py-3">
+            <SafeQueueRefresh retry={pending.retry} retrying={pending.retrying} />
+          </div>
+        ) : null}
       </div>
       <SheetFooter>
         {SAFE_APP_PREFIX ? (

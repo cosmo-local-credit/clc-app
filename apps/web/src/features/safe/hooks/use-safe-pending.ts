@@ -1,5 +1,5 @@
 import type { SafeProposal } from "@clc/api/features/safe/client";
-import { safePendingQueryOptions } from "@clc/api/features/safe/queries";
+import { isSafeMonthlyQuotaError, safePendingQueryOptions } from "@clc/api/features/safe/queries";
 import {
   decodeSafeTransactionCalls,
   safeProposalAction,
@@ -73,6 +73,12 @@ export function useSafePending(safe: `0x${string}`) {
             ? "pending"
             : "ready";
   const data = status === "ready" ? query.data : undefined;
+  const quotaResetAt =
+    status === "quota" &&
+    isSafeMonthlyQuotaError(query.error) &&
+    query.error.retryAfterMs !== undefined
+      ? query.errorUpdatedAt + query.error.retryAfterMs
+      : undefined;
   const refreshSigners = useRefreshSafeSigners();
   const refreshAfterExecution = useRefreshAfterSafeExecution();
   const queued = useRef<{
@@ -193,9 +199,11 @@ export function useSafePending(safe: `0x${string}`) {
     });
   return {
     status,
+    quotaResetAt,
     retry: () => {
       if (sessionUnavailable) auth.retry();
-      else if (viewer && status === "temporary") void query.refetch();
+      else if (viewer && (status === "temporary" || status === "quota" || status === "ready"))
+        void query.refetch();
     },
     retrying: sessionUnavailable ? auth.retrying : query.isFetching,
     proposals,

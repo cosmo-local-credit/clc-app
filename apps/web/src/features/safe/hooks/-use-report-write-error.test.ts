@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const toast = vi.hoisted(() => ({ info: vi.fn(), error: vi.fn() }));
 vi.mock("sonner", () => ({ toast }));
+vi.mock("#/lib/safe-config", () => ({ SAFE_APP_PREFIX: "gno" }));
 
 import {
   SafeDashboardRequiredError,
@@ -61,16 +62,41 @@ describe("useReportWriteError", () => {
     expect(useSafeSheet.getState().safe).toBeNull();
   });
 
-  it("opens the queue with a warning after an uncertain submission", () => {
+  it("offers the Safe queue after a confirmed monthly quota failure before signing", () => {
     const report = renderHook(() => useReportWriteError()).result.current;
-    expect(
-      report(new SafeProposalOutcomeUnknownError(SAFE, HASH, new Error("offline")), "fallback"),
-    ).toBe(true);
-    expect(toast.error).toHaveBeenCalledWith(
-      "Couldn't verify whether the proposal was queued. Check Safe before submitting again.",
-    );
-    expect(useSafeSheet.getState().safe).toBe(SAFE);
+    const open = vi.spyOn(window, "open").mockImplementation(() => null);
+    const cause = new BackendApiError(429, "Upstream quota detail", "E29", {
+      retryAfterMs: 60 * 60 * 1_000,
+    });
+    try {
+      expect(report(new SafeProposalError(SAFE, "check", cause), "fallback")).toBe(false);
+      expect(toast.error).toHaveBeenCalledExactlyOnceWith(
+        expect.stringMatching(/^Safe’s monthly request limit has been reached\. Try again after /),
+        { action: { label: "Open in Safe", onClick: expect.any(Function) } },
+      );
+      toast.error.mock.calls[0]?.[1].action.onClick();
+      expect(open).toHaveBeenCalledExactlyOnceWith(
+        `https://app.safe.global/transactions/queue?safe=gno:${SAFE}`,
+        "_blank",
+        "noopener,noreferrer",
+      );
+      expect(useSafeSheet.getState().safe).toBeNull();
+    } finally {
+      open.mockRestore();
+    }
   });
+
+  it.each([new Error("offline"), new BackendApiError(429, "quota", "E29")])(
+    "opens the queue with a warning after an uncertain submission (%s)",
+    (cause) => {
+      const report = renderHook(() => useReportWriteError()).result.current;
+      expect(report(new SafeProposalOutcomeUnknownError(SAFE, HASH, cause), "fallback")).toBe(true);
+      expect(toast.error).toHaveBeenCalledWith(
+        "Couldn't verify whether the proposal was queued. Check Safe before submitting again.",
+      );
+      expect(useSafeSheet.getState().safe).toBe(SAFE);
+    },
+  );
 
   it("tells a passkey on an older Safe to use the paper wallet, without the dashboard", () => {
     const report = renderHook(() => useReportWriteError()).result.current;

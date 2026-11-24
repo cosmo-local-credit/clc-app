@@ -5,6 +5,7 @@ import {
   type SafeCall,
 } from "@clc/core/features/safe/logic";
 import type { SafeClient, SafeProposal } from "@clc/api/features/safe/client";
+import { isSafeMonthlyQuotaError } from "@clc/api/features/safe/queries";
 import { BackendApiError } from "@clc/api/client/errors";
 import type { Client } from "viem";
 import { readContract } from "viem/actions";
@@ -38,7 +39,8 @@ export class SafeDashboardRequiredError extends Error {
   }
 }
 
-export function safeQueueFailureKind(error: unknown): "session" | "signer" | "temporary" {
+export function safeQueueFailureKind(error: unknown): "session" | "signer" | "quota" | "temporary" {
+  if (isSafeMonthlyQuotaError(error)) return "quota";
   if (error instanceof BackendApiError) {
     if (error.kind === "unauthenticated") return "session";
     if (error.kind === "forbidden") return "signer";
