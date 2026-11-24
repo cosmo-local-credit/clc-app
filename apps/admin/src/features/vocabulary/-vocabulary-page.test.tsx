@@ -81,8 +81,7 @@ function sectionToggle(title: string) {
   return screen.getByRole("button", { name: title });
 }
 
-function sectionContent(title: string) {
-  const toggle = sectionToggle(title);
+function sectionContent(toggle: HTMLElement) {
   const contentId = toggle.getAttribute("aria-controls");
   expect(contentId).toBeTruthy();
   return document.getElementById(contentId!) as HTMLDivElement;
@@ -91,6 +90,10 @@ function sectionContent(title: string) {
 function expandSection(title: string) {
   const toggle = sectionToggle(title);
   if (toggle.getAttribute("aria-expanded") === "false") fireEvent.click(toggle);
+}
+
+function openDialog() {
+  return within(screen.getByRole("dialog"));
 }
 
 beforeEach(() => {
@@ -143,19 +146,21 @@ describe("the vocabulary tables", () => {
       expect(toggle.tagName).toBe("BUTTON");
       expect(toggle.getAttribute("type")).toBe("button");
       expect(toggle.getAttribute("aria-expanded")).toBe("true");
-      expect(sectionContent(title).hidden).toBe(false);
+      expect(sectionContent(toggle).hidden).toBe(false);
     }
     for (const title of ["Default tags", "Default offering units", "Default Units of Account"]) {
-      expect(sectionToggle(title).getAttribute("aria-expanded")).toBe("false");
-      expect(sectionContent(title).hidden).toBe(true);
+      const toggle = sectionToggle(title);
+      expect(toggle.getAttribute("aria-expanded")).toBe("false");
+      expect(sectionContent(toggle).hidden).toBe(true);
     }
 
-    fireEvent.click(sectionToggle("Default tags"));
-    expect(sectionToggle("Default tags").getAttribute("aria-expanded")).toBe("true");
-    expect(sectionContent("Default tags").hidden).toBe(false);
-    fireEvent.click(sectionToggle("Default tags"));
-    expect(sectionToggle("Default tags").getAttribute("aria-expanded")).toBe("false");
-    expect(sectionContent("Default tags").hidden).toBe(true);
+    const defaultTags = sectionToggle("Default tags");
+    fireEvent.click(defaultTags);
+    expect(defaultTags.getAttribute("aria-expanded")).toBe("true");
+    expect(sectionContent(defaultTags).hidden).toBe(false);
+    fireEvent.click(defaultTags);
+    expect(defaultTags.getAttribute("aria-expanded")).toBe("false");
+    expect(sectionContent(defaultTags).hidden).toBe(true);
   });
 
   it("preserves section choices when vocabulary data refreshes", async () => {
@@ -284,10 +289,11 @@ describe("the default vocabulary", () => {
     await screen.findByText("Hours");
     expandSection("Default tags");
     fireEvent.click(await screen.findByRole("button", { name: "Edit Agriculture" }));
-    fireEvent.change(screen.getByRole("textbox", { name: "New tag" }), {
+    const editor = openDialog();
+    fireEvent.change(editor.getByRole("textbox", { name: "New tag" }), {
       target: { value: "Farming" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    fireEvent.click(editor.getByRole("button", { name: "Save" }));
     await waitFor(() =>
       expect(mocks.renameValue).toHaveBeenCalledWith("tag", "Agriculture", "Farming"),
     );
@@ -304,8 +310,9 @@ describe("renaming a value", () => {
     async (kind, value, draft, replacement, message) => {
       renderPage();
       fireEvent.click(await screen.findByRole("button", { name: `Edit ${value}` }));
+      const editor = openDialog();
       const invalidate = vi.spyOn(queryClient, "invalidateQueries");
-      fireEvent.change(screen.getByRole("textbox", { name: `New ${kind}` }), {
+      fireEvent.change(editor.getByRole("textbox", { name: `New ${kind}` }), {
         target: { value: draft },
       });
       expect(mocks.renameValue).not.toHaveBeenCalled();
@@ -314,7 +321,7 @@ describe("renaming a value", () => {
         units: [unit({ value: kind === "unit" ? replacement : "Produce Crate" })],
         unitsOfAccount: [unitOfAccount()],
       });
-      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      fireEvent.click(editor.getByRole("button", { name: "Save" }));
       await waitFor(() => expect(mocks.renameValue).toHaveBeenCalledWith(kind, value, replacement));
       await waitFor(() => expect(mocks.success).toHaveBeenCalledWith(message));
       expect(invalidate).toHaveBeenCalledWith({ queryKey: ["clc"] });
@@ -328,21 +335,23 @@ describe("renaming a value", () => {
   it("cancels without saving and restores the original value on reopening", async () => {
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Edit Urban Farming" }));
-    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Discard this" } });
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    const editor = openDialog();
+    fireEvent.change(editor.getByRole("textbox"), { target: { value: "Discard this" } });
+    fireEvent.click(editor.getByRole("button", { name: "Cancel" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(mocks.renameValue).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Edit Urban Farming" }));
-    expect((screen.getByRole("textbox") as HTMLInputElement).value).toBe("Urban Farming");
+    expect((openDialog().getByRole("textbox") as HTMLInputElement).value).toBe("Urban Farming");
   });
 
   it("renames a custom unit of account through its dedicated endpoint", async () => {
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Edit Hours" }));
-    fireEvent.change(screen.getByRole("textbox", { name: "New unitOfAccount" }), {
+    const editor = openDialog();
+    fireEvent.change(editor.getByRole("textbox", { name: "New unitOfAccount" }), {
       target: { value: "Community Hours" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    fireEvent.click(editor.getByRole("button", { name: "Save" }));
 
     await waitFor(() =>
       expect(mocks.renameUnitOfAccount).toHaveBeenCalledWith("Hours", "Community Hours"),
@@ -360,7 +369,8 @@ describe("renaming a value", () => {
     });
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Edit Barbequeue" }));
-    fireEvent.change(screen.getByRole("textbox", { name: "New tag" }), {
+    const editor = openDialog();
+    fireEvent.change(editor.getByRole("textbox", { name: "New tag" }), {
       target: { value: "BBQ" },
     });
     // Another operator removed the row above it.
@@ -372,10 +382,10 @@ describe("renaming a value", () => {
     await queryClient.invalidateQueries({ queryKey: ["clc"] });
     await waitFor(() => expect(screen.queryByText("Apple")).toBeNull());
 
-    expect((screen.getByRole("textbox", { name: "New tag" }) as HTMLInputElement).value).toBe(
+    expect((editor.getByRole("textbox", { name: "New tag" }) as HTMLInputElement).value).toBe(
       "BBQ",
     );
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    fireEvent.click(editor.getByRole("button", { name: "Save" }));
     await waitFor(() => expect(mocks.renameValue).toHaveBeenCalledWith("tag", "Barbequeue", "BBQ"));
   });
 
@@ -388,8 +398,9 @@ describe("renaming a value", () => {
   ])("prevents saving %s as an unchanged or invalid value %s", async (value, draft) => {
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: `Edit ${value}` }));
-    fireEvent.change(screen.getByRole("textbox"), { target: { value: draft } });
-    const save = screen.getByRole("button", { name: "Save" }) as HTMLButtonElement;
+    const editor = openDialog();
+    fireEvent.change(editor.getByRole("textbox"), { target: { value: draft } });
+    const save = editor.getByRole("button", { name: "Save" }) as HTMLButtonElement;
     expect(save.disabled).toBe(true);
     fireEvent.submit(save.closest("form")!);
     expect(mocks.renameValue).not.toHaveBeenCalled();
@@ -403,16 +414,17 @@ describe("renaming a value", () => {
     );
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Edit Urban Farming" }));
-    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Gardens" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect((await screen.findByRole("alert")).textContent).toContain(
+    const editor = openDialog();
+    fireEvent.change(editor.getByRole("textbox"), { target: { value: "Gardens" } });
+    fireEvent.click(editor.getByRole("button", { name: "Save" }));
+    expect((await editor.findByRole("alert")).textContent).toContain(
       "Please try again after the deployment finishes.",
     );
-    expect((screen.getByRole("textbox") as HTMLInputElement).value).toBe("Gardens");
+    expect((editor.getByRole("textbox") as HTMLInputElement).value).toBe("Gardens");
     expect(mocks.success).not.toHaveBeenCalled();
-    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Community Gardens" } });
-    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    fireEvent.change(editor.getByRole("textbox"), { target: { value: "Community Gardens" } });
+    await waitFor(() => expect(editor.queryByRole("alert")).toBeNull());
+    fireEvent.click(editor.getByRole("button", { name: "Save" }));
     await waitFor(() => expect(mocks.success).toHaveBeenCalledWith("Tag renamed."));
     expect(mocks.renameValue).toHaveBeenLastCalledWith("tag", "Urban Farming", "Community Gardens");
   });
@@ -423,14 +435,16 @@ describe("renaming a value", () => {
     );
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Edit Urban Farming" }));
-    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Gardens" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    await screen.findByRole("alert");
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    const editor = openDialog();
+    fireEvent.change(editor.getByRole("textbox"), { target: { value: "Gardens" } });
+    fireEvent.click(editor.getByRole("button", { name: "Save" }));
+    await editor.findByRole("alert");
+    fireEvent.click(editor.getByRole("button", { name: "Cancel" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(screen.getByRole("button", { name: "Edit Produce Crate" }));
-    expect(screen.getByRole("textbox", { name: "New unit" })).toBeTruthy();
-    expect(screen.queryByRole("alert")).toBeNull();
+    const reopenedEditor = openDialog();
+    expect(reopenedEditor.getByRole("textbox", { name: "New unit" })).toBeTruthy();
+    expect(reopenedEditor.queryByRole("alert")).toBeNull();
   });
 
   it("disables the editor and prevents duplicate submissions while saving", async () => {
@@ -443,14 +457,15 @@ describe("renaming a value", () => {
     );
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Edit Urban Farming" }));
-    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Gardens" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    const saving = await screen.findByRole("button", { name: "Saving…" });
+    const editor = openDialog();
+    fireEvent.change(editor.getByRole("textbox"), { target: { value: "Gardens" } });
+    fireEvent.click(editor.getByRole("button", { name: "Save" }));
+    const saving = await editor.findByRole("button", { name: "Saving…" });
     expect((saving as HTMLButtonElement).disabled).toBe(true);
-    expect((screen.getByRole("button", { name: "Cancel" }) as HTMLButtonElement).disabled).toBe(
+    expect((editor.getByRole("button", { name: "Cancel" }) as HTMLButtonElement).disabled).toBe(
       true,
     );
-    expect((screen.getByRole("textbox") as HTMLInputElement).disabled).toBe(true);
+    expect((editor.getByRole("textbox") as HTMLInputElement).disabled).toBe(true);
     fireEvent.submit(saving.closest("form")!);
     expect(mocks.renameValue).toHaveBeenCalledTimes(1);
     finish();
@@ -495,14 +510,14 @@ describe("deleting a value", () => {
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Delete Urban Farming" }));
 
-    expect(screen.getByRole("button", { name: "Delete everywhere" })).toBeTruthy();
+    expect(openDialog().getByRole("button", { name: "Delete everywhere" })).toBeTruthy();
     expect(screen.queryByText(/Remove from/)).toBeNull();
   });
 
   it("does nothing until the destructive button is pressed", async () => {
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Delete Urban Farming" }));
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    fireEvent.click(openDialog().getByRole("button", { name: "Cancel" }));
 
     await waitFor(() => expect(screen.queryByText("Delete “Urban Farming”?")).toBeNull());
     expect(mocks.deleteTag).not.toHaveBeenCalled();
@@ -512,7 +527,7 @@ describe("deleting a value", () => {
     renderPage();
     const invalidate = vi.spyOn(QueryClient.prototype, "invalidateQueries");
     fireEvent.click(await screen.findByRole("button", { name: "Delete Urban Farming" }));
-    fireEvent.click(screen.getByRole("button", { name: "Delete everywhere" }));
+    fireEvent.click(openDialog().getByRole("button", { name: "Delete everywhere" }));
 
     await waitFor(() => expect(mocks.deleteTag).toHaveBeenCalledWith("Urban Farming"));
     // A deleted tag can appear in any catalog list, so the whole namespace goes.
@@ -525,7 +540,7 @@ describe("deleting a value", () => {
   it("deletes a unit through the unit endpoint", async () => {
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Delete Produce Crate" }));
-    fireEvent.click(screen.getByRole("button", { name: "Delete everywhere" }));
+    fireEvent.click(openDialog().getByRole("button", { name: "Delete everywhere" }));
 
     await waitFor(() => expect(mocks.deleteUnit).toHaveBeenCalledWith("Produce Crate"));
     await waitFor(() => expect(mocks.success).toHaveBeenCalledWith("Unit deleted."));
@@ -549,7 +564,7 @@ describe("deleting a value", () => {
     });
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Delete Hours" }));
-    fireEvent.click(screen.getByRole("button", { name: "Delete everywhere" }));
+    fireEvent.click(openDialog().getByRole("button", { name: "Delete everywhere" }));
 
     await waitFor(() => expect(mocks.deleteUnitOfAccount).toHaveBeenCalledWith("Hours"));
     expect(mocks.success).toHaveBeenCalledWith("Unit of account deleted.");
@@ -561,7 +576,7 @@ describe("deleting a value", () => {
     mocks.deleteTag.mockRejectedValue(new Error("built-in vocabulary values cannot be deleted"));
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Delete Urban Farming" }));
-    fireEvent.click(screen.getByRole("button", { name: "Delete everywhere" }));
+    fireEvent.click(openDialog().getByRole("button", { name: "Delete everywhere" }));
 
     expect(await screen.findByText("built-in vocabulary values cannot be deleted")).toBeTruthy();
     expect(screen.getByText("Delete “Urban Farming”?")).toBeTruthy();

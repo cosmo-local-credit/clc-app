@@ -209,8 +209,9 @@ describe("WantFormDesk", () => {
   it("loads a nonowner Admin edit with both share choices locked and keeps an open Want open", async () => {
     mocks.role = "ADMIN";
     const want = { ...WANT, ownerAddress: `0x${"a".repeat(40)}`, contactPermission: 2 };
-    mocks.editRecord.mockResolvedValueOnce(want);
-    mocks.updateAsAdmin.mockResolvedValueOnce(want);
+    const updated = { ...want, contactText: "Meet at the market" };
+    mocks.editRecord.mockResolvedValueOnce(want).mockResolvedValueOnce(updated);
+    mocks.updateAsAdmin.mockResolvedValueOnce(updated);
     renderForm(<WantFormDesk wantId="7" />);
 
     const instructions = await screen.findByLabelText("Contact instructions");
@@ -234,6 +235,7 @@ describe("WantFormDesk", () => {
         }),
       ),
     );
+    await waitFor(() => expect(mocks.editRecord).toHaveBeenCalledTimes(2));
     expect(mocks.update).not.toHaveBeenCalled();
     expect(mocks.reopen).not.toHaveBeenCalled();
   });
@@ -247,8 +249,9 @@ describe("WantFormDesk", () => {
       status: "CLOSED",
       state: "closed",
     };
-    mocks.editRecord.mockResolvedValueOnce(closed);
-    mocks.reopen.mockResolvedValueOnce(WANT);
+    const reopened = { ...WANT, ownerAddress: closed.ownerAddress };
+    mocks.editRecord.mockResolvedValueOnce(closed).mockResolvedValueOnce(reopened);
+    mocks.reopen.mockResolvedValueOnce(reopened);
     renderForm(<WantFormDesk wantId="7" />);
 
     const save = await screen.findByRole("button", { name: "Save and reopen Want" });
@@ -263,6 +266,7 @@ describe("WantFormDesk", () => {
         expect.objectContaining({ name: WANT.name, shareEmail: false, sharePhone: false }),
       ),
     );
+    await waitFor(() => expect(mocks.editRecord).toHaveBeenCalledTimes(2));
     expect(mocks.updateAsAdmin).not.toHaveBeenCalled();
   });
 });

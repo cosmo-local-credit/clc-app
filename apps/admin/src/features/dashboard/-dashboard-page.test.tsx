@@ -7,10 +7,25 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import { CHAIN_INFO } from "#/lib/chain";
 import { RELAYER_GAS_FLOOR_LABEL } from "./relayer-gas";
+
+vi.mock("recharts", async (importOriginal) => {
+  const recharts = await importOriginal<typeof import("recharts")>();
+  // jsdom cannot measure a responsive chart. Supply dimensions for real SVG rendering.
+  return {
+    ...recharts,
+    ResponsiveContainer: ({ children }: ComponentProps<typeof recharts.ResponsiveContainer>) => (
+      <recharts.ResponsiveContainer width={640} height={320}>
+        {children}
+      </recharts.ResponsiveContainer>
+    ),
+  };
+});
+
 vi.mock("#/features/retirement/retirement-notification", () => ({
   RetirementDashboardLink: () => null,
 }));

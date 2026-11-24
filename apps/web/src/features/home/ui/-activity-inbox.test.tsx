@@ -15,7 +15,7 @@ import {
 } from "@tanstack/react-router";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import {
   parseActivityHelpdeskId,
@@ -271,6 +271,10 @@ beforeEach(() => {
   mocks.admin.setHelpdeskStatus.mockRejectedValue(new Error("Unexpected Helpdesk status write"));
 });
 
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 describe("Activity sub-tabs", () => {
   it("shows each sub-tab's count and keeps the feed on Transactions", async () => {
     mountAt("/?tab=activity");
@@ -446,8 +450,16 @@ describe("Messages section", () => {
     mocks.client.list.mockResolvedValueOnce({ items: [conversation(1)], nextCursor: null });
     const { client } = mountAt("/?tab=activity&section=messages");
     expect(await screen.findByText("user1")).toBeTruthy();
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     mocks.client.list.mockRejectedValue(new BackendApiError(503, "unavailable"));
-    await act(() => client.refetchQueries({ type: "active" }).catch(() => undefined));
+    await act(async () => {
+      const refresh = client.refetchQueries({ type: "active" });
+      await vi.advanceTimersByTimeAsync(999);
+      expect(mocks.client.list).toHaveBeenCalledTimes(2);
+      await vi.advanceTimersByTimeAsync(2_502);
+      await refresh;
+    });
+    expect(mocks.client.list).toHaveBeenCalledTimes(4);
     expect(screen.getByText("user1")).toBeTruthy();
     expect(screen.queryByText("Couldn't load messages.")).toBeNull();
   });

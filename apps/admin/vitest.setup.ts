@@ -58,6 +58,9 @@ class ImageStub {
 
 vi.stubGlobal("Image", ImageStub);
 
+// jsdom does not implement the router's scroll restoration.
+window.scrollTo = () => {};
+
 afterEach(() => {
   cleanup();
   store.clear();

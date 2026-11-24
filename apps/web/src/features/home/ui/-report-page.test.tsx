@@ -116,12 +116,14 @@ vi.mock("@tanstack/react-router", () => ({
     to,
     params,
     search,
+    replace: _replace,
     children,
     ...props
   }: {
     to: string;
     params?: Record<string, string>;
     search?: Record<string, string>;
+    replace?: boolean;
     children: ReactNode;
   }) => {
     const path = Object.entries(params ?? {}).reduce(

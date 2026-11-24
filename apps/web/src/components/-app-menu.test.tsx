@@ -1,6 +1,6 @@
 import type { SupportedLocale } from "@clc/i18n/locales";
 import { fireEvent, render, screen } from "@testing-library/react";
-import type { ReactNode } from "react";
+import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { PLATFORM_ABOUT_URL, PLATFORM_TERMS_URL } from "#/lib/legal";
@@ -11,13 +11,21 @@ vi.mock("@tanstack/react-router", () => ({
     to,
     search,
     children,
+    onClick,
     ...props
-  }: {
+  }: AnchorHTMLAttributes<HTMLAnchorElement> & {
     to: string;
     search: Record<string, string>;
     children: ReactNode;
   }) => (
-    <a href={`${to}?${new URLSearchParams(search)}`} {...props}>
+    <a
+      href={`${to}?${new URLSearchParams(search)}`}
+      onClick={(event) => {
+        event.preventDefault();
+        onClick?.(event);
+      }}
+      {...props}
+    >
       {children}
     </a>
   ),
@@ -33,42 +41,6 @@ vi.mock("#/providers/i18n", () => ({
     loading: false,
     error: null,
   }),
-}));
-
-vi.mock("#/components/ui/select", () => ({
-  SelectRoot: ({
-    value,
-    onValueChange,
-    children,
-    items: _items,
-  }: {
-    value: string;
-    onValueChange?: (value: string) => void;
-    children: ReactNode;
-    items?: Record<string, string>;
-  }) => (
-    <select value={value} onChange={(event) => onValueChange?.(event.target.value)}>
-      {children}
-    </select>
-  ),
-  SelectTrigger: ({
-    children,
-    className,
-    "aria-label": ariaLabel,
-  }: {
-    children: ReactNode;
-    className?: string;
-    "aria-label"?: string;
-  }) => (
-    <span aria-label={ariaLabel} className={className}>
-      {children}
-    </span>
-  ),
-  SelectValue: () => null,
-  SelectContent: ({ children }: { children: ReactNode }) => <>{children}</>,
-  SelectItem: ({ value, children }: { value: string; children: ReactNode }) => (
-    <option value={value}>{children}</option>
-  ),
 }));
 
 const { AppMenu } = await import("./app-menu");
@@ -130,7 +102,7 @@ describe("AppMenu", () => {
     render(<AppMenu />);
     await openMenu();
 
-    const [language] = screen.getAllByRole("combobox") as HTMLSelectElement[];
+    const language = screen.getByRole("combobox", { name: "Language" });
     const theme = screen.getByRole("button", { name: "Dark mode" });
     const preferenceRows = ["Language", "Theme"].map(
       (label) => screen.getByText(label).parentElement,
@@ -142,7 +114,10 @@ describe("AppMenu", () => {
     expect(theme.getAttribute("aria-pressed")).toBe("true");
     expect(theme.textContent).toContain("Dark");
     expect(screen.getByText("About")).toBeTruthy();
-    fireEvent.change(language!, { target: { value: "it" } });
+    fireEvent.click(language);
+    const italian = await screen.findByRole("option", { name: "Italiano" });
+    fireEvent.pointerDown(italian, { pointerType: "touch" });
+    fireEvent.click(italian);
     expect(setLocale).toHaveBeenCalledWith("it");
     expect(screen.getByText("About")).toBeTruthy();
   });
@@ -152,7 +127,7 @@ describe("AppMenu", () => {
     await openMenu();
 
     const theme = screen.getByRole("button", { name: "Dark mode" });
-    const language = screen.getByLabelText("Language", { selector: "span" });
+    const language = screen.getByRole("combobox", { name: "Language" });
     for (const control of [theme, language]) {
       expect(control.className).toContain("w-32");
     }
@@ -162,7 +137,7 @@ describe("AppMenu", () => {
     render(<AppMenu />);
     await openMenu();
 
-    const language = screen.getByLabelText("Language", { selector: "span" });
+    const language = screen.getByRole("combobox", { name: "Language" });
     expect(language.querySelector("svg")).not.toBeNull();
   });
 
