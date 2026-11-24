@@ -88,6 +88,7 @@ vi.mock("#/components/auth/authenticated-route", () => ({
 
 import { creditQuoteFixture, FIXTURE } from "#/features/credit/api/-credit-quote-fixture";
 import { DESKTOP_MEDIA } from "#/desktop/layout";
+import { DesktopShortcuts } from "#/desktop/shell/shortcuts";
 import { Route } from "#/routes/_nav/get/$voucherAddress";
 
 const SYMBOLS: Record<string, string> = {
@@ -196,6 +197,7 @@ function renderPage() {
   const Component = Route.options.component!;
   return render(
     <QueryClientProvider client={client}>
+      <DesktopShortcuts />
       <Component />
     </QueryClientProvider>,
   );
@@ -203,6 +205,9 @@ function renderPage() {
 function payRow(symbol: string) {
   const table = screen.getByRole("table", { name: "Pay with" });
   return within(table).getByRole("row", { name: new RegExp(`^${symbol}`) });
+}
+function paySelector(symbol: string) {
+  return within(payRow(symbol)).getByRole("button", { name: symbol });
 }
 
 beforeEach(() => {
@@ -251,6 +256,7 @@ describe("desktop Get", () => {
       `/pools/${FIXTURE.pool2}`,
     );
     expect(within(payRow("AAA")).getByRole("button", { name: "Max 8.00 CCC" })).toBeTruthy();
+    expect(payRow("AAA").querySelector("button button")).toBeNull();
     expect(screen.getAllByText("Fee not confirmed")[0]).toBeTruthy();
     expect(screen.getByRole("button", { name: "Review" }).hasAttribute("disabled")).toBe(true);
     expect(document.querySelector("summary")).toBeNull();
@@ -260,7 +266,7 @@ describe("desktop Get", () => {
     renderPage();
     fireEvent.change(await screen.findByLabelText("You get"), { target: { value: "5" } });
     await screen.findByRole("table", { name: "Pay with" });
-    fireEvent.click(payRow("AAA"));
+    fireEvent.click(paySelector("AAA"));
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Review" }).hasAttribute("disabled")).toBe(false),
     );
@@ -287,7 +293,7 @@ describe("desktop Get", () => {
     renderPage();
     fireEvent.change(await screen.findByLabelText("You get"), { target: { value: "5" } });
     await screen.findByRole("table", { name: "Pay with" });
-    fireEvent.click(payRow("AAA"));
+    fireEvent.click(paySelector("AAA"));
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Review" }).hasAttribute("disabled")).toBe(false),
     );
@@ -302,7 +308,7 @@ describe("desktop Get", () => {
     fireEvent.click(within(desktop).getByRole("button", { name: "Cancel" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect((screen.getByLabelText("You get") as HTMLInputElement).value).toBe("5");
-    expect(payRow("AAA").getAttribute("data-selected")).toBe("true");
+    expect(paySelector("AAA").getAttribute("aria-pressed")).toBe("true");
     expect(mocks.quote).toHaveBeenCalledTimes(1);
     expect(mocks.relay).not.toHaveBeenCalled();
   });
@@ -310,7 +316,7 @@ describe("desktop Get", () => {
   it("prices spending in the selected voucher and clears the amount when switching mode", async () => {
     renderPage();
     await screen.findByRole("table", { name: "Pay with" });
-    fireEvent.click(payRow("DDD"));
+    fireEvent.click(paySelector("DDD"));
     fireEvent.change(screen.getByLabelText("You get"), { target: { value: "5" } });
     fireEvent.click(screen.getByRole("button", { name: "Spend" }));
     expect((screen.getByLabelText("You spend") as HTMLInputElement).value).toBe("");
@@ -321,7 +327,44 @@ describe("desktop Get", () => {
         expect.anything(),
       ),
     );
-    expect(payRow("DDD").getAttribute("data-selected")).toBe("true");
+    expect(paySelector("DDD").getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("moves focus by row and keeps Max independent from route selection", async () => {
+    renderPage();
+    await screen.findByRole("table", { name: "Pay with" });
+    const firstSelector = paySelector("AAA");
+    const secondSelector = paySelector("DDD");
+    const firstMax = within(payRow("AAA")).getByRole("button", { name: "Max 8.00 CCC" });
+    act(() => firstSelector.focus());
+    expect(firstSelector.getAttribute("aria-pressed")).toBe("true");
+
+    // Keyboard navigation starts at the current row even when Max has focus.
+    act(() => firstMax.focus());
+    fireEvent.keyDown(firstMax, { key: "j" });
+    expect(document.activeElement).toBe(secondSelector);
+    expect(secondSelector.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.keyDown(secondSelector, { key: "k" });
+    expect(document.activeElement).toBe(firstSelector);
+    expect(firstSelector.getAttribute("aria-pressed")).toBe("true");
+
+    const secondMax = within(payRow("DDD")).getByRole("button", { name: "Max 8.00 CCC" });
+    act(() => secondMax.focus());
+    expect(firstSelector.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(secondMax);
+    expect(secondSelector.getAttribute("aria-pressed")).toBe("true");
+    expect((screen.getByLabelText("You get") as HTMLInputElement).value).toBe("8.00");
+    expect(screen.getAllByRole("link", { name: "Malindi Pool" })[0]).toBeTruthy();
+    await waitFor(() =>
+      expect(mocks.routes).toHaveBeenCalledWith(
+        expect.objectContaining({ amount: "8000000" }),
+        expect.anything(),
+      ),
+    );
+    expect(mocks.routes.mock.calls.filter(([params]) => params.amount === "8000000")).toHaveLength(
+      1,
+    );
+    expect(mocks.quote).not.toHaveBeenCalled();
   });
 
   it("shows failed discovery as an error and retries without showing an empty result", async () => {
@@ -408,10 +451,20 @@ describe("desktop Get", () => {
     renderPage();
 
     const alternatives = await screen.findByRole("table", { name: "Other ways" });
-    expect(
-      within(alternatives).getByRole("link", { name: "Malindi Pool" }).getAttribute("href"),
-    ).toBe(`/pools/${FIXTURE.pool3}`);
-    fireEvent.click(within(alternatives).getByRole("button", { name: "Max 7.00 CCC" }));
+    expect(alternatives.querySelector("button button, button a")).toBeNull();
+    const alternateSelector = within(alternatives).getByRole("button", { name: "Malindi Pool" });
+    act(() => alternateSelector.focus());
+    expect(document.activeElement).toBe(alternateSelector);
+    const alternatePool = within(alternatives).getByRole("link", { name: "Malindi Pool" });
+    expect(alternatePool.getAttribute("href")).toBe(`/pools/${FIXTURE.pool3}`);
+    act(() => alternatePool.focus());
+    expect(document.activeElement).toBe(alternatePool);
+
+    const max = within(alternatives).getByRole("button", { name: "Max 7.00 CCC" });
+    act(() => max.focus());
+    expect(document.activeElement).toBe(max);
+    expect(within(alternatives).getByRole("button", { name: "Malindi Pool" })).toBeTruthy();
+    fireEvent.click(max);
 
     expect((screen.getByLabelText("You get") as HTMLInputElement).value).toBe("7.00");
     await waitFor(() =>
@@ -420,5 +473,17 @@ describe("desktop Get", () => {
         expect.anything(),
       ),
     );
+    expect(mocks.routes.mock.calls.filter(([params]) => params.amount === "7000000")).toHaveLength(
+      1,
+    );
+    const previousRoute = within(alternatives).getByRole("button", {
+      name: "Kilifi Pool → Mombasa Pool",
+    });
+    fireEvent.click(previousRoute);
+    expect(
+      within(screen.getByRole("table", { name: "Route details" })).getByRole("link", {
+        name: "Kilifi Pool",
+      }),
+    ).toBeTruthy();
   });
 });
