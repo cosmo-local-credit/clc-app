@@ -76,8 +76,13 @@ function mountAt(entry: string) {
     path: "/catalogs/$catalogId",
     component: () => <CatalogDesk id="7" />,
   });
+  const wallet = createRoute({
+    getParentRoute: () => root,
+    path: "/",
+    component: () => <h1>Wallet</h1>,
+  });
   const router = createRouter({
-    routeTree: root.addChildren([catalog]),
+    routeTree: root.addChildren([catalog, wallet]),
     history: createMemoryHistory({ initialEntries: [entry] }),
   });
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -205,7 +210,8 @@ describe("CatalogDesk edit inspector", () => {
     fireEvent.click(within(reopenedDialog).getByRole("button", { name: "Delete catalog" }));
 
     await waitFor(() => expect(remove).toHaveBeenCalledExactlyOnceWith("7"));
-    await waitFor(() => expect(router.state.location.pathname).toBe("/"));
+    expect(await screen.findByRole("heading", { name: "Wallet" })).toBeTruthy();
+    expect(router.state.location.pathname).toBe("/");
     expect(router.state.location.search).toMatchObject({ tab: "wallet" });
     expect(success).toHaveBeenCalledWith("Catalog deleted.");
   });

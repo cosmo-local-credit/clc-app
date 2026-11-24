@@ -9,6 +9,7 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { PoolDetailPage } from "./pool-detail-page";
@@ -24,6 +25,19 @@ const RIBA = "0x3aa7000000000000000000000000000000000102";
 vi.mock("#/components/ui/location-map.lazy", () => ({
   LocationMap: () => <div>Map</div>,
 }));
+
+vi.mock("recharts", async (importOriginal) => {
+  const recharts = await importOriginal<typeof import("recharts")>();
+  // jsdom cannot measure a responsive chart. Supply dimensions for real SVG rendering.
+  return {
+    ...recharts,
+    ResponsiveContainer: ({ children }: ComponentProps<typeof recharts.ResponsiveContainer>) => (
+      <recharts.ResponsiveContainer width={640} height={320}>
+        {children}
+      </recharts.ResponsiveContainer>
+    ),
+  };
+});
 
 vi.mock("viem/actions", async (importOriginal) => {
   const actual = await importOriginal<typeof import("viem/actions")>();

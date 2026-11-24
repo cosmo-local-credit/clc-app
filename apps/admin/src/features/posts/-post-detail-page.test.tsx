@@ -219,8 +219,9 @@ describe("moderation actions", () => {
     await router.title;
 
     fireEvent.click(screen.getByRole("button", { name: /Delete/ }));
+    const confirm = await screen.findByRole("button", { name: "Delete permanently" });
     await act(async () => {
-      fireEvent.click(await screen.findByRole("button", { name: "Delete permanently" }));
+      fireEvent.click(confirm);
     });
 
     await waitFor(() => expect(mocks.remove).toHaveBeenCalled());

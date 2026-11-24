@@ -38,7 +38,7 @@ const OTHER = "0x9999999999999999999999999999999999999999";
 const ADDRESS = "0xAbC0000000000000000000000000000000000123";
 vi.mock("#/components/catalogs/add-to-catalog-button", () => ({ AddToCatalogButton: () => null }));
 vi.mock("#/components/reviews/review-summary", () => ({
-  ReviewSummaryContent: () => <div data-testid="pool-review-summary" />,
+  ReviewSummaryContent: () => <span data-testid="pool-review-summary" />,
 }));
 vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
   PoolReviewsPanel: () => <div data-testid="pool-reviews-panel" />,

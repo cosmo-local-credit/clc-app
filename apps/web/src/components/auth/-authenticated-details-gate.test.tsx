@@ -21,14 +21,17 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
     search,
+    replace,
     children,
     ...props
   }: AnchorHTMLAttributes<HTMLAnchorElement> & {
     search: { step: string; redirect?: string };
+    replace?: boolean;
     children: ReactNode;
   }) => (
     <a
       {...props}
+      data-replace={replace}
       href={`/onboarding?step=${search.step}&redirect=${encodeURIComponent(search.redirect ?? "")}`}
     >
       {children}
@@ -54,9 +57,11 @@ describe("AuthenticatedDetailsGate", () => {
     renderGate();
 
     expect(screen.queryByText("Private details")).toBeNull();
-    expect(screen.getByRole("link", { name: "Sign in" }).getAttribute("href")).toBe(
+    const link = screen.getByRole("link", { name: "Sign in" });
+    expect(link.getAttribute("href")).toBe(
       "/onboarding?step=signin&redirect=%2Fwants%2F7%3FpoolAddress%3D0xabc%23contact",
     );
+    expect(link.getAttribute("data-replace")).toBe("true");
   });
 
   it("mounts private children only for a verified session", () => {

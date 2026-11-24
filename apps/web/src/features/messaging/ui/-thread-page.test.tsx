@@ -243,13 +243,17 @@ describe("ThreadPage", () => {
   });
 
   it("offers a retry when the conversation fails to load", async () => {
-    mocks.get.mockRejectedValueOnce(new BackendApiError(500, "boom"));
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    mocks.get.mockRejectedValue(new BackendApiError(500, "boom"));
     mocks.messages.mockResolvedValue({ items: [], hasMore: false });
     mount();
-    expect(await screen.findByText("Couldn't load this conversation.")).toBeTruthy();
+    await act(() => vi.advanceTimersByTimeAsync(3_501));
+    expect(mocks.get).toHaveBeenCalledTimes(3);
+    expect(screen.getByText("Couldn't load this conversation.")).toBeTruthy();
     mocks.get.mockResolvedValue(conversation());
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
-    expect(await screen.findByRole("heading", { name: "amina" })).toBeTruthy();
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(screen.getByRole("heading", { name: "amina" })).toBeTruthy();
   });
 
   it("answers a missing or foreign conversation with one message", async () => {
@@ -264,8 +268,16 @@ describe("ThreadPage", () => {
     mocks.messages.mockResolvedValueOnce({ items: [message(1), message(2)], hasMore: false });
     const client = mount();
     expect(await screen.findByText("Message 2")).toBeTruthy();
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     mocks.messages.mockRejectedValue(new BackendApiError(503, "unavailable"));
-    await act(() => client.refetchQueries({ type: "active" }).catch(() => undefined));
+    await act(async () => {
+      const refresh = client.refetchQueries({ type: "active" });
+      await vi.advanceTimersByTimeAsync(999);
+      expect(mocks.messages).toHaveBeenCalledTimes(2);
+      await vi.advanceTimersByTimeAsync(2_502);
+      await refresh;
+    });
+    expect(mocks.messages).toHaveBeenCalledTimes(4);
     expect(screen.getByText("Message 1")).toBeTruthy();
     expect(screen.getByText("Message 2")).toBeTruthy();
     expect(screen.queryByText("Couldn't load messages.")).toBeNull();
@@ -295,26 +307,33 @@ describe("ThreadPage", () => {
   });
 
   it("retries a failed read marker even when the polls that follow are unchanged", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
     mocks.get.mockResolvedValue(conversation({ lastReadMessageId: 1, unreadCount: 1 }));
     mocks.messages.mockResolvedValue({ items: [message(1), message(2)], hasMore: false });
     mocks.markRead.mockRejectedValueOnce(new BackendApiError(503, "unavailable"));
     const client = mount();
-    await screen.findByText("Message 2");
-    await waitFor(() => expect(mocks.markRead).toHaveBeenCalledOnce());
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(screen.getByText("Message 2")).toBeTruthy();
+    expect(mocks.markRead).toHaveBeenCalledOnce();
     // An identical poll keeps every effect dependency equal.
     await act(() => client.refetchQueries({ type: "active" }));
-    await waitFor(() => expect(mocks.markRead).toHaveBeenCalledTimes(2), { timeout: 3_000 });
+    await act(() => vi.advanceTimersByTimeAsync(999));
+    expect(mocks.markRead).toHaveBeenCalledOnce();
+    await act(() => vi.advanceTimersByTimeAsync(2));
+    expect(mocks.markRead).toHaveBeenCalledTimes(2);
     expect(mocks.markRead).toHaveBeenLastCalledWith(5, 2);
   });
 
   it("does not retry a read marker the server rejected", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     mocks.get.mockResolvedValue(conversation({ lastReadMessageId: 1, unreadCount: 1 }));
     mocks.messages.mockResolvedValue({ items: [message(1), message(2)], hasMore: false });
     mocks.markRead.mockRejectedValueOnce(new BackendApiError(403, "forbidden"));
     mount();
-    await screen.findByText("Message 2");
-    await waitFor(() => expect(mocks.markRead).toHaveBeenCalledOnce());
-    await new Promise((resolve) => setTimeout(resolve, 1_500));
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(screen.getByText("Message 2")).toBeTruthy();
+    expect(mocks.markRead).toHaveBeenCalledOnce();
+    await act(() => vi.advanceTimersByTimeAsync(1_500));
     expect(mocks.markRead).toHaveBeenCalledOnce();
   });
 

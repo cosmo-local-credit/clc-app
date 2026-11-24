@@ -567,6 +567,7 @@ describe("MarketMapDesk requested output (Get a voucher)", () => {
   });
 
   it("gives an invalid output its own recovery and requests nothing", async () => {
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
     mocks.viewport.hasData = false;
     mocks.viewport.blocked = true;
     const router = renderMap("/market?scope=pools&view=map&out_voucher=nope", { scope: "pools" });
@@ -578,11 +579,13 @@ describe("MarketMapDesk requested output (Get a voucher)", () => {
     fireEvent.click(within(alert).getByRole("button", { name: "Clear filter" }));
     await waitFor(() => {
       expect((router.state.location.search as Record<string, unknown>).out_voucher).toBeUndefined();
+      expect(mocks.mapList).toHaveBeenCalled();
     });
   });
 
   it("says no pool has the voucher, with Clear filters that also drop Credit and the output", async () => {
     signIn();
+    mocks.mapList.mockResolvedValue({ points: [], truncated: false });
     mocks.availability.pools = [];
     mocks.verification.pools = [{ chainId: 100, address: POOL_A }];
     const router = renderMap(`/market?scope=pools&view=map&credit=1&out_voucher=${VOUCHER}`, {
@@ -598,6 +601,7 @@ describe("MarketMapDesk requested output (Get a voucher)", () => {
       const search = router.state.location.search as Record<string, unknown>;
       expect(search.creditable).toBeUndefined();
       expect(search.out_voucher).toBeUndefined();
+      expect(mocks.mapList).toHaveBeenCalled();
     });
   });
 

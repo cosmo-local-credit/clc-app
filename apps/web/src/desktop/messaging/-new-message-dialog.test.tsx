@@ -12,6 +12,12 @@ const identity = {
   address: OWNER,
   chainId: 100,
 };
+const otherOwner = {
+  ...identity,
+  name: "Second pool owner",
+  alias: "other-owner",
+  address: "0x4444444444444444444444444444444444444444",
+};
 
 const mocks = vi.hoisted(() => ({
   flow: {} as Record<string, unknown>,
@@ -183,7 +189,7 @@ describe("NewMessageDialog resource flows", () => {
 
   it.each([
     ["loading", { targetSearch: { isSuccess: false }, ownerUsers: [identity] }],
-    ["multiple owners", { targetSearch: { isSuccess: true }, ownerUsers: [identity, identity] }],
+    ["multiple owners", { targetSearch: { isSuccess: true }, ownerUsers: [identity, otherOwner] }],
     ["selected", { targetSearch: { isSuccess: true }, ownerUsers: [identity], selected: identity }],
     [
       "lookup pending",

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { forwardRef, type ReactNode, useState } from "react";
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { PasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";
 
 const {
@@ -47,6 +47,17 @@ const {
 const FAKE_PK =
   "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" as `0x${string}`;
 const FAKE_ADDRESS = "0xFakeAddress1234567890abcdef1234567890aaaa" as `0x${string}`;
+const downloadUrl = "blob:paper-wallet";
+const onDownloadClick = vi.fn();
+
+function interceptCardDownload(event: MouseEvent) {
+  const anchor = event.target;
+  if (anchor instanceof HTMLAnchorElement && anchor.download && anchor.href === downloadUrl) {
+    // jsdom cannot download files and would otherwise try to navigate to the blob.
+    event.preventDefault();
+    onDownloadClick(anchor.download);
+  }
+}
 
 vi.mock("@tanstack/react-query", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-query")>()),
@@ -259,8 +270,10 @@ async function completeWalletRequirements({ linkPasskey = false } = {}) {
 }
 
 beforeEach(() => {
+  onDownloadClick.mockClear();
+  document.addEventListener("click", interceptCardDownload);
   Object.defineProperty(URL, "createObjectURL", {
-    value: vi.fn().mockReturnValue("blob:paper-wallet"),
+    value: vi.fn().mockReturnValue(downloadUrl),
     configurable: true,
   });
   Object.defineProperty(URL, "revokeObjectURL", { value: vi.fn(), configurable: true });
@@ -292,6 +305,10 @@ beforeEach(() => {
   });
   mockGetSession.mockReset();
   mockGetSession.mockResolvedValue({ address: FAKE_ADDRESS, chainId: 42220 });
+});
+
+afterEach(() => {
+  document.removeEventListener("click", interceptCardDownload);
 });
 
 describe("OnboardingWalletStep pages", () => {
@@ -510,6 +527,7 @@ describe("OnboardingWalletStep continue flow", () => {
     await act(async () => {
       fireEvent.click(button(/download card/i));
     });
+    expect(onDownloadClick).toHaveBeenCalledExactlyOnceWith("clc-wallet-FakeAddr.png");
     expect(screen.queryByText("Save your sign-in card before continuing.")).toBeNull();
     expect(button(/continue to wallet/i)).toHaveProperty("disabled", false);
   });

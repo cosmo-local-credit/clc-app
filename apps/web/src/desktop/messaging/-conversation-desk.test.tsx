@@ -1,6 +1,6 @@
 import { BackendApiError } from "@clc/api/client/errors";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { useDeskTrail } from "#/desktop/trail";
 import { stubIntersectionObserver } from "#/lib/-fixtures/intersection-observer";
@@ -52,6 +52,10 @@ beforeEach(() => {
   mocks.client.get.mockImplementation((id: number) => Promise.resolve(conversation(id)));
   mocks.client.messages.mockResolvedValue({ items: [], hasMore: false });
   mocks.client.markRead.mockResolvedValue(undefined);
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("desktop thread", () => {
@@ -316,8 +320,16 @@ describe("desktop thread", () => {
     mocks.client.messages.mockResolvedValueOnce({ items: [message(7, 1)], hasMore: false });
     const { client } = mountDesk("/messages/1");
     expect(await screen.findByText("Message 7")).toBeTruthy();
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     mocks.client.messages.mockRejectedValue(new BackendApiError(503, "unavailable"));
-    await act(() => client.refetchQueries({ type: "active" }).catch(() => undefined));
+    await act(async () => {
+      const refresh = client.refetchQueries({ type: "active" });
+      await vi.advanceTimersByTimeAsync(999);
+      expect(mocks.client.messages).toHaveBeenCalledTimes(2);
+      await vi.advanceTimersByTimeAsync(2_502);
+      await refresh;
+    });
+    expect(mocks.client.messages).toHaveBeenCalledTimes(4);
     expect(screen.getByText("Message 7")).toBeTruthy();
     expect(screen.queryByText("Couldn't load messages.")).toBeNull();
   });

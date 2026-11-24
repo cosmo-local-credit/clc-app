@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { StrictMode, useState } from "react";
 import { renderToString } from "react-dom/server";
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 type MockGeoState =
   | { status: "idle" }
@@ -68,13 +68,16 @@ vi.mock("./location-map.lazy", () => ({
 import { LocationPicker } from "./location-picker";
 
 beforeEach(() => {
-  vi.useRealTimers();
   mockSearchLocations.mockReset();
   mockReverseLocation.mockReset();
   mockReverseLocation.mockResolvedValue(null);
   mockRequestGeolocation.mockReset();
   mockGeoState.current = { status: "idle" };
   mockMapVisible.current = true;
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("LocationPicker", () => {
@@ -97,6 +100,7 @@ describe("LocationPicker", () => {
   });
 
   it("does not search a saved location when effects replay in StrictMode", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     mockSearchLocations.mockResolvedValue([
       { address: "Nairobi CBD, Kenya", lat: -1.2921, lng: 36.8219, score: 99 },
       { address: "Nairobi West, Kenya", lat: -1.31, lng: 36.81, score: 95 },
@@ -110,9 +114,7 @@ describe("LocationPicker", () => {
       </StrictMode>,
     );
 
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 450));
-    });
+    await act(() => vi.advanceTimersByTimeAsync(450));
 
     expect(mockSearchLocations).not.toHaveBeenCalled();
     expect(screen.queryByRole("listbox")).toBeNull();
@@ -626,6 +628,7 @@ describe("LocationPicker", () => {
   });
 
   it("does not search for the pre-populated value, so no suggestions open on mount", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     mockSearchLocations.mockResolvedValue([
       { address: "Nairobi CBD, Kenya", lat: -1.2921, lng: 36.8219, score: 99 },
     ]);
@@ -643,9 +646,7 @@ describe("LocationPicker", () => {
     );
 
     expect(screen.queryByText(/searching places/i)).toBeNull();
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    });
+    await act(() => vi.advanceTimersByTimeAsync(500));
     expect(mockSearchLocations).not.toHaveBeenCalled();
     expect(screen.queryByRole("option")).toBeNull();
   });
