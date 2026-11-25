@@ -1,5 +1,6 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import type { ProfileSection } from "@clc/core/features/public-profiles/logic";
+import { BackendApiError, transientBackendReadQueryPolicy } from "../../client/errors";
 import type { ProfileResourceKind, PublicProfilesClient } from "./client";
 
 export const publicProfileKeys = {
@@ -20,9 +21,9 @@ export const publicProfileKeys = {
 export function publicProfileQueryOptions(client: PublicProfilesClient, address: string) {
   return queryOptions({
     queryKey: publicProfileKeys.detail(address),
-    queryFn: ({ signal }) => client.detail(address, signal),
+    queryFn: ({ signal }) => nullOnUnpublished(client.detail(address, signal)),
     staleTime: 0,
-    retry: false,
+    ...transientBackendReadQueryPolicy,
   });
 }
 
@@ -33,11 +34,11 @@ export function profileDetailsQueryOptions(
 ) {
   return queryOptions({
     queryKey: publicProfileKeys.details(address, viewer ?? "none"),
-    queryFn: ({ signal }) => client.details(address, signal),
+    queryFn: ({ signal }) => nullOnUnpublished(client.details(address, signal)),
     enabled: Boolean(viewer),
     staleTime: 0,
     gcTime: 0,
-    retry: false,
+    ...transientBackendReadQueryPolicy,
   });
 }
 
@@ -49,11 +50,23 @@ export function profileResourcesQueryOptions(
   return infiniteQueryOptions({
     queryKey: [...publicProfileKeys.detail(address), "resources", section] as const,
     initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam, signal }) => client.resources(address, section, pageParam, signal),
-    getNextPageParam: (page) => page.nextCursor ?? undefined,
+    queryFn: ({ pageParam, signal }) =>
+      nullOnUnpublished(client.resources(address, section, pageParam, signal)),
+    getNextPageParam: (page) => page?.nextCursor ?? undefined,
     staleTime: 0,
-    retry: false,
+    ...transientBackendReadQueryPolicy,
   });
+}
+
+async function nullOnUnpublished<T>(read: Promise<T>): Promise<T | null> {
+  try {
+    return await read;
+  } catch (error) {
+    // A withdrawn publication replaces the last successful snapshot, so a
+    // subsequent transient error cannot bring the withdrawn data back.
+    if (error instanceof BackendApiError && error.status === 404) return null;
+    throw error;
+  }
 }
 
 export function resourceProfilesQueryOptions(

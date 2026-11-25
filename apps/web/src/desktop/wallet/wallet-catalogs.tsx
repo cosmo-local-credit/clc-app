@@ -65,7 +65,14 @@ export function WalletCatalogs({ usage }: { usage: ReturnType<typeof useResource
                   lead={
                     <span className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden border border-border bg-card">
                       {catalog.imageUrl ? (
-                        <ProgressiveImage src={catalog.imageUrl} alt="" className="size-full" />
+                        <ProgressiveImage
+                          src={catalog.imageUrl}
+                          alt=""
+                          width={36}
+                          height={36}
+                          loading="lazy"
+                          className="size-full"
+                        />
                       ) : (
                         <RiBookOpenLine
                           className="size-4 text-muted-foreground"

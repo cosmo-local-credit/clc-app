@@ -107,13 +107,16 @@ export function accountTokensInfiniteQueryOptions(
 ) {
   return infiniteQueryOptions({
     queryKey: accountKeys.tokensInfinite(address ?? "none", perPage),
-    queryFn: ({ pageParam }) =>
-      accounts.getAccountTokens({
-        address: requireAddress(address),
-        perPage,
-        cursor: pageParam,
-        next: pageParam === undefined ? undefined : true,
-      }),
+    queryFn: ({ pageParam, signal }) =>
+      accounts.getAccountTokens(
+        {
+          address: requireAddress(address),
+          perPage,
+          cursor: pageParam,
+          next: pageParam === undefined ? undefined : true,
+        },
+        signal,
+      ),
     enabled: Boolean(address),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) =>
@@ -128,13 +131,16 @@ export function accountIssuedTokensInfiniteQueryOptions(
 ) {
   return infiniteQueryOptions({
     queryKey: accountKeys.issuedTokensInfinite(address ?? "none", perPage),
-    queryFn: ({ pageParam }) =>
-      accounts.getAccountIssuedTokens({
-        address: requireAddress(address),
-        perPage,
-        cursor: pageParam,
-        next: pageParam === undefined ? undefined : true,
-      }),
+    queryFn: ({ pageParam, signal }) =>
+      accounts.getAccountIssuedTokens(
+        {
+          address: requireAddress(address),
+          perPage,
+          cursor: pageParam,
+          next: pageParam === undefined ? undefined : true,
+        },
+        signal,
+      ),
     enabled: Boolean(address),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) =>

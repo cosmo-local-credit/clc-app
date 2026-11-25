@@ -117,18 +117,24 @@ describe("useApprovalSuggestions", () => {
       }),
       expect.any(AbortSignal),
     );
-    expect(getAccountTokens).toHaveBeenCalledWith({
-      address: ADDRESS.toLowerCase(),
-      perPage: 100,
-      cursor: undefined,
-      next: undefined,
-    });
-    expect(getAccountTokens).toHaveBeenCalledWith({
-      address: POOL.toLowerCase(),
-      perPage: 100,
-      cursor: undefined,
-      next: undefined,
-    });
+    expect(getAccountTokens).toHaveBeenCalledWith(
+      {
+        address: ADDRESS.toLowerCase(),
+        perPage: 100,
+        cursor: undefined,
+        next: undefined,
+      },
+      expect.any(AbortSignal),
+    );
+    expect(getAccountTokens).toHaveBeenCalledWith(
+      {
+        address: POOL.toLowerCase(),
+        perPage: 100,
+        cursor: undefined,
+        next: undefined,
+      },
+      expect.any(AbortSignal),
+    );
     expect(getLatestAccountTokens).not.toHaveBeenCalled();
   });
 
@@ -242,6 +248,7 @@ describe("useApprovalSuggestions", () => {
         cursor: 100,
         next: true,
       }),
+      expect.any(AbortSignal),
     );
   });
 

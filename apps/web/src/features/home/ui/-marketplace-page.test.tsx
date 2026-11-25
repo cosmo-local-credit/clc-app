@@ -333,6 +333,21 @@ describe("MarketplacePage", () => {
     expect(rowLink("Community harvest").textContent).toContain("Post");
   });
 
+  it("defers list thumbnails in their reserved space", () => {
+    const imageUrl = "https://storage.example/thumbnail.webp";
+    mocks.query.data = {
+      pages: [{ results: [offering(), catalog(), post()].map((row) => ({ ...row, imageUrl })) }],
+    };
+    render(<MarketplacePage />);
+
+    for (const name of ["Puncture repair", "Market day", "Community harvest"]) {
+      const thumbnail = rowLink(name).querySelector("img");
+      expect(thumbnail?.src).toBe(imageUrl);
+      expect(thumbnail?.getAttribute("loading")).toBe("lazy");
+      expect([thumbnail?.width, thumbnail?.height]).toEqual([44, 44]);
+    }
+  });
+
   it("asks for every kind with the search, its tags and the server-resolved Credit", () => {
     mocks.filter.result = {
       ok: true,

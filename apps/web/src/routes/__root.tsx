@@ -25,7 +25,7 @@ import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-au
 import { useIdentityTransitionTeardown } from "#/features/auth/hooks/use-identity-transition";
 import { AppUpdateBanner } from "#/features/app-updates/ui/app-update-banner";
 import { AccountLifecycleGate } from "#/features/account-retirement/ui/account-lifecycle-gate";
-import { SafePendingSheet } from "#/features/safe/ui/safe-pending-sheet";
+import { SafePendingOverlay } from "#/features/safe/ui/safe-pending-overlay";
 import { authSessionQueryKey, useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useNotificationSession } from "#/features/notifications/realtime/use-notification-session";
 import { initializeNotificationWorkerProtocol } from "#/features/notifications/sw/page-protocol";
@@ -71,6 +71,12 @@ const AppDevtools = import.meta.env.DEV
 const SafePendingDesk = lazy(() =>
   import("#/desktop/safe/safe-pending-desk").then((module) => ({
     default: module.SafePendingDesk,
+  })),
+);
+
+const SafePendingSheet = lazy(() =>
+  import("#/features/safe/ui/safe-pending-sheet").then((module) => ({
+    default: module.SafePendingSheet,
   })),
 );
 
@@ -299,16 +305,9 @@ function AppInner() {
     <>
       {/* Above every shell, so it reaches pre-auth routes too. */}
       <AppUpdateBanner suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)} />
-      {/* A closed dialog until opened, so its chunk loads behind nothing: the
-          LayoutSwitch fallback is a page skeleton, which here would sit above
-          the whole shell. */}
-      {layout === "desktop" ? (
-        <Suspense fallback={null}>
-          <SafePendingDesk />
-        </Suspense>
-      ) : (
-        <SafePendingSheet />
-      )}
+      <SafePendingOverlay>
+        {layout === "desktop" ? <SafePendingDesk /> : <SafePendingSheet />}
+      </SafePendingOverlay>
       <IntroductionProvider
         desktop={layout === "desktop"}
         desktopGuide={desktopGuide}

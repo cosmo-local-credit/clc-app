@@ -401,9 +401,16 @@ function ResultPicture({ row }: { row: MarketplaceResult }) {
   }
   if (row.kind === "post") {
     return (
-      <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden border border-border bg-card">
+      <span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden border border-border bg-card">
         {row.imageUrl ? (
-          <ProgressiveImage src={row.imageUrl} alt="" className="size-full object-cover" />
+          <ProgressiveImage
+            src={row.imageUrl}
+            alt=""
+            width={44}
+            height={44}
+            loading="lazy"
+            className="size-full object-cover"
+          />
         ) : (
           <RiArticleLine className="size-5 text-muted-foreground" aria-hidden="true" />
         )}
@@ -412,9 +419,16 @@ function ResultPicture({ row }: { row: MarketplaceResult }) {
   }
   const Icon = RESOURCE_ICON[KIND_SCOPE[row.kind]];
   return (
-    <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden border border-border bg-card">
+    <span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden border border-border bg-card">
       {row.imageUrl ? (
-        <ProgressiveImage src={row.imageUrl} alt="" className="size-full object-cover" />
+        <ProgressiveImage
+          src={row.imageUrl}
+          alt=""
+          width={44}
+          height={44}
+          loading="lazy"
+          className="size-full object-cover"
+        />
       ) : (
         <Icon className="size-5 text-muted-foreground" aria-hidden="true" />
       )}

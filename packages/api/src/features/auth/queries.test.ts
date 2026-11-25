@@ -35,9 +35,10 @@ describe("profileQueryOptions", () => {
   it("reads the profile through the injected client", async () => {
     const getProfile = vi.fn(() => Promise.resolve({ name: "Ada" }));
     const options = profileQueryOptions({ getProfile } as unknown as AuthClient, ADDRESS);
+    const signal = new AbortController().signal;
 
-    await expect(options.queryFn?.({} as never)).resolves.toEqual({ name: "Ada" });
-    expect(getProfile).toHaveBeenCalledTimes(1);
+    await expect(options.queryFn?.({ signal } as never)).resolves.toEqual({ name: "Ada" });
+    expect(getProfile).toHaveBeenCalledExactlyOnceWith(signal);
   });
 
   it("leaves `enabled` and `retry` to the caller", () => {

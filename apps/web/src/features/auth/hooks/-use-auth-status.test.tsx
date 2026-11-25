@@ -1,5 +1,5 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
+import { onlineManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -28,7 +28,7 @@ vi.mock("@clc/api/features/auth/client", async () => {
   );
   return {
     ...actual,
-    getSession: () => mockGetSession(),
+    getSession: (signal?: AbortSignal) => mockGetSession(signal),
   };
 });
 
@@ -39,10 +39,11 @@ vi.mock("#/lib/api/auth", async () => ({
 }));
 
 import { BackendApiError } from "@clc/api/client/errors";
-import { useAuthStatus } from "./use-auth-status";
+import { authSessionQueryKey, useAuthStatus } from "./use-auth-status";
 
-function createWrapper() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function createWrapper(
+  client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
   return ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={client}>{children}</QueryClientProvider>
   );
@@ -114,5 +115,60 @@ describe("useAuthStatus", () => {
     const { result } = renderHook(() => useAuthStatus(), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.state).toBe("sessionCheckError"));
+  });
+
+  it("locks a previously verified session on the first failed check and recovers after reconnect", async () => {
+    const address = "0x1234567890123456789012345678901234567890";
+    const session = { address, chainId: 100, role: "SUPERADMIN" };
+    const queryKey = [...authSessionQueryKey, address];
+    const client = new QueryClient();
+    let recover!: (value: typeof session) => void;
+    const ready = new Promise<typeof session>((resolve) => {
+      recover = resolve;
+    });
+    client.setQueryData(queryKey, session, { updatedAt: 1 });
+    mockAccount.address = address;
+    mockAccount.status = "connected";
+    mockGetSession
+      .mockImplementationOnce(async () => {
+        onlineManager.setOnline(false);
+        throw new BackendApiError(503, "Session lookup unavailable", undefined, {
+          retryAfterMs: 0,
+        });
+      })
+      .mockImplementationOnce(() => ready);
+
+    const hook = renderHook(() => useAuthStatus(), { wrapper: createWrapper(client) });
+    try {
+      await waitFor(() => expect(hook.result.current.state).toBe("sessionCheckError"));
+      expect(hook.result.current.isAuthenticated).toBe(false);
+      expect(client.getQueryData(queryKey)).toEqual(session);
+      expect(mockGetSession).toHaveBeenCalledTimes(1);
+
+      act(() => onlineManager.setOnline(true));
+      await waitFor(() => expect(mockGetSession).toHaveBeenCalledTimes(2));
+      expect(hook.result.current.isAuthenticated).toBe(false);
+      recover(session);
+      await waitFor(() => expect(hook.result.current.state).toBe("authenticated"));
+    } finally {
+      hook.unmount();
+      onlineManager.setOnline(true);
+    }
+  });
+
+  it("cancels a superseded wallet check and gates the new wallet until its own session resolves", async () => {
+    mockAccount.address = "0x1234567890123456789012345678901234567890";
+    mockAccount.status = "connected";
+    mockGetSession.mockImplementationOnce(() => new Promise(() => {})).mockResolvedValueOnce(null);
+    const hook = renderHook(() => useAuthStatus(), { wrapper: createWrapper() });
+    await waitFor(() => expect(mockGetSession).toHaveBeenCalledTimes(1));
+    const firstSignal = mockGetSession.mock.calls[0]?.[0] as AbortSignal;
+    expect(firstSignal.aborted).toBe(false);
+
+    mockAccount.address = "0x9999999999999999999999999999999999999999";
+    hook.rerender();
+    await waitFor(() => expect(hook.result.current.state).toBe("connectedNoSession"));
+    expect(firstSignal.aborted).toBe(true);
+    expect(hook.result.current.isAuthenticated).toBe(false);
   });
 });

@@ -327,7 +327,7 @@ export type AuthClient = {
   signinWithSiwe(payload: SigninSiwePayload): Promise<SigninResult>;
   signinWithWebAuthn(payload: WebAuthnAssertionPayload): Promise<WebAuthnSigninResult>;
   logout(): Promise<void>;
-  getSession(): Promise<SessionResult | null>;
+  getSession(signal?: AbortSignal): Promise<SessionResult | null>;
   getWebAuthnCredentials(): Promise<WebAuthnCredentialsResult>;
   /**
    * Moves the account to a new sign-in card. Authenticated by the two proofs,
@@ -339,7 +339,7 @@ export type AuthClient = {
   /** `GET /api/v2/system` — the platform signer, for any signed-in caller. */
   getSystem(): Promise<SystemInfo>;
   submitProfile(payload: ProfilePayload | ProfileVisibilityPayload): Promise<SavedProfile>;
-  getProfile(): Promise<ProfileResult>;
+  getProfile(signal?: AbortSignal): Promise<ProfileResult>;
   getStorageToken(): Promise<StorageTokenResult>;
   trackOtx(trackingId: string): Promise<OtxTrackResult>;
   waitForTrackingCompletion(trackingId: string, options?: TrackingPollOptions): Promise<OtxRecord>;
@@ -407,8 +407,8 @@ export function createAuthClient(http: HttpClient): AuthClient {
       });
     },
 
-    async getSession(): Promise<SessionResult | null> {
-      return http.request<SessionResult | null>("/auth/session", { method: "GET" });
+    async getSession(signal?: AbortSignal): Promise<SessionResult | null> {
+      return http.request<SessionResult | null>("/auth/session", { method: "GET", signal });
     },
 
     async getWebAuthnCredentials(): Promise<WebAuthnCredentialsResult> {
@@ -475,8 +475,8 @@ export function createAuthClient(http: HttpClient): AuthClient {
       });
     },
 
-    async getProfile(): Promise<ProfileResult> {
-      return http.request<ProfileResult>("/auth/profile", { method: "GET" });
+    async getProfile(signal?: AbortSignal): Promise<ProfileResult> {
+      return http.request<ProfileResult>("/auth/profile", { method: "GET", signal });
     },
 
     async getStorageToken(): Promise<StorageTokenResult> {

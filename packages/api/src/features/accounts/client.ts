@@ -172,11 +172,14 @@ export function createAccountsClient(http: HttpClient) {
       return { ...result, tokens: result.tokens ?? [] };
     },
 
-    async getAccountTokens(params: CursorPageParams): Promise<AccountTokensResult> {
+    async getAccountTokens(
+      params: CursorPageParams,
+      signal?: AbortSignal,
+    ): Promise<AccountTokensResult> {
       const accountAddress = getAddress(params.address);
       const result = await http.request<AccountTokensResult>(
         `/api/v2/accounts/${accountAddress}/tokens${formatCursorQuery(params)}`,
-        ACCOUNT_READ_REQUEST,
+        { ...ACCOUNT_READ_REQUEST, signal },
       );
       return { ...result, tokens: result.tokens ?? [] };
     },
@@ -186,11 +189,14 @@ export function createAccountsClient(http: HttpClient) {
      * and cursors as `getAccountTokens`, but a zero balance is kept: a voucher
      * whose opening supply was never created is still the owner's.
      */
-    async getAccountIssuedTokens(params: CursorPageParams): Promise<AccountTokensResult> {
+    async getAccountIssuedTokens(
+      params: CursorPageParams,
+      signal?: AbortSignal,
+    ): Promise<AccountTokensResult> {
       const accountAddress = getAddress(params.address);
       const result = await http.request<AccountTokensResult>(
         `/api/v2/accounts/${accountAddress}/tokens/issued${formatCursorQuery(params)}`,
-        ACCOUNT_READ_REQUEST,
+        { ...ACCOUNT_READ_REQUEST, signal },
       );
       return { ...result, tokens: result.tokens ?? [] };
     },

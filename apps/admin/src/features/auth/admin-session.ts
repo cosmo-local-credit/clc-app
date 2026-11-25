@@ -17,7 +17,7 @@
 
 import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { BackendApiError } from "@clc/api/client/errors";
+import { BackendApiError, transientBackendReadQueryPolicy } from "@clc/api/client/errors";
 import type { SessionResult } from "@clc/api/features/auth/client";
 import { isAdminRole } from "@clc/core/features/users/roles";
 import { clcApi } from "#/lib/api";
@@ -86,21 +86,22 @@ export function resolveSession(query: {
   isPending: boolean;
   isError: boolean;
   error: unknown;
+  failureReason?: unknown;
   data: SessionResult | null | undefined;
 }): AdminSession {
-  if (query.isPending) return { status: "loading" };
-
-  if (query.isError) {
+  const failure = query.error ?? query.failureReason;
+  if (query.isError || failure != null) {
     // /auth/session answers 204 rather than 401 when the cookie is missing or
     // expired, so an unauthenticated error is unexpected — handled anyway, since
     // showing "could not verify your session" to someone who simply needs to
     // sign in would hide the fix.
-    if (query.error instanceof BackendApiError && query.error.kind === "unauthenticated") {
+    if (failure instanceof BackendApiError && failure.kind === "unauthenticated") {
       return { status: "unauthenticated" };
     }
-    return { status: "unavailable", message: errorMessage(query.error) };
+    return { status: "unavailable", message: errorMessage(failure) };
   }
 
+  if (query.isPending) return { status: "loading" };
   if (!query.data) return { status: "unauthenticated" };
 
   const { address, role } = query.data;
@@ -114,18 +115,36 @@ export function resolveSession(query: {
     : { status: "unauthorized", operator };
 }
 
-export function useAdminSession(): AdminSession {
+export function useAdminSession() {
+  const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: adminSessionQueryKey,
-    queryFn: () => clcApi.auth.getSession(),
+    queryFn: async ({ signal }) => {
+      const session = await clcApi.auth.getSession(signal);
+      signal.throwIfAborted();
+      const previous = queryClient.getQueryData<SessionResult | null>(adminSessionQueryKey);
+      // A confirmed expiry, account switch, or role change may also arrive
+      // through focus/reconnect, without an explicit sign-in on this tab.
+      if (
+        previous &&
+        (!session ||
+          previous.address.toLowerCase() !== session.address.toLowerCase() ||
+          previous.role !== session.role)
+      ) {
+        clearProtectedQueries(queryClient);
+      }
+      return session;
+    },
     staleTime: 30_000,
     refetchOnWindowFocus: true,
-    // A failed session check is a state to render, not something to retry behind
-    // the operator's back while the console sits on a spinner.
-    retry: false,
+    ...transientBackendReadQueryPolicy,
   });
 
-  return resolveSession(query);
+  return {
+    ...resolveSession(query),
+    retry: () => void query.refetch(),
+    retrying: query.isFetching,
+  };
 }
 
 /**
