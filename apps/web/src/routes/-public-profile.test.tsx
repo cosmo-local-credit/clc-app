@@ -8,7 +8,7 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vite-plus/test";
 import { PublicProfileDesk } from "#/desktop/profiles/public-profile-desk";
 import { PublicProfileContent } from "#/components/profile/public-profile-content";
 import { ResourceProfileButton } from "#/components/profile/resource-profile-button";
@@ -609,6 +609,94 @@ describe("public profile views", () => {
     ]);
   });
 
+  it.each(["document", "nested"] as const)(
+    "defers off-screen sections against the %s scroll viewport",
+    async (scrolling) => {
+      const register =
+        vi.fn<(report: IntersectionObserverCallback, options: IntersectionObserverInit) => void>();
+      vi.stubGlobal(
+        "IntersectionObserver",
+        class {
+          constructor(report: IntersectionObserverCallback, options: IntersectionObserverInit) {
+            register(report, options);
+          }
+          observe = vi.fn();
+          disconnect = vi.fn();
+        },
+      );
+      const documentScroller = Object.getOwnPropertyDescriptor(document, "scrollingElement");
+      const { overflowY } = document.documentElement.style;
+      Object.defineProperty(document, "scrollingElement", {
+        configurable: true,
+        value: document.documentElement,
+      });
+      document.documentElement.style.overflowY = "scroll";
+      onTestFinished(() => {
+        document.documentElement.style.overflowY = overflowY;
+        if (documentScroller) Object.defineProperty(document, "scrollingElement", documentScroller);
+        else Reflect.deleteProperty(document, "scrollingElement");
+      });
+
+      const fetch = vi.fn(() => Promise.resolve(reply({ items: [], nextCursor: null })));
+      vi.stubGlobal("fetch", fetch);
+      const client = new QueryClient();
+      clients.push(client);
+      render(
+        <QueryClientProvider client={client}>
+          <div
+            data-testid="profile-scroll"
+            style={{ overflowY: scrolling === "nested" ? "auto" : undefined }}
+          >
+            <PublicProfileContent
+              profile={{
+                ...profile,
+                hasPrivateDetails: false,
+                sections: {
+                  ...profile.sections,
+                  wants: false,
+                  pools: false,
+                  posts: false,
+                  catalogs: false,
+                },
+              }}
+            />
+          </div>
+        </QueryClientProvider>,
+      );
+
+      const offers = screen.getByText("Offers", { selector: "summary" });
+      await waitFor(() => expect(register).toHaveBeenCalledOnce());
+      const [report, options] = register.mock.calls[0]!;
+      const observedViewport = scrolling === "nested" ? screen.getByTestId("profile-scroll") : null;
+      expect(options).toEqual({ root: observedViewport, rootMargin: "200px 0px" });
+      const scroll = (isIntersecting: boolean) =>
+        act(() => {
+          const bounds = offers.getBoundingClientRect();
+          report(
+            [
+              {
+                target: offers,
+                isIntersecting,
+                boundingClientRect: bounds,
+                intersectionRect: bounds,
+                intersectionRatio: isIntersecting ? 1 : 0,
+                rootBounds: null,
+                time: 0,
+              },
+            ],
+            {} as IntersectionObserver,
+          );
+        });
+      scroll(false);
+      expect(fetch).toHaveBeenCalledOnce();
+      expect(offers.closest("details")?.open).toBe(true);
+
+      scroll(true);
+      await within(offers.closest("details")!).findByText("No resources to show.");
+      expect(fetch).toHaveBeenCalledTimes(2);
+    },
+  );
+
   it("keeps published rows through an outage and does not restore them after withdrawal", async () => {
     let sectionStatus = 200;
     const fetch = vi.fn((input: string) => {
@@ -636,7 +724,7 @@ describe("public profile views", () => {
     expect(screen.getByRole("link", { name: "Published voucher" })).toBeTruthy();
 
     sectionStatus = 404;
-    await act(refreshSection);
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     await waitFor(() =>
       expect(screen.queryByRole("link", { name: "Published voucher" })).toBeNull(),
     );
@@ -668,6 +756,34 @@ describe("public profile views", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
     expect(screen.queryByTestId("shared-pin")).toBeNull();
+  });
+
+  it("keeps authorized details through a failed refresh and updates them on Retry", async () => {
+    Object.assign(auth, { state: "authenticated", isAuthenticated: true });
+    let detailsResponse = () => reply({ details: { email: "old@example.test" } });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: string) =>
+        Promise.resolve(
+          input.endsWith("/details") ? detailsResponse() : defaultProfileResponse(input),
+        ),
+      ),
+    );
+    const { client } = mount();
+    await screen.findByText("old@example.test");
+
+    detailsResponse = () => reply({}, 503);
+    await act(() =>
+      client.invalidateQueries({ queryKey: publicProfileKeys.details(address, address) }),
+    );
+    await screen.findByText("Couldn't load profile information.");
+    expect(screen.getByText("old@example.test")).toBeTruthy();
+
+    detailsResponse = () => reply({ details: { email: "new@example.test" } });
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await screen.findByText("new@example.test");
+    expect(screen.queryByText("old@example.test")).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 });
 
