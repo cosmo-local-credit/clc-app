@@ -1,4 +1,4 @@
-import { myWantQueryOptions, wantDetailQueryOptions } from "@clc/api/features/wants/queries";
+import { wantDetailQueryOptions } from "@clc/api/features/wants/queries";
 import type { Want } from "@clc/core/features/wants/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
@@ -8,7 +8,6 @@ import {
   RiCloseLine,
   RiExternalLinkLine,
   RiMailLine,
-  RiPencilLine,
   RiPhoneLine,
   RiShareLine,
 } from "react-icons/ri";
@@ -30,9 +29,9 @@ import {
 } from "#/components/wants/use-want-detail";
 import { WantPicture } from "#/components/wants/want-row";
 import { WantMessageButton } from "#/components/wants/want-message-button";
+import { WantEditButton } from "#/components/wants/want-edit-button";
 import { DeskKV } from "#/desktop/ui/kv";
 import { DeskRowList } from "#/desktop/ui/page";
-import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { wantsClient } from "#/lib/api/wants";
 
 /**
@@ -95,12 +94,6 @@ function WantPlaceBody({
   distanceOrigin: { lat: number; lng: number } | null;
 }) {
   const { t, i18n } = useLingui();
-  const auth = useAuthStatus();
-  const mine = useQuery({
-    ...myWantQueryOptions(wantsClient, auth.address ?? "", want.id),
-    enabled: !!auth.address,
-    retry: false,
-  });
   const share = useWantShare(want);
   const locale = i18n.locales?.[0] ?? i18n.locale;
   const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
@@ -122,13 +115,7 @@ function WantPlaceBody({
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <WantMessageButton want={want} />
-          {mine.data ? (
-            <Button asChild variant="ghost" size="icon" aria-label={t`Edit Want`}>
-              <Link to="/wallet/wants/$wantId/edit" params={{ wantId: want.id }}>
-                <RiPencilLine aria-hidden="true" />
-              </Link>
-            </Button>
-          ) : null}
+          <WantEditButton want={want} iconOnly />
           <Button variant="ghost" size="icon" aria-label={t`Share`} onClick={() => void share()}>
             <RiShareLine aria-hidden="true" />
           </Button>

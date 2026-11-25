@@ -4,6 +4,7 @@ import type { Want } from "@clc/core/features/wants/logic";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { WantDetail } from "./want-detail";
+import { WantEditButton } from "./want-edit-button";
 
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 const api = vi.hoisted(() => ({
@@ -17,7 +18,7 @@ const auth = vi.hoisted(() => ({
   state: "authenticated",
   isLoading: false,
   isAuthenticated: true,
-  session: { address: `0x${"a".repeat(40)}` } as { address: string } | undefined,
+  session: { address: `0x${"a".repeat(40)}` } as { address: string; role?: string } | undefined,
   retry: vi.fn(),
   retrying: false,
 }));
@@ -35,12 +36,14 @@ vi.mock("@tanstack/react-router", () => ({
     to,
     params = {},
     search,
+    replace: _replace,
     children,
     ...props
   }: {
     to: string;
     params?: Record<string, string>;
     search?: Record<string, string | undefined>;
+    replace?: boolean;
     children: ReactNode;
   }) => (
     <a
@@ -52,6 +55,7 @@ vi.mock("@tanstack/react-router", () => ({
             : to
                 .replace("$voucherAddress", params.voucherAddress ?? "")
                 .replace("$poolAddress", params.poolAddress ?? "")
+                .replace("$wantId", params.wantId ?? "")
       }
       {...props}
     >
@@ -126,10 +130,49 @@ describe("Want detail", () => {
     const header = screen.getByRole("banner");
     const message = await within(header).findByRole("link", { name: "Message" });
     const query = new URL(message.getAttribute("href")!, "https://example.test").searchParams;
-    expect(query.get("messageTo")).toBe(OWNER);
+    expect(query.has("messageTo")).toBe(false);
     expect(query.get("messageKind")).toBe("want");
     expect(query.get("messageResource")).toBe(WANT.id);
-    expect(screen.getAllByRole("link", { name: "Message" })).toHaveLength(2);
+    await waitFor(() => expect(screen.getAllByRole("link", { name: "Message" })).toHaveLength(2));
+  });
+
+  it("keeps the edit destination available to the creator and Admins only", () => {
+    const detail = () => <WantDetail want={{ ...WANT, ownerAddress: OWNER }} />;
+    const view = renderWant(detail());
+    expect(screen.queryByRole("link", { name: "Edit Want" })).toBeNull();
+
+    auth.session = { address: OWNER, role: "USER" };
+    rerenderWant(view.rerender, detail());
+    expect(screen.getByRole("link", { name: "Edit Want" }).getAttribute("href")).toBe(
+      "/wallet/wants/7/edit",
+    );
+
+    auth.session = { address: `0x${"a".repeat(40)}`, role: "ADMIN" };
+    rerenderWant(view.rerender, detail());
+    expect(screen.getByRole("link", { name: "Edit Want" }).getAttribute("href")).toBe(
+      "/wallet/wants/7/edit",
+    );
+  });
+
+  it("names the compact edit link and hides it when the Admin session ends", () => {
+    auth.session = { address: `0x${"a".repeat(40)}`, role: "ADMIN" };
+    const edit = <WantEditButton want={{ id: WANT.id, ownerAddress: OWNER }} iconOnly />;
+    const view = render(edit);
+    const link = screen.getByRole("link", { name: "Edit Want" });
+    expect(link.getAttribute("href")).toBe("/wallet/wants/7/edit");
+    expect(link.textContent?.trim()).toBe("");
+
+    auth.isAuthenticated = false;
+    view.rerender(<WantEditButton want={{ id: WANT.id, ownerAddress: OWNER }} iconOnly />);
+    expect(screen.queryByRole("link", { name: "Edit Want" })).toBeNull();
+  });
+
+  it("keeps Message on a Want with no owner address in the detail payload", () => {
+    renderWant(<WantDetail want={WANT} />);
+
+    const message = within(screen.getByRole("banner")).getByRole("link", { name: "Message" });
+    expect(message.getAttribute("href")).toContain("messageResource=7");
+    expect(api.owner).not.toHaveBeenCalled();
   });
 
   it("shows scheduling, protected location, tags, description, and selected contacts to a signed-in user", async () => {

@@ -210,6 +210,14 @@ beforeEach(() => {
   ]) {
     mock.mockReset();
   }
+  getAccountStats.mockResolvedValue({
+    reports: 0,
+    vouchers: 0,
+    poolMemberships: 0,
+    transactions: null,
+    swaps: null,
+    partners: null,
+  });
   sessionRole.value = "SUPERADMIN";
 });
 

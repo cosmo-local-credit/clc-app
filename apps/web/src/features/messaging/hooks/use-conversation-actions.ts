@@ -5,7 +5,7 @@ import type {
   ConversationRequestInput,
   DirectStatusChange,
 } from "@clc/core/features/messaging/logic";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { type InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { messagingClient } from "#/lib/api/messaging";
 import { useMessagingViewer } from "./use-messaging-viewer";
@@ -29,6 +29,52 @@ export function useSetConversationStatus(conversationId: number) {
   return useMutation({
     mutationFn: (status: DirectStatusChange) => messagingClient.setStatus(conversationId, status),
     onSuccess: (conversation) => refresh(conversation),
+  });
+}
+
+export function useDeleteConversation(conversationId: number) {
+  const viewer = useMessagingViewer();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => messagingClient.delete(conversationId),
+    onMutate: () => ({ viewer }),
+    onSuccess: async (_result, _variables, context) => {
+      if (!context.viewer) return;
+      const thread = messagingKeys.thread(context.viewer, conversationId);
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: thread }),
+        queryClient.cancelQueries({ queryKey: messagingKeys.lists(context.viewer) }),
+        queryClient.cancelQueries({ queryKey: messagingKeys.postRequests(context.viewer) }),
+      ]);
+      queryClient.removeQueries({ queryKey: thread });
+      queryClient.setQueryData<InfiniteData<Awaited<ReturnType<typeof messagingClient.list>>>>(
+        messagingKeys.list(context.viewer, "direct"),
+        (current) =>
+          current && {
+            ...current,
+            pages: current.pages.map((page) => ({
+              ...page,
+              items: page.items.filter((item) => item.id !== conversationId),
+            })),
+          },
+      );
+      queryClient.setQueryData<
+        InfiniteData<Awaited<ReturnType<typeof messagingClient.postRequests>>>
+      >(
+        [...messagingKeys.postRequests(context.viewer), "list"],
+        (current) =>
+          current && {
+            ...current,
+            pages: current.pages.map((page) => ({
+              ...page,
+              items: page.items.filter((item) => item.conversationId !== conversationId),
+            })),
+          },
+      );
+      void queryClient.invalidateQueries({ queryKey: messagingKeys.lists(context.viewer) });
+      void queryClient.invalidateQueries({ queryKey: messagingKeys.unread(context.viewer) });
+      void queryClient.invalidateQueries({ queryKey: messagingKeys.postRequests(context.viewer) });
+    },
   });
 }
 

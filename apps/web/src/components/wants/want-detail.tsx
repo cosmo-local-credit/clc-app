@@ -18,6 +18,7 @@ import { TagBadge } from "#/components/ui/tag-badge";
 import { PoolLogo, VoucherAvatar } from "#/components/wallet";
 import { WantPicture } from "./want-row";
 import { WantMessageButton } from "./want-message-button";
+import { WantEditButton } from "./want-edit-button";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
 import { useWantContact, useWantCreatorResources, useWantShare } from "./use-want-detail";
 
@@ -52,7 +53,10 @@ export function WantDetail({
             </div>
             <WantShareButton want={want} />
           </div>
-          <WantMessageButton want={want} />
+          <div className="flex flex-wrap gap-2">
+            <WantMessageButton want={want} />
+            <WantEditButton want={want} />
+          </div>
         </header>
       ) : null}
 

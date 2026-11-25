@@ -11,11 +11,13 @@ vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
     params,
+    search,
     children,
     className,
   }: {
     to: string;
     params?: Record<string, string>;
+    search?: Record<string, string>;
     children: ReactNode;
     className?: string;
   }) => {
@@ -23,8 +25,9 @@ vi.mock("@tanstack/react-router", () => ({
       (value, [key, replacement]) => value.replace(`$${key}`, replacement),
       to,
     );
+    const query = new URLSearchParams(search).toString();
     return (
-      <a href={path} className={className}>
+      <a href={query ? `${path}?${query}` : path} className={className}>
         {children}
       </a>
     );
@@ -104,6 +107,20 @@ beforeEach(() => {
 const WRAPS = "[overflow-wrap:anywhere]";
 
 describe("a post's detail page keeps what a reader came to verify", () => {
+  it("offers Share independently of author controls", () => {
+    render(<PostDesk reportId="3182" />);
+    expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Edit" })).toBeNull();
+  });
+  it.each([false, true])("links Message using the Post ID alone with isAuthor=%s", (isAuthor) => {
+    mocks.page.isAuthor = isAuthor;
+    render(<PostDesk reportId="3182" />);
+
+    expect(screen.getByRole("link", { name: "Message" }).getAttribute("href")).toBe(
+      "/?tab=activity&section=messages&messageKind=post&messageResource=3182",
+    );
+  });
+
   it("wraps a long title instead of cutting it", () => {
     render(<PostDesk reportId="3182" />);
 

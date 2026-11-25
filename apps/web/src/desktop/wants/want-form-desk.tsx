@@ -60,15 +60,16 @@ const PREVIEW_PLACE =
  * map pin and the Wants row.
  */
 export function WantFormDesk({ wantId }: { wantId?: string }) {
-  const { ownerQuery, profile, usage, loading, failed, retry } = useWantFormSources(wantId);
+  const { wantQuery, adminEditing, profile, usage, loading, failed, retry } =
+    useWantFormSources(wantId);
   const title = wantId ? <Trans>Edit Want</Trans> : <Trans>Create Want</Trans>;
   // An edit waits for its Want: the editor without one is the create form, and
   // Save there would publish a new Want instead of changing this one.
-  const want = wantId ? ownerQuery.data : undefined;
+  const want = wantId ? wantQuery.data : undefined;
   const ready = wantId ? want !== undefined : usage.data?.wants.canCreate;
 
-  if (ready && profile.data) {
-    return <WantEditor want={want} profile={profile.data} />;
+  if (!failed && ready && profile.data) {
+    return <WantEditor want={want} profile={profile.data} adminEditing={adminEditing} />;
   }
   return (
     <DeskCanvas className="grid-cols-1 gap-x-8 @min-[43rem]:grid-cols-[minmax(160px,200px)_minmax(440px,560px)]">
@@ -96,9 +97,17 @@ export function WantFormDesk({ wantId }: { wantId?: string }) {
   );
 }
 
-function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }) {
+function WantEditor({
+  want,
+  profile,
+  adminEditing,
+}: {
+  want?: Want;
+  profile: WantFormProfile;
+  adminEditing: boolean;
+}) {
   const { t } = useLingui();
-  const form = useWantForm({ want, profile });
+  const form = useWantForm({ want, profile, adminEditing });
   const [confirmDelete, setConfirmDelete] = useState(false);
   const busy = form.inFlight;
 
@@ -264,7 +273,11 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
         >
           <WantPartHeading part="contact" />
           <label htmlFor="want-contact" className="text-sm font-medium">
-            <Trans>How should people contact you?</Trans>
+            {adminEditing ? (
+              <Trans>Contact instructions</Trans>
+            ) : (
+              <Trans>How should people contact you?</Trans>
+            )}
           </label>
           <Textarea
             id="want-contact"
@@ -281,26 +294,39 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
             )}
           >
             <Checkbox
-              disabled={!form.emailAvailable}
+              disabled={adminEditing || !form.emailAvailable}
               checked={form.shareEmail}
               onCheckedChange={(checked) => form.setShareEmail(checked === true)}
             />
-            {form.emailAvailable ? <Trans>Share my email</Trans> : <Trans>Email unavailable</Trans>}
+            {adminEditing ? (
+              <Trans>Share owner's email</Trans>
+            ) : form.emailAvailable ? (
+              <Trans>Share my email</Trans>
+            ) : (
+              <Trans>Email unavailable</Trans>
+            )}
           </label>
           <label
             className={cn("flex items-center gap-3 text-sm", !form.phoneAvailable && "opacity-60")}
           >
             <Checkbox
-              disabled={!form.phoneAvailable}
+              disabled={adminEditing || !form.phoneAvailable}
               checked={form.sharePhone}
               onCheckedChange={(checked) => form.setSharePhone(checked === true)}
             />
-            {form.phoneAvailable ? (
+            {adminEditing ? (
+              <Trans>Share owner's phone number</Trans>
+            ) : form.phoneAvailable ? (
               <Trans>Share my phone number</Trans>
             ) : (
               <Trans>Phone unavailable</Trans>
             )}
           </label>
+          {adminEditing ? (
+            <p className="text-xs text-muted-foreground">
+              <Trans>Only the owner can change email and phone sharing.</Trans>
+            </p>
+          ) : null}
           <p className="text-xs text-warning-foreground">
             <Trans>
               The contact details you select are visible to signed-in users. The Want's map pin and
@@ -316,7 +342,7 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
         ) : null}
 
         <div className="flex items-center gap-2 border-border border-t pt-4">
-          {want?.status === "OPEN" ? (
+          {want?.status === "OPEN" && !adminEditing ? (
             <Button
               type="button"
               variant="outline"
@@ -327,7 +353,7 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
               <Trans>Close Want</Trans>
             </Button>
           ) : null}
-          {want ? (
+          {want && !adminEditing ? (
             <Button
               type="button"
               variant="destructive"
@@ -344,7 +370,7 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
             pending={busy || form.imageBusy}
             disabled={form.imageBusy}
           >
-            {want?.status === "CLOSED" ? (
+            {want?.status === "CLOSED" && !adminEditing ? (
               <Trans>Save and reopen Want</Trans>
             ) : want ? (
               <Trans>Save Want</Trans>
@@ -364,7 +390,7 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
         scheduled={new Date(form.start).getTime() > Date.now()}
       />
 
-      <DialogRoot open={confirmDelete} onOpenChange={setConfirmDelete}>
+      <DialogRoot open={!adminEditing && confirmDelete} onOpenChange={setConfirmDelete}>
         <DialogPortal>
           <DialogBackdrop />
           <DialogContent className="rounded-none border border-border bg-card shadow-none">

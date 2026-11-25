@@ -64,7 +64,7 @@ export function pickActivitySearch(search: unknown): ActivityRouteSearch {
   const tx = typeof record.tx === "string" && record.tx.length > 0 ? record.tx : undefined;
   const messageTo = pickStringSearchValue(record.messageTo);
   const messageKind = pickStringSearchValue(record.messageKind);
-  const messageResource = pickStringSearchValue(record.messageResource);
+  const messageResource = pickPositiveIntegerSearchValue(record.messageResource);
   const messageVoucher = pickStringSearchValue(record.messageVoucher);
   const helpdeskId = pickPositiveIntegerSearchValue(record.helpdeskId);
   const helpdeskStatus = pickStringSearchValue(record.helpdeskStatus);
@@ -133,6 +133,7 @@ export function canonicalActivityRouteSearch(search: unknown): ActivityRouteSear
   const section = parseActivitySection(raw.section);
   const messageTo = parseActivityMessageTo(raw.messageTo);
   const messageContext = parseActivityMessageContext(raw);
+  const postContactId = parseActivityPostContact(raw);
   const helpdeskId = parseActivityHelpdeskId(raw.helpdeskId);
   const helpdeskStatus = parseActivityHelpdeskStatus(raw.helpdeskStatus);
   const safe = parseActivitySafeTarget(raw);
@@ -143,10 +144,17 @@ export function canonicalActivityRouteSearch(search: unknown): ActivityRouteSear
     ...(raw.activityVoucher !== undefined ? { activityVoucher: desk.voucher } : {}),
     ...(raw.activityRange !== undefined ? { activityRange: desk.range } : {}),
     ...(raw.messageTo !== undefined ? { messageTo } : {}),
-    ...(raw.messageKind !== undefined ? { messageKind: messageContext?.kind } : {}),
-    ...(raw.messageResource !== undefined ? { messageResource: messageContext?.resourceId } : {}),
-    ...(raw.messageVoucher !== undefined && messageContext?.kind === "pool"
-      ? { messageVoucher: messageContext.proposedVoucherAddress }
+    ...(raw.messageKind !== undefined
+      ? { messageKind: postContactId ? "post" : messageContext?.kind }
+      : {}),
+    ...(raw.messageResource !== undefined
+      ? { messageResource: postContactId ?? messageContext?.resourceId }
+      : {}),
+    ...(raw.messageVoucher !== undefined
+      ? {
+          messageVoucher:
+            messageContext?.kind === "pool" ? messageContext.proposedVoucherAddress : undefined,
+        }
       : {}),
     ...(raw.helpdeskId !== undefined
       ? { helpdeskId: helpdeskId ? String(helpdeskId) : undefined }
@@ -246,6 +254,12 @@ export function parseActivityMessageContext(value: unknown): MessageContextInput
     return { kind, resourceId };
   }
   return undefined;
+}
+
+export function parseActivityPostContact(value: unknown): string | undefined {
+  const raw = pickActivitySearch(value);
+  const id = toValues(raw.messageResource)[0];
+  return toValues(raw.messageKind)[0] === "post" && id && /^[1-9][0-9]*$/.test(id) ? id : undefined;
 }
 
 export function parseActivityMessageTo(value: unknown): `0x${string}` | undefined {

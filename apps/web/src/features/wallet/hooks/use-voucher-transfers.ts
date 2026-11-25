@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useAccountTransfersInfinite } from "./use-account-balances";
 
 /**
@@ -7,7 +8,9 @@ import { useAccountTransfersInfinite } from "./use-account-balances";
  * feed is shared with the wallet, so a page of it is filtered here and the next
  * page is fetched only once the filtered rows run out.
  */
-export function useVoucherTransfers(accountAddress: string | undefined, contractAddress: string) {
+export function useVoucherTransfers(contractAddress: string) {
+  const auth = useAuthStatus();
+  const accountAddress = auth.isAuthenticated ? auth.session?.address : undefined;
   const transfersQuery = useAccountTransfersInfinite(accountAddress, { poll: true });
   const [visibleCount, setVisibleCount] = useState(3);
   const transfers = useMemo(() => {
@@ -28,6 +31,7 @@ export function useVoucherTransfers(accountAddress: string | undefined, contract
   }
 
   return {
+    accountAddress,
     transfersQuery,
     transfers,
     visibleTransfers: transfers.slice(0, visibleCount),

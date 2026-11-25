@@ -1,3 +1,4 @@
+import type { ProfileVisibility } from "@clc/core/features/public-profiles/logic";
 import type {
   AccountLifecycle,
   SessionCapabilities,
@@ -146,6 +147,7 @@ export type WebAuthnCredentialsResult = {
 };
 
 export type ProfilePayload = {
+  publicProfile?: ProfileVisibility;
   username?: string;
   name: string;
   email: string;
@@ -173,7 +175,10 @@ export type ProfilePayload = {
   avatarUrl?: string | null;
 };
 
+export type ProfileVisibilityPayload = { visibilityOnly: true; publicProfile: ProfileVisibility };
+
 export type ProfileResult = {
+  publicProfile?: ProfileVisibility;
   username?: string | null;
   address: string;
   name: string;
@@ -333,7 +338,7 @@ export type AuthClient = {
   listKeyRotations(): Promise<AddressRotation[]>;
   /** `GET /api/v2/system` — the platform signer, for any signed-in caller. */
   getSystem(): Promise<SystemInfo>;
-  submitProfile(payload: ProfilePayload): Promise<SavedProfile>;
+  submitProfile(payload: ProfilePayload | ProfileVisibilityPayload): Promise<SavedProfile>;
   getProfile(): Promise<ProfileResult>;
   getStorageToken(): Promise<StorageTokenResult>;
   trackOtx(trackingId: string): Promise<OtxTrackResult>;
@@ -433,10 +438,17 @@ export function createAuthClient(http: HttpClient): AuthClient {
 
     // Returns the saved row rather than discarding it, so a caller can seed the
     // profile query instead of refetching what it just wrote.
-    async submitProfile(payload: ProfilePayload): Promise<SavedProfile> {
+    async submitProfile(payload: ProfilePayload | ProfileVisibilityPayload): Promise<SavedProfile> {
+      if ("visibilityOnly" in payload) {
+        return http.request<SavedProfile>("/auth/profile", {
+          method: "POST",
+          body: JSON.stringify({ visibilityOnly: true, publicProfile: payload.publicProfile }),
+        });
+      }
       return http.request<SavedProfile>("/auth/profile", {
         method: "POST",
         body: JSON.stringify({
+          ...(payload.publicProfile === undefined ? {} : { publicProfile: payload.publicProfile }),
           name: payload.name,
           ...(payload.username === undefined ? {} : { username: payload.username }),
           email: payload.email,

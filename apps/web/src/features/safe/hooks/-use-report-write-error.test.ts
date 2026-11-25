@@ -1,12 +1,16 @@
 import { renderHook } from "@testing-library/react";
+import { BackendApiError } from "@clc/api/client/errors";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const toast = vi.hoisted(() => ({ info: vi.fn(), error: vi.fn() }));
 vi.mock("sonner", () => ({ toast }));
+vi.mock("#/lib/safe-config", () => ({ SAFE_APP_PREFIX: "gno" }));
 
 import {
   SafeDashboardRequiredError,
   SafePendingConflictError,
+  SafeProposalError,
+  SafeProposalOutcomeUnknownError,
   SafeProposedError,
 } from "../api/safe-transactions";
 import { SafePasskeyUnsupportedError } from "../api/sign-safe-transaction";
@@ -14,6 +18,7 @@ import { useSafeSheet } from "../state/safe-sheet";
 import { useReportWriteError } from "./use-report-write-error";
 
 const SAFE = "0x1111111111111111111111111111111111111111";
+const HASH = `0x${"ab".repeat(32)}` as const;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -22,14 +27,76 @@ beforeEach(() => {
 
 describe("useReportWriteError", () => {
   it.each([
-    ["a queued proposal", new SafeProposedError({ safe: SAFE } as never)],
+    ["a queued proposal", new SafeProposedError({ safe: SAFE, safeTxHash: HASH } as never)],
     ["a dashboard handoff", new SafeDashboardRequiredError(SAFE)],
-    ["a pending conflict", new SafePendingConflictError(SAFE, `0x${"ab".repeat(32)}`)],
+    ["a pending conflict", new SafePendingConflictError(SAFE, HASH)],
   ])("hands %s to the multisig sheet so the form can close", (_name, error) => {
     const report = renderHook(() => useReportWriteError()).result.current;
     expect(report(error, "fallback")).toBe(true);
     expect(useSafeSheet.getState().safe).toBe(SAFE);
+    expect(useSafeSheet.getState().safeTxHash).toBeNull();
   });
+
+  it("keeps the form open after the API rejects the proposal", () => {
+    const report = renderHook(() => useReportWriteError()).result.current;
+    expect(
+      report(
+        new SafeProposalError(SAFE, "rejected", new BackendApiError(400, "Invalid")),
+        "fallback",
+      ),
+    ).toBe(false);
+    expect(toast.error).toHaveBeenCalledWith("The multisig proposal was rejected.");
+    expect(useSafeSheet.getState().safe).toBeNull();
+  });
+
+  it.each([
+    [401, "Sign in with a signer of this multisig to continue."],
+    [403, "Only signers of this multisig can submit proposals."],
+    [503, "Couldn't check the multisig queue. Try again."],
+  ])("keeps the form open after a %i pre-sign failure", (status, message) => {
+    const report = renderHook(() => useReportWriteError()).result.current;
+    expect(
+      report(new SafeProposalError(SAFE, "check", new BackendApiError(status, "test")), "fallback"),
+    ).toBe(false);
+    expect(toast.error).toHaveBeenCalledWith(message);
+    expect(useSafeSheet.getState().safe).toBeNull();
+  });
+
+  it("offers the Safe queue after a confirmed monthly quota failure before signing", () => {
+    const report = renderHook(() => useReportWriteError()).result.current;
+    const open = vi.spyOn(window, "open").mockImplementation(() => null);
+    const cause = new BackendApiError(429, "Upstream quota detail", "E29", {
+      retryAfterMs: 60 * 60 * 1_000,
+    });
+    try {
+      expect(report(new SafeProposalError(SAFE, "check", cause), "fallback")).toBe(false);
+      expect(toast.error).toHaveBeenCalledExactlyOnceWith(
+        expect.stringMatching(/^Safe’s monthly request limit has been reached\. Try again after /),
+        { action: { label: "Open in Safe", onClick: expect.any(Function) } },
+      );
+      toast.error.mock.calls[0]?.[1].action.onClick();
+      expect(open).toHaveBeenCalledExactlyOnceWith(
+        `https://app.safe.global/transactions/queue?safe=gno:${SAFE}`,
+        "_blank",
+        "noopener,noreferrer",
+      );
+      expect(useSafeSheet.getState().safe).toBeNull();
+    } finally {
+      open.mockRestore();
+    }
+  });
+
+  it.each([new Error("offline"), new BackendApiError(429, "quota", "E29")])(
+    "opens the queue with a warning after an uncertain submission (%s)",
+    (cause) => {
+      const report = renderHook(() => useReportWriteError()).result.current;
+      expect(report(new SafeProposalOutcomeUnknownError(SAFE, HASH, cause), "fallback")).toBe(true);
+      expect(toast.error).toHaveBeenCalledWith(
+        "Couldn't verify whether the proposal was queued. Check Safe before submitting again.",
+      );
+      expect(useSafeSheet.getState().safe).toBe(SAFE);
+    },
+  );
 
   it("tells a passkey on an older Safe to use the paper wallet, without the dashboard", () => {
     const report = renderHook(() => useReportWriteError()).result.current;

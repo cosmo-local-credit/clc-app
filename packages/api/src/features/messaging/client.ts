@@ -27,9 +27,13 @@ import {
   type HelpdeskStatus,
   messagePageSchema,
   messageSchema,
+  type MessageContextInput,
+  postContactRequestSchema,
   type SendMessageInput,
   unreadCountsSchema,
 } from "@clc/core/features/messaging/logic";
+import { ownerMessageTargetSchema } from "@clc/core/features/safe/logic";
+import { z } from "zod";
 
 import type { HttpClient } from "../../client/http-client";
 
@@ -67,9 +71,52 @@ function messagePagePath(base: string, params: MessagePageParams): string {
 
 const conversationPath = (id: number) => `/api/v2/conversations/${encodeURIComponent(id)}`;
 const blockPath = (address: string) => `/api/v2/blocks/${encodeURIComponent(address)}`;
+const postRequestsPath = "/api/v2/messaging/post-requests";
+const resourceTargetsSchema = z.object({
+  targets: z.array(ownerMessageTargetSchema),
+  selfOnly: z.boolean().default(false),
+});
+const postRequestsPageSchema = z.object({
+  items: z.array(postContactRequestSchema),
+  nextCursor: z.string().nullable(),
+});
 
 export function createMessagingClient(http: HttpClient) {
   return {
+    async resourceTargets(resource: MessageContextInput, signal?: AbortSignal) {
+      const path = withQuery("/api/v2/messaging/resource-targets", {
+        kind: resource.kind,
+        resourceId: resource.resourceId,
+      });
+      return resourceTargetsSchema.parse(await http.request(path, { ...NO_STORE, signal }));
+    },
+
+    async postRequests(cursor?: string, signal?: AbortSignal) {
+      return postRequestsPageSchema.parse(
+        await http.request(withQuery(postRequestsPath, { cursor }), { ...NO_STORE, signal }),
+      );
+    },
+
+    async requestPostContact(input: { postId: string; intro?: string }) {
+      return postContactRequestSchema.parse(
+        await http.request(postRequestsPath, {
+          ...NO_STORE,
+          method: "POST",
+          body: JSON.stringify(input),
+        }),
+      );
+    },
+
+    async setPostRequestStatus(id: string, status: "accepted" | "declined") {
+      return postContactRequestSchema.parse(
+        await http.request(`${postRequestsPath}/${encodeURIComponent(id)}/status`, {
+          ...NO_STORE,
+          method: "PUT",
+          body: JSON.stringify({ status }),
+        }),
+      );
+    },
+
     async list(params: ConversationListParams = {}, signal?: AbortSignal) {
       const path = withQuery("/api/v2/conversations", {
         kind: params.kind,
@@ -101,6 +148,10 @@ export function createMessagingClient(http: HttpClient) {
       return conversationSchema.parse(
         await http.request(conversationPath(id), { ...NO_STORE, signal }),
       );
+    },
+
+    async delete(id: number) {
+      await http.request(conversationPath(id), { ...NO_STORE, method: "DELETE" });
     },
 
     async setStatus(id: number, status: DirectStatusChange) {

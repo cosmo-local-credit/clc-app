@@ -434,6 +434,19 @@ describe("the write methods", () => {
     expect(saved.name).toBe("Renamed");
   });
 
+  it("distinguishes omitted tags from a selection and explicit clearing", async () => {
+    fetchMock.mockResolvedValue(response({ offering: offering() }));
+
+    await api.updateVoucherOffering(VOUCHER_ADDRESS, "3", input);
+    await api.updateVoucherOffering(VOUCHER_ADDRESS, "3", { ...input, tags: ["Food"] });
+    await api.updateVoucherOffering(VOUCHER_ADDRESS, "3", { ...input, tags: [] });
+
+    const bodies = fetchMock.mock.calls.map(([, init]) => JSON.parse(init.body as string));
+    expect(bodies[0]).not.toHaveProperty("tags");
+    expect(bodies[1]).toHaveProperty("tags", ["Food"]);
+    expect(bodies[2]).toHaveProperty("tags", []);
+  });
+
   // An explicit null, not an omitted key: PUT is assign-all, so the two would
   // otherwise be indistinguishable to the server.
   it("sends a cleared photo as null rather than omitting it", async () => {

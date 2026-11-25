@@ -1,6 +1,10 @@
 import { BackendApiError } from "@clc/api/client/errors";
-import type { AdminHelpdeskItem, Conversation } from "@clc/core/features/messaging/logic";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type {
+  AdminHelpdeskItem,
+  Conversation,
+  PostContactRequest,
+} from "@clc/core/features/messaging/logic";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import {
   createMemoryHistory,
   createRootRoute,
@@ -11,12 +15,14 @@ import {
 } from "@tanstack/react-router";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import {
   parseActivityHelpdeskId,
   parseActivityHelpdeskStatus,
+  parseActivityMessageContext,
   parseActivityMessageTo,
+  parseActivityPostContact,
   parseActivitySection,
 } from "#/lib/navigation/activity-search";
 
@@ -38,6 +44,10 @@ const mocks = vi.hoisted(() => ({
     list: vi.fn(),
     helpdesk: vi.fn(),
     request: vi.fn(),
+    resourceTargets: vi.fn(),
+    postRequests: vi.fn(),
+    requestPostContact: vi.fn(),
+    setPostRequestStatus: vi.fn(),
   },
   admin: {
     counts: vi.fn(),
@@ -50,6 +60,8 @@ const mocks = vi.hoisted(() => ({
   search: vi.fn(),
   inbox: vi.fn(),
   owner: vi.fn(),
+  report: vi.fn(),
+  myPost: vi.fn(),
 }));
 
 vi.mock("#/lib/messaging-config", () => ({ MESSAGING_ENABLED: true }));
@@ -63,6 +75,18 @@ vi.mock("#/lib/api/messaging", () => ({
 vi.mock("#/lib/api/safe", () => ({ safeClient: { owner: mocks.owner } }));
 vi.mock("#/features/images/use-image-upload", () => ({
   useImageUpload: () => ({ mutateAsync: vi.fn() }),
+}));
+vi.mock("#/features/home/hooks/use-reports", () => ({
+  useReport: (id: string) =>
+    useQuery({ queryKey: ["test-post", id], queryFn: mocks.report, retry: false }),
+}));
+vi.mock("#/features/posts/hooks/use-my-posts", () => ({
+  useMyPost: (id: string) =>
+    useQuery({
+      queryKey: ["test-my-post", mocks.auth.address, id],
+      queryFn: mocks.myPost,
+      retry: false,
+    }),
 }));
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: false }));
 vi.mock("#/features/wallet/hooks/use-activity-unseen", () => ({
@@ -140,6 +164,9 @@ function mountAt(entry: string) {
       tab: typeof search.tab === "string" ? search.tab : undefined,
       section: typeof search.section === "string" ? search.section : undefined,
       messageTo: typeof search.messageTo === "string" ? search.messageTo : undefined,
+      messageKind: search.messageKind,
+      messageResource: search.messageResource,
+      messageVoucher: search.messageVoucher,
       helpdeskId:
         typeof search.helpdeskId === "string" || typeof search.helpdeskId === "number"
           ? search.helpdeskId
@@ -150,9 +177,13 @@ function mountAt(entry: string) {
       const search = home.useSearch() as unknown as {
         section?: string;
         messageTo?: string;
+        messageKind?: string;
+        messageResource?: string | number;
+        messageVoucher?: string;
         helpdeskId?: string | number;
         helpdeskStatus?: string;
       };
+      const postId = parseActivityPostContact(search);
       const navigate = home.useNavigate();
       return (
         <ActivityInbox
@@ -161,11 +192,20 @@ function mountAt(entry: string) {
             mocks.auth.session?.role === "ADMIN" || mocks.auth.session?.role === "SUPERADMIN"
           }
           messageTo={parseActivityMessageTo(search.messageTo)}
+          messageContext={
+            postId ? { kind: "post", resourceId: postId } : parseActivityMessageContext(search)
+          }
           helpdeskId={parseActivityHelpdeskId(search.helpdeskId)}
           helpdeskStatus={parseActivityHelpdeskStatus(search.helpdeskStatus)}
           onMessageToConsumed={() =>
             void navigate({
-              search: (previous) => ({ ...previous, messageTo: undefined }),
+              search: (previous) => ({
+                ...previous,
+                messageTo: undefined,
+                messageKind: undefined,
+                messageResource: undefined,
+                messageVoucher: undefined,
+              }),
               replace: true,
             })
           }
@@ -179,7 +219,15 @@ function mountAt(entry: string) {
     component: () => <p>Thread page</p>,
   });
   const router = createRouter({
-    routeTree: root.addChildren([home, thread]),
+    routeTree: root.addChildren([
+      home,
+      thread,
+      createRoute({
+        getParentRoute: () => root,
+        path: "posts/$reportId",
+        component: () => <p>Post page</p>,
+      }),
+    ]),
     history: createMemoryHistory({ initialEntries: [entry] }),
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -200,6 +248,14 @@ beforeEach(() => {
   };
   mocks.client.unread.mockResolvedValue({ direct: 3, requests: 1, helpdesk: 2 });
   mocks.client.list.mockResolvedValue({ items: [], nextCursor: null });
+  mocks.client.postRequests.mockReset().mockResolvedValue({ items: [], nextCursor: null });
+  mocks.client.requestPostContact.mockReset();
+  mocks.client.setPostRequestStatus.mockReset();
+  mocks.report.mockReset().mockResolvedValue({ id: "42", title: "Community garden" });
+  mocks.myPost.mockReset().mockRejectedValue(new BackendApiError(404, "not found"));
+  mocks.client.resourceTargets.mockResolvedValue({
+    targets: [{ address: AMINA, username: "amina", avatar: null }],
+  });
   mocks.search.mockReturnValue({ data: undefined, isDebouncing: false, isFetching: false });
   mocks.inbox.mockResolvedValue([]);
   mocks.owner.mockResolvedValue({
@@ -213,6 +269,10 @@ beforeEach(() => {
   mocks.admin.helpdeskMessages.mockRejectedValue(new Error("Unexpected Helpdesk message read"));
   mocks.admin.reply.mockRejectedValue(new Error("Unexpected Helpdesk reply"));
   mocks.admin.setHelpdeskStatus.mockRejectedValue(new Error("Unexpected Helpdesk status write"));
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("Activity sub-tabs", () => {
@@ -245,6 +305,115 @@ describe("Activity sub-tabs", () => {
 });
 
 describe("Messages section", () => {
+  it.each([
+    ["voucher", "0x2222222222222222222222222222222222222222"],
+    ["pool", "0x2222222222222222222222222222222222222222"],
+    ["want", "42"],
+    ["catalog", "7"],
+  ])("explains a self-only %s contact without offering a send", async (kind, id) => {
+    mocks.client.resourceTargets.mockResolvedValue({ targets: [], selfOnly: true });
+    mountAt(`/?tab=activity&section=messages&messageKind=${kind}&messageResource=${id}`);
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect((await within(sheet).findByRole("alert")).textContent).toBe(
+      "You can't message yourself.",
+    );
+    expect(within(sheet).queryByText("No message recipient is available.")).toBeNull();
+    expect(within(sheet).queryByRole("button", { name: "Send request" })).toBeNull();
+    expect(mocks.client.list).not.toHaveBeenCalledWith(
+      expect.objectContaining({ peerAddress: expect.anything() }),
+      expect.anything(),
+    );
+    expect(mocks.client.request).not.toHaveBeenCalled();
+  });
+
+  it("recognizes the current account in an address-based owner lookup", async () => {
+    mocks.owner.mockResolvedValue({
+      messageTargets: [{ address: VIEWER.toLowerCase(), username: "me", avatar: null }],
+    });
+    mountAt(`/?tab=activity&section=messages&messageTo=${VIEWER}`);
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(await within(sheet).findByText("You can't message yourself.")).toBeTruthy();
+    expect(within(sheet).queryByText("No message recipient is available.")).toBeNull();
+    expect(mocks.client.request).not.toHaveBeenCalled();
+  });
+
+  it("lets a Safe signer message another eligible signer", async () => {
+    mocks.owner.mockResolvedValue({
+      messageTargets: [
+        { address: VIEWER.toLowerCase(), username: "me", avatar: null },
+        { address: AMINA, username: "amina", avatar: null },
+      ],
+    });
+    mountAt(`/?tab=activity&section=messages&messageTo=${JUMA}`);
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(await within(sheet).findByRole("button", { name: "Send request" })).toBeTruthy();
+    expect(within(sheet).getByText("amina")).toBeTruthy();
+    expect(within(sheet).queryByText("You can't message yourself.")).toBeNull();
+  });
+  it("keeps private request and inbox reads disabled for a guest", async () => {
+    mocks.auth.isAuthenticated = false;
+    mountAt("/?tab=activity&section=messages");
+    await screen.findByRole("button", { name: "New message" });
+    expect(mocks.client.postRequests).not.toHaveBeenCalled();
+    expect(mocks.client.list).not.toHaveBeenCalled();
+  });
+  it.each([
+    ["Searching…", { isDebouncing: true, isFetching: false }],
+    [
+      "Couldn't search. Try again.",
+      { isDebouncing: false, isFetching: false, error: new Error("offline") },
+    ],
+    ["No matching people.", { isDebouncing: false, isFetching: false, isSuccess: true, data: [] }],
+  ])("shows recipient-search feedback for %s", async (message, search) => {
+    mocks.search.mockReturnValue(search);
+    mountAt("/?tab=activity&section=messages");
+    fireEvent.click(await screen.findByRole("button", { name: "New message" }));
+    fireEvent.change(await screen.findByPlaceholderText("Username, address, or phone number"), {
+      target: { value: "amina" },
+    });
+    expect(await screen.findByText(message)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Send request" })).toBeNull();
+  });
+
+  it("keeps an unavailable resource's composer open without offering a send", async () => {
+    mocks.client.resourceTargets.mockResolvedValue({ targets: [] });
+    mountAt("/?tab=activity&section=messages&messageKind=want&messageResource=42");
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(await within(sheet).findByText("No message recipient is available.")).toBeTruthy();
+    expect(within(sheet).queryByRole("button", { name: "Send request" })).toBeNull();
+    expect(mocks.client.request).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { kind: "want", resourceId: "42" },
+    { kind: "pool", resourceId: "0x2222222222222222222222222222222222222222" },
+  ])("preserves $kind context when opening an accepted conversation", async (context) => {
+    mocks.client.list.mockImplementation(async (params: { peerAddress?: string }) => ({
+      items: params.peerAddress ? [conversation(12)] : [],
+      nextCursor: null,
+    }));
+    const { router } = mountAt(
+      `/?tab=activity&section=messages&messageKind=${context.kind}&messageResource=${context.resourceId}`,
+    );
+    await waitFor(() => expect(router.state.location.pathname).toBe("/messages/12"));
+    expect(router.state.location.search).toMatchObject({
+      messageKind: context.kind,
+      messageResource: context.resourceId,
+    });
+    expect(mocks.client.request).not.toHaveBeenCalled();
+  });
+
+  it("clears a single-recipient resource intent when Back is pressed", async () => {
+    const { router } = mountAt(
+      "/?tab=activity&section=messages&messageKind=want&messageResource=42",
+    );
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    fireEvent.click(await within(sheet).findByRole("button", { name: "Back" }));
+    await waitFor(() => expect(router.state.location.search).not.toHaveProperty("messageKind"));
+    expect(screen.queryByRole("dialog", { name: "New message" })).toBeNull();
+    expect(mocks.client.request).not.toHaveBeenCalled();
+  });
+
   it("shows its loading state while the list is pending", async () => {
     mocks.client.list.mockReturnValue(new Promise(() => {}));
     mountAt("/?tab=activity&section=messages");
@@ -281,8 +450,16 @@ describe("Messages section", () => {
     mocks.client.list.mockResolvedValueOnce({ items: [conversation(1)], nextCursor: null });
     const { client } = mountAt("/?tab=activity&section=messages");
     expect(await screen.findByText("user1")).toBeTruthy();
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     mocks.client.list.mockRejectedValue(new BackendApiError(503, "unavailable"));
-    await act(() => client.refetchQueries({ type: "active" }).catch(() => undefined));
+    await act(async () => {
+      const refresh = client.refetchQueries({ type: "active" });
+      await vi.advanceTimersByTimeAsync(999);
+      expect(mocks.client.list).toHaveBeenCalledTimes(2);
+      await vi.advanceTimersByTimeAsync(2_502);
+      await refresh;
+    });
+    expect(mocks.client.list).toHaveBeenCalledTimes(4);
     expect(screen.getByText("user1")).toBeTruthy();
     expect(screen.queryByText("Couldn't load messages.")).toBeNull();
   });
@@ -336,9 +513,7 @@ describe("Messages section", () => {
     );
     const sheet = await screen.findByRole("dialog", { name: "New message" });
     expect(await within(sheet).findByText("amina")).toBeTruthy();
-    await waitFor(() =>
-      expect(router.state.location.search).toEqual({ tab: "activity", section: "messages" }),
-    );
+    expect(router.state.location.search).toHaveProperty("messageTo", AMINA);
     fireEvent.click(within(sheet).getByRole("button", { name: "Send request" }));
     await waitFor(() => expect(router.state.location.pathname).toBe("/messages/8"));
     expect(mocks.client.request).toHaveBeenCalledWith({ recipientAddress: AMINA });
@@ -375,9 +550,85 @@ describe("Messages section", () => {
     expect(within(sheet).getAllByRole("button", { name: "Message" })).toHaveLength(2);
     fireEvent.click(within(sheet).getAllByRole("button", { name: "Message" })[1]!);
     expect(await within(sheet).findByText("juma")).toBeTruthy();
+    fireEvent.click(within(sheet).getByRole("button", { name: "Back" }));
+    expect(await within(sheet).findByText("Choose who to message.")).toBeTruthy();
+    fireEvent.keyDown(sheet, { key: "Escape" });
     await waitFor(() =>
       expect(router.state.location.search).toEqual({ tab: "activity", section: "messages" }),
     );
+  });
+
+  it("opens the resource-only intent after a failed lookup and preserves context through Retry", async () => {
+    mocks.client.resourceTargets.mockRejectedValueOnce(new Error("offline"));
+    mocks.client.request.mockResolvedValue(conversation(9, { status: "pending" }));
+    const { router } = mountAt(
+      "/?tab=activity&section=messages&messageKind=want&messageResource=42",
+    );
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(await within(sheet).findByText("Couldn't load recipients.")).toBeTruthy();
+    expect(router.state.location.search).toHaveProperty("messageKind", "want");
+    expect(mocks.owner).not.toHaveBeenCalled();
+    fireEvent.click(within(sheet).getByRole("button", { name: "Retry" }));
+    fireEvent.click(await within(sheet).findByRole("button", { name: "Send request" }));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/messages/9"));
+    expect(mocks.client.request).toHaveBeenCalledWith({
+      recipientAddress: AMINA,
+      context: { kind: "want", resourceId: "42" },
+    });
+  });
+
+  it("submits a Post request by ID without resolving a peer and opens the conversation only after acceptance", async () => {
+    const postRequest = {
+      id: "00000000-0000-4000-8000-000000000042",
+      postId: "42",
+      postTitle: "Community garden",
+      direction: "outgoing",
+      status: "pending",
+      requester: null,
+      intro: "Can I learn more?",
+      conversationId: null,
+      createdAt: "2026-11-09T09:00:00Z",
+    };
+    mocks.client.requestPostContact.mockImplementation(async () => {
+      mocks.client.postRequests.mockResolvedValue({ items: [postRequest], nextCursor: null });
+      return postRequest;
+    });
+    const { router, client } = mountAt(
+      "/?tab=activity&section=messages&messageKind=post&messageResource=42",
+    );
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(within(sheet).getByRole("link", { name: "Post: Community garden" })).toBeTruthy();
+    fireEvent.change(within(sheet).getByLabelText("Introduce yourself"), {
+      target: { value: postRequest.intro },
+    });
+    fireEvent.click(within(sheet).getByRole("button", { name: "Send request" }));
+    expect((await within(sheet).findByRole("status")).textContent).toContain(
+      "The author can open a conversation",
+    );
+    expect(mocks.client.requestPostContact).toHaveBeenCalledWith({
+      postId: "42",
+      intro: postRequest.intro,
+    });
+    expect(mocks.client.resourceTargets).not.toHaveBeenCalled();
+    expect(mocks.owner).not.toHaveBeenCalled();
+    expect(mocks.client.list).not.toHaveBeenCalledWith(
+      expect.objectContaining({ peerAddress: expect.anything() }),
+      expect.anything(),
+    );
+    fireEvent.click(within(sheet).getByRole("button", { name: "Close" }));
+    expect(await screen.findByText("Pending")).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Open conversation" })).toBeNull();
+    mocks.client.postRequests.mockResolvedValue({
+      items: [{ ...postRequest, status: "accepted", conversationId: 7 }],
+      nextCursor: null,
+    });
+    await act(() =>
+      client.refetchQueries({
+        queryKey: ["clc", "messaging", VIEWER.toLowerCase(), "post-requests"],
+      }),
+    );
+    fireEvent.click(await screen.findByRole("link", { name: "Open conversation" }));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/messages/7"));
   });
 
   it("rejects an exact-address search for the current account before creating a request", async () => {
@@ -395,6 +646,204 @@ describe("Messages section", () => {
     fireEvent.click(screen.getByRole("button", { name: "Message" }));
     expect(await screen.findByText("You can't message yourself.")).toBeTruthy();
     expect(mocks.client.request).not.toHaveBeenCalled();
+  });
+});
+
+describe("Post contact recovery", () => {
+  const pending: PostContactRequest = {
+    id: "00000000-0000-4000-8000-000000000042",
+    postId: "42",
+    postTitle: "Community garden",
+    direction: "outgoing",
+    status: "pending",
+    requester: null,
+    intro: null,
+    conversationId: null,
+    createdAt: "2026-11-09T09:00:00Z",
+  };
+
+  it("waits for private ownership and prevents an author contacting their own Post", async () => {
+    let finish: (post: { id: string }) => void = () => {};
+    mocks.myPost.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    mountAt("/?tab=activity&section=messages&messageKind=post&messageResource=42");
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(await within(sheet).findByText("Loading recipients…")).toBeTruthy();
+    expect(within(sheet).queryByRole("button", { name: "Send request" })).toBeNull();
+    await act(async () => finish({ id: "42" }));
+    expect((await within(sheet).findByRole("alert")).textContent).toBe(
+      "You can't message yourself.",
+    );
+    expect(within(sheet).queryByLabelText("Introduce yourself")).toBeNull();
+    expect(mocks.client.requestPostContact).not.toHaveBeenCalled();
+  });
+
+  it.each([new Error("offline"), new BackendApiError(503, "unavailable")])(
+    "retries an unavailable private ownership read before enabling the Post form",
+    async (error) => {
+      mocks.myPost.mockRejectedValueOnce(error);
+      mountAt("/?tab=activity&section=messages&messageKind=post&messageResource=42");
+      const sheet = await screen.findByRole("dialog", { name: "New message" });
+      expect(await within(sheet).findByText("Couldn't load recipients.")).toBeTruthy();
+      expect(within(sheet).queryByRole("button", { name: "Send request" })).toBeNull();
+      fireEvent.click(within(sheet).getByRole("button", { name: "Retry" }));
+      expect(await within(sheet).findByRole("button", { name: "Send request" })).toBeTruthy();
+      expect(mocks.myPost).toHaveBeenCalledTimes(2);
+      expect(mocks.client.requestPostContact).not.toHaveBeenCalled();
+    },
+  );
+
+  it("shows a missing Post without offering a contact request", async () => {
+    mocks.report.mockResolvedValue(null);
+    mountAt("/?tab=activity&section=messages&messageKind=post&messageResource=42");
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(await within(sheet).findByText("Post not found.")).toBeTruthy();
+    expect(within(sheet).queryByRole("button", { name: "Send request" })).toBeNull();
+    expect(mocks.client.requestPostContact).not.toHaveBeenCalled();
+  });
+
+  it("prevents repeated submits while a Post request is pending", async () => {
+    let finish: (item: PostContactRequest) => void = () => {};
+    mocks.client.requestPostContact.mockImplementation(
+      () =>
+        new Promise<PostContactRequest>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    mountAt("/?tab=activity&section=messages&messageKind=post&messageResource=42");
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    const send = await within(sheet).findByRole("button", { name: "Send request" });
+    fireEvent.click(send);
+    await waitFor(() => expect((send as HTMLButtonElement).disabled).toBe(true));
+    fireEvent.submit(send.closest("form")!);
+    expect(mocks.client.requestPostContact).toHaveBeenCalledOnce();
+    await act(async () => finish(pending));
+    expect((await within(sheet).findByRole("status")).textContent).toContain(
+      "The author can open a conversation",
+    );
+  });
+
+  it.each([
+    ["accepted", 7, "Open conversation"],
+    ["accepted", null, "Closed"],
+    ["declined", null, "Declined"],
+  ] as const)("handles an existing %s request with conversation %s", async (status, id, label) => {
+    mocks.client.requestPostContact.mockResolvedValue({
+      ...pending,
+      status,
+      conversationId: id,
+    });
+    const { router } = mountAt(
+      "/?tab=activity&section=messages&messageKind=post&messageResource=42",
+    );
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    fireEvent.click(await within(sheet).findByRole("button", { name: "Send request" }));
+    expect(await within(sheet).findByText(label)).toBeTruthy();
+    expect(mocks.client.requestPostContact).toHaveBeenCalledWith({
+      postId: "42",
+      intro: undefined,
+    });
+    expect(within(sheet).queryByRole("button", { name: "Send request" })).toBeNull();
+    if (id !== null) {
+      fireEvent.click(within(sheet).getByRole("button", { name: "Open conversation" }));
+      await waitFor(() => expect(router.state.location.pathname).toBe("/messages/7"));
+      expect(router.state.location.search).not.toHaveProperty("messageKind");
+    }
+  });
+
+  it.each([
+    [
+      new BackendApiError(429, "Too many requests"),
+      "You've sent too many requests today. Try again tomorrow.",
+    ],
+    [new Error("offline"), "Couldn't send the request. Try again."],
+  ])("keeps the introduction through a failed send and manual retry", async (error, message) => {
+    mocks.client.requestPostContact.mockRejectedValueOnce(error).mockResolvedValue(pending);
+    mountAt("/?tab=activity&section=messages&messageKind=post&messageResource=42");
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    const intro = await within(sheet).findByLabelText("Introduce yourself");
+    fireEvent.change(intro, { target: { value: "  May I visit?  " } });
+    fireEvent.click(within(sheet).getByRole("button", { name: "Send request" }));
+    expect((await within(sheet).findByRole("alert")).textContent).toContain(message);
+    expect((intro as HTMLTextAreaElement).value).toBe("  May I visit?  ");
+    fireEvent.click(within(sheet).getByRole("button", { name: "Send request" }));
+    expect((await within(sheet).findByRole("status")).textContent).toContain(
+      "The author can open a conversation",
+    );
+    expect(mocks.client.requestPostContact).toHaveBeenCalledTimes(2);
+    expect(mocks.client.requestPostContact).toHaveBeenLastCalledWith({
+      postId: "42",
+      intro: "May I visit?",
+    });
+    expect(within(sheet).queryByRole("alert")).toBeNull();
+  });
+
+  it("retries the Post read before enabling contact", async () => {
+    mocks.report.mockRejectedValueOnce(new Error("offline"));
+    mountAt("/?tab=activity&section=messages&messageKind=post&messageResource=42");
+    const sheet = await screen.findByRole("dialog", { name: "New message" });
+    expect(await within(sheet).findByText("Couldn't load this post.")).toBeTruthy();
+    expect(within(sheet).queryByRole("button", { name: "Send request" })).toBeNull();
+    fireEvent.click(within(sheet).getByRole("button", { name: "Retry" }));
+    expect(await within(sheet).findByLabelText("Introduce yourself")).toBeTruthy();
+    expect(mocks.report).toHaveBeenCalledTimes(2);
+    expect(mocks.client.requestPostContact).not.toHaveBeenCalled();
+  });
+
+  it("recovers a failed inbox read, loads older requests, and retries a declined response", async () => {
+    const incoming: PostContactRequest = {
+      ...pending,
+      direction: "incoming",
+      requester: { address: AMINA, username: null, avatar: null },
+    };
+    const older: PostContactRequest = {
+      ...pending,
+      id: "older",
+      postId: "41",
+      postTitle: "Older Post",
+    };
+    let finish: (item: PostContactRequest) => void = () => {};
+    mocks.client.postRequests
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce({ items: [incoming], nextCursor: "older-cursor" })
+      .mockResolvedValueOnce({ items: [older], nextCursor: null })
+      .mockResolvedValue({ items: [{ ...incoming, status: "declined" }], nextCursor: null });
+    mocks.client.setPostRequestStatus
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockImplementationOnce(
+        () =>
+          new Promise<PostContactRequest>((resolve) => {
+            finish = resolve;
+          }),
+      );
+    mountAt("/?tab=activity&section=messages");
+    expect(await screen.findByText("Couldn't load Post requests.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    const heading = await screen.findByRole("heading", { name: "Post requests" });
+    const requests = within(heading.closest("section")!);
+    expect(await requests.findByText(AMINA)).toBeTruthy();
+    fireEvent.click(requests.getByRole("button", { name: "Load more" }));
+    expect(await requests.findByRole("link", { name: "Post: Older Post" })).toBeTruthy();
+    expect(mocks.client.postRequests).toHaveBeenCalledWith("older-cursor", expect.anything());
+    fireEvent.click(requests.getByRole("button", { name: "Decline" }));
+    expect(await requests.findByRole("alert")).toBeTruthy();
+    fireEvent.click(requests.getByRole("button", { name: "Decline" }));
+    await waitFor(() => expect(mocks.client.setPostRequestStatus).toHaveBeenCalledTimes(2));
+    expect((requests.getByRole("button", { name: "Accept" }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+    expect((requests.getByRole("button", { name: "Decline" }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+    await act(async () => finish({ ...incoming, status: "declined" }));
+    expect(await requests.findByText("Declined")).toBeTruthy();
+    expect(requests.queryByRole("button", { name: "Accept" })).toBeNull();
+    expect(requests.queryByRole("alert")).toBeNull();
+    expect(mocks.client.setPostRequestStatus).toHaveBeenLastCalledWith(incoming.id, "declined");
   });
 });
 

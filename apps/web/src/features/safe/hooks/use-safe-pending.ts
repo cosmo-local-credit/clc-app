@@ -1,5 +1,5 @@
 import type { SafeProposal } from "@clc/api/features/safe/client";
-import { safePendingQueryOptions } from "@clc/api/features/safe/queries";
+import { isSafeMonthlyQuotaError, safePendingQueryOptions } from "@clc/api/features/safe/queries";
 import {
   decodeSafeTransactionCalls,
   safeProposalAction,
@@ -17,6 +17,7 @@ import { useSafeOwnersSignedBy } from "#/features/ownership/hooks/use-asset-owne
 import { safeClient } from "#/lib/api/safe";
 import { CHAIN_ID } from "#/lib/chain";
 import { SAFE_MULTISEND_CALL_ONLY } from "#/lib/safe-config";
+import { safeQueueFailureKind } from "../api/safe-transactions";
 import { safeVersionQueryOptions } from "../api/sign-safe-transaction";
 import { useReportWriteError } from "./use-report-write-error";
 import { useSafeConfirm } from "./use-safe-confirm";
@@ -54,28 +55,56 @@ export interface SafePendingProposal {
  */
 export function useSafePending(safe: `0x${string}`) {
   const { t } = useLingui();
-  const query = useQuery(safePendingQueryOptions(safeClient, safe));
+  const auth = useAuthStatus();
+  const viewer = auth.isAuthenticated
+    ? (auth.session?.address as `0x${string}` | undefined)
+    : undefined;
+  const query = useQuery(safePendingQueryOptions(safeClient, safe, viewer));
+  const sessionUnavailable = auth.state === "sessionCheckError";
+  const status = auth.isLoading
+    ? "pending"
+    : sessionUnavailable
+      ? "temporary"
+      : !viewer
+        ? "session"
+        : query.isError
+          ? safeQueueFailureKind(query.error)
+          : query.isPending
+            ? "pending"
+            : "ready";
+  const data = status === "ready" ? query.data : undefined;
+  const quotaResetAt =
+    status === "quota" &&
+    isSafeMonthlyQuotaError(query.error) &&
+    query.error.retryAfterMs !== undefined
+      ? query.errorUpdatedAt + query.error.retryAfterMs
+      : undefined;
   const refreshSigners = useRefreshSafeSigners();
   const refreshAfterExecution = useRefreshAfterSafeExecution();
-  const queued = useRef<ReadonlyMap<string, SafeProposal> | null>(null);
+  const queued = useRef<{
+    safe: string;
+    viewer: string;
+    transactions: ReadonlyMap<string, SafeProposal>;
+  } | null>(null);
   // A transaction leaving the queue executed, or another took its nonce. An
   // executed signer change moves who signs, and an executed handover or mint
   // moves what the catalog and balances show, so what depends on that is re-read.
   useEffect(() => {
-    if (!query.data) return;
-    const current = new Map(query.data.map((transaction) => [transaction.safeTxHash, transaction]));
+    if (!viewer) {
+      queued.current = null;
+      return;
+    }
+    if (!data) return;
+    const current = new Map(data.map((transaction) => [transaction.safeTxHash, transaction]));
     const previous = queued.current;
-    queued.current = current;
-    const left = previous ? [...previous.values()].filter((t) => !current.has(t.safeTxHash)) : [];
+    queued.current = { safe, viewer, transactions: current };
+    if (previous?.safe !== safe || previous.viewer !== viewer) return;
+    const left = [...previous.transactions.values()].filter((t) => !current.has(t.safeTxHash));
     if (left.length === 0) return;
     void refreshSigners(safe);
     void refreshAfterExecution(left);
-  }, [query.data, refreshAfterExecution, refreshSigners, safe]);
-  const auth = useAuthStatus();
+  }, [data, refreshAfterExecution, refreshSigners, safe, viewer]);
   const { address, connector } = useConnection();
-  const viewer = auth.isAuthenticated
-    ? (auth.session?.address as `0x${string}` | undefined)
-    : undefined;
   const isSigner = useSafeOwnersSignedBy([safe], viewer).has(safe.toLowerCase());
   // A passkey signs as a contract, which a Safe verifies only from 1.5.0 on.
   const isPasskey = connector?.id === CALIBUR_WEBAUTHN_CONNECTOR_ID;
@@ -95,7 +124,7 @@ export function useSafePending(safe: `0x${string}`) {
   const execute = useSafeExecute();
   const reject = useSafeReject();
   const report = useReportWriteError();
-  const transactions = query.data ?? [];
+  const transactions = data ?? [];
   const byHash = new Map(
     transactions.map((transaction) => [transaction.safeTxHash.toLowerCase(), transaction]),
   );
@@ -169,7 +198,14 @@ export function useSafePending(safe: `0x${string}`) {
       };
     });
   return {
-    status: query.isPending ? "pending" : query.isError ? "error" : "ready",
+    status,
+    quotaResetAt,
+    retry: () => {
+      if (sessionUnavailable) auth.retry();
+      else if (viewer && (status === "temporary" || status === "quota" || status === "ready"))
+        void query.refetch();
+    },
+    retrying: sessionUnavailable ? auth.retrying : query.isFetching,
     proposals,
     /** Any confirmation is being signed; the others wait for it. */
     confirmBusy: confirm.isPending || execute.isPending || reject.isPending,

@@ -63,7 +63,7 @@ type OfferingsQueryLike = {
  */
 export type OfferingManagement = {
   onEdit: (offering: Offering) => void;
-  onDelete: (offering: Offering) => void;
+  onDelete?: (offering: Offering) => void;
   /** The row currently being unlisted, if any. */
   deletingID?: string | null;
 };
@@ -404,27 +404,32 @@ function OfferingTile({
         <span data-slot="offering-actions" className="flex border-x border-b border-border">
           <button
             type="button"
-            className="h-9 flex-1 border-e border-border bg-card text-xs font-semibold"
+            className={cn(
+              "h-9 flex-1 bg-card text-xs font-semibold",
+              management.onDelete && "border-e border-border",
+            )}
             onClick={() => management.onEdit(offering)}
           >
             <Trans>Edit</Trans>
           </button>
-          <button
-            type="button"
-            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 bg-card text-xs font-semibold text-destructive"
-            disabled={management.deletingID === offering.id}
-            aria-busy={management.deletingID === offering.id || undefined}
-            onClick={() => management.onDelete(offering)}
-          >
-            {management.deletingID === offering.id ? (
-              <>
-                <Spinner />
-                <Trans>Removing…</Trans>
-              </>
-            ) : (
-              <Trans>Remove</Trans>
-            )}
-          </button>
+          {management.onDelete ? (
+            <button
+              type="button"
+              className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 bg-card text-xs font-semibold text-destructive"
+              disabled={management.deletingID === offering.id}
+              aria-busy={management.deletingID === offering.id || undefined}
+              onClick={() => management.onDelete?.(offering)}
+            >
+              {management.deletingID === offering.id ? (
+                <>
+                  <Spinner />
+                  <Trans>Removing…</Trans>
+                </>
+              ) : (
+                <Trans>Remove</Trans>
+              )}
+            </button>
+          ) : null}
         </span>
       ) : null}
 

@@ -5,6 +5,7 @@ import {
   type Message,
 } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { RiMore2Fill } from "react-icons/ri";
 import { toast } from "sonner";
@@ -24,13 +25,14 @@ import {
   useBlockPeer,
   useReportPeer,
   useSetConversationStatus,
+  useDeleteConversation,
 } from "#/features/messaging/hooks/use-conversation-actions";
 
-type Action = "revoke" | "block" | "report";
+type Action = "revoke" | "block" | "report" | "delete";
 
 /**
- * The thread's menu: Revoke, Block (or Unblock) and Report, each confirmed in
- * a dialog. A report carries the newest message the peer sent, when there is one.
+ * Direct conversation actions, each confirmed in a dialog. A report carries
+ * the newest message the peer sent, when there is one.
  */
 export function ThreadMenuDesk({
   conversation,
@@ -40,6 +42,7 @@ export function ThreadMenuDesk({
   messages: readonly Message[];
 }) {
   const { t } = useLingui();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [action, setAction] = useState<Action | null>(null);
   const [comment, setComment] = useState("");
@@ -47,10 +50,11 @@ export function ThreadMenuDesk({
   const setStatus = useSetConversationStatus(conversation.id);
   const block = useBlockPeer(conversation.id);
   const report = useReportPeer();
+  const deletion = useDeleteConversation(conversation.id);
   const peer = conversation.peer;
   const reported = [...messages].reverse().find((message) => message.sender === "peer");
 
-  if (!peer || (!actions.canRevoke && !actions.canBlock && !actions.canReport)) return null;
+  if (!peer) return null;
 
   function choose(next: Action) {
     setMenuOpen(false);
@@ -58,16 +62,29 @@ export function ThreadMenuDesk({
   }
 
   function close() {
+    if (deletion.isPending) return;
     setAction(null);
     setComment("");
     setStatus.reset();
     block.reset();
     report.reset();
+    deletion.reset();
   }
 
   function confirm() {
     if (!peer) return;
-    if (action === "revoke") {
+    if (action === "delete") {
+      deletion.mutate(undefined, {
+        onSuccess: () => {
+          close();
+          void navigate({
+            to: "/",
+            search: { tab: "activity", section: "messages" },
+            replace: true,
+          });
+        },
+      });
+    } else if (action === "revoke") {
       setStatus.mutate("revoked", { onSuccess: close });
     } else if (action === "block") {
       block.mutate({ address: peer.address, blocked: !conversation.blocked }, { onSuccess: close });
@@ -89,8 +106,8 @@ export function ThreadMenuDesk({
     }
   }
 
-  const failed = setStatus.isError || block.isError || report.isError;
-  const pending = setStatus.isPending || block.isPending || report.isPending;
+  const failed = setStatus.isError || block.isError || report.isError || deletion.isError;
+  const pending = setStatus.isPending || block.isPending || report.isPending || deletion.isPending;
   const itemClass = "w-full justify-start";
 
   return (
@@ -117,6 +134,13 @@ export function ThreadMenuDesk({
               <Trans>Report</Trans>
             </Button>
           ) : null}
+          <Button
+            variant="ghost"
+            className={`${itemClass} text-destructive`}
+            onClick={() => choose("delete")}
+          >
+            <Trans>Delete</Trans>
+          </Button>
         </PopoverContent>
       </PopoverRoot>
       <DialogRoot
@@ -129,7 +153,9 @@ export function ThreadMenuDesk({
           <DialogBackdrop />
           <DialogContent className="grid gap-4 rounded-none border border-border bg-card shadow-none">
             <DialogTitle>
-              {action === "revoke" ? (
+              {action === "delete" ? (
+                <Trans>Are you sure you want to delete this conversation?</Trans>
+              ) : action === "revoke" ? (
                 <Trans>Revoke this conversation?</Trans>
               ) : action === "block" ? (
                 conversation.blocked ? (
@@ -141,6 +167,11 @@ export function ThreadMenuDesk({
                 <Trans>Report this person</Trans>
               )}
             </DialogTitle>
+            {action === "delete" ? (
+              <p className="text-sm">
+                <Trans>This clears your history. New contact requires approval.</Trans>
+              </p>
+            ) : null}
             {action === "revoke" ? (
               <p className="text-sm">
                 <Trans>Neither of you can send messages. Only you can ask to talk again.</Trans>
@@ -168,7 +199,12 @@ export function ThreadMenuDesk({
               </p>
             ) : null}
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={close}>
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={deletion.isPending}
+                onClick={close}
+              >
                 <Trans>Cancel</Trans>
               </Button>
               <Button
@@ -177,7 +213,13 @@ export function ThreadMenuDesk({
                 pending={pending}
                 onClick={confirm}
               >
-                {action === "revoke" ? (
+                {action === "delete" ? (
+                  deletion.isPending ? (
+                    <Trans>Deleting…</Trans>
+                  ) : (
+                    <Trans>Delete</Trans>
+                  )
+                ) : action === "revoke" ? (
                   <Trans>Revoke</Trans>
                 ) : action === "block" ? (
                   conversation.blocked ? (

@@ -5,6 +5,8 @@ import { type ReactNode, Suspense, useEffect, useState } from "react";
 import { RiArrowLeftSLine, RiArrowRightSLine, RiCloseLine } from "react-icons/ri";
 
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
+import { ResourceMessageButton } from "#/components/messaging/resource-owner-contact";
+import { ShareLinkButton } from "#/components/share-link-button";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import {
@@ -92,13 +94,22 @@ export function PostDesk({ reportId }: { reportId: string }) {
             title={report.title}
             wrap
             actions={
-              isAuthor ? (
-                <Button asChild variant="outline">
-                  <Link to="/posts/$reportId/edit" params={{ reportId: report.id }}>
-                    <Trans>Edit</Trans>
-                  </Link>
-                </Button>
-              ) : null
+              <>
+                <ShareLinkButton
+                  title={report.title}
+                  path={`/posts/${encodeURIComponent(report.id)}`}
+                  variant="outline"
+                  size="icon"
+                />
+                <ResourceMessageButton context={{ kind: "post", resourceId: report.id }} />
+                {isAuthor ? (
+                  <Button asChild variant="outline">
+                    <Link to="/posts/$reportId/edit" params={{ reportId: report.id }}>
+                      <Trans>Edit</Trans>
+                    </Link>
+                  </Button>
+                ) : null}
+              </>
             }
           />
 

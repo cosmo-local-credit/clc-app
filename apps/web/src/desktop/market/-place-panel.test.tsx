@@ -12,13 +12,20 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 const ADDRESS = "0xd524d0ed7bc970185ed9c6c9a65a8a02e8897363";
 const OWNER = "0x1111111111111111111111111111111111111111";
 const detailOverrides = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
+const activityQuery = vi.hoisted(() => vi.fn(() => ({ isPending: true })));
 
-vi.mock("wagmi", () => ({ useConnection: () => ({ address: undefined }) }));
+vi.mock("wagmi", () => ({ useConnection: () => ({ address: OWNER }) }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: false }),
+  useAuthStatus: () => ({ state: "connectedNoSession", address: OWNER, isAuthenticated: false }),
+}));
+vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
+  useAccountTransfersInfinite: activityQuery,
+}));
+vi.mock("#/desktop/activity/transactions-desk", () => ({
+  activityRowKey: vi.fn(),
 }));
 vi.mock("#/components/messaging/resource-owner-contact", () => ({
-  OwnerMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
+  ResourceMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
     <a href={`/?messageKind=${context?.kind}&messageResource=${context?.resourceId}`}>Message</a>
   ),
 }));
@@ -64,16 +71,17 @@ vi.mock("#/desktop/vouchers/detail/voucher-info", () => ({
 vi.mock("#/desktop/vouchers/detail/voucher-offerings", () => ({
   VoucherOfferingsDesk: () => <p>offerings body</p>,
 }));
+vi.mock("#/desktop/vouchers/detail/voucher-wants", () => ({
+  VoucherWantsDesk: () => <p>wants body</p>,
+}));
 vi.mock("#/desktop/vouchers/detail/voucher-posts", () => ({
   VoucherPostsDesk: () => <p>posts body</p>,
 }));
 vi.mock("#/desktop/vouchers/detail/voucher-reviews", () => ({
   VoucherReviewsDesk: () => <p>reviews body</p>,
 }));
-vi.mock("#/desktop/vouchers/detail/voucher-activity", () => ({
-  VoucherActivityDesk: () => <p>activity body</p>,
-}));
 vi.mock("#/desktop/vouchers/detail/voucher-section-bits", () => ({
+  useReportSectionCount: vi.fn(),
   VoucherBalanceLine: () => null,
   VoucherRatingLine: () => null,
   VoucherShareButton: () => null,
@@ -103,6 +111,7 @@ function renderPanel() {
 
 afterEach(() => {
   detailOverrides.current = {};
+  activityQuery.mockClear();
 });
 
 describe("MarketPlacePanel voucher card", () => {
@@ -153,6 +162,7 @@ describe("MarketPlacePanel voucher card", () => {
     const tabs = within(tablist).getAllByRole("tab");
     expect(tabs.map((tab) => tab.textContent)).toEqual([
       "Offerings",
+      "Wants",
       "Reviews",
       "Posts",
       "Info",
@@ -170,19 +180,22 @@ describe("MarketPlacePanel voucher card", () => {
 
     offerings.focus();
     fireEvent.keyDown(offerings, { key: "ArrowRight" });
-    const reviews = screen.getByRole("tab", { name: "Reviews" });
-    expect(document.activeElement).toBe(reviews);
-    expect(reviews.getAttribute("aria-selected")).toBe("true");
-    expect(screen.getByRole("tabpanel").textContent).toBe("reviews body");
-    expect(screen.getByRole("tabpanel").getAttribute("aria-labelledby")).toBe(reviews.id);
+    const wants = screen.getByRole("tab", { name: "Wants" });
+    expect(document.activeElement).toBe(wants);
+    expect(wants.getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("tabpanel").textContent).toBe("wants body");
+    expect(screen.getByRole("tabpanel").getAttribute("aria-labelledby")).toBe(wants.id);
     // A closed tab mounts nothing, so it runs no query.
     expect(screen.queryByText("offerings body")).toBeNull();
 
-    fireEvent.keyDown(reviews, { key: "End" });
+    fireEvent.keyDown(wants, { key: "End" });
     expect(screen.getByRole("tab", { name: "Activity" }).getAttribute("aria-selected")).toBe(
       "true",
     );
-    expect(screen.getByRole("tabpanel").textContent).toBe("activity body");
+    expect(
+      within(screen.getByRole("tabpanel")).getByText("Sign in to view activity."),
+    ).toBeTruthy();
+    expect(activityQuery).toHaveBeenCalledWith(undefined, { poll: true });
   });
 
   it("keeps each tab label on one line", async () => {

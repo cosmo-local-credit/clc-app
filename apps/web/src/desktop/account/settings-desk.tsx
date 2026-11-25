@@ -38,6 +38,7 @@ import { useInstallStore } from "#/features/install/install-store";
 import { useMySafes } from "#/features/safe/hooks/use-safe-signers";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { PLATFORM_ABOUT_URL } from "#/lib/legal";
+import { ACTIVITY_SECTION_ICONS } from "#/lib/navigation/activity-section-icons";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useHydratedTheme } from "#/providers/theme";
 import { useLocale } from "#/providers/i18n";
@@ -61,6 +62,7 @@ export function SettingsDesk({ address }: { address?: `0x${string}` }) {
   const replayIntroduction = useIntroductionReplay();
   const mySafes = useMySafes();
   const [confirming, setConfirming] = useState(false);
+  const HelpdeskIcon = ACTIVITY_SECTION_ICONS.helpdesk;
 
   return (
     <DeskCanvas width="read" className="grid-cols-[minmax(0,760px)]">
@@ -71,6 +73,17 @@ export function SettingsDesk({ address }: { address?: `0x${string}` }) {
       <DeskSection title={t`Account`}>
         <SetRows>
           <AccountRow />
+          <SetRow
+            label={t`Helpdesk`}
+            action={
+              <Button asChild variant="ghost">
+                <Link to="/" search={{ tab: "activity", section: "helpdesk" }}>
+                  <HelpdeskIcon aria-hidden="true" />
+                  <Trans>Helpdesk</Trans>
+                </Link>
+              </Button>
+            }
+          />
         </SetRows>
       </DeskSection>
 

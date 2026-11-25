@@ -12,7 +12,8 @@ import { Link, useSearch } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
-import { OwnerMessageButton } from "#/components/messaging/resource-owner-contact";
+import { ResourceMessageButton } from "#/components/messaging/resource-owner-contact";
+import { ShareLinkButton } from "#/components/share-link-button";
 import { ReviewSummaryContent } from "#/components/reviews/review-summary";
 import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
 import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
@@ -201,6 +202,12 @@ export function PoolMain({
           />
         </div>
         <div className="flex flex-wrap items-center gap-2 @min-[46rem]:ms-auto">
+          <ShareLinkButton
+            title={pool.name}
+            path={`/pools/${pool.address}`}
+            variant="outline"
+            size="icon"
+          />
           {canAct ? (
             <>
               <Button asChild variant="outline">
@@ -217,15 +224,9 @@ export function PoolMain({
               </Button>
               <PoolReceivePopover pool={pool} />
               <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} />
-              {pool.ownerAddress ? (
-                <OwnerMessageButton
-                  ownerAddress={pool.ownerAddress}
-                  excludeAddress={auth.session?.address}
-                  context={{ kind: "pool", resourceId: pool.address }}
-                />
-              ) : null}
             </>
           ) : null}
+          <ResourceMessageButton context={{ kind: "pool", resourceId: pool.address }} />
           {model.canEditDetails ? (
             <PoolManageMenu
               pool={pool}

@@ -2,11 +2,10 @@ import type { VoucherRef } from "@clc/core/features/catalog/logic";
 import { useLingui } from "@lingui/react/macro";
 import { useSearch } from "@tanstack/react-router";
 import { useId } from "react";
-import { useConnection } from "wagmi";
 
 import { CreditHopsBadge } from "#/components/credit/credit-hops";
 import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
-import { OwnerMessageButton } from "#/components/messaging/resource-owner-contact";
+import { ResourceMessageButton } from "#/components/messaging/resource-owner-contact";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { TagBadge } from "#/components/ui/tag-badge";
@@ -32,6 +31,7 @@ import { VoucherCatalogButton } from "./detail/voucher-catalog-button";
 import { useCanEditVoucher, VoucherInfoDesk } from "./detail/voucher-info";
 import { VoucherOfferingsDesk } from "./detail/voucher-offerings";
 import { VoucherPostsDesk } from "./detail/voucher-posts";
+import { VoucherWantsDesk } from "./detail/voucher-wants";
 import { VoucherReviewsDesk } from "./detail/voucher-reviews";
 import {
   useVoucherSectionCounts,
@@ -54,7 +54,7 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
   const { t } = useLingui();
   const infoHeadingId = useId();
   const sectionCounts = useVoucherSectionCounts();
-  const search = useSearch({ strict: false }) as { poolAddress?: unknown };
+  const search = useSearch({ strict: false }) as { poolAddress?: unknown; tab?: unknown };
   const poolAddress = typeof search.poolAddress === "string" ? search.poolAddress : undefined;
   const auth = useAuthStatus();
   const holdingsAddress = auth.isAuthenticated ? auth.session?.address : undefined;
@@ -108,7 +108,6 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
     voucherUoa: resolvedVoucherUoa,
   });
   useDeskTrailLabel(detail?.name ?? baseToken?.name);
-  const { address: walletAddress } = useConnection();
   const privateNav = canReachPrivateRoutes(auth);
   const { canEdit } = useCanEditVoucher(
     detail?.address ?? baseToken?.contractAddress ?? voucherAddress,
@@ -211,13 +210,7 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
                     {detail?.id && detail.address ? (
                       <VoucherCatalogButton resourceId={detail.id} address={detail.address} />
                     ) : null}
-                    {detail?.active && detail.ownerAddress ? (
-                      <OwnerMessageButton
-                        ownerAddress={detail.ownerAddress}
-                        excludeAddress={holdingsAddress}
-                        context={{ kind: "voucher", resourceId: detail.address }}
-                      />
-                    ) : null}
+                    <ResourceMessageButton context={{ kind: "voucher", resourceId: address }} />
                     <VoucherShareButton name={token.name} address={address} />
                   </>
                 }
@@ -242,7 +235,10 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
             />
           </div>
           <div className="flex min-w-0 flex-col gap-6 [&_:focus-visible]:scroll-mt-16">
-            <VoucherSectionNav counts={sectionCounts.counts} />
+            <VoucherSectionNav
+              counts={sectionCounts.counts}
+              target={typeof search.tab === "string" ? search.tab : undefined}
+            />
             <VoucherSectionRegion id="offerings">
               <VoucherOfferingsDesk
                 key={address}
@@ -254,6 +250,14 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
                 canEditDetails={canEdit}
                 layout="page"
                 onCount={sectionCounts.report.offerings}
+              />
+            </VoucherSectionRegion>
+            <VoucherSectionRegion id="wants">
+              <VoucherWantsDesk
+                key={`wants-${address}`}
+                address={address}
+                layout="page"
+                onCount={sectionCounts.report.wants}
               />
             </VoucherSectionRegion>
             <VoucherSectionRegion id="reviews">
@@ -276,7 +280,6 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
             </VoucherSectionRegion>
             <VoucherSectionRegion id="activity">
               <VoucherActivityDesk
-                accountAddress={walletAddress}
                 contractAddress={address}
                 layout="page"
                 onCount={sectionCounts.report.activity}

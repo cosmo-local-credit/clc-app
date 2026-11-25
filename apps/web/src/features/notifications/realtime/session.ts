@@ -18,10 +18,12 @@ import {
 } from "../storage/notification-db";
 import { declaredNotificationKinds } from "../logic/declared-kinds";
 import { connectNotificationRealtime } from "./connection";
+import type { NotificationActivitySource } from "../logic/activity-context";
 
 export async function startNotificationSession(options: {
   walletAddress: string;
   signal: AbortSignal;
+  activity?: NotificationActivitySource;
   onInboxChanged: () => void;
   onMessagingChanged: (conversationId: number) => void;
   onIdentityChanged: () => void;
@@ -81,6 +83,7 @@ export async function startNotificationSession(options: {
     baseUrl,
     client,
     signal: options.signal,
+    activity: options.activity,
     onInboxChanged: options.onInboxChanged,
     onMessagingChanged: options.onMessagingChanged,
     onIdentityChanged: options.onIdentityChanged,

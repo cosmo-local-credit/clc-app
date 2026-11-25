@@ -1,5 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { createNotificationActivitySource } from "./activity-source";
 import { primeNotificationCue } from "./alert-cue";
 import { installAppBadgeSync } from "./app-badge";
 import { dispatchMessagingChanged, NOTIFICATION_INBOX_CHANGED_EVENT } from "./events";
@@ -7,6 +9,7 @@ import { startNotificationSession } from "./session";
 
 export function useNotificationSession(walletAddress: string | undefined): void {
   const queryClient = useQueryClient();
+  const router = useRouter();
   useEffect(() => {
     if (!walletAddress) return;
     primeNotificationCue();
@@ -19,6 +22,7 @@ export function useNotificationSession(walletAddress: string | undefined): void 
       void startNotificationSession({
         walletAddress,
         signal: controller.signal,
+        activity: createNotificationActivitySource(router, queryClient, walletAddress),
         onInboxChanged: () => {
           window.dispatchEvent(new Event(NOTIFICATION_INBOX_CHANGED_EVENT));
         },
@@ -42,5 +46,5 @@ export function useNotificationSession(walletAddress: string | undefined): void 
       window.clearTimeout(retry);
       stop?.();
     };
-  }, [walletAddress, queryClient]);
+  }, [walletAddress, queryClient, router]);
 }

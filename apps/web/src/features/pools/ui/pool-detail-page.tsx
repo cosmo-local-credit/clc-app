@@ -12,7 +12,8 @@ import { ReviewSummaryContent } from "#/components/reviews/review-summary";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
-import { OwnerMessageButton } from "#/components/messaging/resource-owner-contact";
+import { ResourceMessageButton } from "#/components/messaging/resource-owner-contact";
+import { ShareLinkButton } from "#/components/share-link-button";
 import { BackChevron, PoolLogo } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { usePoolReportsInfinite } from "#/features/home/hooks/use-reports";
@@ -160,6 +161,7 @@ export function PoolDetailPage({
               ))}
             </div>
           </div>
+          <ShareLinkButton title={pool.name} path={`/pools/${pool.address}`} />
         </div>
       </section>
 
@@ -228,20 +230,14 @@ export function PoolDetailPage({
       ) : null}
 
       {auth.isAuthenticated && pool.active !== false ? (
-        <>
-          <PoolReceiveSheet pool={pool} open={receiving} onClose={() => setReceiving(false)} />
-          <div className="flex flex-wrap gap-2">
-            <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} tap />
-            {pool.ownerAddress ? (
-              <OwnerMessageButton
-                ownerAddress={pool.ownerAddress}
-                excludeAddress={auth.session?.address}
-                context={{ kind: "pool", resourceId: pool.address }}
-              />
-            ) : null}
-          </div>
-        </>
+        <PoolReceiveSheet pool={pool} open={receiving} onClose={() => setReceiving(false)} />
       ) : null}
+      <div className="flex flex-wrap gap-2">
+        {auth.isAuthenticated && pool.active !== false ? (
+          <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} tap />
+        ) : null}
+        <ResourceMessageButton context={{ kind: "pool", resourceId: pool.address }} />
+      </div>
 
       {canEditDetails ? (
         <PoolControlsPanel

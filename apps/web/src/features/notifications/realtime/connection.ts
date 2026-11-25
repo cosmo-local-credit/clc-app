@@ -8,6 +8,7 @@ import { showForegroundNotification } from "./foreground-toast";
 import type { NotificationClientOptions } from "../api/notification-client";
 import { syncNotificationInboxState } from "../recovery/recovery";
 import { isNotificationIdentityCurrent } from "../storage/notification-db";
+import type { NotificationActivitySource } from "../logic/activity-context";
 
 const notificationPublicationSchema = z.object({
   notificationId: z.string().min(1),
@@ -32,6 +33,7 @@ export async function connectNotificationRealtime(options: {
   baseUrl: string;
   client?: NotificationClientOptions;
   signal?: AbortSignal;
+  activity?: NotificationActivitySource;
   onInboxChanged?: () => void;
   /** A conversation changed for this user: a message, a status, a read marker or a block. */
   onMessagingChanged?: (conversationId: number) => void;
@@ -148,7 +150,13 @@ export async function connectNotificationRealtime(options: {
       const oldest = revisions.keys().next().value;
       if (oldest !== undefined) revisions.delete(oldest);
     }
-    void showForegroundNotification(event.data, identityEpoch, userId, options.client)
+    void showForegroundNotification(
+      event.data,
+      identityEpoch,
+      userId,
+      options.client,
+      options.activity,
+    )
       .then((dismiss) => {
         if (stopped) dismiss();
         else {

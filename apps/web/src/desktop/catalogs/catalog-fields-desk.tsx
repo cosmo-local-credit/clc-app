@@ -172,7 +172,7 @@ export function CatalogFieldsDesk({
         </form.Subscribe>
       </div>
       <ConfirmDialog
-        open={confirmDelete}
+        open={canDelete && confirmDelete}
         title={<Trans>Delete this catalog?</Trans>}
         description={
           <Trans>

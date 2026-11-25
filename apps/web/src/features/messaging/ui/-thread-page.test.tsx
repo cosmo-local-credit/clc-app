@@ -9,7 +9,7 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const VIEWER = "0x2a986F40d29fc7e1Bded626542d4b8f1Ca0A82f6";
@@ -29,6 +29,7 @@ const mocks = vi.hoisted(() => ({
   block: vi.fn(),
   unblock: vi.fn(),
   report: vi.fn(),
+  delete: vi.fn(),
 }));
 
 vi.mock("#/lib/messaging-config", () => ({ MESSAGING_ENABLED: true }));
@@ -42,6 +43,7 @@ vi.mock("#/features/images/use-image-upload", () => ({
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: false }));
 
 import { stubIntersectionObserver } from "#/lib/-fixtures/intersection-observer";
+import { ThreadMenuSheet } from "./thread-menu-sheet";
 import { ThreadPage } from "./thread-page";
 
 function message(id: number, sender: Message["sender"] = "peer", body = `Message ${id}`): Message {
@@ -78,13 +80,19 @@ function conversation(overrides: Partial<Conversation> = {}): Conversation {
   };
 }
 
-function mount() {
+function mount(content = <ThreadPage conversationId={5} />) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const root = createRootRoute({ component: Outlet });
   const thread = createRoute({
     getParentRoute: () => root,
     path: "/",
-    component: () => <ThreadPage conversationId={5} />,
+    validateSearch: (search: Record<string, unknown>) => ({
+      section: typeof search.section === "string" ? search.section : undefined,
+    }),
+    component: function Thread() {
+      const search = thread.useSearch() as unknown as { section?: string };
+      return search.section === "messages" ? <h1>Messages inbox</h1> : content;
+    },
   });
   const router = createRouter({
     routeTree: root.addChildren([thread]),
@@ -108,6 +116,116 @@ afterEach(() => {
 });
 
 describe("ThreadPage", () => {
+  it("never exposes peer actions when the menu receives a Helpdesk conversation", async () => {
+    mount(
+      <>
+        <h1>Helpdesk controls</h1>
+        <ThreadMenuSheet
+          conversation={conversation({ kind: "helpdesk", status: "open", peer: null })}
+          messages={[]}
+        />
+      </>,
+    );
+    await screen.findByRole("heading", { name: "Helpdesk controls" });
+    expect(screen.queryByRole("button", { name: "Conversation options" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+    expect(mocks.delete).not.toHaveBeenCalled();
+  });
+
+  it("confirms deletion, keeps the dialog usable after failure and returns to Messages on success", async () => {
+    mocks.get.mockResolvedValue(conversation({ status: "pending", requestedBySelf: true }));
+    mocks.messages.mockResolvedValue({ items: [message(1)], hasMore: false });
+    mocks.delete.mockRejectedValueOnce(new BackendApiError(503, "unavailable"));
+    mount();
+    fireEvent.click(await screen.findByRole("button", { name: "Conversation options" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    const title = "Are you sure you want to delete this conversation?";
+    const dialog = await screen.findByRole("dialog", { name: title });
+    expect(mocks.delete).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    expect(await screen.findByRole("heading", { name: "Conversation options" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    fireEvent.click(
+      within(await screen.findByRole("dialog", { name: title })).getByRole("button", {
+        name: "Delete",
+      }),
+    );
+    expect(await screen.findByText("That didn't work. Try again.")).toBeTruthy();
+
+    let finish: () => void = () => {};
+    mocks.delete.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    const pending = await screen.findByRole("button", { name: "Deleting…" });
+    expect((pending as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole("button", { name: "Cancel" }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+    fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+    expect(screen.getByRole("dialog", { name: title })).toBeTruthy();
+    fireEvent.click(pending);
+    expect(mocks.delete).toHaveBeenCalledTimes(2);
+    await act(async () => finish());
+    expect(await screen.findByRole("heading", { name: "Messages inbox" })).toBeTruthy();
+    expect(mocks.delete).toHaveBeenLastCalledWith(5);
+    expect(screen.queryByText("Message 1")).toBeNull();
+  });
+
+  it.each(["Revoke", "Block", "Report"] as const)(
+    "preserves the %s action alongside Delete",
+    async (action) => {
+      mocks.get.mockResolvedValue(conversation());
+      mocks.messages.mockResolvedValue({ items: [message(1)], hasMore: false });
+      mocks.setStatus.mockResolvedValue(conversation({ status: "revoked" }));
+      mocks.block.mockResolvedValue(undefined);
+      mocks.report.mockResolvedValue({ id: 1 });
+      mount();
+      fireEvent.click(await screen.findByRole("button", { name: "Conversation options" }));
+      fireEvent.click(await screen.findByRole("button", { name: action }));
+      const dialog = await screen.findByRole("dialog");
+      fireEvent.click(
+        within(dialog).getByRole("button", { name: action === "Report" ? "Send report" : action }),
+      );
+      if (action === "Revoke") {
+        await waitFor(() => expect(mocks.setStatus).toHaveBeenCalledWith(5, "revoked"));
+      } else if (action === "Block") {
+        await waitFor(() => expect(mocks.block).toHaveBeenCalledWith(PEER.address));
+      } else {
+        await waitFor(() =>
+          expect(mocks.report).toHaveBeenCalledWith({
+            reportedAddress: PEER.address,
+            messageId: 1,
+          }),
+        );
+      }
+      await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+      expect(mocks.delete).not.toHaveBeenCalled();
+    },
+  );
+
+  it("refreshes consent after a stale send is rejected following deletion by the peer", async () => {
+    mocks.get.mockResolvedValueOnce(conversation()).mockResolvedValue(
+      conversation({
+        status: "revoked",
+        canRequest: true,
+      }),
+    );
+    mocks.messages.mockResolvedValue({ items: [], hasMore: false });
+    mocks.send.mockRejectedValueOnce(new BackendApiError(409, "the conversation is not accepted"));
+    mount();
+    fireEvent.change(await screen.findByRole("textbox", { name: "Message" }), {
+      target: { value: "Hello again" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    expect(await screen.findByRole("button", { name: "Ask to talk again" })).toBeTruthy();
+    expect(mocks.send).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("textbox", { name: "Message" })).toBeNull();
+  });
+
   it("shows the loading state while the first reads are pending", async () => {
     mocks.get.mockReturnValue(new Promise(() => {}));
     mocks.messages.mockReturnValue(new Promise(() => {}));
@@ -125,13 +243,17 @@ describe("ThreadPage", () => {
   });
 
   it("offers a retry when the conversation fails to load", async () => {
-    mocks.get.mockRejectedValueOnce(new BackendApiError(500, "boom"));
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    mocks.get.mockRejectedValue(new BackendApiError(500, "boom"));
     mocks.messages.mockResolvedValue({ items: [], hasMore: false });
     mount();
-    expect(await screen.findByText("Couldn't load this conversation.")).toBeTruthy();
+    await act(() => vi.advanceTimersByTimeAsync(3_501));
+    expect(mocks.get).toHaveBeenCalledTimes(3);
+    expect(screen.getByText("Couldn't load this conversation.")).toBeTruthy();
     mocks.get.mockResolvedValue(conversation());
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
-    expect(await screen.findByRole("heading", { name: "amina" })).toBeTruthy();
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(screen.getByRole("heading", { name: "amina" })).toBeTruthy();
   });
 
   it("answers a missing or foreign conversation with one message", async () => {
@@ -146,8 +268,16 @@ describe("ThreadPage", () => {
     mocks.messages.mockResolvedValueOnce({ items: [message(1), message(2)], hasMore: false });
     const client = mount();
     expect(await screen.findByText("Message 2")).toBeTruthy();
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     mocks.messages.mockRejectedValue(new BackendApiError(503, "unavailable"));
-    await act(() => client.refetchQueries({ type: "active" }).catch(() => undefined));
+    await act(async () => {
+      const refresh = client.refetchQueries({ type: "active" });
+      await vi.advanceTimersByTimeAsync(999);
+      expect(mocks.messages).toHaveBeenCalledTimes(2);
+      await vi.advanceTimersByTimeAsync(2_502);
+      await refresh;
+    });
+    expect(mocks.messages).toHaveBeenCalledTimes(4);
     expect(screen.getByText("Message 1")).toBeTruthy();
     expect(screen.getByText("Message 2")).toBeTruthy();
     expect(screen.queryByText("Couldn't load messages.")).toBeNull();
@@ -177,26 +307,33 @@ describe("ThreadPage", () => {
   });
 
   it("retries a failed read marker even when the polls that follow are unchanged", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
     mocks.get.mockResolvedValue(conversation({ lastReadMessageId: 1, unreadCount: 1 }));
     mocks.messages.mockResolvedValue({ items: [message(1), message(2)], hasMore: false });
     mocks.markRead.mockRejectedValueOnce(new BackendApiError(503, "unavailable"));
     const client = mount();
-    await screen.findByText("Message 2");
-    await waitFor(() => expect(mocks.markRead).toHaveBeenCalledOnce());
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(screen.getByText("Message 2")).toBeTruthy();
+    expect(mocks.markRead).toHaveBeenCalledOnce();
     // An identical poll keeps every effect dependency equal.
     await act(() => client.refetchQueries({ type: "active" }));
-    await waitFor(() => expect(mocks.markRead).toHaveBeenCalledTimes(2), { timeout: 3_000 });
+    await act(() => vi.advanceTimersByTimeAsync(999));
+    expect(mocks.markRead).toHaveBeenCalledOnce();
+    await act(() => vi.advanceTimersByTimeAsync(2));
+    expect(mocks.markRead).toHaveBeenCalledTimes(2);
     expect(mocks.markRead).toHaveBeenLastCalledWith(5, 2);
   });
 
   it("does not retry a read marker the server rejected", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     mocks.get.mockResolvedValue(conversation({ lastReadMessageId: 1, unreadCount: 1 }));
     mocks.messages.mockResolvedValue({ items: [message(1), message(2)], hasMore: false });
     mocks.markRead.mockRejectedValueOnce(new BackendApiError(403, "forbidden"));
     mount();
-    await screen.findByText("Message 2");
-    await waitFor(() => expect(mocks.markRead).toHaveBeenCalledOnce());
-    await new Promise((resolve) => setTimeout(resolve, 1_500));
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(screen.getByText("Message 2")).toBeTruthy();
+    expect(mocks.markRead).toHaveBeenCalledOnce();
+    await act(() => vi.advanceTimersByTimeAsync(1_500));
     expect(mocks.markRead).toHaveBeenCalledOnce();
   });
 

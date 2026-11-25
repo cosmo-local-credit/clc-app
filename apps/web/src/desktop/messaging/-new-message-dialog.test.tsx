@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -11,6 +11,12 @@ const identity = {
   alias: "pool-owner",
   address: OWNER,
   chainId: 100,
+};
+const otherOwner = {
+  ...identity,
+  name: "Second pool owner",
+  alias: "other-owner",
+  address: "0x4444444444444444444444444444444444444444",
 };
 
 const mocks = vi.hoisted(() => ({
@@ -68,7 +74,7 @@ function baseFlow(overrides: Record<string, unknown> = {}) {
     selected: null,
     failure: null,
     lookupStatus: "idle",
-    ownerSearch: { isPending: false, isError: false, isSuccess: false },
+    targetSearch: { isPending: false, isError: false, isSuccess: false },
     query: "",
     intro: "",
     context: undefined,
@@ -92,6 +98,24 @@ beforeEach(() => {
 });
 
 describe("NewMessageDialog resource flows", () => {
+  it.each([
+    ["Searching…", { isDebouncing: true, isFetching: false }],
+    ["Couldn't search. Try again.", { error: new Error("offline") }],
+    ["No matching people.", { isSuccess: true, data: [] }],
+  ])("shows recipient-search feedback for %s", (message, search) => {
+    mocks.flow = baseFlow({ term: "amina", search });
+    render(<NewMessageDialog />);
+    expect(screen.getByText(message)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Send request" })).toBeNull();
+  });
+
+  it("shows an unavailable recipient without enabling a request", () => {
+    mocks.flow = baseFlow({ targetSearch: { isSuccess: true } });
+    render(<NewMessageDialog messageContext={{ kind: "want", resourceId: "42" }} />);
+    expect(screen.getByText("No message recipient is available.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Send request" })).toBeNull();
+    expect(mocks.choose).not.toHaveBeenCalled();
+  });
   it("navigates with Pool proposal context and without optional context", () => {
     render(<NewMessageDialog />);
     const poolContext = {
@@ -132,30 +156,44 @@ describe("NewMessageDialog resource flows", () => {
     );
   });
 
-  it("automatically chooses the only resolved owner", () => {
+  it("automatically chooses the only resolved owner and keeps the context until handoff", () => {
     mocks.flow = baseFlow({
       ownerUsers: [identity],
-      ownerSearch: { isPending: false, isError: false, isSuccess: true },
+      targetSearch: { isPending: false, isError: false, isSuccess: true },
     });
     const context = { kind: "pool" as const, resourceId: POOL };
+    render(<NewMessageDialog messageContext={context} onMessageToConsumed={mocks.consumed} />);
+    expect(mocks.choose).toHaveBeenCalledWith(identity, context);
+    expect(mocks.consumed).not.toHaveBeenCalled();
+    act(() => mocks.openThread?.(9, context));
+    expect(mocks.consumed).toHaveBeenCalledOnce();
+  });
+
+  it.each([true, false])("returns from a chosen recipient with directed=%s", (directed) => {
+    mocks.flow = baseFlow({ selected: identity, ownerUsers: [identity] });
     render(
       <NewMessageDialog
-        messageTo={OWNER}
-        messageContext={context}
+        messageTo={directed ? OWNER : undefined}
         onMessageToConsumed={mocks.consumed}
       />,
     );
-    expect(mocks.consumed).toHaveBeenCalledOnce();
-    expect(mocks.choose).toHaveBeenCalledWith(identity, context);
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    if (directed) {
+      expect(mocks.consumed).toHaveBeenCalledOnce();
+      expect(mocks.flow.reset).toHaveBeenCalledOnce();
+    } else {
+      expect(mocks.flow.unselect).toHaveBeenCalledOnce();
+      expect(mocks.consumed).not.toHaveBeenCalled();
+    }
   });
 
   it.each([
-    ["loading", { ownerSearch: { isSuccess: false }, ownerUsers: [identity] }],
-    ["multiple owners", { ownerSearch: { isSuccess: true }, ownerUsers: [identity, identity] }],
-    ["selected", { ownerSearch: { isSuccess: true }, ownerUsers: [identity], selected: identity }],
+    ["loading", { targetSearch: { isSuccess: false }, ownerUsers: [identity] }],
+    ["multiple owners", { targetSearch: { isSuccess: true }, ownerUsers: [identity, otherOwner] }],
+    ["selected", { targetSearch: { isSuccess: true }, ownerUsers: [identity], selected: identity }],
     [
       "lookup pending",
-      { ownerSearch: { isSuccess: true }, ownerUsers: [identity], lookupStatus: "pending" },
+      { targetSearch: { isSuccess: true }, ownerUsers: [identity], lookupStatus: "pending" },
     ],
   ])("does not auto-choose while %s", (_label, state) => {
     mocks.flow = baseFlow(state);

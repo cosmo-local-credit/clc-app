@@ -46,7 +46,7 @@ vi.mock("#/components/catalogs/add-to-catalog-button", () => ({
     ) : null,
 }));
 vi.mock("#/components/messaging/resource-owner-contact", () => ({
-  OwnerMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
+  ResourceMessageButton: ({ context }: { context?: { kind: string; resourceId: string } }) => (
     <a href={`/?messageKind=${context?.kind}&messageResource=${context?.resourceId}`}>Message</a>
   ),
   ResourceOwnerContactValue: ({ ownerAddress }: { ownerAddress: string }) => (
@@ -152,18 +152,23 @@ vi.mock("#/components/vouchers/voucher-offerings-panel", () => ({
 vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
   VoucherReviewsPanel: () => <div data-testid="reviews">Reviews panel</div>,
 }));
+vi.mock("#/components/vouchers/voucher-wants-panel", () => ({
+  VoucherWantsPanel: () => <div>Wants panel</div>,
+}));
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
     params,
     search,
+    replace: _replace,
     children,
     ...rest
   }: {
     to: string;
     params?: Record<string, string>;
     search?: Record<string, unknown>;
+    replace?: boolean;
     children?: ReactNode;
   }) => {
     const path = Object.entries(params ?? {}).reduce(
@@ -538,6 +543,7 @@ describe("VoucherSheet continuous content", () => {
     fireEvent.click(screen.getByRole("button", { name: "Expand" }));
     expect(await screen.findByText("Offerings panel", undefined, { timeout: 5000 })).toBeTruthy();
     expect(screen.getByText("Reviews panel")).toBeTruthy();
+    expect(screen.getByText("Wants panel")).toBeTruthy();
     expect(screen.getByTestId("offerings").getAttribute("data-page-size")).toBe("3");
     fireEvent.click(screen.getByRole("button", { name: "Collapse" }));
     expect(screen.getByText("Offerings panel")).toBeTruthy();

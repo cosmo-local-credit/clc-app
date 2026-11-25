@@ -1,4 +1,5 @@
 import { catalogDetailQueryOptions } from "@clc/api/features/catalogs/queries";
+import { isAdminRole } from "@clc/core/features/users/roles";
 import { useQuery } from "@tanstack/react-query";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -13,5 +14,10 @@ export function useCatalogDetail(id: string) {
   const owner = Boolean(
     viewerAddress && catalog?.ownerAddress.toLowerCase() === viewerAddress.toLowerCase(),
   );
-  return { query, catalog, owner, viewerAddress };
+  return {
+    query,
+    catalog,
+    owner,
+    canEdit: owner || (!!viewerAddress && isAdminRole(auth.session?.role)),
+  };
 }

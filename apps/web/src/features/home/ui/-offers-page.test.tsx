@@ -58,7 +58,23 @@ vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mocks.navigate,
   useRouter: () => ({ history: { back: vi.fn() } }),
   useCanGoBack: () => false,
-  Link: ({ children, ...props }: { children: ReactNode }) => <a {...props}>{children}</a>,
+  Link: ({
+    to,
+    search,
+    children,
+    ...props
+  }: {
+    to: string;
+    search?: Record<string, string>;
+    children: ReactNode;
+  }) => {
+    const query = new URLSearchParams(search).toString();
+    return (
+      <a href={query ? `${to}?${query}` : to} {...props}>
+        {children}
+      </a>
+    );
+  },
 }));
 vi.mock("#/components/nearby-catalog", async (importOriginal) => {
   const actual = await importOriginal<typeof import("#/components/nearby-catalog")>();

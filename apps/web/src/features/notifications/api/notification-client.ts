@@ -102,6 +102,7 @@ export type SendNotificationDeliveryAckRequest = {
   receivedAt?: string;
   serviceWorkerVersion?: string;
   shownAt?: string;
+  handledInApp?: boolean;
   walletAddressTarget?: string;
 };
 
@@ -157,6 +158,7 @@ export type BackendInboxMessage = BackendNotificationPayload & {
   revision: number;
   sentAt: string;
   shownAt?: string;
+  handledInAppAt?: string;
 };
 
 export type SyncNotificationInboxResponse = {
@@ -284,6 +286,7 @@ const backendInboxMessageSchema = backendNotificationPayloadBaseSchema
     revision: z.number(),
     sentAt: z.string(),
     shownAt: z.string().optional(),
+    handledInAppAt: z.string().optional(),
   })
   .transform(withDefaultPriority);
 

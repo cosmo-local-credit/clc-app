@@ -97,7 +97,7 @@ const offeringUnitSchema = z
   .max(CUSTOM_UNIT_MAX_LENGTH, { message: "Unit must be 32 characters or fewer" });
 
 /**
- * The five fields an issuer owns.
+ * The editable fields of an offering.
  *
  * Absent on purpose: the voucher (immutable, and part of the URL), the seller
  * (server-selected from the locked voucher owner), and every legacy import column
@@ -110,6 +110,7 @@ export const offeringWriteSchema = z.object({
   unit: offeringUnitSchema,
   pricePerUnit: offeringPricePerUnitSchema,
   imageUrl: offeringImageUrlSchema,
+  tags: z.array(z.string()).max(12, "Choose at most 12 tags").optional(),
 });
 
 export type OfferingWrite = z.infer<typeof offeringWriteSchema>;

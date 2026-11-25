@@ -1,4 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { RiExternalLinkLine, RiFileTextLine, RiInformationLine, RiMenuLine } from "react-icons/ri";
 
@@ -13,6 +14,7 @@ import {
   PopoverTrigger,
 } from "#/components/ui/popover";
 import { PLATFORM_ABOUT_URL, PLATFORM_TERMS_URL } from "#/lib/legal";
+import { ACTIVITY_SECTION_ICONS } from "#/lib/navigation/activity-section-icons";
 
 /** One width for both selectors, so neither reads as the longer control. */
 const SELECTOR_TRIGGER_CLASS_NAME = "w-32";
@@ -23,6 +25,7 @@ const actionClassName =
 export function AppMenu({ className }: { className?: string }) {
   const { t } = useLingui();
   const [open, setOpen] = useState(false);
+  const HelpdeskIcon = ACTIVITY_SECTION_ICONS.helpdesk;
 
   function close() {
     setOpen(false);
@@ -96,6 +99,16 @@ export function AppMenu({ className }: { className?: string }) {
             </span>
             <RiExternalLinkLine className="size-4 shrink-0 rtl:-scale-x-100" aria-hidden="true" />
           </a>
+
+          <Link
+            to="/"
+            search={{ tab: "activity", section: "helpdesk" }}
+            className={actionClassName}
+            onClick={close}
+          >
+            <HelpdeskIcon className="size-5 shrink-0" aria-hidden="true" />
+            <Trans>Helpdesk</Trans>
+          </Link>
 
           <PopoverClose className="sr-only">
             <Trans>Close menu</Trans>

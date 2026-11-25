@@ -2,20 +2,34 @@ import type { Want } from "@clc/core/features/wants/logic";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactElement } from "react";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const mocks = vi.hoisted(() => ({ mine: vi.fn(), create: vi.fn(), update: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+  role: "USER",
+  contact: { email: "amina@example.org", phone: "+254712345678" },
+  mine: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+  editRecord: vi.fn(),
+  updateAsAdmin: vi.fn(),
+  reopen: vi.fn(),
+}));
 
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => vi.fn() }));
 vi.mock("#/lib/api/wants", () => ({
-  wantsClient: { mine: mocks.mine, create: mocks.create, update: mocks.update },
+  wantsClient: mocks,
 }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" }),
+  useAuthStatus: () => ({
+    address: mocks.address,
+    isAuthenticated: true,
+    session: { address: mocks.address, role: mocks.role },
+  }),
 }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => ({
-    data: { email: "amina@example.org", phone: "+254712345678", country: "KE" },
+    data: { ...mocks.contact, country: "KE" },
     isPending: false,
     isError: false,
     refetch: vi.fn(),
@@ -46,6 +60,12 @@ vi.mock("#/components/ui/location-map.lazy", () => ({
 }));
 
 import { WantFormDesk } from "./want-form-desk";
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.role = "USER";
+  mocks.contact = { email: "amina@example.org", phone: "+254712345678" };
+});
 
 const WANT: Want = {
   id: "7",
@@ -184,5 +204,69 @@ describe("WantFormDesk", () => {
 
     await waitFor(() => expect(screen.getByRole("button", { name: "Save Want" })).toBeTruthy());
     expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("loads a nonowner Admin edit with both share choices locked and keeps an open Want open", async () => {
+    mocks.role = "ADMIN";
+    const want = { ...WANT, ownerAddress: `0x${"a".repeat(40)}`, contactPermission: 2 };
+    const updated = { ...want, contactText: "Meet at the market" };
+    mocks.editRecord.mockResolvedValueOnce(want).mockResolvedValueOnce(updated);
+    mocks.updateAsAdmin.mockResolvedValueOnce(updated);
+    renderForm(<WantFormDesk wantId="7" />);
+
+    const instructions = await screen.findByLabelText("Contact instructions");
+    const email = screen.getByRole("checkbox", { name: "Share owner's email" });
+    const phone = screen.getByRole("checkbox", { name: "Share owner's phone number" });
+    expect(email.getAttribute("aria-checked")).toBe("false");
+    expect(phone.getAttribute("aria-checked")).toBe("true");
+    expect(email.getAttribute("aria-disabled")).toBe("true");
+    expect(phone.getAttribute("aria-disabled")).toBe("true");
+    expect(screen.queryByRole("button", { name: "Close Want" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Delete Want" })).toBeNull();
+    expect(mocks.editRecord).toHaveBeenCalledWith("7", expect.any(AbortSignal));
+
+    fireEvent.change(instructions, { target: { value: "Meet at the market" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save Want" }));
+    await waitFor(() =>
+      expect(mocks.updateAsAdmin).toHaveBeenCalledWith(
+        "7",
+        expect.objectContaining({
+          contactText: "Meet at the market",
+        }),
+      ),
+    );
+    await waitFor(() => expect(mocks.editRecord).toHaveBeenCalledTimes(2));
+    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.reopen).not.toHaveBeenCalled();
+  });
+
+  it("retains creator actions when a Superadmin edits their own closed Want", async () => {
+    mocks.role = "SUPERADMIN";
+    mocks.contact = { email: "wallet@clc.local", phone: "" };
+    const closed: Want = {
+      ...WANT,
+      ownerAddress: mocks.address.toLowerCase(),
+      status: "CLOSED",
+      state: "closed",
+    };
+    const reopened = { ...WANT, ownerAddress: closed.ownerAddress };
+    mocks.editRecord.mockResolvedValueOnce(closed).mockResolvedValueOnce(reopened);
+    mocks.reopen.mockResolvedValueOnce(reopened);
+    renderForm(<WantFormDesk wantId="7" />);
+
+    const save = await screen.findByRole("button", { name: "Save and reopen Want" });
+    for (const name of ["Email unavailable", "Phone unavailable"]) {
+      expect(screen.getByRole("checkbox", { name }).getAttribute("aria-disabled")).toBe("true");
+    }
+    expect(screen.getByRole("button", { name: "Delete Want" })).toBeTruthy();
+    fireEvent.click(save);
+    await waitFor(() =>
+      expect(mocks.reopen).toHaveBeenCalledWith(
+        "7",
+        expect.objectContaining({ name: WANT.name, shareEmail: false, sharePhone: false }),
+      ),
+    );
+    await waitFor(() => expect(mocks.editRecord).toHaveBeenCalledTimes(2));
+    expect(mocks.updateAsAdmin).not.toHaveBeenCalled();
   });
 });

@@ -150,19 +150,22 @@ vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
     params,
+    search,
     children,
     ...props
   }: {
     to: string;
     params?: Record<string, string>;
+    search?: Record<string, string>;
     children: ReactNode;
   }) => {
     const path = Object.entries(params ?? {}).reduce(
       (value, [key, replacement]) => value.replace(`$${key}`, replacement),
       to,
     );
+    const query = new URLSearchParams(search).toString();
     return (
-      <a href={path} {...props}>
+      <a href={query ? `${path}?${query}` : path} {...props}>
         {children}
       </a>
     );

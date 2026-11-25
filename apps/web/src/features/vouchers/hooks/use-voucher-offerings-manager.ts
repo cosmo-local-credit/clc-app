@@ -1,4 +1,5 @@
 import type { Offering } from "@clc/api/features/offerings/client";
+import { isAdminRole } from "@clc/core/features/users/roles";
 import { useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -38,7 +39,7 @@ export function useVoucherOfferingsManager({
 }) {
   const { t } = useLingui();
   const { isAuthenticated, session } = useAuthStatus();
-  const profileQuery = useAuthProfile();
+  const profileQuery = useAuthProfile({ enabled: isAuthenticated });
   const ownerInfo = useAssetOwnerInfo(voucherAddress ?? "", ownerAddress);
   const isOwner =
     !readOnly &&
@@ -46,17 +47,19 @@ export function useVoucherOfferingsManager({
     Boolean(session?.address) &&
     Boolean(ownerAddress) &&
     ownerInfo.canManage;
+  const canEdit = isOwner || (!readOnly && isAuthenticated && isAdminRole(session?.role));
 
   const usage = useResourceUsage(isOwner, voucherAddress);
   const [editor, setEditor] = useState<OfferingEditor | null>(null);
   const [deletingID, setDeletingID] = useState<string | null>(null);
   const remove = useDeleteVoucherOffering(voucherAddress ?? "");
 
-  const visitorQuery = useVoucherOfferingsInfinite(isOwner ? undefined : voucherAddress);
-  const ownerQuery = useManagedVoucherOfferingsInfinite(isOwner ? voucherAddress : undefined);
-  const query = isOwner ? ownerQuery : visitorQuery;
+  const visitorQuery = useVoucherOfferingsInfinite(canEdit ? undefined : voucherAddress);
+  const ownerQuery = useManagedVoucherOfferingsInfinite(canEdit ? voucherAddress : undefined);
+  const query = canEdit ? ownerQuery : visitorQuery;
 
   async function requestDelete(offering: Offering) {
+    if (!isOwner) return;
     if (!window.confirm(t`Remove “${offering.name}” from the marketplace?`)) return;
     setDeletingID(offering.id);
     try {
@@ -71,13 +74,14 @@ export function useVoucherOfferingsManager({
 
   return {
     isOwner,
+    canEdit,
     usage,
     query,
     editor,
     setEditor,
     deletingID,
     requestDelete,
-    canCreate: !!voucherAddress && !usage.isError && !!usage.data?.offers.canCreate,
+    canCreate: isOwner && !!voucherAddress && !usage.isError && !!usage.data?.offers.canCreate,
     defaultImageUrl: isStorageConfigured ? (profileQuery.data?.avatarUrl ?? null) : null,
   };
 }

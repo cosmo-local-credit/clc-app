@@ -7,7 +7,7 @@ import { RiAddLine, RiFileCopyLine, RiShareLine } from "react-icons/ri";
 
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import {
-  OwnerMessageButton,
+  ResourceMessageButton,
   ResourceOwnerContact,
 } from "#/components/messaging/resource-owner-contact";
 import { Badge } from "#/components/ui/badge";
@@ -34,7 +34,7 @@ import { CatalogMemberPickerDesk } from "./catalog-member-picker-desk";
  */
 export function CatalogDesk({ id, editor }: { id: string; editor?: CatalogEditor }) {
   const { t } = useLingui();
-  const { query, catalog, owner, viewerAddress } = useCatalogDetail(id);
+  const { query, catalog, canEdit } = useCatalogDetail(id);
   const localEditor = useCatalogEditor();
   const { editing, open: openEditor, close: closeEditor } = editor ?? localEditor;
   useDeskTrailLabel(catalog?.name);
@@ -80,12 +80,8 @@ export function CatalogDesk({ id, editor }: { id: string; editor?: CatalogEditor
               actions={
                 <>
                   <CatalogShareDesk id={catalog.id} name={catalog.name} />
-                  <OwnerMessageButton
-                    ownerAddress={catalog.ownerAddress}
-                    excludeAddress={viewerAddress}
-                    context={{ kind: "catalog", resourceId: catalog.id }}
-                  />
-                  {owner ? (
+                  <ResourceMessageButton context={{ kind: "catalog", resourceId: catalog.id }} />
+                  {canEdit ? (
                     <Button
                       variant="outline"
                       aria-expanded={editing}
@@ -117,8 +113,8 @@ export function CatalogDesk({ id, editor }: { id: string; editor?: CatalogEditor
             </div>
           ) : null}
           <div className="grid grid-cols-1 items-start gap-4 @min-[44rem]:grid-cols-2">
-            <CatalogMembersDesk catalogId={id} kind="pool" canEdit={owner} />
-            <CatalogMembersDesk catalogId={id} kind="voucher" canEdit={owner} />
+            <CatalogMembersDesk catalogId={id} kind="pool" canEdit={canEdit} />
+            <CatalogMembersDesk catalogId={id} kind="voucher" canEdit={canEdit} />
           </div>
           <ResourceOwnerContact
             ownerAddress={catalog.ownerAddress}
@@ -134,7 +130,7 @@ export function CatalogDesk({ id, editor }: { id: string; editor?: CatalogEditor
       <DeskSplit
         main={page}
         side={
-          owner && editing && catalog ? (
+          canEdit && editing && catalog ? (
             <DeskInspector title={<Trans>Edit catalog</Trans>} onClose={closeEditor} focusOnOpen>
               <CatalogEditDesk catalog={catalog} onSaved={closeEditor} />
             </DeskInspector>

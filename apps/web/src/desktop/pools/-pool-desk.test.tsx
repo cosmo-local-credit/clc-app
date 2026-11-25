@@ -36,6 +36,9 @@ vi.mock("#/desktop/pools/pool-main", async (importOriginal) => ({
   ...(await importOriginal<typeof import("#/desktop/pools/pool-main")>()),
   usePoolDeskModel: () => refs.model.current,
 }));
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => (refs.model.current as { auth: { state: string } }).auth,
+}));
 vi.mock("#/desktop/pools/pool-activity-feed", async (importOriginal) => ({
   ...(await importOriginal<typeof import("#/desktop/pools/pool-activity-feed")>()),
   usePoolActivityFeed: (...args: unknown[]) => {
@@ -189,6 +192,7 @@ function setModel({
   refs.model.current = {
     poolAddress: POOL,
     auth: {
+      state: authenticated ? "authenticated" : "guest",
       isAuthenticated: authenticated,
       session: authenticated ? { address: "0xowner", role: "USER" } : undefined,
     },
@@ -637,6 +641,11 @@ describe("pool activity detail", () => {
 });
 
 describe("pool header", () => {
+  it("offers Share in the Pool header for guests", async () => {
+    setModel({ authenticated: false, owner: false });
+    mount(`/pools/${POOL}`);
+    expect(await screen.findByRole("button", { name: "Share" })).toBeTruthy();
+  });
   it("shows a guest the description and the rating, and keeps the place and address for members", async () => {
     setModel({ authenticated: false, owner: false });
     mount(`/pools/${POOL}`);

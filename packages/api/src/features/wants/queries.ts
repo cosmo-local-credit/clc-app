@@ -19,8 +19,10 @@ export const wantKeys = {
   detail: (id: string) => ["clc", "wants", "detail", id] as const,
   contact: (id: string, viewer: string) =>
     ["clc", "wants", "contact", id, viewer.toLowerCase()] as const,
+  edit: (id: string, viewer: string) => ["clc", "wants", "edit", id, viewer.toLowerCase()] as const,
   mine: (address: string) => ["clc", "wants", "mine", address.toLowerCase()] as const,
   pool: (address: string) => ["clc", "wants", "pool", address.toLowerCase()] as const,
+  voucher: (address: string) => ["clc", "wants", "voucher", address.toLowerCase()] as const,
   creatorVouchers: (id: string) => ["clc", "wants", "detail", id, "creator-vouchers"] as const,
   creatorPools: (id: string) => ["clc", "wants", "detail", id, "creator-pools"] as const,
 };
@@ -56,7 +58,18 @@ export function poolWantsInfiniteQueryOptions(client: WantsClient, address: stri
     enabled: !!address,
     initialPageParam: undefined as number | undefined,
     queryFn: ({ pageParam, signal }) =>
-      client.pool(address, { perPage: 20, cursor: pageParam }, signal),
+      client.pool(address, { perPage: 20, cursor: pageParam, next: true }, signal),
+    getNextPageParam: (page) => (page.wants.length >= 20 && page.last > 0 ? page.last : undefined),
+  });
+}
+
+export function voucherWantsInfiniteQueryOptions(client: WantsClient, address: string) {
+  return infiniteQueryOptions({
+    queryKey: wantKeys.voucher(address),
+    enabled: !!address,
+    initialPageParam: undefined as number | undefined,
+    queryFn: ({ pageParam, signal }) =>
+      client.voucher(address, { perPage: 20, cursor: pageParam, next: true }, signal),
     getNextPageParam: (page) => (page.wants.length >= 20 && page.last > 0 ? page.last : undefined),
   });
 }
@@ -77,6 +90,15 @@ export function wantContactQueryOptions(
   return queryOptions({
     queryKey: wantKeys.contact(id, viewer ?? "none"),
     queryFn: ({ signal }) => client.contact(id, signal),
+    enabled: Boolean(id && viewer),
+    staleTime: 0,
+  });
+}
+
+export function wantEditQueryOptions(client: WantsClient, id: string, viewer: string | undefined) {
+  return queryOptions({
+    queryKey: wantKeys.edit(id, viewer ?? "none"),
+    queryFn: ({ signal }) => client.editRecord(id, signal),
     enabled: Boolean(id && viewer),
     staleTime: 0,
   });
@@ -133,10 +155,14 @@ export function saveWantMutationOptions(
   queryClient: QueryClient,
   id?: string,
   reopen = false,
+  adminEditing = false,
 ) {
   return mutationOptions({
-    mutationFn: (input: WantWrite) =>
-      id ? (reopen ? client.reopen(id, input) : client.update(id, input)) : client.create(input),
+    mutationFn: (input: WantWrite) => {
+      if (!id) return client.create(input);
+      if (adminEditing) return client.updateAsAdmin(id, input);
+      return reopen ? client.reopen(id, input) : client.update(id, input);
+    },
     onSuccess: async (want) => {
       // Owner writes may return a scheduled/closed row and editing permission
       // metadata that the public detail endpoint deliberately withholds. Never

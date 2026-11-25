@@ -1,5 +1,9 @@
 import { BackendApiError } from "@clc/api/client/errors";
-import { conversationByPeerQueryOptions, messagingKeys } from "@clc/api/features/messaging/queries";
+import {
+  conversationByPeerQueryOptions,
+  messagingKeys,
+  resourceTargetsQueryOptions,
+} from "@clc/api/features/messaging/queries";
 import type { RecipientIdentity } from "@clc/api/features/recipients/client";
 import { ownerInfoQueryOptions } from "@clc/api/features/safe/queries";
 import type { MessageContextInput } from "@clc/core/features/messaging/logic";
@@ -65,11 +69,17 @@ export function useNewMessage(
     ...ownerInfoQueryOptions(safeClient, ownerAddress),
     retry: false,
   });
+  const resourceSearch = useQuery(
+    resourceTargetsQueryOptions(messagingClient, viewer, ownerAddress ? undefined : initialContext),
+  );
+  const targetSearch = ownerAddress ? ownerSearch : resourceSearch;
   const request = useRequestConversation();
   const users = (search.data ?? []).filter(
     (match) => match.kind === "user" && (match.chainId === CHAIN_ID || match.chainId === 0),
   );
-  const ownerUsers: RecipientIdentity[] = (ownerSearch.data?.messageTargets ?? [])
+  const targets =
+    (ownerAddress ? ownerSearch.data?.messageTargets : resourceSearch.data?.targets) ?? [];
+  const ownerUsers: RecipientIdentity[] = targets
     .filter((target) => target.address.toLowerCase() !== viewer)
     .map((target) => ({
       kind: "user",
@@ -78,9 +88,16 @@ export function useNewMessage(
       address: target.address,
       chainId: CHAIN_ID,
     }));
+  const selfOnly =
+    targetSearch.isSuccess &&
+    ownerUsers.length === 0 &&
+    (ownerAddress
+      ? targets.some((target) => target.address.toLowerCase() === viewer)
+      : resourceSearch.data?.selfOnly === true);
 
   const failure: NewMessageFailure | null =
     localFailure ??
+    (selfOnly ? "self" : null) ??
     (request.error instanceof BackendApiError
       ? request.error.status === 404
         ? "missing"
@@ -136,7 +153,7 @@ export function useNewMessage(
     term,
     search,
     users,
-    ownerSearch,
+    targetSearch,
     ownerUsers,
     selected,
     intro,

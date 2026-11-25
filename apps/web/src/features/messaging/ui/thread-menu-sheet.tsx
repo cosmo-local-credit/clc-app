@@ -5,6 +5,7 @@ import {
   type Message,
 } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { RiMore2Fill } from "react-icons/ri";
 import { toast } from "sonner";
@@ -25,11 +26,12 @@ import {
   useBlockPeer,
   useReportPeer,
   useSetConversationStatus,
+  useDeleteConversation,
 } from "../hooks/use-conversation-actions";
 
-type Step = "menu" | "revoke" | "block" | "report";
+type Step = "menu" | "revoke" | "block" | "report" | "delete";
 
-/** Revoke, Block and Report for a direct conversation, each confirmed in the sheet. */
+/** Direct conversation actions, each confirmed in the sheet. */
 export function ThreadMenuSheet({
   conversation,
   messages,
@@ -38,6 +40,7 @@ export function ThreadMenuSheet({
   messages: readonly Message[];
 }) {
   const { t } = useLingui();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("menu");
   const [comment, setComment] = useState("");
@@ -45,13 +48,15 @@ export function ThreadMenuSheet({
   const setStatus = useSetConversationStatus(conversation.id);
   const block = useBlockPeer(conversation.id);
   const report = useReportPeer();
+  const deletion = useDeleteConversation(conversation.id);
   const peer = conversation.peer;
   // A report carries the newest message the peer sent, when there is one.
   const reported = [...messages].reverse().find((message) => message.sender === "peer");
 
-  if (!peer || (!actions.canRevoke && !actions.canBlock && !actions.canReport)) return null;
+  if (!peer) return null;
 
   function changeOpen(next: boolean) {
+    if (!next && deletion.isPending) return;
     setOpen(next);
     if (!next) {
       setStep("menu");
@@ -59,10 +64,11 @@ export function ThreadMenuSheet({
       setStatus.reset();
       block.reset();
       report.reset();
+      deletion.reset();
     }
   }
 
-  const failed = setStatus.isError || block.isError || report.isError;
+  const failed = setStatus.isError || block.isError || report.isError || deletion.isError;
 
   return (
     <>
@@ -81,7 +87,9 @@ export function ThreadMenuSheet({
           <SheetContent>
             <SheetHeader>
               <SheetTitle>
-                {step === "revoke" ? (
+                {step === "delete" ? (
+                  <Trans>Are you sure you want to delete this conversation?</Trans>
+                ) : step === "revoke" ? (
                   <Trans>Revoke this conversation?</Trans>
                 ) : step === "block" ? (
                   conversation.blocked ? (
@@ -97,6 +105,11 @@ export function ThreadMenuSheet({
               </SheetTitle>
             </SheetHeader>
             <div className="space-y-3 px-4 pb-2">
+              {step === "delete" ? (
+                <p className="text-sm">
+                  <Trans>This clears your history. New contact requires approval.</Trans>
+                </p>
+              ) : null}
               {step === "revoke" ? (
                 <p className="text-sm">
                   <Trans>Neither of you can send messages. Only you can ask to talk again.</Trans>
@@ -142,15 +155,39 @@ export function ThreadMenuSheet({
                       <Trans>Report</Trans>
                     </Button>
                   ) : null}
+                  <Button
+                    variant="outline"
+                    tap
+                    className="text-destructive"
+                    onClick={() => setStep("delete")}
+                  >
+                    <Trans>Delete</Trans>
+                  </Button>
                 </>
               ) : (
                 <>
                   <Button
                     variant={step === "report" ? "default" : "destructive"}
                     tap
-                    pending={setStatus.isPending || block.isPending || report.isPending}
+                    pending={
+                      setStatus.isPending ||
+                      block.isPending ||
+                      report.isPending ||
+                      deletion.isPending
+                    }
                     onClick={() => {
-                      if (step === "revoke") {
+                      if (step === "delete") {
+                        deletion.mutate(undefined, {
+                          onSuccess: () => {
+                            changeOpen(false);
+                            void navigate({
+                              to: "/",
+                              search: { tab: "activity", section: "messages" },
+                              replace: true,
+                            });
+                          },
+                        });
+                      } else if (step === "revoke") {
                         setStatus.mutate("revoked", { onSuccess: () => changeOpen(false) });
                       } else if (step === "block") {
                         block.mutate(
@@ -175,7 +212,13 @@ export function ThreadMenuSheet({
                       }
                     }}
                   >
-                    {step === "revoke" ? (
+                    {step === "delete" ? (
+                      deletion.isPending ? (
+                        <Trans>Deleting…</Trans>
+                      ) : (
+                        <Trans>Delete</Trans>
+                      )
+                    ) : step === "revoke" ? (
                       <Trans>Revoke</Trans>
                     ) : step === "block" ? (
                       conversation.blocked ? (
@@ -187,7 +230,12 @@ export function ThreadMenuSheet({
                       <Trans>Send report</Trans>
                     )}
                   </Button>
-                  <Button variant="outline" tap onClick={() => setStep("menu")}>
+                  <Button
+                    variant="outline"
+                    tap
+                    disabled={deletion.isPending}
+                    onClick={() => setStep("menu")}
+                  >
                     <Trans>Cancel</Trans>
                   </Button>
                 </>

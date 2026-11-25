@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import { BackendApiError, transientBackendReadQueryPolicy } from "../../client/errors";
 import type { SafeClient } from "./client";
 
 export const safeKeys = {
@@ -28,15 +29,36 @@ export function mySafesQueryOptions(client: SafeClient, account: string | undefi
   });
 }
 
-const POLL_MS = 5_000;
+const POLL_MS = 30_000;
+// Match the backend's cooldown when Safe has not provided a reset time.
+const UNKNOWN_QUOTA_COOLDOWN_MS = 3_600_000;
 
-/** Queued transactions of one Safe. Confirmations arrive from other signers, so it polls. */
-export function safePendingQueryOptions(client: SafeClient, safe: string | undefined) {
+export function isSafeMonthlyQuotaError(
+  error: unknown,
+): error is BackendApiError & { code: "E29" } {
+  return error instanceof BackendApiError && error.code === "E29";
+}
+
+/** Poll visible, nonempty queues for confirmations from other signers. */
+export function safePendingQueryOptions(
+  client: SafeClient,
+  safe: string | undefined,
+  viewer: string | undefined,
+) {
   return queryOptions({
-    queryKey: safeKeys.pending(safe ?? "none"),
+    queryKey: [...safeKeys.pending(safe ?? "none"), viewer?.toLowerCase() ?? "none"] as const,
     queryFn: ({ signal }) => client.pending(safe!, signal),
-    enabled: Boolean(safe),
-    refetchInterval: POLL_MS,
+    enabled: ({ state }) =>
+      Boolean(safe && viewer) &&
+      (!isSafeMonthlyQuotaError(state.error) ||
+        Date.now() >=
+          state.errorUpdatedAt + (state.error.retryAfterMs ?? UNKNOWN_QUOTA_COOLDOWN_MS)),
+    refetchInterval: ({ state }) =>
+      state.status === "success" && state.data?.length ? POLL_MS : false,
+    refetchIntervalInBackground: false,
     staleTime: 0,
+    ...transientBackendReadQueryPolicy,
+    retry: (failureCount, error) =>
+      !isSafeMonthlyQuotaError(error) && transientBackendReadQueryPolicy.retry(failureCount, error),
   });
 }

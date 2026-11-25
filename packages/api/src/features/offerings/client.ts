@@ -492,6 +492,7 @@ function toOfferingWriteBody(input: OfferingWrite) {
     unit: normalized.unit,
     price: normalized.pricePerUnit,
     imageUrl: normalized.imageUrl,
+    ...(normalized.tags === undefined ? {} : { tags: normalized.tags }),
   };
 }
 

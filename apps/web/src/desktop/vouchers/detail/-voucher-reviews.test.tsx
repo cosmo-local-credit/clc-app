@@ -36,6 +36,74 @@ const access: ReviewAccess = {
 afterEach(() => activateLocale("en"));
 
 describe("the desktop review editor", () => {
+  it.each(["voucher", "pool"] as const)(
+    "keeps an already reported %s text review disabled",
+    async (kind) => {
+      mocks.list.mockResolvedValue({
+        ...page,
+        total: 1,
+        reviews: [{ id: 8, stars: 5, comment: "Review text", reply: null }],
+      });
+      mocks.access.mockResolvedValue({ ...access, isOwner: true, flaggedReviewIds: [8] });
+      render(
+        <QueryClientProvider client={new QueryClient()}>
+          <VoucherReviewsDesk
+            kind={kind}
+            address="0x2222222222222222222222222222222222222222"
+            layout="page"
+          />
+        </QueryClientProvider>,
+      );
+      const reported = await screen.findByRole("button", { name: "Reported" });
+      expect((reported as HTMLButtonElement).disabled).toBe(true);
+      expect(screen.queryByRole("button", { name: "Report inappropriate" })).toBeNull();
+      expect(screen.getByRole("button", { name: "Reply" })).toBeTruthy();
+    },
+  );
+  it("keeps text reviews reportable by the resource owner", async () => {
+    mocks.list.mockResolvedValue({
+      ...page,
+      total: 1,
+      reviews: [{ id: 8, stars: 5, comment: "Review text", reply: null }],
+    });
+    mocks.access.mockResolvedValue({ ...access, isOwner: true });
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <VoucherReviewsDesk address="0x2222222222222222222222222222222222222222" layout="page" />
+      </QueryClientProvider>,
+    );
+    fireEvent.click(await screen.findByRole("button", { name: "Report inappropriate" }));
+    expect(await screen.findByRole("dialog")).toBeTruthy();
+  });
+  it.each([
+    ["voucher", "", null],
+    ["voucher", "   ", "Owner reply"],
+    ["pool", "", null],
+    ["pool", "   ", "Owner reply"],
+  ] as const)("keeps stars-only %s reviews unreportable", async (kind, comment, reply) => {
+    mocks.list.mockResolvedValue({
+      ...page,
+      total: 1,
+      reviews: [{ id: 8, stars: 5, comment, reply }],
+    });
+    mocks.access.mockResolvedValue({ ...access, isOwner: true, editableReplyIds: [8] });
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <VoucherReviewsDesk
+          kind={kind}
+          address="0x2222222222222222222222222222222222222222"
+          layout="page"
+        />
+      </QueryClientProvider>,
+    );
+    const article = await screen.findByRole("article", {
+      name: kind === "pool" ? "Pool review" : "Voucher review",
+    });
+    expect(within(article).queryByRole("button", { name: "Report inappropriate" })).toBeNull();
+    expect(
+      within(article).getByRole("button", { name: reply ? "Edit your reply" : "Reply" }),
+    ).toBeTruthy();
+  });
   it("writes the review window's end in the app's language", async () => {
     mocks.list.mockResolvedValue(page);
     mocks.access.mockResolvedValue(access);

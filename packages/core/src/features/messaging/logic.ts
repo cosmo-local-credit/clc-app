@@ -23,6 +23,9 @@ const messageContextInputSchema = z.discriminatedUnion("kind", [
 ]);
 export type MessageContextInput = z.infer<typeof messageContextInputSchema>;
 
+/** Post contact is a launch intent and never a regular message context. */
+export type MessageLaunchContext = MessageContextInput | { kind: "post"; resourceId: string };
+
 const messageResourceContextSchema = z.object({
   kind: z.enum(["pool", "voucher", "want", "catalog"]),
   resourceId: z.string().min(1),
@@ -42,6 +45,19 @@ const peerSchema = z.object({
   avatar: z.string().nullable(),
 });
 export type Peer = z.infer<typeof peerSchema>;
+
+export const postContactRequestSchema = z.object({
+  id: z.uuid(),
+  postId: z.string().regex(/^[1-9][0-9]*$/),
+  postTitle: z.string(),
+  direction: z.enum(["incoming", "outgoing"]),
+  status: z.enum(["pending", "accepted", "declined"]),
+  intro: z.string().nullable(),
+  conversationId: idSchema.nullable(),
+  requester: peerSchema.nullable(),
+  createdAt: timestampSchema,
+});
+export type PostContactRequest = z.infer<typeof postContactRequestSchema>;
 
 const conversationKindSchema = z.enum(["direct", "helpdesk"]);
 export type ConversationKind = z.infer<typeof conversationKindSchema>;
@@ -106,12 +122,14 @@ export const conversationPageSchema = z.object({
 export const messagePageSchema = z.object({
   items: z.array(messageSchema),
   hasMore: z.boolean(),
+  clearedThrough: z.number().int().nonnegative().optional(),
 });
 
 export const unreadCountsSchema = z.object({
   direct: z.number().int().nonnegative(),
   requests: z.number().int().nonnegative(),
   helpdesk: z.number().int().nonnegative(),
+  postRequests: z.number().int().nonnegative().optional(),
 });
 export type UnreadCounts = z.infer<typeof unreadCountsSchema>;
 
@@ -239,17 +257,21 @@ export type ThreadMessages<M extends { id: number } = Message> = {
   items: M[];
   hasOlder: boolean;
   fetchedThrough?: number;
+  clearedThrough?: number;
 };
 
 /** Joins two runs of messages by id, ascending, later copies replacing earlier ones. */
 export function mergeMessages<M extends { id: number }>(
   current: readonly M[],
   incoming: readonly M[],
+  clearedThrough = 0,
 ): M[] {
   const byId = new Map<number, M>();
   for (const message of current) byId.set(message.id, message);
   for (const message of incoming) byId.set(message.id, message);
-  return [...byId.values()].sort((left, right) => left.id - right.id);
+  return [...byId.values()]
+    .filter((message) => message.id > clearedThrough)
+    .sort((left, right) => left.id - right.id);
 }
 
 export function newestMessageId(items: readonly { id: number }[]): number | undefined {
@@ -274,7 +296,7 @@ export function buildMessageContent(
 
 /** Unread on the Messages sub-tab: direct messages plus requests waiting on the caller. */
 export function messagesSectionUnread(counts: UnreadCounts | undefined): number {
-  return counts ? counts.direct + counts.requests : 0;
+  return counts ? counts.direct + counts.requests + (counts.postRequests ?? 0) : 0;
 }
 
 export type ConversationActions = {

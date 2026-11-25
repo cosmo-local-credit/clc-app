@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BackendApiError } from "@clc/api/client/errors";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { Want } from "@clc/core/features/wants/logic";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { WantFormPage } from "./want-form-page";
@@ -9,10 +9,13 @@ const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
+  updateAsAdmin: vi.fn(),
+  editRecord: vi.fn(),
   reopen: vi.fn(),
   close: vi.fn(),
   remove: vi.fn(),
   mine: vi.fn(),
+  auth: { role: "USER" },
   profile: {
     data: {
       email: "amina@example.test",
@@ -50,7 +53,11 @@ const WANT: Want = {
 
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => mocks.navigate }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ address: "0xabc", isAuthenticated: true }),
+  useAuthStatus: () => ({
+    address: "0xabc",
+    isAuthenticated: true,
+    session: { role: mocks.auth.role, address: "0xabc" },
+  }),
 }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({ useAuthProfile: () => mocks.profile }));
 vi.mock("#/hooks/use-resource-usage", () => ({
@@ -68,6 +75,8 @@ vi.mock("#/lib/api/wants", () => ({
   wantsClient: {
     create: mocks.create,
     update: mocks.update,
+    updateAsAdmin: mocks.updateAsAdmin,
+    editRecord: mocks.editRecord,
     reopen: mocks.reopen,
     mine: mocks.mine,
     close: mocks.close,
@@ -153,10 +162,15 @@ beforeEach(() => {
   mocks.navigate.mockReset().mockResolvedValue(undefined);
   mocks.create.mockReset().mockResolvedValue(WANT);
   mocks.update.mockReset().mockResolvedValue(WANT);
+  mocks.updateAsAdmin.mockReset().mockResolvedValue(WANT);
+  mocks.editRecord.mockReset().mockResolvedValue(WANT);
+  mocks.auth.role = "USER";
   mocks.reopen.mockReset().mockResolvedValue(WANT);
   mocks.close.mockReset().mockResolvedValue(undefined);
   mocks.remove.mockReset().mockResolvedValue(undefined);
   mocks.mine.mockReset().mockResolvedValue({ wants: [WANT], first: 7, last: 7 });
+  mocks.profile.data.email = "amina@example.test";
+  mocks.profile.data.phone = "+254700000000";
   mocks.profile.data.geoLat = -1.286;
   mocks.profile.data.geoLng = 36.817;
   mocks.profile.data.locationName = "Nairobi Market";
@@ -283,6 +297,41 @@ describe("Want form", () => {
     ).toBe("true");
   });
 
+  it("lets an admin edit contact instructions for a closed Want while leaving owner controls disabled", async () => {
+    mocks.auth.role = "ADMIN";
+    const closedWant = {
+      ...WANT,
+      ownerAddress: `0x${"a".repeat(40)}`,
+      status: "CLOSED",
+      state: "closed",
+      contactText: "Meet by the gate",
+    };
+    mocks.editRecord.mockResolvedValue(closedWant);
+    mocks.updateAsAdmin.mockResolvedValue(closedWant);
+    renderForm("7");
+
+    const instructions = await screen.findByLabelText("Contact instructions");
+    const email = screen.getByRole("checkbox", { name: "Share owner's email" });
+    expect(email.getAttribute("aria-checked")).toBe("true");
+    expect(email.getAttribute("aria-disabled")).toBe("true");
+    expect(screen.queryByRole("button", { name: "Save and reopen Want" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Delete Want" })).toBeNull();
+    expect(mocks.mine).not.toHaveBeenCalled();
+
+    fireEvent.change(instructions, { target: { value: "Meet at the market" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save Want" }));
+    await waitFor(() =>
+      expect(mocks.updateAsAdmin).toHaveBeenCalledWith(
+        "7",
+        expect.objectContaining({
+          name: WANT.name,
+          contactText: "Meet at the market",
+        }),
+      ),
+    );
+    expect(mocks.reopen).not.toHaveBeenCalled();
+  });
+
   it("handles an empty start date as validation instead of throwing", async () => {
     renderForm();
 
@@ -312,6 +361,49 @@ describe("Want form", () => {
     );
     fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
     expect(mocks.profile.refetch).toHaveBeenCalled();
+  });
+
+  it("retries a failed profile read for create without looking up an existing Want", () => {
+    mocks.profile.isError = true;
+    renderForm();
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.profile.refetch).toHaveBeenCalledOnce();
+    expect(mocks.mine).not.toHaveBeenCalled();
+    expect(mocks.editRecord).not.toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "Create Want" })).toBeNull();
+  });
+
+  it("lets the owner reopen a closed Want with unavailable contacts and blocks repeat submits", async () => {
+    mocks.profile.data.email = "wallet@clc.local";
+    mocks.profile.data.phone = "";
+    const closed: Want = { ...WANT, status: "CLOSED", state: "closed", contactPermission: 3 };
+    mocks.mine.mockResolvedValueOnce({ wants: [closed], first: 7, last: 7 });
+    let complete!: (want: Want) => void;
+    mocks.reopen.mockReturnValueOnce(
+      new Promise<Want>((resolve) => {
+        complete = resolve;
+      }),
+    );
+    renderForm("7");
+
+    const submit = await screen.findByRole<HTMLButtonElement>("button", {
+      name: "Save and reopen Want",
+    });
+    for (const name of ["Email unavailable", "Phone unavailable"]) {
+      const permission = screen.getByRole("checkbox", { name });
+      expect(permission.getAttribute("aria-disabled")).toBe("true");
+      expect(permission.getAttribute("aria-checked")).toBe("false");
+    }
+    fireEvent.click(submit);
+    await waitFor(() => expect(submit.getAttribute("aria-busy")).toBe("true"));
+    fireEvent.submit(submit.form!);
+    expect(mocks.reopen).toHaveBeenCalledExactlyOnceWith(
+      "7",
+      expect.objectContaining({ contactText: null, shareEmail: false, sharePhone: false }),
+    );
+    await act(async () => complete(WANT));
+    await waitFor(() => expect(mocks.navigate).toHaveBeenCalled());
   });
 
   it("requires an explicit location when the profile has none", async () => {

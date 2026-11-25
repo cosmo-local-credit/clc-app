@@ -1,4 +1,4 @@
-import { QueryClient } from "@tanstack/react-query";
+import { isCancelledError, QueryClient, skipToken } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { AdminMessagingClient, MessagingClient } from "./client";
@@ -10,9 +10,27 @@ import {
   conversationMessagesQueryOptions,
   loadOlderConversationMessages,
   messagingKeys,
+  resourceTargetsQueryOptions,
 } from "./queries";
 
 const VIEWER = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
+
+it("disables recipient lookup for a guest and keeps signed-in results wallet-scoped", async () => {
+  const resourceTargets = vi.fn().mockResolvedValue({ targets: [] });
+  const client = { resourceTargets } as unknown as MessagingClient;
+  const resource = { kind: "want" as const, resourceId: "42" };
+  expect(resourceTargetsQueryOptions(client, undefined, resource).enabled).toBe(false);
+  const none = resourceTargetsQueryOptions(client, undefined, undefined);
+  expect(none.enabled).toBe(false);
+  expect(none.queryFn).toBe(skipToken);
+  expect(resourceTargets).not.toHaveBeenCalled();
+  const options = resourceTargetsQueryOptions(client, VIEWER, resource);
+  await new QueryClient().fetchQuery(options);
+  expect(resourceTargets).toHaveBeenCalledWith(resource, expect.any(AbortSignal));
+  expect(options.queryKey).not.toEqual(
+    resourceTargetsQueryOptions(client, undefined, resource).queryKey,
+  );
+});
 
 it("scopes a peer lookup by viewer and checks it matches the requested direct peer", async () => {
   const peer = "0xDEADBEEF00000000000000000000000000000001";
@@ -47,12 +65,123 @@ const message = (id: number) => ({
   createdAt: "2026-11-09T10:00:00Z",
 });
 
-function fakeClient(pages: Array<{ items: ReturnType<typeof message>[]; hasMore: boolean }>) {
+function fakeClient(
+  pages: Array<{ items: ReturnType<typeof message>[]; hasMore: boolean; clearedThrough?: number }>,
+) {
   const messages = vi.fn(() => Promise.resolve(pages.shift() ?? { items: [], hasMore: false }));
   return { client: { messages } as unknown as MessagingClient, messages };
 }
 
 describe("conversation messages query", () => {
+  it("keeps a cleared cache empty when an in-flight poll resolves after thread removal", async () => {
+    const queryClient = new QueryClient();
+    const key = messagingKeys.messages(VIEWER, 3);
+    queryClient.setQueryData(key, { items: [message(10)], hasOlder: true, fetchedThrough: 10 });
+    let finish: (page: Page) => void = () => {};
+    const messages = vi.fn(
+      (_id: number, _params: unknown, _signal?: AbortSignal) =>
+        new Promise<Page>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const client = { messages } as unknown as MessagingClient;
+    const poll = queryClient
+      .fetchQuery(conversationMessagesQueryOptions(client, VIEWER, 3))
+      .catch((error: unknown) => error);
+    await vi.waitFor(() => expect(messages).toHaveBeenCalledOnce());
+    const signal = messages.mock.calls[0]?.[2];
+    queryClient.removeQueries({ queryKey: key });
+    expect(signal?.aborted).toBe(true);
+    // A transport can complete after cancellation. It must not restore rows.
+    finish({ items: [message(11)], hasMore: false });
+    expect(isCancelledError(await poll)).toBe(true);
+    expect(queryClient.getQueryData(key)).toBeUndefined();
+    expect(queryClient.getQueryState(key)).toBeUndefined();
+  });
+
+  it("does not recreate a deleted thread when an older-page request completes late", async () => {
+    const queryClient = new QueryClient();
+    const key = messagingKeys.messages(VIEWER, 3);
+    queryClient.setQueryData(key, { items: [message(10)], hasOlder: true, fetchedThrough: 10 });
+    let finish: (page: Page) => void = () => {};
+    const messages = vi.fn(
+      () =>
+        new Promise<Page>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const client = { messages } as unknown as MessagingClient;
+    const older = loadOlderConversationMessages(client, queryClient, VIEWER, 3);
+    queryClient.removeQueries({ queryKey: key });
+    finish({ items: [message(1)], hasMore: true });
+    expect(await older).toBe(false);
+    expect(queryClient.getQueryData(key)).toBeUndefined();
+  });
+
+  it("clears cached history on a remote deletion and resumes after the cutoff", async () => {
+    const queryClient = new QueryClient();
+    const { client, messages } = fakeClient([
+      { items: [message(4), message(5)], hasMore: true },
+      { items: [], hasMore: false, clearedThrough: 8 },
+      { items: [message(9)], hasMore: false, clearedThrough: 8 },
+    ]);
+    const options = conversationMessagesQueryOptions(client, VIEWER, 3);
+    await queryClient.fetchQuery(options);
+    expect(await queryClient.fetchQuery({ ...options, staleTime: 0 })).toEqual({
+      items: [],
+      hasOlder: false,
+      fetchedThrough: 8,
+      clearedThrough: 8,
+    });
+    appendThreadMessage(queryClient, options.queryKey, message(5));
+    expect(queryClient.getQueryData(options.queryKey)).toMatchObject({ items: [] });
+    const renewed = await queryClient.fetchQuery({ ...options, staleTime: 0 });
+    expect(messages).toHaveBeenLastCalledWith(3, { after: 8, limit: 100 }, expect.anything());
+    expect(renewed.items).toEqual([message(9)]);
+    expect(renewed.hasOlder).toBe(false);
+  });
+
+  it("does not restore older pages or stale refreshes after a newer cutoff arrives", async () => {
+    const queryClient = new QueryClient();
+    const key = messagingKeys.messages(VIEWER, 3);
+    queryClient.setQueryData(key, { items: [message(10)], hasOlder: true, fetchedThrough: 10 });
+    let finishPoll: (page: Page) => void = () => {};
+    let finishOlder: (page: Page) => void = () => {};
+    const messages = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise<Page>((resolve) => {
+            finishPoll = resolve;
+          }),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise<Page>((resolve) => {
+            finishOlder = resolve;
+          }),
+      );
+    const client = { messages } as unknown as MessagingClient;
+    const pending = queryClient.fetchQuery(conversationMessagesQueryOptions(client, VIEWER, 3));
+    const older = loadOlderConversationMessages(client, queryClient, VIEWER, 3);
+    await vi.waitFor(() => expect(messages).toHaveBeenCalledTimes(2));
+    queryClient.setQueryData(key, {
+      items: [],
+      hasOlder: false,
+      fetchedThrough: 12,
+      clearedThrough: 12,
+    });
+    finishOlder({ items: [message(8), message(9)], hasMore: true });
+    expect(await older).toBe(false);
+    finishPoll({ items: [message(11)], hasMore: false });
+    expect(await pending).toEqual({
+      items: [],
+      hasOlder: false,
+      fetchedThrough: 12,
+      clearedThrough: 12,
+    });
+  });
+
   it("opens on the newest page, then reads only after the newest id", async () => {
     const queryClient = new QueryClient();
     const { client, messages } = fakeClient([

@@ -29,6 +29,7 @@ import {
   WithdrawalRecipient,
 } from "./safe-proposal-labels";
 import { SafeExecutionControl } from "./safe-execution-control";
+import { SafeQueueNotice, SafeQueueRefresh } from "./safe-queue-notice";
 import { SafeRejectionControl } from "./safe-rejection-control";
 
 /**
@@ -80,10 +81,15 @@ function PendingList({
           <p className="py-6 text-center text-sm text-muted-foreground">
             <Trans>Loading…</Trans>
           </p>
-        ) : pending.status === "error" ? (
-          <p className="py-6 text-sm text-muted-foreground">
-            <Trans>Proposals are unavailable here. You can still use your multisig wallet.</Trans>
-          </p>
+        ) : pending.status !== "ready" ? (
+          <div className="py-6">
+            <SafeQueueNotice
+              status={pending.status}
+              retry={pending.retry}
+              retrying={pending.retrying}
+              quotaResetAt={pending.quotaResetAt}
+            />
+          </div>
         ) : safeTxHash &&
           !pending.proposals.some(
             (proposal) =>
@@ -113,6 +119,11 @@ function PendingList({
             ))}
           </ul>
         )}
+        {pending.status === "ready" ? (
+          <div className="flex justify-center py-3">
+            <SafeQueueRefresh retry={pending.retry} retrying={pending.retrying} />
+          </div>
+        ) : null}
       </div>
       <SheetFooter>
         {SAFE_APP_PREFIX ? (

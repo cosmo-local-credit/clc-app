@@ -3,10 +3,9 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useId, useState, type ReactNode } from "react";
 import { RiArrowLeftSLine } from "react-icons/ri";
-import { useConnection } from "wagmi";
 
 import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
-import { OwnerMessageButton } from "#/components/messaging/resource-owner-contact";
+import { ResourceMessageButton } from "#/components/messaging/resource-owner-contact";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
@@ -22,8 +21,8 @@ import { VoucherCatalogButton } from "#/desktop/vouchers/detail/voucher-catalog-
 import { useCanEditVoucher, VoucherInfoDesk } from "#/desktop/vouchers/detail/voucher-info";
 import { VoucherOfferingsDesk } from "#/desktop/vouchers/detail/voucher-offerings";
 import { VoucherPostsDesk } from "#/desktop/vouchers/detail/voucher-posts";
+import { VoucherWantsDesk } from "#/desktop/vouchers/detail/voucher-wants";
 import { VoucherReviewsDesk } from "#/desktop/vouchers/detail/voucher-reviews";
-import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import {
   VoucherBalanceLine,
   VoucherRatingLine,
@@ -55,10 +54,11 @@ export function MarketPlacePanel({ realFix }: { realFix: Coordinates | null }) {
   return null;
 }
 
-type Section = "offerings" | "reviews" | "posts" | "info" | "activity";
+type Section = "offerings" | "wants" | "reviews" | "posts" | "info" | "activity";
 
 const SECTIONS: { id: Section; label: ReactNode }[] = [
   { id: "offerings", label: <Trans>Offerings</Trans> },
+  { id: "wants", label: <Trans>Wants</Trans> },
   { id: "reviews", label: <Trans>Reviews</Trans> },
   { id: "posts", label: <Trans>Posts</Trans> },
   { id: "info", label: <Trans>Info</Trans> },
@@ -81,7 +81,6 @@ function VoucherPlace({
   const tabId = (id: Section) => `${tabsId}-tab-${id}`;
   const detailQuery = useMarketVoucherDetail(address);
   const detail = detailQuery.data;
-  const auth = useAuthStatus();
   const name = detail?.name ?? "";
   const symbol = detail?.symbol ?? "";
   const lat = detail?.lat ?? null;
@@ -97,7 +96,6 @@ function VoucherPlace({
   });
   const unavailable = !detail && detailQuery.isError;
   const voucherAddress = detail?.address ?? address;
-  const { address: walletAddress } = useConnection();
   const { canEdit } = useCanEditVoucher(voucherAddress, detail);
   const reportVoucher: VoucherRef | undefined = detail?.chainId
     ? { chainId: detail.chainId, address: voucherAddress as VoucherRef["address"] }
@@ -204,18 +202,12 @@ function VoucherPlace({
             website={detail?.website}
             size="panel"
           />
-          {detail ? (
-            <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
+            {detail ? (
               <VoucherCatalogButton resourceId={detail.id} address={detail.address} />
-              {detail.active && detail.ownerAddress ? (
-                <OwnerMessageButton
-                  ownerAddress={detail.ownerAddress}
-                  excludeAddress={auth.isAuthenticated ? auth.session?.address : undefined}
-                  context={{ kind: "voucher", resourceId: detail.address }}
-                />
-              ) : null}
-            </div>
-          ) : null}
+            ) : null}
+            <ResourceMessageButton context={{ kind: "voucher", resourceId: voucherAddress }} />
+          </div>
           {/* Local content tabs: the tablist pattern, not route links. */}
           <DeskTabs label={t`Voucher`} kind="tabs" tight className="sticky top-0 z-10 bg-card">
             {SECTIONS.map((entry) => (
@@ -242,6 +234,8 @@ function VoucherPlace({
                 ownerAddress={detail?.ownerAddress ?? null}
                 layout="panel"
               />
+            ) : section === "wants" ? (
+              <VoucherWantsDesk address={voucherAddress} layout="panel" />
             ) : section === "reviews" ? (
               <VoucherReviewsDesk address={voucherAddress} layout="panel" />
             ) : section === "posts" ? (
@@ -262,11 +256,7 @@ function VoucherPlace({
                 privateInfo={privateInfo}
               />
             ) : (
-              <VoucherActivityDesk
-                accountAddress={walletAddress}
-                contractAddress={voucherAddress}
-                layout="panel"
-              />
+              <VoucherActivityDesk contractAddress={voucherAddress} layout="panel" />
             )}
           </DeskTabPanel>
         </div>

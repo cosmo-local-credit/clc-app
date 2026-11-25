@@ -41,8 +41,15 @@ import { cn } from "#/lib/utils";
 import { VoucherAbout } from "./voucher-about";
 import { VoucherContractActionsPanel } from "./voucher-contract-actions-panel";
 import { VoucherOfferingsPanel } from "./voucher-offerings-panel";
+import { VoucherWantsPanel } from "./voucher-wants-panel";
 
-export type VoucherDetailSection = "offerings" | "activity" | "info" | "reviews" | "posts";
+export type VoucherDetailSection =
+  | "offerings"
+  | "wants"
+  | "activity"
+  | "info"
+  | "reviews"
+  | "posts";
 
 type TxKind = "in" | "out";
 
@@ -144,6 +151,10 @@ export function VoucherDetailSections({
         />
       </VoucherSection>
 
+      <VoucherSection id="wants" title={<Trans>Wants</Trans>} {...{ idPrefix, headingLevel }}>
+        <VoucherWantsPanel key={address} address={address} />
+      </VoucherSection>
+
       <VoucherSection id="reviews" title={<Trans>Reviews</Trans>} {...{ idPrefix, headingLevel }}>
         <VoucherReviewsPanel key={address} address={address} presentation="section" />
       </VoucherSection>
@@ -175,7 +186,7 @@ export function VoucherDetailSections({
       </VoucherSection>
 
       <VoucherSection id="activity" title={<Trans>Activity</Trans>} {...{ idPrefix, headingLevel }}>
-        <VoucherActivityPanel accountAddress={walletAddress} contractAddress={address} />
+        <VoucherActivityPanel contractAddress={address} />
       </VoucherSection>
     </div>
   );
@@ -386,17 +397,17 @@ function VoucherPostsPanel({
   );
 }
 
-function VoucherActivityPanel({
-  accountAddress,
-  contractAddress,
-}: {
-  accountAddress: string | undefined;
-  contractAddress: string;
-}) {
+function VoucherActivityPanel({ contractAddress }: { contractAddress: string }) {
   const { i18n } = useLingui();
   const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
-  const { transfersQuery, transfers, visibleTransfers, hasMoreTransfers, loadMore } =
-    useVoucherTransfers(accountAddress, contractAddress);
+  const {
+    accountAddress,
+    transfersQuery,
+    transfers,
+    visibleTransfers,
+    hasMoreTransfers,
+    loadMore,
+  } = useVoucherTransfers(contractAddress);
 
   return (
     <>

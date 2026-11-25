@@ -135,7 +135,9 @@ Range.prototype.getBoundingClientRect = () =>
     y: 0,
   }) satisfies DOMRect;
 
+// jsdom does not implement scrolling. Router tests can still assert calls.
 Element.prototype.scrollIntoView = () => {};
+window.scrollTo = () => {};
 
 afterEach(() => {
   cleanup();

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
@@ -174,13 +174,13 @@ function previewToken(id: number, prefix: "H" | "I") {
 function mockVoucherPreview({
   balances,
   issued,
-  failNextPageOnce = false,
+  firstNextPageResponse,
 }: {
   balances: readonly ReturnType<typeof previewToken>[];
   issued: readonly ReturnType<typeof previewToken>[];
-  failNextPageOnce?: boolean;
+  firstNextPageResponse?: Promise<ReturnType<typeof jsonResponse>>;
 }) {
-  let nextPageFailed = false;
+  let firstNextPage = true;
   const fetchMock = vi.fn().mockImplementation((url: string | URL) => {
     const parsed = new URL(String(url));
     if (parsed.pathname.includes("/users/me/wants"))
@@ -200,9 +200,9 @@ function mockVoucherPreview({
     if (parsed.pathname.endsWith("/tokens")) {
       const perPage = Number(parsed.searchParams.get("perPage") ?? "20");
       const cursor = parsed.searchParams.get("cursor");
-      if (cursor && failNextPageOnce && !nextPageFailed) {
-        nextPageFailed = true;
-        return Promise.resolve(jsonResponse(null, 500));
+      if (cursor && firstNextPage && firstNextPageResponse) {
+        firstNextPage = false;
+        return firstNextPageResponse;
       }
       const start = cursor
         ? Math.max(balances.findIndex((token) => token.id === Number(cursor)) + 1, 0)
@@ -241,36 +241,41 @@ const OWNED_POOL = {
  * cannot serve the pool list — the two responses have different shapes, and a
  * pool page read as a token page is silently empty rather than failing.
  */
-function mockEndpoints({
+function mockEndpoints<Pool extends { id: number }>({
   pools,
   poolStatus = 200,
 }: {
-  pools: readonly unknown[];
+  pools: readonly Pool[];
   poolStatus?: number;
 }) {
   const fetchMock = vi.fn().mockImplementation((url: string | URL) => {
-    const href = String(url);
-    if (href.includes("/users/me/wants"))
+    const request = new URL(String(url));
+    if (request.pathname.endsWith("/users/me/wants"))
       return Promise.resolve(jsonResponse({ wants: [], first: 0, last: 0 }));
-    if (href.includes("/api/v2/users/me/owned-pools") && poolStatus !== 200)
-      return Promise.resolve(jsonResponse(null, poolStatus));
-    const result = href.includes("/api/v2/users/me/owned-pools")
-      ? { pools, first: 0, last: 0 }
-      : { tokens: [] as unknown[] };
-    return Promise.resolve({
-      ok: true,
-      status: 200,
-      statusText: "",
-      text: () => Promise.resolve(JSON.stringify({ ok: true, result })),
-    });
+    if (!request.pathname.endsWith("/users/me/owned-pools"))
+      return Promise.resolve(jsonResponse({ tokens: [] }));
+    if (poolStatus !== 200) return Promise.resolve(jsonResponse(null, poolStatus));
+
+    const cursor = request.searchParams.get("cursor");
+    const pageSize = Number(request.searchParams.get("perPage"));
+    const start = cursor === null ? 0 : pools.findIndex((pool) => String(pool.id) === cursor) + 1;
+    const page = pools.slice(start, start + pageSize);
+    return Promise.resolve(
+      jsonResponse({ pools: page, first: page.at(0)?.id, last: page.at(-1)?.id }),
+    );
   });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
 }
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
+
+function advanceClock(ms: number) {
+  return act(() => vi.advanceTimersByTimeAsync(ms));
+}
 
 beforeEach(() => {
   vi.spyOn(Math, "random").mockReturnValue(0);
@@ -381,18 +386,38 @@ describe("WalletPage", () => {
     );
   });
 
-  it("keeps verified preview rows while automatically retrying a later page", async () => {
+  it("completes the Holdings preview after automatically retrying a later page", async () => {
     const issued = Array.from({ length: 19 }, (_, index) => previewToken(220 - index, "I"));
     const holdings = [201, 200, 199, 198, 197].map((id) => previewToken(id, "H"));
-    mockVoucherPreview({ balances: [...issued, ...holdings], issued, failNextPageOnce: true });
+    let finishLaterPage = () => {};
+    const firstNextPageResponse = new Promise<ReturnType<typeof jsonResponse>>((resolve) => {
+      finishLaterPage = () => resolve(jsonResponse(null, 500));
+    });
+    const fetchMock = mockVoucherPreview({
+      balances: [...issued, ...holdings],
+      issued,
+      firstNextPageResponse,
+    });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
-    const completeHoldings = within(
-      await screen.findByRole("region", { name: "Holdings" }, { timeout: 2_000 }),
-    );
-    await waitFor(() => expect(completeHoldings.getAllByRole("link")).toHaveLength(5), {
-      timeout: 2_000,
+    const laterPage = () =>
+      fetchMock.mock.calls.filter(([url]) => String(url).includes("cursor=201"));
+    await waitFor(() => expect(laterPage()).toHaveLength(1));
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    await act(async () => {
+      finishLaterPage();
+      await vi.advanceTimersByTimeAsync(999);
     });
+
+    expect(screen.getByText("Loading vouchers…")).toBeTruthy();
+    expect(screen.queryByText("Couldn't load vouchers.")).toBeNull();
+    expect(laterPage()).toHaveLength(1);
+
+    await advanceClock(2);
+    expect(laterPage()).toHaveLength(2);
+    const completeHoldings = within(screen.getByRole("region", { name: "Holdings" }));
+    expect(completeHoldings.getAllByRole("link")).toHaveLength(5);
+    expect(completeHoldings.getByText("H201")).toBeTruthy();
     expect(completeHoldings.getByText("H197")).toBeTruthy();
     expect(screen.queryByText("Couldn't load vouchers.")).toBeNull();
   });
@@ -470,43 +495,56 @@ describe("WalletPage", () => {
   });
 
   it("does not file balances while the issued list is down", async () => {
-    mockLatestTokens({ issuedStatus: 500 });
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const fetchMock = mockLatestTokens({ issuedStatus: 500 });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
+    await advanceClock(2_999);
+    expect(screen.queryByText("Couldn't load vouchers.")).toBeNull();
     expect(
-      await screen.findByText("Couldn't load vouchers.", undefined, { timeout: 4_000 }),
-    ).toBeTruthy();
+      fetchMock.mock.calls.filter(([url]) => String(url).endsWith("/tokens/issued?perPage=100")),
+    ).toHaveLength(2);
+    await advanceClock(2);
+    expect(screen.getByText("Couldn't load vouchers.")).toBeTruthy();
     expect(screen.queryByText("USD₮")).toBeNull();
     expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
   });
 
   it("retries resource limits and failed owned-voucher discovery", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     mocks.usage.isError = true;
-    mockLatestTokens({ issuedStatus: 500 });
+    const fetchMock = mockLatestTokens({ issuedStatus: 500 });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(mocks.usage.refetch).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole("button", { name: "View all My Vouchers" }));
     expect(mocks.navigate).toHaveBeenCalledWith({ to: "/wallet/vouchers" });
 
+    await advanceClock(3_001);
     const vouchers = within(screen.getByRole("region", { name: /My Vouchers/ }));
-    fireEvent.click(await vouchers.findByRole("button", { name: "Try again" }));
-    await waitFor(() => expect(fetch).toHaveBeenCalled());
+    fireEvent.click(vouchers.getByRole("button", { name: "Try again" }));
+    expect(
+      fetchMock.mock.calls.filter(([url]) => String(url).includes("/tokens/issued")),
+    ).toHaveLength(4);
   });
 
   it("retries balances without hiding an owned voucher", async () => {
-    mockLatestTokens({
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const fetchMock = mockLatestTokens({
       tokens: [ISSUED],
       owners: { [ISSUED.tokenAddress]: ADDRESS },
       balanceStatus: 500,
     });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
-    expect(await screen.findByText("WLLR", undefined, { timeout: 4_000 })).toBeTruthy();
-    fireEvent.click(await screen.findByRole("button", { name: "Try again" }, { timeout: 4_000 }));
-    await waitFor(() => expect(fetch).toHaveBeenCalled());
+    await advanceClock(3_001);
+    expect(screen.getByText("WLLR")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes("/tokens?"))).toHaveLength(
+      4,
+    );
   });
 
   it("puts each allowance beside My Vouchers and My Pools", async () => {
@@ -600,8 +638,20 @@ describe("WalletPage", () => {
     mockEndpoints({
       pools: [
         OWNED_POOL,
-        { ...OWNED_POOL, id: 9, name: "Multisig Pool", ownerAddress: safe },
-        { ...OWNED_POOL, id: 8, name: "Someone Else's", ownerAddress: OTHER },
+        {
+          ...OWNED_POOL,
+          id: 9,
+          address: "0x0000000000000000000000000000000000000009",
+          name: "Multisig Pool",
+          ownerAddress: safe,
+        },
+        {
+          ...OWNED_POOL,
+          id: 8,
+          address: "0x0000000000000000000000000000000000000008",
+          name: "Someone Else's",
+          ownerAddress: OTHER,
+        },
       ],
     });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
@@ -624,15 +674,19 @@ describe("WalletPage", () => {
   });
 
   it("retries a failed owned-pools request", async () => {
-    mockEndpoints({ pools: [], poolStatus: 500 });
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const fetchMock = mockEndpoints({ pools: [], poolStatus: 500 });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Try again" }, { timeout: 4_000 }));
-    await waitFor(() => expect(fetch).toHaveBeenCalled());
+    await advanceClock(3_001);
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(
+      fetchMock.mock.calls.filter(([url]) => String(url).includes("/users/me/owned-pools")),
+    ).toHaveLength(4);
   });
 
   it("shows retired owner pools, singular membership, and owner pagination", async () => {
-    const pools = Array.from({ length: 20 }, (_, index) => ({
+    const pools = Array.from({ length: 21 }, (_, index) => ({
       ...OWNED_POOL,
       id: index + 1,
       address: `0x${(index + 1).toString(16).padStart(40, "0")}`,
@@ -640,18 +694,16 @@ describe("WalletPage", () => {
       voucherCount: index === 0 ? 1 : 2,
       active: index === 0 ? false : true,
     }));
-    mockEndpoints({ pools });
+    const fetchMock = mockEndpoints({ pools });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
     expect(await screen.findByText("Retired — withdrawals available")).toBeTruthy();
     expect(screen.getByText("1 voucher")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Load more" }));
-    await waitFor(() =>
-      expect(
-        (fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([url]) =>
-          String(url).includes("/users/me/owned-pools"),
-        ).length,
-      ).toBeGreaterThan(1),
+    expect(await screen.findByText("Pool 21")).toBeTruthy();
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/users/me/owned-pools?perPage=20&cursor=20&next=true"),
+      expect.anything(),
     );
   });
 

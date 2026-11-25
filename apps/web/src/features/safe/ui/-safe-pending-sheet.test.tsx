@@ -1,5 +1,6 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { BackendApiError } from "@clc/api/client/errors";
 import { encodeFunctionData, parseAbi } from "viem";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -20,6 +21,9 @@ const mocks = vi.hoisted(() => ({
   version: vi.fn(),
   connectorId: "private-key",
   refreshSigners: vi.fn(),
+  authState: "authenticated",
+  authAddress: "",
+  retrySession: vi.fn(),
 }));
 vi.mock("#/lib/api/market", () => ({ marketClient: { getMarketVoucher: mocks.voucher } }));
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
@@ -42,7 +46,13 @@ vi.mock("wagmi", () => ({
 vi.mock("viem/actions", () => ({ readContract: mocks.version }));
 vi.mock("#/lib/chain", () => ({ CHAIN_ID: 100 }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: true, session: { address: ME } }),
+  useAuthStatus: () => ({
+    state: mocks.authState,
+    isLoading: mocks.authState === "loading",
+    isAuthenticated: mocks.authState === "authenticated",
+    session: { address: mocks.authAddress },
+    retry: mocks.retrySession,
+  }),
 }));
 vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
   useSafeOwnersSignedBy: () => new Set([SAFE]),
@@ -92,31 +102,198 @@ function proposal(overrides: Record<string, unknown> = {}) {
 
 let queryClient: QueryClient;
 
-async function openWith(transactions: unknown[], safeTxHash?: `0x${string}`) {
-  mocks.pending.mockResolvedValue(transactions);
-  queryClient = new QueryClient();
-  render(
+function panel() {
+  return (
     <QueryClientProvider client={queryClient}>
       <SafePendingSheet />
-    </QueryClientProvider>,
+    </QueryClientProvider>
   );
+}
+
+function renderOpenSheet(safeTxHash?: `0x${string}`) {
+  queryClient = new QueryClient();
+  const view = render(panel());
   act(() => useSafeSheet.getState().show(SAFE, safeTxHash));
+  return view;
+}
+
+async function openWith(transactions: unknown[], safeTxHash?: `0x${string}`) {
+  mocks.pending.mockResolvedValue(transactions);
+  renderOpenSheet(safeTxHash);
   if (!safeTxHash) await screen.findByText("Nonce 1");
   return screen.getByRole("dialog");
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.pending.mockReset();
   mocks.confirm.mockReset();
   mocks.execute.mockReset();
   mocks.reject.mockReset();
   mocks.voucher.mockResolvedValue({ decimals: 6, symbol: "MLTT" });
   mocks.execute.mockResolvedValue({});
   mocks.connectorId = "private-key";
+  mocks.authState = "authenticated";
+  mocks.authAddress = ME;
   act(() => useSafeSheet.getState().close());
 });
 
 describe("SafePendingSheet", () => {
+  it("waits for session verification and keeps results scoped to the verified viewer", async () => {
+    mocks.authState = "loading";
+    mocks.pending.mockResolvedValueOnce([proposal()]).mockResolvedValueOnce([]);
+    const view = renderOpenSheet();
+    expect(await screen.findByText("Loading…")).toBeTruthy();
+    expect(mocks.pending).not.toHaveBeenCalled();
+
+    mocks.authState = "authenticated";
+    view.rerender(panel());
+    expect(await screen.findByText("Nonce 1")).toBeTruthy();
+
+    mocks.authState = "guest";
+    view.rerender(panel());
+    expect(
+      screen.getByText("Sign in with a signer of this multisig to view proposals."),
+    ).toBeTruthy();
+    expect(screen.queryByText("Nonce 1")).toBeNull();
+    expect(mocks.pending).toHaveBeenCalledTimes(1);
+
+    mocks.authAddress = OTHER;
+    mocks.authState = "authenticated";
+    view.rerender(panel());
+    expect(await screen.findByText("No queued proposals found.")).toBeTruthy();
+    expect(mocks.pending).toHaveBeenCalledTimes(2);
+    expect(mocks.refreshSigners).not.toHaveBeenCalled();
+  });
+
+  it("retries session verification before making a protected read", async () => {
+    mocks.authState = "sessionCheckError";
+    renderOpenSheet();
+    fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
+    expect(mocks.retrySession).toHaveBeenCalledOnce();
+    expect(mocks.pending).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [401, "Sign in with a signer of this multisig to view proposals."],
+    [403, "Only signers of this multisig can view proposals."],
+  ])(
+    "explains revoked access after a %i response and hides previously loaded rows",
+    async (status, notice) => {
+      await openWith([proposal()]);
+      mocks.pending.mockRejectedValue(new BackendApiError(status, "Access denied"));
+      await act(() => queryClient.refetchQueries());
+
+      expect(await screen.findByText(notice)).toBeTruthy();
+      expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+      expect(screen.queryByText("Nonce 1")).toBeNull();
+      expect(screen.getByRole("link", { name: "Open in Safe" })).toBeTruthy();
+    },
+  );
+
+  it("retries an unavailable queue read without sending a transaction", async () => {
+    mocks.pending
+      .mockRejectedValueOnce(
+        new BackendApiError(200, "Invalid response", undefined, { kind: "protocol" }),
+      )
+      .mockResolvedValueOnce([proposal()]);
+    renderOpenSheet();
+    expect(await screen.findByText("Couldn't load multisig proposals.")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Open in Safe" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+
+    expect(await screen.findByText("Nonce 1")).toBeTruthy();
+    expect(screen.queryByText("Couldn't load multisig proposals.")).toBeNull();
+    expect(mocks.confirm).not.toHaveBeenCalled();
+    expect(mocks.execute).not.toHaveBeenCalled();
+    expect(mocks.reject).not.toHaveBeenCalled();
+  });
+
+  it("refreshes an empty queue manually and polls a nonempty queue only in view", async () => {
+    vi.useFakeTimers();
+    focusManager.setFocused(true);
+    try {
+      mocks.pending.mockResolvedValueOnce([]).mockResolvedValue([proposal()]);
+      renderOpenSheet();
+      await act(() => vi.advanceTimersByTimeAsync(1));
+      expect(screen.getByText("No queued proposals found.")).toBeTruthy();
+      await act(() => vi.advanceTimersByTimeAsync(60_000));
+      expect(mocks.pending).toHaveBeenCalledTimes(1);
+
+      fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+      await act(() => vi.advanceTimersByTimeAsync(1));
+      expect(screen.getByText("Nonce 1")).toBeTruthy();
+      expect(mocks.pending).toHaveBeenCalledTimes(2);
+      await act(() => vi.advanceTimersByTimeAsync(29_998));
+      expect(mocks.pending).toHaveBeenCalledTimes(2);
+      await act(() => vi.advanceTimersByTimeAsync(2));
+      expect(mocks.pending).toHaveBeenCalledTimes(3);
+
+      focusManager.setFocused(false);
+      await act(() => vi.advanceTimersByTimeAsync(60_000));
+      expect(mocks.pending).toHaveBeenCalledTimes(3);
+      act(() => useSafeSheet.getState().close());
+      focusManager.setFocused(true);
+      await act(() => vi.advanceTimersByTimeAsync(60_000));
+      expect(mocks.pending).toHaveBeenCalledTimes(3);
+    } finally {
+      focusManager.setFocused(undefined);
+      vi.useRealTimers();
+    }
+  });
+
+  it("pauses automatic quota reads and lets a signer retry after the reset", async () => {
+    vi.useFakeTimers();
+    try {
+      const quotaDelayMs = 120_000;
+      mocks.pending
+        .mockRejectedValueOnce(
+          new BackendApiError(429, "Safe quota", "E29", { retryAfterMs: quotaDelayMs }),
+        )
+        .mockResolvedValueOnce([]);
+      renderOpenSheet();
+      await act(() => vi.advanceTimersByTimeAsync(1));
+      expect(
+        screen.getByText(/^Safe’s monthly request limit has been reached\. Try again after /),
+      ).toBeTruthy();
+      expect(screen.getByRole("link", { name: "Open in Safe" })).toBeTruthy();
+      expect(screen.queryByText("No queued proposals found.")).toBeNull();
+      act(() => useSafeSheet.getState().close());
+      act(() => useSafeSheet.getState().show(SAFE));
+      await act(() => queryClient.invalidateQueries());
+      await act(() => vi.advanceTimersByTimeAsync(quotaDelayMs / 2));
+      expect(mocks.pending).toHaveBeenCalledTimes(1);
+
+      await act(() => vi.advanceTimersByTimeAsync(quotaDelayMs / 2));
+      fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+      await act(() => vi.advanceTimersByTimeAsync(1));
+      expect(screen.getByText("No queued proposals found.")).toBeTruthy();
+      expect(mocks.pending).toHaveBeenCalledTimes(2);
+      expect(mocks.confirm).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("still retries a short Safe throttle", async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.pending
+        .mockRejectedValueOnce(
+          new BackendApiError(429, "Slow down", "E09", { retryAfterMs: 1_000 }),
+        )
+        .mockResolvedValueOnce([proposal()]);
+      renderOpenSheet();
+      await act(() => vi.advanceTimersByTimeAsync(999));
+      expect(mocks.pending).toHaveBeenCalledTimes(1);
+      await act(() => vi.advanceTimersByTimeAsync(252));
+      expect(mocks.pending).toHaveBeenCalledTimes(2);
+      expect(screen.getByText("Nonce 1")).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("names the action and lets a signer confirm it", async () => {
     const tx = proposal();
     const sheet = await openWith([tx]);

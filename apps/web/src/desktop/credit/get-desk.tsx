@@ -22,6 +22,7 @@ import { amountOf, figureOf, symbolOf } from "#/features/credit/logic/credit-dis
 import { creditRouteVouchers } from "#/features/credit/logic/credit-routes";
 import { CreditFailureNotice } from "#/features/credit/ui/credit-failure-notice";
 import { CreditRouteCapacity } from "#/features/credit/ui/credit-route-capacity";
+import { cn } from "#/lib/utils";
 
 /** A desktop exchange workspace. The route keeps the transaction state across view changes. */
 export function CreditGetDesk({
@@ -53,6 +54,11 @@ export function CreditGetDesk({
   const inspected =
     get.options.find((option) => option.voucher === inspectedVoucher) ?? selected ?? get.options[0];
   const empty = !get.routesPending && !get.routesError && get.options.length === 0;
+
+  function inspectOption(option: CreditGet["options"][number]) {
+    setInspectedVoucher(option.voucher);
+    if (option.state !== "refused") get.selectVoucher(option.voucher);
+  }
 
   return (
     <DeskCanvas>
@@ -249,16 +255,24 @@ export function CreditGetDesk({
                 rows={get.options}
                 rowKey={(option) => option.voucher.toLowerCase()}
                 selectedKey={get.selectedVoucher}
-                onSelect={(option) => {
-                  setInspectedVoucher(option.voucher);
-                  if (option.state !== "refused") get.selectVoucher(option.voucher);
-                }}
+                renderRow={(_option, { className, style }, cells) => (
+                  <div className={cn("relative isolate", className)} style={style}>
+                    {cells}
+                  </div>
+                )}
                 columns={[
                   {
                     id: "voucher",
                     header: t`Voucher`,
                     cell: (option) => (
-                      <span className="inline-flex items-center gap-1.5 font-mono font-semibold">
+                      <button
+                        type="button"
+                        data-desktop-row=""
+                        aria-pressed={option.voucher.toLowerCase() === get.selectedVoucher}
+                        onFocus={() => inspectOption(option)}
+                        onClick={() => inspectOption(option)}
+                        className="inline-flex items-center gap-1.5 font-mono font-semibold after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-primary"
+                      >
                         {option.voucher.toLowerCase() === get.selectedVoucher ? (
                           <RiCheckLine
                             className="size-3.5 shrink-0 text-primary"
@@ -266,7 +280,7 @@ export function CreditGetDesk({
                           />
                         ) : null}
                         {symbolOf(labels, option.voucher)}
-                      </span>
+                      </button>
                     ),
                   },
                   {
@@ -309,16 +323,22 @@ export function CreditGetDesk({
                     width: "minmax(8rem,1.2fr)",
                     align: "end",
                     cell: (option) => (
-                      <CreditRouteCapacity
-                        route={option.route}
-                        mode={get.mode}
-                        inputVoucher={option.voucher}
-                        outputVoucher={voucherAddress}
-                        labels={labels}
-                        locale={locale}
-                        onMax={() => get.fillRouteMax(option.voucher, option.route)}
-                        compact
-                      />
+                      // Keep only the Max button above the route selector's row-wide hit area.
+                      <span className="pointer-events-none relative z-10 [&>button]:pointer-events-auto">
+                        <CreditRouteCapacity
+                          route={option.route}
+                          mode={get.mode}
+                          inputVoucher={option.voucher}
+                          outputVoucher={voucherAddress}
+                          labels={labels}
+                          locale={locale}
+                          onMax={() => {
+                            setInspectedVoucher(option.voucher);
+                            get.fillRouteMax(option.voucher, option.route);
+                          }}
+                          compact
+                        />
+                      </span>
                     ),
                   },
                   {

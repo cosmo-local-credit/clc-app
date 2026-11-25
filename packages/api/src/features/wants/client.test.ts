@@ -46,6 +46,19 @@ function respond(result: unknown) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("Wants HTTP contract", () => {
+  it("reads Voucher-owner Wants publicly without contacts and forwards pagination and cancellation", async () => {
+    const fetcher = respond({ wants: [row], first: 7, last: 7 });
+    const signal = new AbortController().signal;
+    const address = `0x${"b".repeat(40)}`;
+    const result = await api.voucher(address, { perPage: 20, cursor: 9 }, signal);
+    expect(fetcher.mock.calls[0]?.[0]).toBe(
+      `https://api.test/api/v2/vouchers/${address}/wants?perPage=20&cursor=9`,
+    );
+    expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ credentials: "omit", signal });
+    expect(result.wants[0]).toMatchObject({ id: "7", name: "Bicycle repair" });
+    expect(result.wants[0]).not.toHaveProperty("contact");
+    expect(result.wants[0]).not.toHaveProperty("contactText");
+  });
   it("serializes public discovery filters and uses the session only for nearby discovery", async () => {
     const fetcher = respond({ wants: [row], first: 7, last: 7, tagFacets: [] });
     const page = await api.list({
@@ -121,6 +134,43 @@ describe("Wants HTTP contract", () => {
     respond({ contact: null });
 
     await expect(api.contact("7")).resolves.toBeUndefined();
+  });
+
+  it("loads and saves the admin editor record without submitting creator sharing choices", async () => {
+    const fetcher = respond({ want: { ...row, contactPermission: 1 } });
+    const signal = new AbortController().signal;
+
+    expect(await api.editRecord("7", signal)).toMatchObject({
+      id: "7",
+      contactPermission: 1,
+      contactText: "Meet near the market",
+    });
+    await api.updateAsAdmin("7", {
+      name: row.name,
+      description: row.description,
+      startsAt: row.startsAt,
+      expiresAt: null,
+      location: { locationName: row.locationName, lat: row.geoLat, lng: row.geoLng },
+      tags: row.tags,
+      imageUrl: null,
+      markerIcon: "question",
+      markerColor: "orange",
+      contactText: null,
+      shareEmail: false,
+      sharePhone: true,
+    });
+
+    expect(fetcher.mock.calls[0]).toEqual([
+      "https://api.test/api/v2/wants/7/edit",
+      expect.objectContaining({ method: "GET", credentials: "include", cache: "no-store", signal }),
+    ]);
+    const [url, init] = fetcher.mock.calls[1] ?? [];
+    expect(url).toBe("https://api.test/api/v2/wants/7");
+    expect(init).toMatchObject({ method: "PUT", credentials: "include", cache: "no-store" });
+    const body = JSON.parse(init.body as string);
+    expect(body).toHaveProperty("contactText", null);
+    expect(body).not.toHaveProperty("shareEmail");
+    expect(body).not.toHaveProperty("sharePhone");
   });
 
   it("loads paginated creator vouchers and pools from the public Want routes", async () => {

@@ -65,6 +65,37 @@ beforeEach(() => {
 });
 
 describe("flushQueuedNotificationAcks", () => {
+  it("retries a quiet receipt without turning it into a displayed receipt", async () => {
+    storage.listAcks.mockResolvedValue([
+      ackEntry({
+        payload: {
+          deviceId: "device-1",
+          notificationId: "notification-1",
+          receivedAt: "2026-06-10T12:00:00.000Z",
+          handledInApp: true,
+        },
+      }),
+    ]);
+    api.sendDeliveryAck.mockRejectedValueOnce(new Error("offline"));
+    storage.updateAckAttempt.mockResolvedValue(ackEntry({ attemptCount: 1 }));
+    const now = new Date("2026-06-11T12:00:00.000Z");
+
+    expect(await flushQueuedNotificationAcks({ now })).toEqual({ failed: 1, pruned: 0, sent: 0 });
+    expect(await flushQueuedNotificationAcks({ now })).toEqual({ failed: 0, pruned: 0, sent: 1 });
+    expect(api.sendDeliveryAck).toHaveBeenNthCalledWith(
+      2,
+      {
+        registrationId: "registration-1",
+        deviceId: "device-1",
+        notificationId: "notification-1",
+        receivedAt: "2026-06-10T12:00:00.000Z",
+        handledInApp: true,
+      },
+      { identityEpoch: "epoch-1" },
+    );
+    expect(storage.removeAck).toHaveBeenCalledOnce();
+  });
+
   it("sends delivery and click acknowledgments and removes accepted entries", async () => {
     storage.listAcks.mockResolvedValue([
       ackEntry({
@@ -157,6 +188,34 @@ describe("flushQueuedNotificationAcks", () => {
 });
 
 describe("syncNotificationInboxState", () => {
+  it("syncs a handled event without marking it shown or read", async () => {
+    api.syncInbox.mockResolvedValueOnce({
+      hasMore: false,
+      resetRequired: false,
+      deletions: [],
+      messages: [
+        {
+          notificationId: "quiet",
+          kind: "message.received",
+          handledInAppAt: "2026-06-11T12:00:02.000Z",
+          sentAt: "2026-06-11T12:00:01.000Z",
+          revision: 2,
+        },
+      ],
+      nextSyncCursor: "cursor-2",
+    });
+
+    await syncNotificationInboxState();
+
+    const page = storage.applyPage.mock.calls[0]?.[2];
+    expect(page.messages[0]).toMatchObject({
+      notificationId: "quiet",
+      handledInAppAt: "2026-06-11T12:00:02.000Z",
+    });
+    expect(page.messages[0].shownAt).toBeUndefined();
+    expect(page.messages[0].readAt).toBeUndefined();
+  });
+
   it("skips sync when notification enrollment has no device id", async () => {
     storage.readDeviceId.mockResolvedValue(null);
 
@@ -315,7 +374,11 @@ describe("notification feed pagination", () => {
   });
   it("prunes outgoing-account acknowledgments without sending them", async () => {
     storage.listAcks.mockResolvedValue([
-      ackEntry({ identityEpoch: "old-epoch", registrationId: "old-registration" }),
+      ackEntry({
+        identityEpoch: "old-epoch",
+        registrationId: "old-registration",
+        payload: { handledInApp: true },
+      }),
     ]);
     expect(await flushQueuedNotificationAcks()).toMatchObject({ pruned: 1, sent: 0 });
     expect(api.sendDeliveryAck).not.toHaveBeenCalled();
