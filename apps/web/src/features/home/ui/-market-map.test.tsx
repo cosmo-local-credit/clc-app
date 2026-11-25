@@ -1,5 +1,5 @@
-import { act, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { mapInstances, markerInstances, MockMap, MockMarker, MockLngLatBounds } = vi.hoisted(() => {
   type MapHandler = (event?: {
@@ -8,6 +8,8 @@ const { mapInstances, markerInstances, MockMap, MockMarker, MockLngLatBounds } =
       geometry: { type: "Point"; coordinates: [number, number] };
     }>;
     originalEvent?: unknown;
+    error?: Error;
+    sourceId?: string;
   }) => void;
 
   type MockMapOptions = {
@@ -73,7 +75,7 @@ const { mapInstances, markerInstances, MockMap, MockMarker, MockLngLatBounds } =
     };
     cameraForBounds = vi.fn((_bounds: unknown, _options: unknown) => this.fitCamera);
     jumpTo = vi.fn();
-    setStyle = vi.fn((style: string) => {
+    setStyle = vi.fn((style: string, _options?: { diff?: boolean }) => {
       this.options.style = style;
       this.sources.clear();
       this.layers = [];
@@ -2286,30 +2288,215 @@ describe("MarketMap viewport edges", () => {
 });
 
 describe("MarketMap style failure", () => {
-  it("shows the unavailable surface when the style fails to load", () => {
-    renderMap(LOCATIONS);
-    const map = firstMap();
+  const LIGHT_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+  const DARK_STYLE = "/map-styles/liberty-dark.json";
 
+  function styleError(map: ReturnType<typeof firstMap>, status: number, url = map.options.style) {
     act(() => {
-      map.trigger("error", { error: { message: "NetworkError" } } as never);
+      map.trigger("error", {
+        error: Object.assign(new Error("style request failed"), { status, url }),
+      });
+    });
+  }
+
+  function advance(ms: number) {
+    act(() => {
+      vi.advanceTimersByTime(ms);
+    });
+  }
+
+  describe("automatic recovery", () => {
+    let restoreSpies: () => void;
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+      const jitter = vi.spyOn(Math, "random").mockReturnValue(0);
+      const online = vi.spyOn(window.navigator, "onLine", "get").mockReturnValue(true);
+      restoreSpies = () => {
+        online.mockRestore();
+        jitter.mockRestore();
+      };
     });
 
-    expect(screen.getByText(/could not be loaded/i)).toBeTruthy();
+    afterEach(() => {
+      restoreSpies();
+      vi.useRealTimers();
+    });
+
+    it("recovers in place without restarting discovery after a dropped style response", () => {
+      const onViewportSettled = vi.fn();
+      const onHoverLocation = vi.fn();
+      renderMap(LOCATIONS, { onViewportSettled, onHoverLocation, selectedLocationId: "1" });
+      const map = firstMap();
+      act(() => {
+        vi.advanceTimersToNextFrame();
+      });
+      expect(onViewportSettled).toHaveBeenCalledOnce();
+
+      act(() => {
+        map.trigger("error", { error: new TypeError("Style response was interrupted") });
+      });
+      styleError(map, 503);
+      const pointer = { point: { x: 100, y: 100 } } as never;
+      act(() => {
+        map.trigger("mousemove", pointer);
+        map.trigger("click", pointer);
+      });
+      expect(map.queryRenderedFeatures).not.toHaveBeenCalled();
+      expect(screen.getByRole("status").textContent).toContain("Loading…");
+      expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+      expect(map.remove).not.toHaveBeenCalled();
+      advance(999);
+      expect(map.setStyle).not.toHaveBeenCalled();
+      advance(1);
+      expect(map.setStyle).toHaveBeenCalledExactlyOnceWith(LIGHT_STYLE, { diff: false });
+
+      act(() => {
+        map.trigger("style.load");
+        map.trigger("moveend");
+      });
+      advance(4000);
+      expect(screen.queryByRole("status")).toBeNull();
+      expect(map.getSource(MARKET_SOURCE_ID)).toBeDefined();
+      expect(map.getLayer("market-point-selected")?.filter).toEqual(
+        expect.arrayContaining([["==", ["get", "id"], "1"]]),
+      );
+      expect(onViewportSettled).toHaveBeenCalledOnce();
+      map.queryRenderedFeatures.mockReturnValue([{ properties: { id: "1" } }]);
+      act(() => map.trigger("mousemove", pointer));
+      expect(onHoverLocation).toHaveBeenCalledExactlyOnceWith("1");
+      expect(mapInstances).toEqual([map]);
+      expect(map.remove).not.toHaveBeenCalled();
+      expect(map.setStyle).toHaveBeenCalledOnce();
+    });
+
+    it("stops after two retries and lets the user retry manually", () => {
+      renderMap(LOCATIONS);
+      const map = firstMap();
+      styleError(map, 0);
+      advance(1000);
+      styleError(map, 429);
+      advance(2999);
+      expect(map.setStyle).toHaveBeenCalledOnce();
+      advance(1);
+      expect(map.setStyle).toHaveBeenCalledTimes(2);
+
+      styleError(map, 408);
+      advance(10000);
+      expect(map.setStyle).toHaveBeenCalledTimes(2);
+      expect(screen.getByText("The map could not be loaded.")).toBeTruthy();
+      expect(map.remove).toHaveBeenCalledOnce();
+      fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+      expect(mapInstances).toHaveLength(2);
+    });
+
+    it.each(["before the error", "during the delay"])(
+      "waits for reconnection if the browser goes offline %s",
+      (when) => {
+        const online = vi.spyOn(window.navigator, "onLine", "get");
+        renderMap(LOCATIONS);
+        const map = firstMap();
+        act(() => {
+          window.dispatchEvent(new Event("online"));
+        });
+        online.mockReturnValue(when === "during the delay");
+        styleError(map, 0);
+        online.mockReturnValue(false);
+        advance(10000);
+        expect(map.setStyle).not.toHaveBeenCalled();
+        expect(screen.getByRole("status")).toBeTruthy();
+
+        online.mockReturnValue(true);
+        act(() => {
+          window.dispatchEvent(new Event("online"));
+          window.dispatchEvent(new Event("online"));
+        });
+        advance(1000);
+        expect(map.setStyle).toHaveBeenCalledExactlyOnceWith(LIGHT_STYLE, { diff: false });
+      },
+    );
+
+    it("keeps markers visible while retrying a replacement theme", () => {
+      renderMap(LOCATIONS);
+      const map = firstMap();
+      act(() => map.trigger("style.load"));
+      const markers = map.getSource(MARKET_SOURCE_ID);
+      // A style diff retains the previous source until the new style arrives.
+      map.setStyle.mockImplementation(() => undefined);
+      act(() => useThemeStore.getState().setTheme("dark"));
+      act(() => map.trigger("error", { error: new DOMException("Superseded", "AbortError") }));
+      expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+      styleError(map, 503, new URL(DARK_STYLE, document.baseURI).href);
+      // The old tiles may finish loading while the replacement is pending.
+      act(() => map.trigger("load"));
+      advance(1000);
+
+      expect(map.setStyle.mock.calls).toEqual([[DARK_STYLE], [DARK_STYLE]]);
+      expect(map.getSource(MARKET_SOURCE_ID)).toBe(markers);
+      expect(map.remove).not.toHaveBeenCalled();
+      expect(screen.getByRole("status")).toBeTruthy();
+      act(() => map.trigger("style.load"));
+      expect(screen.queryByRole("status")).toBeNull();
+    });
+
+    it("discards a pending retry when the desired theme changes", () => {
+      renderMap(LOCATIONS);
+      const map = firstMap();
+      styleError(map, 503);
+      act(() => useThemeStore.getState().setTheme("dark"));
+      styleError(map, 503, LIGHT_STYLE);
+      advance(10000);
+
+      expect(map.setStyle).toHaveBeenCalledOnce();
+      expect(map.setStyle.mock.calls[0]?.[0]).toBe(DARK_STYLE);
+      expect(mapInstances).toEqual([map]);
+      expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+    });
+
+    it("cleans up a scheduled retry when the user leaves the map", () => {
+      const { unmount } = renderMap(LOCATIONS);
+      const map = firstMap();
+      styleError(map, 503);
+      unmount();
+      act(() => {
+        window.dispatchEvent(new Event("online"));
+      });
+      advance(10000);
+      expect(map.setStyle).not.toHaveBeenCalled();
+      expect(map.remove).toHaveBeenCalledOnce();
+    });
+
+    it("does not restart the style for a source error during startup", () => {
+      renderMap(LOCATIONS);
+      const map = firstMap();
+      act(() => {
+        map.trigger("error", { error: new TypeError("Failed to fetch"), sourceId: "basemap" });
+      });
+      advance(4000);
+      expect(map.setStyle).not.toHaveBeenCalled();
+      expect(map.remove).not.toHaveBeenCalled();
+    });
   });
 
-  it("offers a retry that rebuilds the map", () => {
+  it("shows the manual retry surface immediately for a permanently missing style", () => {
     renderMap(LOCATIONS);
-    const first = firstMap();
-    act(() => {
-      first.trigger("error", { error: { message: "NetworkError" } } as never);
-    });
-    expect(first.remove).toHaveBeenCalled();
+    const map = firstMap();
+    styleError(map, 404);
 
+    expect(screen.getByText("The map could not be loaded.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Retry" })).toBeTruthy();
+    expect(map.setStyle).not.toHaveBeenCalled();
+  });
+
+  it("does not auto-retry malformed style JSON", () => {
+    renderMap(LOCATIONS);
+    const map = firstMap();
     act(() => {
-      screen.getByRole("button", { name: /retry/i }).click();
+      map.trigger("error", { error: new SyntaxError("invalid style JSON") });
     });
 
-    expect(mapInstances).toHaveLength(2);
+    expect(screen.getByText("The map could not be loaded.")).toBeTruthy();
+    expect(map.setStyle).not.toHaveBeenCalled();
   });
 
   it("ignores transient tile errors once the map is up", () => {
@@ -2317,7 +2504,10 @@ describe("MarketMap style failure", () => {
     const map = loadedMap();
 
     act(() => {
-      map.trigger("error", { error: { status: 404, message: "tile missing" } } as never);
+      map.trigger("error", {
+        error: Object.assign(new Error("tile unavailable"), { status: 503 }),
+        sourceId: "basemap",
+      });
     });
 
     expect(screen.queryByText(/could not be loaded/i)).toBeNull();
