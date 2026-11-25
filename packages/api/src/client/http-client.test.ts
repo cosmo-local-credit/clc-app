@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vite-plus/test";
-import { BackendApiError, NO_HTTP_STATUS } from "./errors";
+import { BackendApiError, isRetryableBackendError, NO_HTTP_STATUS } from "./errors";
 import { createHttpClient } from "./http-client";
 
 function response(
@@ -176,6 +176,65 @@ describe("platform fetch resolution", () => {
 });
 
 describe("failure classification", () => {
+  it.each([undefined, "GET", "HEAD"])("recovers a dropped read body for %s", async (method) => {
+    const lost = new TypeError("Response body connection reset");
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(Object.assign(response(200, ""), { text: () => Promise.reject(lost) }));
+    await expect(clientWith(fetchImpl).request("/read", { method })).rejects.toMatchObject({
+      kind: "network",
+      status: NO_HTTP_STATUS,
+      cause: lost,
+    });
+  });
+
+  it.each([
+    [401, "unauthenticated"],
+    [503, "server"],
+  ])("keeps HTTP %d and Retry-After when the read error body is lost", async (status, kind) => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      Object.assign(response(status, "", "", { "retry-after": "5" }), {
+        text: () => Promise.reject(new TypeError("Response body connection reset")),
+      }),
+    );
+    await expect(clientWith(fetchImpl).request("/read")).rejects.toMatchObject({
+      status,
+      kind,
+      retryAfterMs: 5_000,
+    });
+  });
+
+  it("lets existing mutation retry rules leave an accepted write with a lost response alone", async () => {
+    const lost = new TypeError("Response body connection reset");
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(Object.assign(response(201, ""), { text: () => Promise.reject(lost) }));
+    const error = await clientWith(fetchImpl)
+      .request("/write", { method: "POST", body: "{}" })
+      .catch((cause: unknown) => cause);
+
+    expect(error).toBe(lost);
+    expect(isRetryableBackendError(error)).toBe(false);
+    expect(fetchImpl).toHaveBeenCalledOnce();
+  });
+
+  it("preserves the caller's abort reason after response headers have arrived", async () => {
+    const controller = new AbortController();
+    const abortReason = new Error("Wallet changed");
+    const fetchImpl = vi.fn().mockResolvedValue(
+      Object.assign(response(200, ""), {
+        text: () => {
+          controller.abort(abortReason);
+          return Promise.reject(new TypeError("Response body interrupted"));
+        },
+      }),
+    );
+
+    await expect(
+      clientWith(fetchImpl).request("/read", { signal: controller.signal }),
+    ).rejects.toBe(abortReason);
+  });
+
   it("wraps a rejected fetch as a network failure rather than leaking a TypeError", async () => {
     const cause = new TypeError("Failed to fetch");
     const err = await clientWith(vi.fn().mockRejectedValue(cause))

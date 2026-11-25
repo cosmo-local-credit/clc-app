@@ -200,11 +200,11 @@ export function createPretiumClient(http: HttpClient) {
       });
     },
 
-    async getPretiumRates(): Promise<PretiumRatesResult> {
-      const result = await http.request<PretiumRatesResponse>(
-        "/api/v2/pretium/rates",
-        PRETIUM_GET_REQUEST,
-      );
+    async getPretiumRates(signal?: AbortSignal): Promise<PretiumRatesResult> {
+      const result = await http.request<PretiumRatesResponse>("/api/v2/pretium/rates", {
+        ...PRETIUM_GET_REQUEST,
+        signal,
+      });
       return {
         buy: formatValue(result.buy),
         sell: formatValue(result.sell),

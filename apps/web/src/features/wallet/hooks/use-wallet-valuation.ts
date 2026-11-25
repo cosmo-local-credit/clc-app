@@ -1,10 +1,8 @@
 import { chainHasPretiumRamp, offrampTokenSymbol } from "@clc/core/features/wallet/pretium";
-import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { formatUnits } from "viem";
 
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import { marketVoucherDetailQuery } from "#/features/home/hooks/use-market-voucher-detail";
 import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 import { usePretiumRates } from "#/features/wallet/hooks/use-pretium";
 import {
@@ -29,7 +27,7 @@ const PRETIUM_CURRENCY = "KES";
  */
 export function useWalletValuation(address: string | undefined) {
   const tokensQuery = useAllAccountTokens(address);
-  const profile = useAuthProfile({ enabled: Boolean(address) });
+  const profile = useAuthProfile({ enabled: Boolean(address), recoverReads: true });
   const held = useMemo(
     () =>
       tokensQuery.tokens.filter((token) => {
@@ -42,25 +40,18 @@ export function useWalletValuation(address: string | undefined) {
     [tokensQuery.tokens],
   );
   const stable = (tokenAddress: string) => offrampTokenSymbol(CHAIN_ID, tokenAddress) !== null;
-  const details = useQueries({
-    queries: held.map((token) => ({
-      ...marketVoucherDetailQuery(token.tokenAddress),
-      enabled: !stable(token.tokenAddress),
-      retry: false,
-    })),
-  });
-
-  const unit = walletValuationUnit(
-    profile.data?.preferredCurrency,
-    details.map((detail) => detail.data?.voucherUoa),
-  );
+  const unit = address
+    ? walletValuationUnit(
+        profile.data?.preferredCurrency,
+        held.map((token) => (stable(token.tokenAddress) ? undefined : token.voucherUoa)),
+      )
+    : null;
   const rampsDollars = chainHasPretiumRamp(CHAIN_ID) && unit === PRETIUM_CURRENCY;
-  const rates = usePretiumRates(rampsDollars);
+  const rates = usePretiumRates(rampsDollars, { recoverReads: true });
 
   const values = new Map<string, HoldingValue>();
   if (unit) {
-    held.forEach((token, index) => {
-      const detail = details[index];
+    for (const token of held) {
       const isStable = stable(token.tokenAddress);
       values.set(
         token.tokenAddress.toLowerCase(),
@@ -70,36 +61,39 @@ export function useWalletValuation(address: string | undefined) {
             stable: isStable,
             rate: isStable
               ? null
-              : detail?.isPending
-                ? undefined
-                : detail?.data
-                  ? { value: detail.data.voucherValue, unit: detail.data.voucherUoa }
-                  : null,
+              : { value: token.voucherValue ?? null, unit: token.voucherUoa ?? null },
           },
           unit,
           rampsDollars
             ? {
                 unit: PRETIUM_CURRENCY,
-                value: rates.isPending ? undefined : rates.isError ? null : rates.data?.buy,
+                value: rates.isPending ? undefined : (rates.data?.buy ?? null),
               }
             : null,
         ),
       );
-    });
+    }
   }
   const total = walletTotal([...values.values()]);
+  const balancesComplete = Boolean(tokensQuery.data && !tokensQuery.hasNextPage);
+  const awaitingValuation =
+    (profile.isPending && profile.fetchStatus !== "idle") || total.status === "pending";
+  const isPending =
+    Boolean(address) &&
+    ((tokensQuery.isPending && (!tokensQuery.isError || tokensQuery.isFetching)) ||
+      (balancesComplete && awaitingValuation));
 
   return {
     unit,
     /** Keyed by lower-case token address. */
     values,
-    total: total.total,
-    unpriced: total.unpriced,
-    isPending:
-      Boolean(address) &&
-      (tokensQuery.isPending ||
-        (profile.isPending && profile.fetchStatus !== "idle") ||
-        total.status === "pending"),
+    // A cursor failure leaves earlier rows in the cache. Those rows are valid
+    // individually, but their subtotal must not stand in for the entire wallet.
+    total: address && balancesComplete && !awaitingValuation ? total.total : null,
+    isPending,
     isError: tokensQuery.isError,
+    isRetrying: tokensQuery.isFetching,
+    retry: () =>
+      tokensQuery.isFetchNextPageError ? tokensQuery.fetchNextPage() : tokensQuery.refetch(),
   };
 }

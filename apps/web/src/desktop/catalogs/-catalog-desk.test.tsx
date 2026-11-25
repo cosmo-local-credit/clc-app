@@ -122,6 +122,29 @@ describe("CatalogDesk edit inspector", () => {
     expect(vouchers.compareDocumentPosition(owner) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
   });
 
+  it("defers member thumbnails while keeping the primary picture eager", async () => {
+    const cover = "https://storage.example/catalog.webp";
+    const thumbnail = "https://storage.example/pool.webp";
+    detail.mockResolvedValue({ ...CATALOG, imageUrl: cover, poolCount: 1 });
+    members.mockImplementation((_, kind) =>
+      Promise.resolve({
+        items:
+          kind === "pool"
+            ? [{ id: "54", address: OWNER, name: "Kilifi Pool", imageUrl: thumbnail }]
+            : [],
+        nextCursor: null,
+      }),
+    );
+    mountAt("/catalogs/7");
+
+    const row = await screen.findByRole("link", { name: "Kilifi Pool" });
+    const image = row.querySelector("img");
+    expect(image?.src).toBe(thumbnail);
+    expect(image?.getAttribute("loading")).toBe("lazy");
+    expect([image?.width, image?.height]).toEqual([34, 34]);
+    expect(document.querySelector(`img[src="${cover}"]`)?.getAttribute("loading")).toBeNull();
+  });
+
   it("opens as ?edit, takes focus, and Back closes it", async () => {
     const router = mountAt("/catalogs/7");
     const edit = await screen.findByRole("button", { name: "Edit catalog" });

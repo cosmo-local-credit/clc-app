@@ -24,7 +24,7 @@ type UseMarketMapFacetsOptions = {
   enabled: boolean;
 };
 
-/** Filter-sheet facets for the visible viewport, fetched once filters have been opened. */
+/** Filter-sheet facets for the visible viewport, observed only while filters are open. */
 export function useMarketMapFacets(options: UseMarketMapFacetsOptions) {
   const query = useQuery({
     ...marketMapFacetsQueryOptions(marketMapClient, {
@@ -40,6 +40,8 @@ export function useMarketMapFacets(options: UseMarketMapFacetsOptions) {
       postPoolMatch: options.postPoolMatch,
     }),
     enabled: options.enabled,
+    // Removing the observer lets React Query abort a closed panel's request.
+    subscribed: options.enabled,
     placeholderData: keepPreviousData,
   });
   const data = options.enabled ? query.data : undefined;

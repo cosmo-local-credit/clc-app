@@ -1,6 +1,8 @@
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
-import { lazy, type ReactNode, Suspense } from "react";
+import { Fragment, lazy, type ReactNode, Suspense } from "react";
 import { LoadingBlock } from "#/components/admin/loading-block";
+import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
+import { Button } from "#/components/ui/button";
 import {
   ADMIN_ROLE_LABEL,
   type AdminSession,
@@ -33,11 +35,30 @@ export function AuthBoundary({ children }: { children: ReactNode }) {
     );
   }
 
-  if (session.status === "authenticated") return <>{children}</>;
+  if (session.status === "authenticated")
+    return <Fragment key={session.operator.address.toLowerCase()}>{children}</Fragment>;
 
-  // Every other state lands on sign-in, carrying a notice when there is something
-  // to explain. An operator holding the wrong account recovers by signing in with
-  // the right one, so the form is the destination rather than a dead-end screen.
+  if (session.status === "unavailable") {
+    return (
+      <div className="max-w-xl space-y-3 p-6">
+        <Alert>
+          <AlertTitle>Session check failed</AlertTitle>
+          <AlertDescription>{session.message}</AlertDescription>
+        </Alert>
+        <Button
+          variant="outline"
+          type="button"
+          disabled={session.retrying}
+          aria-busy={session.retrying}
+          onClick={session.retry}
+        >
+          {session.retrying ? "Retrying…" : "Retry"}
+        </Button>
+      </div>
+    );
+  }
+
+  // An operator holding the wrong account can sign in with the right one.
   return (
     <Suspense
       fallback={
@@ -46,29 +67,18 @@ export function AuthBoundary({ children }: { children: ReactNode }) {
         </div>
       }
     >
-      <SignInPanel notice={noticeFor(session)} />
+      <SignInPanel notice={session.status === "unauthorized" ? noticeFor(session) : undefined} />
     </Suspense>
   );
 }
 
-/** Exhaustive over the blocked states, so a new one fails to compile until handled. */
-function noticeFor(
-  session: Exclude<AdminSession, { status: "loading" } | { status: "authenticated" }>,
-): SignInNotice | undefined {
-  switch (session.status) {
-    case "unauthenticated":
-      return undefined;
-    case "unauthorized":
-      // Address, current role, required role — and nothing else.
-      return {
-        title: "Not authorized",
-        description:
-          `${formatVoucherAddress(session.operator.address as `0x${string}`)} is ` +
-          `${session.operator.role}. Requires ${ADMIN_ROLE_LABEL}.`,
-        // A stale session cookie is still set, so offer the way out of it.
-        signedIn: true,
-      };
-    case "unavailable":
-      return { title: "Session check failed", description: session.message };
-  }
+function noticeFor(session: Extract<AdminSession, { status: "unauthorized" }>): SignInNotice {
+  return {
+    title: "Not authorized",
+    description:
+      `${formatVoucherAddress(session.operator.address as `0x${string}`)} is ` +
+      `${session.operator.role}. Requires ${ADMIN_ROLE_LABEL}.`,
+    // The session cookie is still set, so offer the way out of it.
+    signedIn: true,
+  };
 }

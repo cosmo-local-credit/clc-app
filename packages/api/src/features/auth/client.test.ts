@@ -126,6 +126,18 @@ describe("http transport — error handling", () => {
 });
 
 describe("getSession", () => {
+  it("passes the query's abort signal through the session fetch", async () => {
+    const signal = new AbortController().signal;
+    const fetch = mockFetch({ status: 204, ok: true });
+    vi.stubGlobal("fetch", fetch);
+
+    await expect(api.getSession(signal)).resolves.toBeNull();
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/\/auth\/session$/),
+      expect.objectContaining({ method: "GET", signal }),
+    );
+  });
+
   it("returns null for 204 no-session responses", async () => {
     vi.stubGlobal(
       "fetch",

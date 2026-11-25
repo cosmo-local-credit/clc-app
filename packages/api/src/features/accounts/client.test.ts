@@ -152,32 +152,37 @@ describe("account token balances", () => {
   it("checksums paginated token-balance account paths", async () => {
     const fetcher = mockFetch({ ok: true, result: { tokens: [], first: 10, last: 5 } });
     vi.stubGlobal("fetch", fetcher);
+    const { signal } = new AbortController();
 
-    await api.getAccountTokens({ address: LOWERCASE_ACCOUNT, perPage: 20 });
+    await api.getAccountTokens({ address: LOWERCASE_ACCOUNT, perPage: 20 }, signal);
 
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining(`/api/v2/accounts/${ACCOUNT}/tokens?perPage=20`),
-      expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
+      expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store", signal }),
     );
   });
 
   it("fetches issued vouchers with the same cursor pagination", async () => {
     const fetcher = mockFetch({ ok: true, result: { tokens: null, first: 0, last: 0 } });
     vi.stubGlobal("fetch", fetcher);
+    const { signal } = new AbortController();
 
-    const result = await api.getAccountIssuedTokens({
-      address: LOWERCASE_ACCOUNT,
-      perPage: 100,
-      cursor: 7,
-      next: true,
-    });
+    const result = await api.getAccountIssuedTokens(
+      {
+        address: LOWERCASE_ACCOUNT,
+        perPage: 100,
+        cursor: 7,
+        next: true,
+      },
+      signal,
+    );
 
     expect(result.tokens).toEqual([]);
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining(
         `/api/v2/accounts/${ACCOUNT}/tokens/issued?perPage=100&cursor=7&next=true`,
       ),
-      expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
+      expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store", signal }),
     );
   });
 });

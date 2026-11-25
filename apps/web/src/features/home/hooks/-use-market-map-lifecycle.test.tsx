@@ -144,28 +144,65 @@ describe("map points request lifecycle", () => {
 });
 
 describe("map facets request lifecycle", () => {
-  it("waits for the filters to be opened, then counts the exact visible boxes", async () => {
+  const box = { minLng: 39.82, minLat: -3.69, maxLng: 39.84, maxLat: -3.67 };
+  const otherBox = { ...box, minLng: 39.8 };
+
+  it("fetches only while filters are open and reuses fresh facets for the same viewport", async () => {
     facets.mockResolvedValue({
       tagFacets: [{ tag: "Food", count: 2 }],
       postVoucherFacets: [],
       postPoolFacets: [],
     });
-    const client = new QueryClient({ defaultOptions: { queries: { gcTime: 0 } } });
-    const box = { minLng: 39.82, minLat: -3.69, maxLng: 39.84, maxLat: -3.67 };
+    const client = new QueryClient();
     const { result, rerender } = renderHook(
-      ({ enabled }: { enabled: boolean }) =>
-        useMarketMapFacets({ ...initial, bounds: [box], enabled }),
-      { initialProps: { enabled: false }, wrapper: wrapperFor(client) },
+      ({ enabled, viewport }) => useMarketMapFacets({ ...initial, bounds: [viewport], enabled }),
+      { initialProps: { enabled: false, viewport: box }, wrapper: wrapperFor(client) },
     );
     await act(async () => {});
     expect(facets).not.toHaveBeenCalled();
     expect(result.current.tagFacets).toEqual([]);
 
-    rerender({ enabled: true });
+    rerender({ enabled: true, viewport: box });
     await waitFor(() => expect(result.current.tagFacets).toEqual([{ tag: "Food", count: 2 }]));
     expect(facets).toHaveBeenCalledWith(
       expect.objectContaining({ bounds: [box] }),
       expect.any(AbortSignal),
     );
+
+    rerender({ enabled: false, viewport: box });
+    rerender({ enabled: false, viewport: otherBox });
+    await act(async () => {});
+    expect(facets).toHaveBeenCalledOnce();
+    expect(result.current.tagFacets).toEqual([]);
+
+    rerender({ enabled: true, viewport: box });
+    await waitFor(() => expect(result.current.tagFacets).toEqual([{ tag: "Food", count: 2 }]));
+    expect(facets).toHaveBeenCalledOnce();
+  });
+
+  it("aborts a facet request when the filter panel closes", async () => {
+    const onAbort = vi.fn();
+    facets.mockImplementation(
+      (_, signal: AbortSignal) =>
+        new Promise((_, reject) => {
+          signal.addEventListener(
+            "abort",
+            () => {
+              onAbort();
+              reject(signal.reason);
+            },
+            { once: true },
+          );
+        }),
+    );
+    const client = new QueryClient();
+    const { rerender } = renderHook(
+      ({ enabled }) => useMarketMapFacets({ ...initial, bounds: [box], enabled }),
+      { initialProps: { enabled: true }, wrapper: wrapperFor(client) },
+    );
+    await waitFor(() => expect(facets).toHaveBeenCalledOnce());
+    rerender({ enabled: false });
+    expect(onAbort).toHaveBeenCalledOnce();
+    expect(client.isFetching()).toBe(0);
   });
 });

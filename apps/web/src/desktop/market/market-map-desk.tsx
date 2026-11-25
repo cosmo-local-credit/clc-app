@@ -161,10 +161,7 @@ export function MarketMapDesk({
                 : undefined
             }
             filtersOpen={screen.filtersOpen}
-            onFiltersOpenChange={(next) => {
-              if (next) screen.setFiltersEverOpened(true);
-              screen.setFiltersOpen(next);
-            }}
+            onFiltersOpenChange={screen.setFiltersOpen}
             credit={screen.credit}
             onCredit={screen.changeCredit}
             output={output}

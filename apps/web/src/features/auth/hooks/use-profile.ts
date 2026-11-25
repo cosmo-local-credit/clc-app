@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useConnection } from "wagmi";
 
+import { transientBackendReadQueryPolicy } from "@clc/api/client/errors";
 import { profileQueryOptions } from "@clc/api/features/auth/queries";
 import { authClient } from "#/lib/api/auth";
 
@@ -15,12 +16,15 @@ import { authClient } from "#/lib/api/auth";
  * A caller that renders for guests too passes `enabled: false` until there is a
  * session: a connected wallet alone is not one.
  */
-export function useAuthProfile({ enabled = true }: { enabled?: boolean } = {}) {
+export function useAuthProfile({
+  enabled = true,
+  recoverReads = false,
+}: { enabled?: boolean; recoverReads?: boolean } = {}) {
   const { address } = useConnection();
 
   return useQuery({
     ...profileQueryOptions(authClient, address),
     enabled: enabled && !!address,
-    retry: false,
+    ...(recoverReads ? transientBackendReadQueryPolicy : { retry: false }),
   });
 }

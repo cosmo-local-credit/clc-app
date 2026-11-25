@@ -69,6 +69,7 @@ export function createHttpClient({
       // `fetch` rejects only when no response was produced — offline, DNS, TLS,
       // CORS, or a dropped socket. An AbortError is deliberately not converted:
       // a cancelled request is not a failure the caller should surface.
+      init?.signal?.throwIfAborted();
       if (cause instanceof Error && cause.name === "AbortError") throw cause;
       throw new BackendApiError(
         NO_HTTP_STATUS,
@@ -80,7 +81,23 @@ export function createHttpClient({
 
     const retryAfterMs = parseRetryAfterMs(res.headers?.get?.("retry-after") ?? null);
 
-    const text = await res.text();
+    let text: string;
+    try {
+      text = await res.text();
+    } catch (cause) {
+      init?.signal?.throwIfAborted();
+      const method = init?.method?.toUpperCase() ?? "GET";
+      // A write may have committed before the body was lost. Leave its error
+      // untouched so existing mutation retry rules cannot replay the write.
+      if (method !== "GET" && method !== "HEAD") throw cause;
+      if (cause instanceof Error && cause.name === "AbortError") throw cause;
+      throw new BackendApiError(
+        res.ok ? NO_HTTP_STATUS : res.status,
+        res.statusText || "Could not read the server response",
+        undefined,
+        { retryAfterMs, cause },
+      );
+    }
     let body: ApiOk<T> | ApiErr | T | null = null;
     if (text) {
       try {

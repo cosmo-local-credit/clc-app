@@ -12,7 +12,7 @@ import { isHttpUrl } from "@clc/core/lib/contact";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Suspense, useState, type ReactNode } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { RiArticleLine } from "react-icons/ri";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { RESOURCE_HUE, RESOURCE_ICON, POST_RESOURCE_HUE } from "#/components/resource-tone";
@@ -23,6 +23,7 @@ import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { Spinner } from "#/components/ui/spinner";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { retainedProfileData } from "#/features/public-profiles/hooks/use-public-profile";
 import { publicProfilesClient } from "#/lib/api/public-profiles";
 import { cn } from "#/lib/utils";
 
@@ -34,15 +35,7 @@ export function PublicProfileContent({
   profile: PublicProfile;
   gridClassName?: string;
 }) {
-  const { t } = useLingui();
-  const labels: Record<ProfileSection, string> = {
-    vouchers: t`Vouchers`,
-    offers: t`Offers`,
-    wants: t`Wants`,
-    pools: t`Pools`,
-    posts: t`Posts`,
-    catalogs: t`Catalogs`,
-  };
+  const sections = PROFILE_SECTIONS.filter((section) => profile.sections[section]);
   return (
     <div className="space-y-6">
       {profile.bio ? (
@@ -75,36 +68,129 @@ export function PublicProfileContent({
           </AuthenticatedDetailsGate>
         </section>
       ) : null}
-      {PROFILE_SECTIONS.filter((section) => profile.sections[section]).map((section) => (
-        <ProfileSectionDisclosure
-          key={`${profile.address.toLowerCase()}:${section}`}
-          label={labels[section]}
-        >
-          <ProfileResources
-            address={profile.address}
-            section={section}
-            gridClassName={gridClassName}
-          />
-        </ProfileSectionDisclosure>
-      ))}
+      <ProfileSections
+        key={`${profile.address.toLowerCase()}:${sections[0] ?? ""}`}
+        address={profile.address}
+        sections={sections}
+        gridClassName={gridClassName}
+      />
     </div>
   );
 }
 
-function ProfileSectionDisclosure({ label, children }: { label: string; children: ReactNode }) {
+function ProfileSections({
+  address,
+  sections,
+  gridClassName,
+}: {
+  address: string;
+  sections: ProfileSection[];
+  gridClassName?: string;
+}) {
+  const { t } = useLingui();
+  const labels: Record<ProfileSection, string> = {
+    vouchers: t`Vouchers`,
+    offers: t`Offers`,
+    wants: t`Wants`,
+    pools: t`Pools`,
+    posts: t`Posts`,
+    catalogs: t`Catalogs`,
+  };
+  const [firstSectionLaidOut, setFirstSectionLaidOut] = useState(false);
+  const observeLaterSections = useCallback(() => setFirstSectionLaidOut(true), []);
+
+  return sections.map((section, index) => (
+    <ProfileSectionDisclosure
+      key={section}
+      label={labels[section]}
+      eager={index === 0}
+      canObserve={firstSectionLaidOut}
+      onClose={index === 0 ? observeLaterSections : undefined}
+    >
+      <ProfileResources
+        address={address}
+        section={section}
+        gridClassName={gridClassName}
+        onInitialLayout={index === 0 ? observeLaterSections : undefined}
+      />
+    </ProfileSectionDisclosure>
+  ));
+}
+
+function ProfileSectionDisclosure({
+  label,
+  eager,
+  canObserve,
+  onClose,
+  children,
+}: {
+  label: string;
+  eager: boolean;
+  canObserve: boolean;
+  onClose?: () => void;
+  children: ReactNode;
+}) {
   const [open, setOpen] = useState(true);
+  const [requested, setRequested] = useState(false);
+  const summary = useRef<HTMLElement>(null);
+  const shouldLoad = eager || requested;
+  useEffect(() => {
+    const target = summary.current;
+    if (!open || shouldLoad || !target) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setRequested(true);
+      return;
+    }
+    // While the first section only has a spinner, headings normally below its
+    // resource grid can all briefly fit on screen.
+    if (!canObserve) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setRequested(true);
+          observer.disconnect();
+        }
+      },
+      { root: profileScrollContainer(target), rootMargin: "200px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [canObserve, open, shouldLoad]);
+
   return (
     <details
       open={open}
-      onToggle={(event) => setOpen(event.currentTarget.open)}
+      onToggle={(event) => {
+        const nextOpen = event.currentTarget.open;
+        setOpen(nextOpen);
+        if (!nextOpen) onClose?.();
+      }}
       className="border-t border-border py-4"
     >
-      <summary className="cursor-pointer text-sm font-semibold focus-visible:outline-2 focus-visible:outline-primary">
+      <summary
+        ref={summary}
+        className="cursor-pointer text-sm font-semibold focus-visible:outline-2 focus-visible:outline-primary"
+        onClick={(event) => {
+          // Native mouse/keyboard activation can explicitly reopen a section
+          // before its observer is ready. The initial open toggle is not intent.
+          if (event.currentTarget.closest("details")?.open === false) setRequested(true);
+        }}
+      >
         {label}
       </summary>
-      {open ? <div className="mt-4">{children}</div> : null}
+      {open && shouldLoad ? <div className="mt-4">{children}</div> : null}
     </details>
   );
+}
+
+function profileScrollContainer(target: Element): Element | null {
+  // Desktop scrolls inside the shell; phone uses the document viewport.
+  for (let parent = target.parentElement; parent; parent = parent.parentElement) {
+    if (parent === document.scrollingElement) break;
+    const { overflowY } = getComputedStyle(parent);
+    if (overflowY === "auto" || overflowY === "scroll") return parent;
+  }
+  return null;
 }
 
 function ProfileDetails({ address }: { address: string }) {
@@ -117,9 +203,9 @@ function ProfileDetails({ address }: { address: string }) {
     ),
   );
   if (query.isPending) return <ProfileLoading />;
-  if (query.isError)
+  const details = retainedProfileData(query);
+  if (!details)
     return <ProfileReadError retry={() => void query.refetch()} pending={query.isFetching} />;
-  const details = query.data;
   return (
     <div className="space-y-3 text-sm">
       {details.email ? <p dir="ltr">{details.email}</p> : null}
@@ -134,6 +220,9 @@ function ProfileDetails({ address }: { address: string }) {
           <LocationMap lat={details.geoLat} lng={details.geoLng} className="h-52 w-full" />
         </Suspense>
       ) : null}
+      {query.isError ? (
+        <ProfileReadError retry={() => void query.refetch()} pending={query.isFetching} />
+      ) : null}
     </div>
   );
 }
@@ -142,15 +231,23 @@ function ProfileResources({
   address,
   section,
   gridClassName,
+  onInitialLayout,
 }: {
   address: string;
   section: ProfileSection;
   gridClassName?: string;
+  onInitialLayout?: () => void;
 }) {
   const query = useInfiniteQuery(
     profileResourcesQueryOptions(publicProfilesClient, address, section),
   );
-  const rows = query.data?.pages.flatMap((page) => page.items) ?? [];
+  useEffect(() => {
+    if (!query.isPending) onInitialLayout?.();
+  }, [onInitialLayout, query.isPending]);
+  const pages = retainedProfileData(query)?.pages;
+  const unpublished = pages?.some((page) => page === null) ?? false;
+  const rows = unpublished ? [] : (pages?.flatMap((page) => page?.items ?? []) ?? []);
+  const retry = () => void (query.isFetchNextPageError ? query.fetchNextPage() : query.refetch());
   return (
     <div className="space-y-3">
       {query.isPending ? <ProfileLoading /> : null}
@@ -160,15 +257,15 @@ function ProfileResources({
             <ProfileResourceLink key={`${row.kind}:${row.id}`} row={row} />
           ))}
         </div>
-      ) : query.isSuccess ? (
+      ) : query.isSuccess && !unpublished ? (
         <p className="text-sm text-muted-foreground">
           <Trans>No resources to show.</Trans>
         </p>
       ) : null}
-      {query.isError ? (
-        <ProfileReadError pending={query.isFetching} retry={() => void query.refetch()} />
+      {query.isError || unpublished ? (
+        <ProfileReadError pending={query.isFetching} retry={retry} />
       ) : null}
-      {query.hasNextPage ? (
+      {query.hasNextPage && !query.isError && !unpublished ? (
         <Button
           variant="outline"
           tap

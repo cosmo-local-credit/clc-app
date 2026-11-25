@@ -31,6 +31,15 @@ const mocks = vi.hoisted(() => ({
     refetchBalances: vi.fn(),
   },
   ownedPools: [] as unknown[],
+  valuation: {
+    isPending: false,
+    isError: false,
+    isRetrying: false,
+    unit: "USD",
+    total: "10" as string | null,
+    values: new Map(),
+    retry: vi.fn(),
+  },
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -107,13 +116,7 @@ vi.mock("#/features/wallet/hooks/use-holding-pools", () => ({
     ]),
 }));
 vi.mock("#/features/wallet/hooks/use-wallet-valuation", () => ({
-  useWalletValuation: () => ({
-    isPending: false,
-    isError: false,
-    unit: "USD",
-    total: "10",
-    values: new Map(),
-  }),
+  useWalletValuation: () => mocks.valuation,
 }));
 vi.mock("#/lib/api/wants", () => ({
   wantsClient: { mine: () => Promise.resolve({ wants: [], first: 0, last: 0 }) },
@@ -219,6 +222,9 @@ beforeEach(() => {
   mocks.preview.issued = [];
   mocks.preview.isTruncated = false;
   mocks.ownedPools = [];
+  mocks.valuation.isError = false;
+  mocks.valuation.total = "10";
+  mocks.valuation.values.clear();
 });
 
 afterEach(() => {
@@ -227,6 +233,21 @@ afterEach(() => {
 });
 
 describe("Wallet structure", () => {
+  it("offers a valuation retry without replacing already priced rows with a loader", () => {
+    mocks.valuation.total = null;
+    mocks.valuation.isError = true;
+    mocks.valuation.values.set(HELD.id, { status: "priced", value: "25" });
+
+    mount();
+
+    const actions = within(screen.getByRole("region", { name: "Wallet actions" }));
+    expect(actions.getByRole("alert").textContent).toBe("Couldn't load vouchers.");
+    expect(actions.queryByText("USD")).toBeNull();
+    expect(within(section("Holdings")).getByText("25.00")).toBeTruthy();
+    fireEvent.click(actions.getByRole("button", { name: "Retry" }));
+    expect(mocks.valuation.retry).toHaveBeenCalledTimes(1);
+  });
+
   it("has one page heading and tells the two cash destinations apart", () => {
     mount();
 

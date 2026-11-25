@@ -79,6 +79,7 @@ export function marketMapFacetsQueryOptions(
   return queryOptions({
     queryKey: marketMapKeys.facets(params),
     queryFn: ({ signal }) => client.facets(params, signal),
+    staleTime: 60_000,
     ...DISCOVERY_RETRY,
   });
 }

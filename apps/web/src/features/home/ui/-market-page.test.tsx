@@ -1490,7 +1490,7 @@ describe("MarketPage viewport", () => {
     },
   );
 
-  it("counts facets in the exact visible boxes, only once filters have been opened", () => {
+  it("counts facets in the exact visible boxes only while filters are open", () => {
     discoveryArea.current = {
       owner: "guest",
       center: { lat: -1.5, lng: 36.5 },
@@ -1504,6 +1504,8 @@ describe("MarketPage viewport", () => {
     fireEvent.click(screen.getByRole("button", { name: /Filters/ }));
     expect(mapRequests.facetEnabled.at(-1)).toBe(true);
     expect(mapRequests.facetBounds.at(-1)).toEqual([savedBox]);
+    fireEvent.click(screen.getByRole("button", { name: "Close filters" }));
+    expect(mapRequests.facetEnabled.at(-1)).toBe(false);
   });
 
   it("turns a settled coarse guest camera into the initial discovery viewport", () => {
