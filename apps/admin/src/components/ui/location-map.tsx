@@ -6,7 +6,6 @@ import { createPortal } from "react-dom";
 
 import { MarkerPin } from "#/components/admin/marker-style-field";
 import { BRAND_THEME_COLOR } from "#/lib/brand";
-import { ADMIN_MAP_STYLE_URL } from "#/lib/map-style";
 import { cn } from "#/lib/utils";
 
 /**
@@ -34,6 +33,7 @@ const NAIROBI = { lat: -1.2921, lng: 36.8219 };
 const PIN_ZOOM = 13;
 const EMPTY_ZOOM = 5;
 const MARKER_COLOR = BRAND_THEME_COLOR.light;
+const STANDARD_MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
 type LocationMapProps = {
   lat?: number | null;
@@ -123,7 +123,7 @@ export function LocationMap({
     try {
       map = new MapLibreGL.Map({
         container: containerRef.current,
-        style: ADMIN_MAP_STYLE_URL,
+        style: STANDARD_MAP_STYLE_URL,
         center,
         zoom: hasLocation ? PIN_ZOOM : EMPTY_ZOOM,
         interactive: isInteractive,

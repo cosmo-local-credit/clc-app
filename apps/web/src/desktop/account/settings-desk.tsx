@@ -1,9 +1,8 @@
 import { isSupportedLocale, LOCALE_OPTIONS } from "@clc/i18n/locales";
-import { isRegionalAdminRole } from "@clc/core/features/users/roles";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { RiExternalLinkLine, RiFileCopyLine, RiMap2Line } from "react-icons/ri";
+import { RiExternalLinkLine, RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
@@ -85,19 +84,6 @@ export function SettingsDesk({ address }: { address?: `0x${string}` }) {
               </Button>
             }
           />
-          {auth.isAuthenticated && isRegionalAdminRole(auth.session?.role) ? (
-            <SetRow
-              label={t`My regions`}
-              action={
-                <Button asChild variant="ghost">
-                  <Link to="/settings/regions">
-                    <RiMap2Line aria-hidden="true" />
-                    <Trans>My regions</Trans>
-                  </Link>
-                </Button>
-              }
-            />
-          ) : null}
         </SetRows>
       </DeskSection>
 

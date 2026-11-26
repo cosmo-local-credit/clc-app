@@ -36,13 +36,6 @@ describe("resolveSession", () => {
     });
   });
 
-  it("sends a regional admin to the scoped workspace rather than the global console", () => {
-    expect(resolveSession(query({ data: session("REGIONAL_ADMIN") }))).toEqual({
-      status: "regional",
-      operator: { address: ADDRESS, role: "REGIONAL_ADMIN" },
-    });
-  });
-
   it("reports unauthenticated when there is no session", () => {
     expect(resolveSession(query({ data: null }))).toEqual({ status: "unauthenticated" });
   });

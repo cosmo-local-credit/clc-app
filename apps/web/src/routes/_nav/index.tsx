@@ -32,7 +32,7 @@ import {
   parseActivityHelpdeskStatus,
 } from "#/lib/navigation/activity-search";
 import { useSafeSheet } from "#/features/safe/state/safe-sheet";
-import { isAdminRole, isRegionalAdminRole } from "@clc/core/features/users/roles";
+import { isAdminRole } from "@clc/core/features/users/roles";
 
 const HomePage = lazy(() =>
   import("#/features/home/ui/home-page").then((module) => ({
@@ -224,7 +224,6 @@ function IndexPage() {
         helpdeskId={helpdeskId}
         helpdeskStatus={helpdeskStatus}
         operator={operator}
-        regionalAdmin={auth.isAuthenticated && isRegionalAdminRole(auth.session?.role)}
         onMessageToConsumed={clearMessageTo}
         onActivityQueryChange={onActivityQueryChange}
         onActivityTypesChange={onActivityTypesChange}
