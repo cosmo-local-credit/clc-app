@@ -1,4 +1,3 @@
-import { BackendApiError } from "@clc/api/client/errors";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   PublicProfileContent,
@@ -12,22 +11,20 @@ import { usePublicProfile } from "../hooks/use-public-profile";
 
 export function PublicProfilePage({ address }: { address: string }) {
   const { t } = useLingui();
-  const query = usePublicProfile(address);
-  const profile = query.data;
+  const { query, profile } = usePublicProfile(address);
   return (
     <main className="min-h-[100svh] bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[calc(var(--bottom-nav-offset)+1.5rem)]">
       <BackChevron label={t`Map`} to="/" search={{ tab: "market", view: "map" }} />
       {query.isPending ? (
         <ProfileLoading />
       ) : query.isError ? (
-        query.error instanceof BackendApiError && query.error.status === 404 ? (
-          <p className="py-6 text-sm">
-            <Trans>This public profile is unavailable.</Trans>
-          </p>
-        ) : (
-          <ProfileReadError pending={query.isFetching} retry={() => void query.refetch()} />
-        )
-      ) : profile ? (
+        <ProfileReadError pending={query.isFetching} retry={() => void query.refetch()} />
+      ) : profile === null ? (
+        <p className="py-6 text-sm">
+          <Trans>This public profile is unavailable.</Trans>
+        </p>
+      ) : null}
+      {profile ? (
         <>
           <div className="mb-6 flex items-start gap-3">
             {profile.avatarUrl ? (

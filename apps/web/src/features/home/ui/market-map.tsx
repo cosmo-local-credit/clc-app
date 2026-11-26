@@ -4,6 +4,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { Trans } from "@lingui/react/macro";
 import MapLibreGL, {
   type DataDrivenPropertyValueSpecification,
+  type ErrorEvent as MapErrorEvent,
   type FilterSpecification,
   type GeoJSONSource,
   type LayerSpecification,
@@ -12,6 +13,7 @@ import MapLibreGL, {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "#/components/ui/button";
+import { Spinner } from "#/components/ui/spinner";
 import {
   type MarketMapMode,
   resolveMapStyleUrl,
@@ -80,6 +82,10 @@ const INTERACTIVE_LAYER_IDS = [
 ];
 
 const VIEWPORT_SETTLE_MS = 100;
+const STYLE_RETRY_DELAYS_MS = [1_000, 3_000] as const;
+const STYLE_RETRY_JITTER_MS = 250;
+
+type StyleRequest = { url: string; mode: MarketMapMode; retries: number };
 
 /** Font stacks available from both the standard and satellite style glyph endpoints. */
 const LABEL_FONT = ["Noto Sans Regular"];
@@ -610,6 +616,7 @@ export function MarketMap({
   const loadedRef = useRef(false);
   const [failure, setFailure] = useState<"unsupported" | "error" | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [recoveringStyle, setRecoveringStyle] = useState(false);
   const [styleRevision, setStyleRevision] = useState(0);
   const [spider, setSpider] = useState<{ key: string; page: number } | null>(null);
 
@@ -636,8 +643,7 @@ export function MarketMap({
   themeRef.current = theme;
   const standardStyleRef = useRef(standardStyle);
   standardStyleRef.current = standardStyle;
-  const appliedStyleRef = useRef<string | null>(null);
-  const pendingStyleRef = useRef<string | null>(null);
+  const requestStyleRef = useRef<((url: string, mode: MarketMapMode) => void) | null>(null);
   const bottomInsetRef = useRef(bottomInset);
   bottomInsetRef.current = bottomInset;
   const onSelectRef = useRef(onSelectLocation);
@@ -687,21 +693,6 @@ export function MarketMap({
     report(viewport);
   }, []);
 
-  const fallBackToStandard = useCallback(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    const fallback = standardStyleRef.current;
-    pendingStyleRef.current = fallback;
-    appliedStyleRef.current = fallback;
-    onSatelliteUnavailableRef.current?.();
-    try {
-      map.setStyle(fallback);
-    } catch {
-      pendingStyleRef.current = null;
-      setFailure("error");
-    }
-  }, []);
-
   useEffect(() => {
     if (failure || !containerRef.current || mapRef.current) return;
     if (!hasWebGlSupport()) {
@@ -709,10 +700,10 @@ export function MarketMap({
       return;
     }
 
+    const initialStyle = standardStyleRef.current;
     let map: MapLibreGL.Map;
     try {
       const initialCamera = cameraRef.current;
-      const initialStyle = standardStyleRef.current;
       const initialMinZoom = marketMinimumZoom(containerRef.current.clientWidth);
       map = new MapLibreGL.Map({
         container: containerRef.current,
@@ -730,7 +721,6 @@ export function MarketMap({
         fadeDuration: 0,
         attributionControl: false,
       });
-      appliedStyleRef.current = initialStyle;
       lockMapUpright(map);
       map.addControl(new MapLibreGL.AttributionControl({ compact: true }), "bottom-left");
     } catch {
@@ -742,6 +732,64 @@ export function MarketMap({
     let settleTimer: ReturnType<typeof setTimeout> | undefined;
     let removeLabelEdgeListeners: (() => void) | undefined;
     let lastZoomAvailability: string | null = null;
+    let appliedStyle = initialStyle;
+    let pendingStyle: StyleRequest | null = { url: initialStyle, mode: "standard", retries: 0 };
+    let styleRetryTimer: ReturnType<typeof setTimeout> | undefined;
+    let styleRetry: { request: StyleRequest; delay: number } | null = null;
+
+    function clearStyleRetry() {
+      clearTimeout(styleRetryTimer);
+      styleRetryTimer = undefined;
+      styleRetry = null;
+    }
+
+    function failStyle() {
+      clearStyleRetry();
+      pendingStyle = null;
+      setRecoveringStyle(false);
+      setFailure("error");
+    }
+
+    function fallBackToStandard() {
+      requestStyle(standardStyleRef.current, "standard");
+      onSatelliteUnavailableRef.current?.();
+    }
+
+    function applyStyle(request: StyleRequest) {
+      try {
+        // There is nothing to diff against before the first successful style.
+        // Once ready, leave the current style visible while its replacement downloads.
+        if (loadedRef.current) map.setStyle(request.url);
+        else map.setStyle(request.url, { diff: false });
+      } catch {
+        if (request.mode === "satellite") fallBackToStandard();
+        else failStyle();
+      }
+    }
+
+    function requestStyle(url: string, mode: MarketMapMode) {
+      if (appliedStyle === url) return;
+      clearStyleRetry();
+      setRecoveringStyle(false);
+      appliedStyle = url;
+      pendingStyle = { url, mode, retries: 0 };
+      applyStyle(pendingStyle);
+    }
+
+    function scheduleStyleRetry() {
+      const next = styleRetry;
+      if (!next || styleRetryTimer !== undefined || !navigator.onLine) return;
+      styleRetryTimer = setTimeout(() => {
+        styleRetryTimer = undefined;
+        if (!navigator.onLine) return;
+        styleRetry = null;
+        next.request.retries += 1;
+        applyStyle(next.request);
+      }, next.delay);
+    }
+
+    requestStyleRef.current = requestStyle;
+    window.addEventListener("online", scheduleStyleRetry);
 
     const zoomIn = () => {
       userHasInteractedRef.current = true;
@@ -764,6 +812,7 @@ export function MarketMap({
     function handleMouseMove(event: MapMouseEvent) {
       const hover = onHoverRef.current;
       if (!hover) return;
+      if (!loadedRef.current) return;
       const [feature] = map.queryRenderedFeatures(event.point, {
         layers: INTERACTIVE_LAYER_IDS,
       });
@@ -777,6 +826,7 @@ export function MarketMap({
     }
 
     function handleMapClick(event: MapMouseEvent) {
+      if (!loadedRef.current) return;
       userHasInteractedRef.current = true;
       const [feature] = map.queryRenderedFeatures(event.point, {
         layers: INTERACTIVE_LAYER_IDS,
@@ -934,24 +984,52 @@ export function MarketMap({
     }
 
     function handleLoad() {
-      restoreStyle();
+      if (!loadedRef.current) handleStyleLoad();
     }
 
     function handleStyleLoad() {
-      pendingStyleRef.current = null;
+      clearStyleRetry();
+      pendingStyle = null;
+      setRecoveringStyle(false);
       restoreStyle();
     }
 
-    function handleError() {
-      // Tile errors after a healthy style are recoverable. If Satellite fails
-      // while replacing Standard, immediately restore the resilient Standard
-      // style. A failure loading Standard itself still uses the Retry surface.
-      if (pendingStyleRef.current && pendingStyleRef.current !== standardStyleRef.current) {
+    function handleError(event: MapErrorEvent) {
+      const request = pendingStyle;
+      // Propagated source/tile errors and other resource URLs aren't style failures.
+      if (!request || "sourceId" in event || "tile" in event) return;
+      const { error } = event;
+      if ("name" in error && error.name === "AbortError") return;
+      if (
+        "url" in error &&
+        error.url !== request.url &&
+        error.url !== new URL(request.url, document.baseURI).href
+      ) {
+        return;
+      }
+
+      if (request.mode === "satellite") {
         fallBackToStandard();
         return;
       }
-      if (loadedRef.current && !pendingStyleRef.current) return;
-      setFailure("error");
+
+      if (styleRetry) return;
+      const status = "status" in error ? error.status : undefined;
+      const transient =
+        status === undefined
+          ? error instanceof TypeError // A connection can also drop during the success body.
+          : status === 0 ||
+            status === 408 ||
+            status === 429 ||
+            (typeof status === "number" && status >= 500 && status < 600);
+      const delay = STYLE_RETRY_DELAYS_MS[request.retries];
+      if (!transient || delay === undefined) {
+        failStyle();
+        return;
+      }
+      styleRetry = { request, delay: delay + Math.floor(Math.random() * STYLE_RETRY_JITTER_MS) };
+      setRecoveringStyle(true);
+      scheduleStyleRetry();
     }
 
     map.on("load", handleLoad);
@@ -979,6 +1057,9 @@ export function MarketMap({
     return () => {
       cancelAnimationFrame(initialFrame);
       clearTimeout(settleTimer);
+      clearStyleRetry();
+      window.removeEventListener("online", scheduleStyleRetry);
+      requestStyleRef.current = null;
       removeLabelEdgeListeners?.();
       onZoomControlsChangeRef.current?.(null);
       map.off("load", handleLoad);
@@ -1004,33 +1085,20 @@ export function MarketMap({
       userHasInteractedRef.current = false;
       loadedRef.current = false;
       lastReportedViewportRef.current = null;
-      appliedStyleRef.current = null;
-      pendingStyleRef.current = null;
       setLoaded(false);
     };
-  }, [failure, fallBackToStandard, reportViewport]);
+  }, [failure, reportViewport]);
 
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !loaded) return;
-    if (mode === "satellite" && !satelliteStyle) {
-      onSatelliteUnavailableRef.current?.();
+    if (!loaded) {
+      requestStyleRef.current?.(standardStyle, "standard");
       return;
     }
-    if (appliedStyleRef.current === mapStyle) return;
-    try {
-      pendingStyleRef.current = mapStyle;
-      appliedStyleRef.current = mapStyle;
-      map.setStyle(mapStyle);
-    } catch {
-      pendingStyleRef.current = null;
-      if (mode === "satellite") {
-        fallBackToStandard();
-      } else {
-        setFailure("error");
-      }
+    if (mode === "satellite" && !satelliteStyle) {
+      onSatelliteUnavailableRef.current?.();
     }
-  }, [fallBackToStandard, loaded, mapStyle, mode, satelliteStyle]);
+    requestStyleRef.current?.(mapStyle, mode === "satellite" && satelliteStyle ? mode : "standard");
+  }, [loaded, mapStyle, mode, satelliteStyle, standardStyle]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -1238,6 +1306,18 @@ export function MarketMap({
   }
 
   return (
-    <section ref={containerRef} aria-label="Market map" className={cn("bg-card", className)} />
+    <section ref={containerRef} aria-label="Market map" className={cn("bg-card", className)}>
+      {recoveringStyle ? (
+        <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center">
+          <div
+            className="flex items-center gap-2 border border-border bg-card px-3 py-2 text-sm text-muted-foreground"
+            role="status"
+          >
+            <Spinner />
+            <Trans>Loading…</Trans>
+          </div>
+        </div>
+      ) : null}
+    </section>
   );
 }

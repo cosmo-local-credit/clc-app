@@ -42,7 +42,6 @@ export function MarketPage({
     credit,
     filtersOpen,
     setFiltersOpen,
-    setFiltersEverOpened,
     isCardOpen,
     snap,
     setSnap,
@@ -117,10 +116,7 @@ export function MarketPage({
                 : undefined
             }
             open={filtersOpen}
-            onOpenChange={(next) => {
-              if (next) setFiltersEverOpened(true);
-              setFiltersOpen(next);
-            }}
+            onOpenChange={setFiltersOpen}
           />
         }
       />

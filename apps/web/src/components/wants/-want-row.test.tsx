@@ -46,8 +46,9 @@ describe("Want row privacy", () => {
     expect(container.querySelector('path[fill="#EA580C"]')).toBeTruthy();
 
     rerender(<WantPicture want={{ ...WANT, imageUrl: "https://storage.example/want.webp" }} />);
-    expect(container.querySelector("img")?.getAttribute("src")).toBe(
-      "https://storage.example/want.webp",
-    );
+    const image = container.querySelector("img");
+    expect(image?.src).toBe("https://storage.example/want.webp");
+    expect(image?.getAttribute("loading")).toBe("lazy");
+    expect([image?.width, image?.height]).toEqual([44, 44]);
   });
 });

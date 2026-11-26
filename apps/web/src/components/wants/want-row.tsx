@@ -18,12 +18,19 @@ export function WantPicture({
   return (
     <span
       className={cn(
-        "flex shrink-0 items-center justify-center overflow-hidden border border-border bg-card",
+        "relative flex shrink-0 items-center justify-center overflow-hidden border border-border bg-card",
         size,
       )}
     >
       {want.imageUrl ? (
-        <ProgressiveImage src={want.imageUrl} alt="" className="size-full object-cover" />
+        <ProgressiveImage
+          src={want.imageUrl}
+          alt=""
+          width={44}
+          height={44}
+          loading="lazy"
+          className="size-full object-cover"
+        />
       ) : (
         <MarkerPin style={{ icon: want.markerIcon, color: want.markerColor }} size={26} />
       )}

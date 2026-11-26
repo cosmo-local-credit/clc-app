@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useConnection } from "wagmi";
 
-import { BackendApiError } from "@clc/api/client/errors";
+import { BackendApiError, transientBackendReadQueryPolicy } from "@clc/api/client/errors";
 import { type SessionResult } from "@clc/api/features/auth/client";
 import { useReconnectAttempted } from "#/providers/auth-bootstrap";
 import { authClient } from "#/lib/api/auth";
@@ -39,28 +39,29 @@ export function useAuthStatus(): AuthStatus {
   const { address, chainId, connector, status } = useConnection();
   const sessionQuery = useQuery({
     queryKey: authSessionQueryKeyForAddress(address),
-    queryFn: () => authClient.getSession(),
+    queryFn: ({ signal }) => authClient.getSession(signal),
     enabled: reconnectAttempted && !!address,
-    retry: false,
+    ...transientBackendReadQueryPolicy,
   });
 
   const connectorId = connector?.id;
   const session = sessionQuery.data;
-  const error = sessionQuery.error instanceof Error ? sessionQuery.error : null;
+  const failure = sessionQuery.error ?? sessionQuery.failureReason;
+  const error = failure instanceof Error ? failure : null;
 
   let state: AuthStatusState;
   if (!reconnectAttempted || status === "connecting" || status === "reconnecting") {
     state = "loading";
   } else if (!address) {
     state = "guest";
-  } else if (sessionQuery.isPending) {
-    state = "loading";
-  } else if (sessionQuery.isError) {
+  } else if (sessionQuery.isError || failure != null) {
     if (error instanceof BackendApiError && error.kind === "unauthenticated") {
       state = "connectedNoSession";
     } else {
       state = "sessionCheckError";
     }
+  } else if (sessionQuery.isPending) {
+    state = "loading";
   } else if (!session) {
     state = "connectedNoSession";
   } else if (session.address.toLowerCase() !== address.toLowerCase()) {

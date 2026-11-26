@@ -250,7 +250,7 @@ export function WalletDesk() {
       cell: (row) => {
         const priced = valuation.values.get((row.contractAddress ?? row.id).toLowerCase());
         if (priced === undefined || priced.status === "pending") {
-          return valuation.isError ? <Dash /> : <Spinner />;
+          return valuation.isPending ? <Spinner /> : <Dash />;
         }
         if (priced.status === "unpriced") return <Dash />;
         return (
@@ -307,7 +307,7 @@ export function WalletDesk() {
           <p className="flex min-h-11 min-w-0 flex-wrap items-baseline gap-x-2" aria-live="polite">
             {valuation.isPending ? (
               <Spinner />
-            ) : valuation.isError || !unitLabel ? (
+            ) : valuation.total === null || !unitLabel ? (
               <span className="font-heading text-[2.25rem] leading-tight font-semibold tracking-tight text-muted-foreground">
                 —
               </span>
@@ -325,6 +325,21 @@ export function WalletDesk() {
               </>
             )}
           </p>
+          {valuation.isError ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <p role="alert" className="text-xs text-muted-foreground">
+                <Trans>Couldn't load vouchers.</Trans>
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                pending={valuation.isRetrying}
+                onClick={() => void valuation.retry()}
+              >
+                <Trans>Retry</Trans>
+              </Button>
+            </div>
+          ) : null}
           {address ? (
             <button
               type="button"

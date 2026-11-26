@@ -213,6 +213,9 @@ function CatalogMembersDesk({
                       <ProgressiveImage
                         src={item.imageUrl}
                         alt=""
+                        width={34}
+                        height={34}
+                        loading="lazy"
                         className="size-full object-cover"
                       />
                     </span>

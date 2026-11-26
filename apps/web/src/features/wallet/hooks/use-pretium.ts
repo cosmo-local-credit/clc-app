@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { transientBackendReadQueryPolicy } from "@clc/api/client/errors";
 import type {
   CreatePretiumLinkInput,
   TriggerPretiumOnrampInput,
@@ -30,13 +31,13 @@ export const pretiumQueryKeys = {
     [...pretiumQueryKeys.all, "link", "address", address?.toLowerCase() ?? "none"] as const,
 };
 
-export function usePretiumRates(enabled = true) {
+export function usePretiumRates(enabled = true, { recoverReads = false } = {}) {
   return useQuery({
     queryKey: pretiumQueryKeys.rates(),
-    queryFn: () => pretiumClient.getPretiumRates(),
+    queryFn: ({ signal }) => pretiumClient.getPretiumRates(signal),
     enabled,
     staleTime: PRETIUM_RATES_STALE_TIME_MS,
-    retry: false,
+    ...(recoverReads ? transientBackendReadQueryPolicy : { retry: false }),
   });
 }
 

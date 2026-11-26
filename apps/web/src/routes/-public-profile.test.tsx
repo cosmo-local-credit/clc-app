@@ -7,12 +7,13 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vite-plus/test";
 import { PublicProfileDesk } from "#/desktop/profiles/public-profile-desk";
 import { PublicProfileContent } from "#/components/profile/public-profile-content";
 import { ResourceProfileButton } from "#/components/profile/resource-profile-button";
 import { PublicProfilePage } from "#/features/public-profiles/ui/public-profile-page";
+import { stubIntersectionObserver } from "#/lib/-fixtures/intersection-observer";
 import { Route as ProfileRoute } from "./_nav/profiles/$address";
 
 const address = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
@@ -59,6 +60,7 @@ const profile = {
 const reply = (result: unknown, status = 200) =>
   new Response(JSON.stringify({ ok: status < 400, result, description: "Unavailable" }), {
     status,
+    headers: status === 503 ? { "Retry-After": "0" } : undefined,
   });
 const resourceKinds = {
   vouchers: "voucher",
@@ -363,6 +365,8 @@ describe("public profile views", () => {
         .fn()
         .mockResolvedValueOnce(reply({}, 404))
         .mockResolvedValueOnce(reply({}, 503))
+        .mockResolvedValueOnce(reply({}, 503))
+        .mockResolvedValueOnce(reply({}, 503))
         .mockImplementation((input: string) => Promise.resolve(defaultProfileResponse(input)));
       vi.stubGlobal("fetch", fetch);
       const { client } = mount(view);
@@ -383,14 +387,14 @@ describe("public profile views", () => {
       posts: "post",
       catalogs: "catalog",
     } as const;
-    let fail = false;
+    let failures = 0;
     const fetch = vi.fn().mockImplementation((input: string) => {
       const url = new URL(input);
       const section = url.pathname.split("/").at(-1) as keyof typeof kinds;
       if (!kinds[section])
         return Promise.resolve(reply({ profile: { ...profile, hasPrivateDetails: false } }));
-      if (fail) {
-        fail = false;
+      if (failures > 0) {
+        failures--;
         return Promise.resolve(reply({}, 503));
       }
       const second = url.searchParams.has("cursor");
@@ -429,14 +433,18 @@ describe("public profile views", () => {
       expect(section.open).toBe(true);
       expect(await sectionView.findByText(`${key} one`)).toBeTruthy();
       if (key === "vouchers") {
-        fail = true;
+        failures = 3;
         fireEvent.click(sectionView.getByRole("button", { name: "Load more" }));
         await screen.findByText("Couldn't load profile information.");
         expect(screen.getByText("vouchers one")).toBeTruthy();
         fireEvent.click(screen.getByRole("button", { name: "Retry" }));
-        await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
-        fireEvent.click(sectionView.getByRole("button", { name: "Load more" }));
         await screen.findByText("vouchers two");
+        expect(screen.queryByRole("alert")).toBeNull();
+        expect(
+          fetch.mock.calls
+            .filter(([input]) => new URL(input).pathname.endsWith("/vouchers"))
+            .map(([input]) => new URL(input).searchParams.get("cursor")),
+        ).toEqual([null, "second", "second", "second", "second"]);
         const img = document.querySelector('img[src="https://images.example/resource.png"]');
         if (img) fireEvent.error(img);
       }
@@ -522,15 +530,220 @@ describe("public profile views", () => {
     expect(fetch).toHaveBeenCalledTimes(7);
   });
 
+  it.each(["settles", "closes"] as const)(
+    "starts viewport loading of later sections only after the first section %s",
+    async (firstSection) => {
+      const observer = stubIntersectionObserver();
+      let resolveVouchers!: (response: Response) => void;
+      const fetch = vi.fn((input: string, init: RequestInit) => {
+        if (new URL(input).pathname.endsWith("/vouchers")) {
+          return new Promise<Response>((resolve, reject) => {
+            resolveVouchers = resolve;
+            init.signal?.addEventListener("abort", () => reject(init.signal?.reason));
+          });
+        }
+        return Promise.resolve(defaultProfileResponse(input));
+      });
+      vi.stubGlobal("fetch", fetch);
+      mount();
+      await screen.findByRole("heading", { name: "alice" });
+      const vouchers = screen.getByText("Vouchers", { selector: "summary" });
+      const voucherSection = vouchers.closest("details")!;
+      await within(voucherSection).findByLabelText("Loading…");
+      expect(document.querySelectorAll("details[open]")).toHaveLength(6);
+
+      const requestedSections = () =>
+        fetch.mock.calls.map(([url]) => new URL(url).pathname.split("/").at(-1));
+      const offers = screen.getByText("Offers", { selector: "summary" });
+      // A heading can briefly be in range while the preceding grid only shows a
+      // spinner. Do not register its observer against that temporary geometry.
+      act(() => observer.reveal(offers));
+      expect(requestedSections()).toEqual([address, "vouchers"]);
+
+      if (firstSection === "settles") {
+        resolveVouchers(reply({ items: [], nextCursor: null }));
+        await within(voucherSection).findByText("No resources to show.");
+      } else {
+        fireEvent.click(vouchers);
+        await waitFor(() => {
+          expect(voucherSection.open).toBe(false);
+          expect(fetch.mock.calls[1]?.[1].signal?.aborted).toBe(true);
+        });
+      }
+
+      act(() => observer.reveal(offers));
+      await within(offers.closest("details")!).findByText("No resources to show.");
+      expect(requestedSections()).toEqual([address, "vouchers", "offers"]);
+    },
+  );
+
+  it("loads a deliberately reopened section while the first section is still pending", async () => {
+    const observer = stubIntersectionObserver();
+    const fetch = vi.fn((input: string) => {
+      if (new URL(input).pathname.endsWith("/vouchers")) return new Promise<Response>(() => {});
+      return Promise.resolve(defaultProfileResponse(input));
+    });
+    vi.stubGlobal("fetch", fetch);
+    mount();
+
+    const vouchers = await screen.findByText("Vouchers", { selector: "summary" });
+    const voucherSection = within(vouchers.closest("details")!);
+    await voucherSection.findByLabelText("Loading…");
+    const offers = screen.getByText("Offers", { selector: "summary" });
+    const offerSection = offers.closest("details")!;
+    act(() => observer.reveal(offers));
+    expect(offerSection.open).toBe(true);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    fireEvent.click(offers);
+    await waitFor(() => expect(offerSection.open).toBe(false));
+    expect(fetch).toHaveBeenCalledTimes(2);
+    fireEvent.click(offers);
+
+    await within(offerSection).findByText("No resources to show.");
+    expect(voucherSection.getByLabelText("Loading…")).toBeTruthy();
+    expect(fetch.mock.calls.map(([url]) => new URL(url).pathname.split("/").at(-1))).toEqual([
+      address,
+      "vouchers",
+      "offers",
+    ]);
+  });
+
+  it.each(["document", "nested"] as const)(
+    "defers off-screen sections against the %s scroll viewport",
+    async (scrolling) => {
+      const register =
+        vi.fn<(report: IntersectionObserverCallback, options: IntersectionObserverInit) => void>();
+      vi.stubGlobal(
+        "IntersectionObserver",
+        class {
+          constructor(report: IntersectionObserverCallback, options: IntersectionObserverInit) {
+            register(report, options);
+          }
+          observe = vi.fn();
+          disconnect = vi.fn();
+        },
+      );
+      const documentScroller = Object.getOwnPropertyDescriptor(document, "scrollingElement");
+      const { overflowY } = document.documentElement.style;
+      Object.defineProperty(document, "scrollingElement", {
+        configurable: true,
+        value: document.documentElement,
+      });
+      document.documentElement.style.overflowY = "scroll";
+      onTestFinished(() => {
+        document.documentElement.style.overflowY = overflowY;
+        if (documentScroller) Object.defineProperty(document, "scrollingElement", documentScroller);
+        else Reflect.deleteProperty(document, "scrollingElement");
+      });
+
+      const fetch = vi.fn(() => Promise.resolve(reply({ items: [], nextCursor: null })));
+      vi.stubGlobal("fetch", fetch);
+      const client = new QueryClient();
+      clients.push(client);
+      render(
+        <QueryClientProvider client={client}>
+          <div
+            data-testid="profile-scroll"
+            style={{ overflowY: scrolling === "nested" ? "auto" : undefined }}
+          >
+            <PublicProfileContent
+              profile={{
+                ...profile,
+                hasPrivateDetails: false,
+                sections: {
+                  ...profile.sections,
+                  wants: false,
+                  pools: false,
+                  posts: false,
+                  catalogs: false,
+                },
+              }}
+            />
+          </div>
+        </QueryClientProvider>,
+      );
+
+      const offers = screen.getByText("Offers", { selector: "summary" });
+      await waitFor(() => expect(register).toHaveBeenCalledOnce());
+      const [report, options] = register.mock.calls[0]!;
+      const observedViewport = scrolling === "nested" ? screen.getByTestId("profile-scroll") : null;
+      expect(options).toEqual({ root: observedViewport, rootMargin: "200px 0px" });
+      const scroll = (isIntersecting: boolean) =>
+        act(() => {
+          const bounds = offers.getBoundingClientRect();
+          report(
+            [
+              {
+                target: offers,
+                isIntersecting,
+                boundingClientRect: bounds,
+                intersectionRect: bounds,
+                intersectionRatio: isIntersecting ? 1 : 0,
+                rootBounds: null,
+                time: 0,
+              },
+            ],
+            {} as IntersectionObserver,
+          );
+        });
+      scroll(false);
+      expect(fetch).toHaveBeenCalledOnce();
+      expect(offers.closest("details")?.open).toBe(true);
+
+      scroll(true);
+      await within(offers.closest("details")!).findByText("No resources to show.");
+      expect(fetch).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it("keeps published rows through an outage and does not restore them after withdrawal", async () => {
+    let sectionStatus = 200;
+    const fetch = vi.fn((input: string) => {
+      if (!new URL(input).pathname.endsWith("/vouchers")) {
+        return Promise.resolve(defaultProfileResponse(input));
+      }
+      return Promise.resolve(
+        sectionStatus === 200
+          ? reply({
+              items: [{ id: 1, kind: "voucher", resourceId: other, name: "Published voucher" }],
+              nextCursor: null,
+            })
+          : reply({}, sectionStatus),
+      );
+    });
+    vi.stubGlobal("fetch", fetch);
+    const { client } = mount();
+    await screen.findByRole("link", { name: "Published voucher" });
+    const sectionKey = [...publicProfileKeys.detail(address), "resources", "vouchers"];
+    const refreshSection = () => client.invalidateQueries({ queryKey: sectionKey });
+
+    sectionStatus = 503;
+    await act(refreshSection);
+    await screen.findByRole("alert");
+    expect(screen.getByRole("link", { name: "Published voucher" })).toBeTruthy();
+
+    sectionStatus = 404;
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("link", { name: "Published voucher" })).toBeNull(),
+    );
+    expect(client.getQueryData(sectionKey)).toMatchObject({ pages: [null] });
+
+    sectionStatus = 503;
+    await act(refreshSection);
+    expect(screen.queryByRole("link", { name: "Published voucher" })).toBeNull();
+  });
+
   it("recovers private-detail failures without fabricating data", async () => {
     Object.assign(auth, { state: "authenticated", isAuthenticated: true });
-    let detailsFailed = false;
+    let remainingFailures = 3;
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((url: string) => {
         if (url.endsWith("/details")) {
-          if (!detailsFailed) {
-            detailsFailed = true;
+          if (remainingFailures > 0) {
+            remainingFailures--;
             return Promise.resolve(reply({}, 503));
           }
           return Promise.resolve(reply({ details: {} }));
@@ -543,6 +756,34 @@ describe("public profile views", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
     expect(screen.queryByTestId("shared-pin")).toBeNull();
+  });
+
+  it("keeps authorized details through a failed refresh and updates them on Retry", async () => {
+    Object.assign(auth, { state: "authenticated", isAuthenticated: true });
+    let detailsResponse = () => reply({ details: { email: "old@example.test" } });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: string) =>
+        Promise.resolve(
+          input.endsWith("/details") ? detailsResponse() : defaultProfileResponse(input),
+        ),
+      ),
+    );
+    const { client } = mount();
+    await screen.findByText("old@example.test");
+
+    detailsResponse = () => reply({}, 503);
+    await act(() =>
+      client.invalidateQueries({ queryKey: publicProfileKeys.details(address, address) }),
+    );
+    await screen.findByText("Couldn't load profile information.");
+    expect(screen.getByText("old@example.test")).toBeTruthy();
+
+    detailsResponse = () => reply({ details: { email: "new@example.test" } });
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await screen.findByText("new@example.test");
+    expect(screen.queryByText("old@example.test")).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 });
 

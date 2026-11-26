@@ -180,7 +180,6 @@ export function useMarketScreen({
   const activeKinds = kinds ?? mapResources.selected;
   const includesPosts = activeKinds.includes("post");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filtersEverOpened, setFiltersEverOpened] = useState(false);
   const parsedFilter = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
   const mapFilters = {
     filter: parsedFilter,
@@ -208,7 +207,7 @@ export function useMarketScreen({
   const { tagFacets, postVoucherFacets, postPoolFacets } = useMarketMapFacets({
     ...mapFilters,
     bounds: visibleBoxes,
-    enabled: discoveryEnabled && filtersEverOpened,
+    enabled: discoveryEnabled && filtersOpen,
   });
   const locations = marketMap.locations;
   const visibleCount = useMemo(
@@ -475,7 +474,6 @@ export function useMarketScreen({
     },
     filtersOpen,
     setFiltersOpen,
-    setFiltersEverOpened,
     voucherSelection,
     wantSelection,
     isCardOpen,

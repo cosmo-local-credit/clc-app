@@ -52,7 +52,7 @@ export function keyRotationsQueryOptions(auth: AuthClient, address: string) {
 export function profileQueryOptions(auth: AuthClient, address?: string) {
   return queryOptions({
     queryKey: authKeys.profile(address),
-    queryFn: () => auth.getProfile(),
+    queryFn: ({ signal }) => auth.getProfile(signal),
     staleTime: 60_000,
   });
 }

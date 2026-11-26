@@ -1,4 +1,3 @@
-import { BackendApiError } from "@clc/api/client/errors";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   PublicProfileContent,
@@ -12,21 +11,19 @@ import { usePublicProfile } from "#/features/public-profiles/hooks/use-public-pr
 
 export function PublicProfileDesk({ address }: { address: string }) {
   const { t } = useLingui();
-  const query = usePublicProfile(address);
-  const profile = query.data;
+  const { query, profile } = usePublicProfile(address);
   return (
     <DeskCanvas>
       {query.isPending ? (
         <ProfileLoading />
       ) : query.isError ? (
-        query.error instanceof BackendApiError && query.error.status === 404 ? (
-          <p className="text-sm">
-            <Trans>This public profile is unavailable.</Trans>
-          </p>
-        ) : (
-          <ProfileReadError pending={query.isFetching} retry={() => void query.refetch()} />
-        )
-      ) : profile ? (
+        <ProfileReadError pending={query.isFetching} retry={() => void query.refetch()} />
+      ) : profile === null ? (
+        <p className="text-sm">
+          <Trans>This public profile is unavailable.</Trans>
+        </p>
+      ) : null}
+      {profile ? (
         <>
           <DeskTitleRow
             title={profile.username ?? profile.name ?? t`Public profile`}
