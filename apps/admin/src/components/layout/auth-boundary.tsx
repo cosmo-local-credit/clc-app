@@ -19,6 +19,11 @@ import type { SignInNotice } from "#/features/auth/ui/sign-in-panel";
 const SignInPanel = lazy(() =>
   import("#/features/auth/ui/sign-in-panel").then((module) => ({ default: module.SignInPanel })),
 );
+const RegionalWorkspace = lazy(() =>
+  import("#/features/regions/regional-workspace").then((module) => ({
+    default: module.RegionalWorkspace,
+  })),
+);
 
 /**
  * This is a UX gate only. clc-core enforces administrative access on every admin
@@ -37,6 +42,23 @@ export function AuthBoundary({ children }: { children: ReactNode }) {
 
   if (session.status === "authenticated")
     return <Fragment key={session.operator.address.toLowerCase()}>{children}</Fragment>;
+
+  if (session.status === "regional") {
+    return (
+      <Suspense
+        fallback={
+          <div className="p-6">
+            <LoadingBlock rows={4} />
+          </div>
+        }
+      >
+        <RegionalWorkspace
+          key={session.operator.address.toLowerCase()}
+          viewer={session.operator.address}
+        />
+      </Suspense>
+    );
+  }
 
   if (session.status === "unavailable") {
     return (

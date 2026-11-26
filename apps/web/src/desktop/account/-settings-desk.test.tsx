@@ -16,6 +16,7 @@ const [FIRST, SECOND, NEWCOMER] = [
 ] as const;
 
 const security = vi.hoisted(() => ({
+  role: "USER",
   safes: [] as { kind: "safe"; owner: string; signers: string[]; threshold: number }[],
   signers: { data: undefined as unknown, isError: false, refetch: vi.fn() },
   propose: vi.fn(),
@@ -87,7 +88,11 @@ vi.mock("#/components/introduction/introduction-provider", () => ({
   useIntroductionReplay: () => null,
 }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: true, address: ADDRESS }),
+  useAuthStatus: () => ({
+    isAuthenticated: true,
+    address: ADDRESS,
+    session: { role: security.role },
+  }),
 }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => ({ data: { name: "Amina Otieno" }, isPending: false }),
@@ -138,6 +143,7 @@ vi.mock("#/providers/theme", () => ({
 const scrollIntoView = vi.fn();
 
 beforeEach(() => {
+  security.role = "USER";
   security.safes = [];
   security.signers = {
     data: { safe: SAFE, owners: [FIRST, SECOND], threshold: 1 },
@@ -173,6 +179,14 @@ afterEach(() => {
 });
 
 describe("the top bar's notification action", () => {
+  it("links to My regions for a regional admin", async () => {
+    security.role = "REGIONAL_ADMIN";
+    await renderInShell(<SettingsDesk address={ADDRESS} />, "/?tab=settings");
+    expect(screen.getByRole("link", { name: "My regions" }).getAttribute("href")).toBe(
+      "/settings/regions",
+    );
+  });
+
   it("links Helpdesk directly below Profile in Settings", async () => {
     await renderInShell(<SettingsDesk address={ADDRESS} />, "/?tab=settings");
     const help = screen.getByRole("link", { name: "Helpdesk" });
@@ -180,6 +194,7 @@ describe("the top bar's notification action", () => {
     expect(help.querySelector("svg")).not.toBeNull();
     const row = help.closest(".grid");
     expect(row?.previousElementSibling?.querySelector('a[href="/settings/profile"]')).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "My regions" })).toBeNull();
   });
   it("is named for notification settings, not for an inbox", async () => {
     await renderInShell(<DesktopTopBar />);

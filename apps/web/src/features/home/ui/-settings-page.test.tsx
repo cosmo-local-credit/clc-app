@@ -77,6 +77,20 @@ function group(name: string) {
 }
 
 describe("SettingsPage", () => {
+  it("links regional admins to their assigned regions", () => {
+    const props = {
+      delegationStatus: "checking",
+      isSigningOut: false,
+      onSignOut: vi.fn(),
+    } as const;
+    const { rerender } = render(<SettingsPage {...props} />);
+    expect(screen.queryByRole("link", { name: "My regions" })).toBeNull();
+    rerender(<SettingsPage {...props} regionalAdmin />);
+    expect(
+      within(group("Account")).getByRole("link", { name: "My regions" }).getAttribute("href"),
+    ).toBe("/settings/regions");
+  });
+
   it("keeps Helpdesk directly below the Profile section", () => {
     render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
     const help = within(group("Account")).getByRole("link", { name: "Helpdesk" });

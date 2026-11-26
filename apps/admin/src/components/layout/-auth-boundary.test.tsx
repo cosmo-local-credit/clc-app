@@ -9,6 +9,9 @@ import { AuthBoundary } from "./auth-boundary";
 const { getSession } = vi.hoisted(() => ({ getSession: vi.fn() }));
 
 vi.mock("#/lib/api", () => ({ clcApi: { auth: { getSession } } }));
+vi.mock("#/features/regions/regional-workspace", () => ({
+  RegionalWorkspace: ({ viewer }: { viewer: string }) => <p>Regional workspace for {viewer}</p>,
+}));
 vi.mock("#/features/auth/ui/sign-in-panel", () => ({
   SignInPanel: ({ notice }: { notice?: SignInNotice }) => (
     <>
@@ -103,6 +106,16 @@ describe("Admin session recovery", () => {
     await act(() => client.invalidateQueries({ queryKey: adminSessionQueryKey }));
 
     expect(screen.getByText("Operator console")).toBeTruthy();
+    expect(client.getQueryData(protectedKey)).toBeUndefined();
+  });
+
+  it("replaces the global shell and drops private rows when an operator becomes regional", async () => {
+    getSession.mockReset().mockResolvedValueOnce({ ...operator, role: "REGIONAL_ADMIN" });
+    const client = renderConsole();
+    await act(() => client.invalidateQueries({ queryKey: adminSessionQueryKey }));
+
+    expect(await screen.findByText(`Regional workspace for ${operator.address}`)).toBeTruthy();
+    expect(screen.queryByText("Operator console")).toBeNull();
     expect(client.getQueryData(protectedKey)).toBeUndefined();
   });
 });

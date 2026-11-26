@@ -9,6 +9,7 @@ import {
   HiOutlineCube,
   HiOutlineFlag,
   HiOutlineHome,
+  HiOutlineMap,
   HiOutlineNewspaper,
   HiOutlineQrcode,
   HiOutlineShieldExclamation,
@@ -51,6 +52,7 @@ type NavPath =
   | "/vouchers"
   | "/retirement-requests"
   | "/users"
+  | "/regions"
   | "/paper-wallets"
   | "/nfc-cards"
   | "/posts"
@@ -84,6 +86,7 @@ const navItems: Array<{
 }> = [
   { to: "/", label: "Dashboard", icon: HiOutlineHome, exact: true },
   { to: "/users", label: "Accounts", icon: HiOutlineUsers },
+  { to: "/regions", label: "Regions", icon: HiOutlineMap },
   { to: "/paper-wallets", label: "Sign-in cards", icon: HiOutlineQrcode },
   { to: "/nfc-cards", label: "NFC cards", icon: MdOutlineNfc },
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },

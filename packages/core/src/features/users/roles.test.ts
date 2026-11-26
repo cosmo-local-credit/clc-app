@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
-import { isAdminRole, isSuperAdminRole, isUserRole } from "./roles";
+import { isAdminRole, isRegionalAdminRole, isSuperAdminRole, isUserRole } from "./roles";
 
 describe("user roles", () => {
-  it.each(["USER", "ADMIN", "SUPERADMIN"])("recognizes %s", (role) => {
+  it.each(["USER", "REGIONAL_ADMIN", "ADMIN", "SUPERADMIN"])("recognizes %s", (role) => {
     expect(isUserRole(role)).toBe(true);
   });
 
@@ -10,6 +10,12 @@ describe("user roles", () => {
     expect(isAdminRole("ADMIN")).toBe(true);
     expect(isAdminRole("SUPERADMIN")).toBe(true);
     expect(isAdminRole("USER")).toBe(false);
+    expect(isAdminRole("REGIONAL_ADMIN")).toBe(false);
+  });
+
+  it("does not conflate the regional and global grants", () => {
+    expect(isRegionalAdminRole("REGIONAL_ADMIN")).toBe(true);
+    expect(isRegionalAdminRole("ADMIN")).toBe(false);
   });
 
   it("keeps role management superadmin-only", () => {

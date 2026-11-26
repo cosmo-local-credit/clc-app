@@ -34,6 +34,7 @@ import { Route as NavWalletReceiveRouteImport } from './routes/_nav/wallet/recei
 import { Route as NavWalletCollectRouteImport } from './routes/_nav/wallet/collect'
 import { Route as NavWalletCashRouteImport } from './routes/_nav/wallet/cash'
 import { Route as NavVouchersVoucherAddressRouteImport } from './routes/_nav/vouchers/$voucherAddress'
+import { Route as NavSettingsRegionsRouteImport } from './routes/_nav/settings/regions'
 import { Route as NavSettingsProfileRouteImport } from './routes/_nav/settings/profile'
 import { Route as NavRoutedSwapsTrackingIdRouteImport } from './routes/_nav/routed-swaps/$trackingId'
 import { Route as NavProfilesAddressRouteImport } from './routes/_nav/profiles/$address'
@@ -180,6 +181,11 @@ const NavVouchersVoucherAddressRoute =
     path: '/vouchers/$voucherAddress',
     getParentRoute: () => NavRoute,
   } as any)
+const NavSettingsRegionsRoute = NavSettingsRegionsRouteImport.update({
+  id: '/settings/regions',
+  path: '/settings/regions',
+  getParentRoute: () => NavRoute,
+} as any)
 const NavSettingsProfileRoute = NavSettingsProfileRouteImport.update({
   id: '/settings/profile',
   path: '/settings/profile',
@@ -305,6 +311,7 @@ export interface FileRoutesByFullPath {
   '/profiles/$address': typeof NavProfilesAddressRoute
   '/routed-swaps/$trackingId': typeof NavRoutedSwapsTrackingIdRoute
   '/settings/profile': typeof NavSettingsProfileRoute
+  '/settings/regions': typeof NavSettingsRegionsRoute
   '/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
   '/wallet/cash': typeof NavWalletCashRoute
   '/wallet/collect': typeof NavWalletCollectRoute
@@ -351,6 +358,7 @@ export interface FileRoutesByTo {
   '/profiles/$address': typeof NavProfilesAddressRoute
   '/routed-swaps/$trackingId': typeof NavRoutedSwapsTrackingIdRoute
   '/settings/profile': typeof NavSettingsProfileRoute
+  '/settings/regions': typeof NavSettingsRegionsRoute
   '/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
   '/wallet/cash': typeof NavWalletCashRoute
   '/wallet/collect': typeof NavWalletCollectRoute
@@ -399,6 +407,7 @@ export interface FileRoutesById {
   '/_nav/profiles/$address': typeof NavProfilesAddressRoute
   '/_nav/routed-swaps/$trackingId': typeof NavRoutedSwapsTrackingIdRoute
   '/_nav/settings/profile': typeof NavSettingsProfileRoute
+  '/_nav/settings/regions': typeof NavSettingsRegionsRoute
   '/_nav/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
   '/_nav/wallet/cash': typeof NavWalletCashRoute
   '/_nav/wallet/collect': typeof NavWalletCollectRoute
@@ -447,6 +456,7 @@ export interface FileRouteTypes {
     | '/profiles/$address'
     | '/routed-swaps/$trackingId'
     | '/settings/profile'
+    | '/settings/regions'
     | '/vouchers/$voucherAddress'
     | '/wallet/cash'
     | '/wallet/collect'
@@ -493,6 +503,7 @@ export interface FileRouteTypes {
     | '/profiles/$address'
     | '/routed-swaps/$trackingId'
     | '/settings/profile'
+    | '/settings/regions'
     | '/vouchers/$voucherAddress'
     | '/wallet/cash'
     | '/wallet/collect'
@@ -540,6 +551,7 @@ export interface FileRouteTypes {
     | '/_nav/profiles/$address'
     | '/_nav/routed-swaps/$trackingId'
     | '/_nav/settings/profile'
+    | '/_nav/settings/regions'
     | '/_nav/vouchers/$voucherAddress'
     | '/_nav/wallet/cash'
     | '/_nav/wallet/collect'
@@ -759,6 +771,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NavVouchersVoucherAddressRouteImport
       parentRoute: typeof NavRoute
     }
+    '/_nav/settings/regions': {
+      id: '/_nav/settings/regions'
+      path: '/settings/regions'
+      fullPath: '/settings/regions'
+      preLoaderRoute: typeof NavSettingsRegionsRouteImport
+      parentRoute: typeof NavRoute
+    }
     '/_nav/settings/profile': {
       id: '/_nav/settings/profile'
       path: '/settings/profile'
@@ -913,6 +932,7 @@ interface NavRouteChildren {
   NavProfilesAddressRoute: typeof NavProfilesAddressRoute
   NavRoutedSwapsTrackingIdRoute: typeof NavRoutedSwapsTrackingIdRoute
   NavSettingsProfileRoute: typeof NavSettingsProfileRoute
+  NavSettingsRegionsRoute: typeof NavSettingsRegionsRoute
   NavVouchersVoucherAddressRoute: typeof NavVouchersVoucherAddressRoute
   NavWalletCashRoute: typeof NavWalletCashRoute
   NavWalletCollectRoute: typeof NavWalletCollectRoute
@@ -951,6 +971,7 @@ const NavRouteChildren: NavRouteChildren = {
   NavProfilesAddressRoute: NavProfilesAddressRoute,
   NavRoutedSwapsTrackingIdRoute: NavRoutedSwapsTrackingIdRoute,
   NavSettingsProfileRoute: NavSettingsProfileRoute,
+  NavSettingsRegionsRoute: NavSettingsRegionsRoute,
   NavVouchersVoucherAddressRoute: NavVouchersVoucherAddressRoute,
   NavWalletCashRoute: NavWalletCashRoute,
   NavWalletCollectRoute: NavWalletCollectRoute,
