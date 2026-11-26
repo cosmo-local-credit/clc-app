@@ -3,13 +3,25 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { adminSessionQueryKey } from "#/features/auth/admin-session";
+import type { SignInNotice } from "#/features/auth/ui/sign-in-panel";
 import { AuthBoundary } from "./auth-boundary";
 
 const { getSession } = vi.hoisted(() => ({ getSession: vi.fn() }));
 
 vi.mock("#/lib/api", () => ({ clcApi: { auth: { getSession } } }));
 vi.mock("#/features/auth/ui/sign-in-panel", () => ({
-  SignInPanel: () => <p>Operator sign-in</p>,
+  SignInPanel: ({ notice }: { notice?: SignInNotice }) => (
+    <>
+      <p>Operator sign-in</p>
+      {notice ? (
+        <div role="alert">
+          <p>{notice.title}</p>
+          <p>{notice.description}</p>
+          {notice.signedIn ? <button type="button">Sign out</button> : null}
+        </div>
+      ) : null}
+    </>
+  ),
 }));
 
 const operator = {
@@ -67,6 +79,18 @@ describe("Admin session recovery", () => {
     await act(() => client.invalidateQueries({ queryKey: adminSessionQueryKey }));
 
     expect(await screen.findByText("Operator sign-in")).toBeTruthy();
+    expect(client.getQueryData(protectedKey)).toBeUndefined();
+  });
+
+  it("offers sign-out for a current session without operator privileges", async () => {
+    getSession.mockReset().mockResolvedValueOnce({ ...operator, role: "USER" });
+    const client = renderConsole();
+    await act(() => client.invalidateQueries({ queryKey: adminSessionQueryKey }));
+
+    expect(await screen.findByText("Operator sign-in")).toBeTruthy();
+    expect(screen.getByRole("alert").textContent).toContain("Requires ADMIN or SUPERADMIN.");
+    expect(screen.getByRole("button", { name: "Sign out" })).toBeTruthy();
+    expect(screen.queryByText("Operator console")).toBeNull();
     expect(client.getQueryData(protectedKey)).toBeUndefined();
   });
 

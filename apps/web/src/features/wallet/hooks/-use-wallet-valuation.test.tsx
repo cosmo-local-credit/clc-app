@@ -42,7 +42,7 @@ function mount() {
   return {
     client,
     ...renderHook(({ address }) => useWalletValuation(address), {
-      initialProps: { address: WALLET as string },
+      initialProps: { address: WALLET as string | undefined },
       wrapper: ({ children }: { children: ReactNode }) => (
         <QueryClientProvider client={client}>{children}</QueryClientProvider>
       ),
@@ -77,6 +77,46 @@ it("prices holdings from account rows and the cash-out rate without Voucher deta
     ["/auth/profile", `/api/v2/accounts/${WALLET}/tokens`, "/api/v2/pretium/rates"].sort(),
   );
   expect(fetch.mock.calls.every(([, options]) => options.signal instanceof AbortSignal)).toBe(true);
+  unmount();
+  client.clear();
+});
+
+it("retries the first page after an initial failure and hides valuation on disconnect", async () => {
+  const balanceRequests = vi.fn((_url: URL) => reply({ tokens: [token(1, "USD")] }));
+  balanceRequests.mockImplementationOnce(() => reply({}, 503));
+  balanceRequests.mockImplementationOnce(() => reply({}, 503));
+  balanceRequests.mockImplementationOnce(() => reply({}, 503));
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((input: string) => {
+      const url = new URL(input);
+      if (url.pathname === "/auth/profile") return reply({ preferredCurrency: "USD" });
+      if (url.pathname === `/api/v2/accounts/${WALLET}/tokens`) return balanceRequests(url);
+      throw new Error(`Unexpected read: ${url.pathname}`);
+    }),
+  );
+  const { result, rerender, client, unmount } = mount();
+  await waitFor(() => expect(result.current.isError).toBe(true));
+  expect(balanceRequests).toHaveBeenCalledTimes(3);
+  expect(result.current.total).toBeNull();
+
+  await act(async () => {
+    await result.current.retry();
+  });
+  await waitFor(() => expect(result.current.total).toBe("3.75"));
+  expect(balanceRequests.mock.calls.map(([url]) => url.searchParams.get("cursor"))).toEqual([
+    null,
+    null,
+    null,
+    null,
+  ]);
+
+  connection.address = "";
+  rerender({ address: undefined });
+  expect(result.current.unit).toBeNull();
+  expect(result.current.total).toBeNull();
+  expect(result.current.values.size).toBe(0);
+  expect(balanceRequests).toHaveBeenCalledTimes(4);
   unmount();
   client.clear();
 });
