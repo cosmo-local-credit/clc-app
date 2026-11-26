@@ -1,3 +1,4 @@
+import { regionKeys } from "@clc/api/features/regions/queries";
 import { QueryClient } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it } from "vite-plus/test";
 
@@ -100,12 +101,14 @@ describe("clearScopedQueries", () => {
   it("removes backend and address-book reads but keeps the session query", () => {
     const queryClient = new QueryClient();
     queryClient.setQueryData(["clc", "accounts", "tokens", "0xalice"], ["token"]);
+    queryClient.setQueryData(regionKeys.mine("0xALICE"), [{ name: "Bhutan" }]);
     queryClient.setQueryData(["address-book", "0xalice", "recipients"], ["recipient"]);
     queryClient.setQueryData(["auth", "session", "0xalice"], { address: "0xalice" });
 
     clearScopedQueries(queryClient);
 
     expect(queryClient.getQueryData(["clc", "accounts", "tokens", "0xalice"])).toBeUndefined();
+    expect(queryClient.getQueryData(regionKeys.mine("0xalice"))).toBeUndefined();
     expect(queryClient.getQueryData(["address-book", "0xalice", "recipients"])).toBeUndefined();
     // Outside both prefixes on purpose: the data goes, the session can still be
     // re-read so the incoming user is resolved.

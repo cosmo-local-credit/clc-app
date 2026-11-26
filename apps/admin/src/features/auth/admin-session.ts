@@ -3,8 +3,8 @@
  *
  * Operators sign in with the same credentials they use on apps/web — a paper
  * wallet (SIWE over a private key) or a passkey — and the console is gated on the
- * role clc-core reports for that account. ADMIN and SUPERADMIN may enter;
- * role-management controls remain reserved for SUPERADMIN.
+ * role clc-core reports for that account. ADMIN and SUPERADMIN may enter the
+ * global console. REGIONAL_ADMIN uses a separate scoped workspace.
  *
  * This module is the only place the gate is decided. The route guard
  * (components/layout/auth-boundary.tsx), the shell and every surface read through
@@ -19,12 +19,12 @@ import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tansta
 
 import { BackendApiError, transientBackendReadQueryPolicy } from "@clc/api/client/errors";
 import type { SessionResult } from "@clc/api/features/auth/client";
-import { isAdminRole } from "@clc/core/features/users/roles";
+import { isAdminRole, isRegionalAdminRole } from "@clc/core/features/users/roles";
 import { clcApi } from "#/lib/api";
 import { useOperatorKeyStore } from "./operator-key";
 import { errorMessage } from "#/lib/data-state";
 
-/** Human-readable description of the roles that may use this console. */
+/** Human-readable description of the roles that may use the global console. */
 export const ADMIN_ROLE_LABEL = "ADMIN or SUPERADMIN";
 
 /** Reached through `AdminSession`, so consumers never need the name. */
@@ -37,6 +37,7 @@ type AdminOperator = {
 export type AdminSession =
   | { status: "loading" }
   | { status: "authenticated"; operator: AdminOperator }
+  | { status: "regional"; operator: AdminOperator }
   | { status: "unauthenticated" }
   | { status: "unauthorized"; operator: AdminOperator }
   | { status: "unavailable"; message: string };
@@ -69,7 +70,7 @@ export function clearProtectedQueries(queryClient: QueryClient): void {
 }
 
 /**
- * Maps the session request's outcome to the five states.
+ * Maps the session request's outcome to the console's authentication states.
  *
  * Pure and exported so every state can be tested without a query client.
  *
@@ -110,6 +111,7 @@ export function resolveSession(query: {
   }
 
   const operator: AdminOperator = { address, role };
+  if (isRegionalAdminRole(role)) return { status: "regional", operator };
   return isAdminRole(role)
     ? { status: "authenticated", operator }
     : { status: "unauthorized", operator };

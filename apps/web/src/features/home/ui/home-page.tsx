@@ -30,6 +30,7 @@ export type HomePageProps = {
   helpdeskId?: number;
   helpdeskStatus?: HelpdeskStatus;
   operator?: boolean;
+  regionalAdmin?: boolean;
   onMessageToConsumed?: () => void;
   onActivityQueryChange?: (query: string) => void;
   onActivityTypesChange?: (types: readonly ActivityKind[]) => void;
@@ -47,6 +48,7 @@ export function HomePage({
   helpdeskId,
   helpdeskStatus,
   operator = false,
+  regionalAdmin = false,
   onMessageToConsumed,
   onActivityQueryChange,
   onActivityTypesChange,
@@ -107,6 +109,7 @@ export function HomePage({
             {currentTab === "settings" ? (
               <SettingsPage
                 address={address}
+                regionalAdmin={regionalAdmin}
                 delegationStatus={delegationStatus}
                 isSigningOut={isSigningOut}
                 onSignOut={() => {

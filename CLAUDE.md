@@ -471,10 +471,11 @@ Admin conventions:
   coordinates), surface the gap with the `receivedCount` delta. An admin total
   that silently under-reports is worse than no total.
 - Auth is a real session, decided in one place:
-  `#/features/auth/admin-session.ts` reads `GET /auth/session` and authorizes
-  `ADMIN` and `SUPERADMIN`; only `SUPERADMIN` may change account roles.
-  `#/components/layout/auth-boundary.tsx` renders the
-  five states. Operators sign in with the same credentials as `apps/web` — a
+  `#/features/auth/admin-session.ts` reads `GET /auth/session`. `ADMIN` and
+  `SUPERADMIN` may open the global console. `REGIONAL_ADMIN` uses a separate,
+  scoped workspace. Only `SUPERADMIN` may change global account roles.
+  `#/components/layout/auth-boundary.tsx` renders those access states.
+  Operators sign in with the same credentials as `apps/web` — a
   paper wallet (SIWE via `@clc/api/features/auth/siwe`) or a passkey. There is no
   stub session and no bearer-token escape hatch; don't reintroduce either.
   clc-core enforces administrative access on `/api/v2/admin`, so the gate here
