@@ -131,12 +131,6 @@ const routePolicy = [
     source: "_nav/settings/profile.tsx",
     navOwner: "settings",
   },
-  {
-    id: "/_nav/settings/regions",
-    fullPath: "/settings/regions",
-    source: "_nav/settings/regions.tsx",
-    navOwner: "settings",
-  },
   { id: "/posts/", fullPath: "/posts/", source: "posts/index.tsx" },
   { id: "/settings/", fullPath: "/settings/", source: "settings/index.tsx" },
   // Leaving drops the replacement's in-memory keys, so no tab bar to leave by.

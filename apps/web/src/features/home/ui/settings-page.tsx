@@ -9,7 +9,6 @@ import {
   RiFileCopyLine,
   RiInformationLine,
   RiLogoutBoxRLine,
-  RiMap2Line,
   RiShareLine,
   RiShieldFlashLine,
 } from "react-icons/ri";
@@ -37,13 +36,11 @@ import { SignInCardSettingsSection } from "./sign-in-card-settings-section";
 
 export function SettingsPage({
   address,
-  regionalAdmin = false,
   delegationStatus,
   isSigningOut,
   onSignOut,
 }: {
   address?: `0x${string}`;
-  regionalAdmin?: boolean;
   delegationStatus: CaliburDelegationStatus;
   isSigningOut: boolean;
   onSignOut: () => void;
@@ -66,13 +63,6 @@ export function SettingsPage({
           label={t`Helpdesk`}
           render={<Link to="/" search={{ tab: "activity", section: "helpdesk" }} />}
         />
-        {regionalAdmin ? (
-          <ActionRow
-            icon={<RiMap2Line className="size-4" aria-hidden="true" />}
-            label={t`My regions`}
-            render={<Link to="/settings/regions" />}
-          />
-        ) : null}
       </SettingsGroup>
 
       <SettingsGroup label={t`Preferences`}>
