@@ -31,7 +31,16 @@ const messageResourceContextSchema = z.object({
   resourceId: z.string().min(1),
   resourceName: z.string().min(1),
   proposedVoucher: z
-    .object({ address: addressSchema, name: z.string().min(1), symbol: z.string() })
+    .object({
+      address: addressSchema,
+      name: z.string().min(1),
+      symbol: z.string(),
+      displaySymbol: z.string().nullish(),
+    })
+    .transform(({ displaySymbol, ...voucher }) => ({
+      ...voucher,
+      symbol: displaySymbol === undefined ? voucher.symbol : (displaySymbol ?? ""),
+    }))
     .optional(),
 });
 export type MessageResourceContext = z.infer<typeof messageResourceContextSchema>;

@@ -42,6 +42,21 @@ export function normalizeText(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
+/** New servers explicitly send null for known vouchers without a CLC label.
+ * Do not substitute a contract ticker in that case. Omission supports older
+ * servers and external tokens for which there is no editable catalog label.
+ */
+export function normalizeVoucherSymbol<T extends string | null>(
+  displaySymbol: unknown,
+  contractSymbol: unknown,
+  fallback: T,
+  nameOrAddress?: unknown,
+): string | T {
+  return displaySymbol === undefined
+    ? (normalizeText(contractSymbol) ?? fallback)
+    : (normalizeText(displaySymbol) ?? normalizeText(nameOrAddress) ?? fallback);
+}
+
 export function normalizeNumericText(value: unknown): string | null {
   if (typeof value === "number" && Number.isFinite(value)) return String(value);
   return normalizeText(value);

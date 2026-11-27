@@ -6,6 +6,7 @@ import {
   deploymentKeys,
 } from "@clc/api/features/deployments/queries";
 import { voucherKeys } from "@clc/api/features/market/queries";
+import { symbolKeys } from "@clc/api/features/symbols/queries";
 import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
 import { getVoucherTrackingOutcome } from "@clc/api/features/vouchers/deploy-client";
 import type { VoucherDeployPayload } from "@clc/core/features/vouchers/logic";
@@ -48,6 +49,7 @@ export function useVoucherPublishDeployment() {
       Promise.all([
         queryClient.invalidateQueries({ queryKey: deploymentKeys.tokenTags() }),
         queryClient.invalidateQueries({ queryKey: vocabularyKeys.all }),
+        queryClient.invalidateQueries({ queryKey: symbolKeys.all }),
       ]),
   });
 

@@ -34,6 +34,7 @@ export function SendReviewDialog({
   amount,
   symbol,
   unitValueLabel,
+  voucherAddress,
   recipient,
   recipientLabel,
   error,
@@ -45,6 +46,7 @@ export function SendReviewDialog({
   amount: string;
   symbol: string;
   unitValueLabel: string | null;
+  voucherAddress?: string;
   recipient: `0x${string}` | null;
   recipientLabel?: string;
   error: string | null;
@@ -78,6 +80,20 @@ export function SendReviewDialog({
                     ) : null}
                   </span>,
                 ],
+                ...(voucherAddress
+                  ? [
+                      [
+                        <Trans key="label">Contract address</Trans>,
+                        <span
+                          key="value"
+                          className="min-w-0 font-mono [overflow-wrap:anywhere]"
+                          dir="ltr"
+                        >
+                          {voucherAddress}
+                        </span>,
+                      ] as const,
+                    ]
+                  : []),
                 [
                   <Trans key="label">Recipient</Trans>,
                   recipient ? (

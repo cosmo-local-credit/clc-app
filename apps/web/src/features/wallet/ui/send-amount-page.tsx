@@ -267,6 +267,7 @@ export function SendAmountPage({
         amount={payment.submittedVoucherAmount}
         symbol={selectedToken?.symbol ?? ""}
         unitValueLabel={unitValueLabel}
+        voucherAddress={selectedToken?.contractAddress}
         recipient={recipientAddress}
         recipientLabel={recipientLabel}
         error={payment.error}
@@ -283,6 +284,7 @@ function SendConfirmationSheet({
   amount,
   symbol,
   unitValueLabel,
+  voucherAddress,
   recipient,
   recipientLabel,
   error,
@@ -294,6 +296,7 @@ function SendConfirmationSheet({
   amount: string;
   symbol: string;
   unitValueLabel: string | null;
+  voucherAddress?: string;
   recipient: `0x${string}` | null;
   recipientLabel?: string;
   error: string | null;
@@ -322,6 +325,19 @@ function SendConfirmationSheet({
                   {unitValueLabel ? ` (${unitValueLabel})` : ""}
                 </span>
               </div>
+              {voucherAddress ? (
+                <div className="flex min-h-11 min-w-0 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="shrink-0 text-muted-foreground text-xs">
+                    <Trans>Contract address</Trans>
+                  </span>
+                  <span
+                    className="min-w-0 text-end font-mono text-xs [overflow-wrap:anywhere]"
+                    dir="ltr"
+                  >
+                    {voucherAddress}
+                  </span>
+                </div>
+              ) : null}
               <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
                 <span className="text-muted-foreground text-xs">
                   <Trans>Recipient</Trans>

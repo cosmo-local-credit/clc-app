@@ -25,6 +25,7 @@ import {
   normalizeNumericText,
   normalizeManagerClosure,
   normalizeText,
+  normalizeVoucherSymbol,
 } from "../../lib/api-normalize";
 
 export type MarketVoucherKind = MarketKind;
@@ -63,6 +64,8 @@ export type MarketVoucherDetail = {
   /** The immutable ERC20 name, retained so edit surfaces can distinguish it from the label. */
   contractName?: string | null;
   symbol: string;
+  /** Omitted by older servers, null when a CLC symbol has not been assigned. */
+  displaySymbol?: string | null;
   decimals: number | null;
   ownerAddress: HexAddress | null;
   description: string | null;
@@ -139,6 +142,7 @@ type BackendMarketVoucher = Partial<{
   address: string | null;
   name: string | null;
   symbol: string | null;
+  displaySymbol: string | null;
   iconUrl: string | null;
   locationName: string | null;
   geoLat: string | number | null;
@@ -172,12 +176,14 @@ export type BackendMarketVoucherDetail = BackendMarketVoucher &
  *
  * Assign-all, exactly like `PoolProfileUpdate`: the caller sends the whole record
  * and an empty string clears the field, because clc-core writes every column it
- * receives. Nothing here mirrors the deployed ERC20 — name, symbol, decimals and
- * the owner come from the chain and the endpoint does not accept them.
+ * receives. The display symbol is an independent catalog label and never
+ * writes the deployed ERC20 symbol.
  */
 export type VoucherProfileUpdate = {
   /** Omit to preserve the current override; send an empty string to clear it. */
   displayName?: string;
+  /** Omit to preserve the active CLC symbol. */
+  displaySymbol?: string;
   description: string;
   voucherUoa: string;
   voucherValue: number | null;
@@ -227,6 +233,7 @@ export function serializeVoucherProfileUpdate(profile: VoucherProfileUpdate) {
   return {
     description: emptyToNull(profile.description),
     ...(profile.displayName === undefined ? {} : { displayName: profile.displayName }),
+    ...(profile.displaySymbol === undefined ? {} : { displaySymbol: profile.displaySymbol }),
     voucherUoa: emptyToNull(profile.voucherUoa),
     voucherValue: profile.voucherValue,
     email: emptyToNull(profile.email),
@@ -475,7 +482,12 @@ function normalizeMarketVoucher(voucher: BackendMarketVoucher): MarketVoucher | 
     chainId,
     address,
     name: normalizeText(voucher.name) ?? "Community Voucher",
-    symbol: normalizeText(voucher.symbol) ?? "VOUCHER",
+    symbol: normalizeVoucherSymbol(
+      voucher.displaySymbol,
+      voucher.symbol,
+      "VOUCHER",
+      voucher.name ?? address,
+    ),
     iconUrl: normalizeImageUrl(voucher.iconUrl),
     locationName: normalizeText(voucher.locationName),
     lat,
@@ -504,7 +516,15 @@ export function normalizeMarketVoucherDetail(
     address,
     name: normalizeText(voucher.name) ?? "Community Voucher",
     contractName: normalizeText(voucher.contractName),
-    symbol: normalizeText(voucher.symbol) ?? "VOUCHER",
+    symbol: normalizeVoucherSymbol(
+      voucher.displaySymbol,
+      voucher.symbol,
+      "VOUCHER",
+      voucher.name ?? address,
+    ),
+    ...(voucher.displaySymbol === undefined
+      ? {}
+      : { displaySymbol: normalizeText(voucher.displaySymbol) }),
     decimals: normalizeNumber(voucher.decimals),
     ownerAddress: normalizeHex(voucher.ownerAddress),
     description: normalizeText(voucher.description),

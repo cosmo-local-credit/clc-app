@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { createHttpClient } from "../../client/http-client";
-import { createSymbolsClient } from "./client";
+import { BackendApiError } from "../../client/errors";
+import { createSymbolsClient, isVoucherDisplaySymbolConflict } from "./client";
 
 const api = createSymbolsClient(createHttpClient({ baseUrl: "https://api.test" }));
 
@@ -32,6 +33,33 @@ describe("symbols client", () => {
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
       "https://api.test/api/v2/symbols?kind=voucher&prefix=KVKS",
     );
+  });
+
+  it("looks up the display namespace with the provided cancellation signal", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(response({ taken: ["NEW"] }));
+    vi.stubGlobal("fetch", fetchMock);
+    const { signal } = new AbortController();
+
+    await expect(
+      api.getTakenSymbols("voucher", "NEW", { scope: "display", signal }),
+    ).resolves.toMatchObject({ taken: ["NEW"] });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.test/api/v2/symbols?kind=voucher&prefix=NEW&scope=display",
+      expect.objectContaining({ signal }),
+    );
+  });
+
+  it("distinguishes a field-specific display collision from other conflicts", () => {
+    expect(
+      isVoucherDisplaySymbolConflict(
+        new BackendApiError(409, "Already taken", "E16", { result: { field: "displaySymbol" } }),
+      ),
+    ).toBe(true);
+    expect(
+      isVoucherDisplaySymbolConflict(
+        new BackendApiError(409, "Already taken", "E16", { result: { field: "symbol" } }),
+      ),
+    ).toBe(false);
   });
 
   it("treats a missing or malformed taken list as empty", async () => {

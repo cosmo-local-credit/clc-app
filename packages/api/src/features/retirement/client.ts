@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizeVoucherSymbol } from "../../lib/api-normalize";
 import type { HttpClient } from "../../client/http-client";
 import { normalizeMarketVoucherDetail } from "../market/client";
 import { normalizeUserPool } from "../pools/client";
@@ -16,6 +17,7 @@ const previewSchema = z
     ownerAddress: addressSchema,
     active: z.boolean(),
     symbol: z.string(),
+    displaySymbol: z.string().nullish(),
     decimals: z.number().int().min(0).max(255),
     amountOutsideOwnerRaw: rawAmountSchema.nullable(),
     positiveTokenCount: z.number().int().nonnegative().nullable(),
@@ -31,28 +33,49 @@ const previewSchema = z
         ? preview.amountOutsideOwnerRaw !== null
         : preview.positiveTokenCount !== null,
     "The balance check is incomplete.",
-  );
+  )
+  .transform(({ displaySymbol, ...preview }) => ({
+    ...preview,
+    symbol:
+      preview.resourceType === "voucher"
+        ? normalizeVoucherSymbol(displaySymbol, preview.symbol, "VOUCHER", preview.resourceAddress)
+        : preview.symbol,
+  }));
 
-const requestSchema = z.object({
-  id: z.number().int().positive(),
-  resourceType: resourceTypeSchema,
-  resourceAddress: addressSchema,
-  resourceName: z.string(),
-  symbol: z.string(),
-  chainId: z.number().int().positive(),
-  requesterAddress: addressSchema,
-  ownerAddress: addressSchema,
-  reason: z.string(),
-  status: statusSchema,
-  /** Who started it: the owner asking, or an operator retiring directly. */
-  source: z.enum(["OWNER", "ADMIN"]).default("OWNER"),
-  requestedAt: z.string(),
-  decisionAt: z.string().nullable(),
-  decisionBy: addressSchema.nullable(),
-  decisionReason: z.string().nullable(),
-  snapshot: previewSchema,
-  decisionSnapshot: previewSchema.nullable(),
-});
+const requestSchema = z
+  .object({
+    id: z.number().int().positive(),
+    resourceType: resourceTypeSchema,
+    resourceAddress: addressSchema,
+    resourceName: z.string(),
+    symbol: z.string(),
+    displaySymbol: z.string().nullish(),
+    chainId: z.number().int().positive(),
+    requesterAddress: addressSchema,
+    ownerAddress: addressSchema,
+    reason: z.string(),
+    status: statusSchema,
+    /** Who started it: the owner asking, or an operator retiring directly. */
+    source: z.enum(["OWNER", "ADMIN"]).default("OWNER"),
+    requestedAt: z.string(),
+    decisionAt: z.string().nullable(),
+    decisionBy: addressSchema.nullable(),
+    decisionReason: z.string().nullable(),
+    snapshot: previewSchema,
+    decisionSnapshot: previewSchema.nullable(),
+  })
+  .transform(({ displaySymbol, ...request }) => ({
+    ...request,
+    symbol:
+      request.resourceType === "voucher"
+        ? normalizeVoucherSymbol(
+            displaySymbol,
+            request.symbol,
+            "VOUCHER",
+            request.resourceName || request.resourceAddress,
+          )
+        : request.symbol,
+  }));
 
 const eventSchema = z.object({
   id: z.number().int().positive(),
@@ -189,13 +212,17 @@ export function createRetirementClient(http: HttpClient) {
       const result = await write<{ changed: boolean }>(`${path}/retire`, "PUT", body);
       return { changed: result.changed };
     },
-    async restore(type: RetirementResourceType, address: string, body: { reason: string }) {
+    async restore(
+      type: RetirementResourceType,
+      address: string,
+      body: { reason: string; displaySymbol?: string },
+    ) {
       const path = resourcePath(type, address).replace("/api/v2/", "/api/v2/admin/");
       if (type === "pool") {
         const result = await write<{ pool: Parameters<typeof normalizeUserPool>[0] }>(
           `${path}/restore`,
           "PUT",
-          body,
+          { reason: body.reason },
         );
         const pool = normalizeUserPool(result.pool);
         if (!pool) throw new Error("Pool restore response did not include a valid address.");

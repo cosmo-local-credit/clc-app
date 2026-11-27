@@ -9,11 +9,30 @@ import { z } from "zod";
 import { getAddress } from "viem";
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
+import { normalizeVoucherSymbol } from "../../lib/api-normalize";
 
 const profileResult = z.object({ profile: publicProfileSchema });
 const detailsResult = z.object({ details: publicProfileDetailsSchema });
 const resourcePage = z.object({
-  items: z.array(profileResourceSchema),
+  items: z.array(
+    profileResourceSchema
+      .extend({
+        displaySymbol: z.string().nullish(),
+      })
+      .transform(({ displaySymbol, ...item }) =>
+        displaySymbol === undefined || (item.kind !== "voucher" && item.kind !== "offer")
+          ? item
+          : {
+              ...item,
+              symbol: normalizeVoucherSymbol(
+                displaySymbol,
+                item.symbol,
+                null,
+                item.name || item.resourceId,
+              ),
+            },
+      ),
+  ),
   nextCursor: z.string().nullish(),
 });
 const identitiesResult = z.object({ profiles: z.array(publicProfileIdentitySchema) });

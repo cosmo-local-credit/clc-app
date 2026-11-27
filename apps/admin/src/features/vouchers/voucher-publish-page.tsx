@@ -1,4 +1,5 @@
 import { tokenTagsQueryOptions } from "@clc/api/features/deployments/queries";
+import { isVoucherDisplaySymbolConflict } from "@clc/api/features/symbols/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { markerColorSchema, markerIconSchema } from "@clc/core/features/markers/logic";
 import type { VoucherDeployPayload } from "@clc/core/features/vouchers/logic";
@@ -21,6 +22,7 @@ import { tokenDecimalsSchema } from "@clc/core/lib/token";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { FiLoader } from "react-icons/fi";
 import { toast } from "sonner";
 import { getAddress, isAddress } from "viem";
@@ -51,6 +53,7 @@ import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 
 import { useVoucherPublishDeployment } from "./use-voucher-publish-deployment";
 import { UnitOfAccountCombobox } from "#/components/admin/unit-of-account-combobox";
+import { VoucherDisplaySymbolField } from "#/components/admin/voucher-display-symbol-field";
 
 const TYPE_OPTIONS = [
   { value: "standard", label: "Standard" },
@@ -224,6 +227,7 @@ export function VoucherPublishPage() {
 function VoucherPublishForm({ operator }: { operator: string }) {
   const tokenTags = useQuery(tokenTagsQueryOptions(clcApi.deployments));
   const deployment = useVoucherPublishDeployment();
+  const [symbolError, setSymbolError] = useState<string>();
 
   const form = useForm({
     defaultValues: defaultValues(operator),
@@ -243,6 +247,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
       const payload: VoucherDeployPayload = {
         name: value.name.trim(),
         symbol: value.symbol.trim(),
+        displaySymbol: value.symbol.trim(),
         decimals: value.decimals.trim(),
         // clc-core validates `eth_addr_checksum`, so a lowercase address typed in
         // by hand has to be checksummed here or the deploy is a 400.
@@ -270,6 +275,10 @@ function VoucherPublishForm({ operator }: { operator: string }) {
       try {
         await deployment.publish(payload);
       } catch (error) {
+        if (isVoucherDisplaySymbolConflict(error)) {
+          setSymbolError("That symbol is already in use.");
+          return;
+        }
         toast.error(error instanceof Error ? error.message : "Could not publish this voucher.");
       }
     },
@@ -320,19 +329,16 @@ function VoucherPublishForm({ operator }: { operator: string }) {
               </form.Field>
               <form.Field name="symbol">
                 {(field) => (
-                  <Field label="Symbol" htmlFor={field.name} error={fieldError(field)}>
-                    <Input
-                      id={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(event) => field.handleChange(event.target.value.toUpperCase())}
-                      aria-invalid={
-                        field.state.meta.isTouched && field.state.meta.errors.length > 0
-                      }
-                      className="font-mono uppercase"
-                      maxLength={6}
-                    />
-                  </Field>
+                  <VoucherDisplaySymbolField
+                    value={field.state.value}
+                    error={symbolError ?? fieldError(field)}
+                    disabled={deployment.publishing}
+                    onBlur={field.handleBlur}
+                    onChange={(value) => {
+                      setSymbolError(undefined);
+                      field.handleChange(value.replace(/[a-z]/g, (char) => char.toUpperCase()));
+                    }}
+                  />
                 )}
               </form.Field>
             </div>

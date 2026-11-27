@@ -51,6 +51,53 @@ describe("account token balances", () => {
     );
   });
 
+  it("uses the CLC label in the wallet without changing the balance or accounting ticker", async () => {
+    const address = "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e";
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        ok: true,
+        result: {
+          tokens: [
+            {
+              tokenAddress: address,
+              tokenName: "Tether USD",
+              displaySymbol: "USDX",
+              tokenSymbol: "USD₮",
+              balance: "100000",
+            },
+            {
+              tokenAddress: address,
+              tokenName: "Tether USD",
+              displaySymbol: null,
+              tokenSymbol: "USD₮",
+              balance: "100000",
+            },
+          ],
+        },
+      }),
+    );
+    const { tokens } = await api.getLatestAccountTokens(ACCOUNT);
+    expect(tokens[0]).toMatchObject({
+      tokenAddress: address,
+      tokenSymbol: "USDX",
+      contractSymbol: "USD₮",
+      balance: "100000",
+    });
+    expect(tokens[1]?.tokenSymbol).toBe("Tether USD");
+  });
+
+  it("keeps empty latest and paginated balances usable when the backend sends null", async () => {
+    vi.stubGlobal("fetch", mockFetch({ ok: true, result: { tokens: null, first: 0, last: 0 } }));
+
+    await expect(api.getLatestAccountTokens(ACCOUNT)).resolves.toMatchObject({ tokens: [] });
+    await expect(api.getAccountTokens({ address: ACCOUNT, perPage: 20 })).resolves.toEqual({
+      tokens: [],
+      first: 0,
+      last: 0,
+    });
+  });
+
   it("fetches transfer history with documented cursor pagination", async () => {
     const fetcher = mockFetch({
       ok: true,
@@ -225,6 +272,16 @@ describe("account status", () => {
 });
 
 describe("owned vouchers", () => {
+  it("returns an empty list when the signed-in account has no vouchers", async () => {
+    vi.stubGlobal("fetch", mockFetch({ ok: true, result: { vouchers: null, first: 0, last: 0 } }));
+
+    await expect(api.getOwnedVouchers({ perPage: 20 })).resolves.toEqual({
+      vouchers: [],
+      first: 0,
+      last: 0,
+    });
+  });
+
   it("lists a replaced card's vouchers, retired ones included, by owner", async () => {
     const owner = "0x8fd379246834eac74B8419FfdA202CF8051F7A03";
     const fetcher = mockFetch({

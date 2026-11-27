@@ -16,6 +16,7 @@ import {
   normalizeNumericText,
   normalizeStringArray,
   normalizeText,
+  normalizeVoucherSymbol,
 } from "../../lib/api-normalize";
 
 export type OfferingFrequency = "day" | "week" | "month" | "year";
@@ -128,6 +129,7 @@ export type OfferingDiscoveryPage = {
 };
 
 type BackendOffering = Partial<{
+  displaySymbol: string | null;
   id: string | number;
   sourceId: string | number | null;
   voucherId: string | number;
@@ -397,7 +399,12 @@ function normalizeOffering(offering: BackendOffering): Offering | null {
     voucherId: String(offering.voucherId),
     voucherAddress,
     voucherName: normalizeText(offering.voucherName),
-    voucherSymbol: normalizeText(offering.voucherSymbol),
+    voucherSymbol: normalizeVoucherSymbol(
+      offering.displaySymbol,
+      offering.voucherSymbol,
+      null,
+      offering.voucherName ?? voucherAddress,
+    ),
     voucherUoa: normalizeText(offering.voucherUoa),
     priceInUnitOfAccount: normalizeNumericText(offering.priceInUnitOfAccount),
     voucherDecimals: normalizeNumber(offering.voucherDecimals),

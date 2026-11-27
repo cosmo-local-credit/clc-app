@@ -42,6 +42,7 @@ import {
   normalizeNumber,
   normalizeRawAmount,
   normalizeText,
+  normalizeVoucherSymbol,
 } from "../../lib/api-normalize";
 import {
   type BackendMarketVoucherDetail,
@@ -672,7 +673,7 @@ function normalizeDecimals(value: unknown): number | null {
 type BackendAdminVoucherTransaction = Omit<
   AdminVoucherTransaction,
   "voucherDecimals" | "to" | "amount"
-> & { voucherDecimals: unknown; to: unknown; amount: unknown };
+> & { voucherDecimals: unknown; to: unknown; amount: unknown; displaySymbol?: string | null };
 
 type BackendAdminPoolTransaction = Omit<
   AdminPoolTransaction,
@@ -684,6 +685,8 @@ type BackendAdminPoolTransaction = Omit<
   | "fee"
   | "protocolFee"
 > & {
+  tokenInDisplaySymbol?: string | null;
+  tokenOutDisplaySymbol?: string | null;
   tokenInDecimals: unknown;
   tokenOut: unknown;
   tokenOutDecimals: unknown;
@@ -708,6 +711,7 @@ type BackendAdminVoucherEnvelope = {
 } & BackendMarketVoucherDetail;
 
 type BackendAdminVoucherRow = Partial<{
+  displaySymbol: string | null;
   id: string | number;
   chainId: string | number;
   address: string | null;
@@ -762,7 +766,12 @@ function normalizeAdminVoucher(voucher: BackendAdminVoucherRow): AdminVoucher | 
     chainId,
     address,
     name: normalizeText(voucher.name) ?? "Community Voucher",
-    symbol: normalizeText(voucher.symbol) ?? "VOUCHER",
+    symbol: normalizeVoucherSymbol(
+      voucher.displaySymbol,
+      voucher.symbol,
+      "VOUCHER",
+      voucher.name ?? address,
+    ),
     iconUrl: normalizeText(voucher.iconUrl),
     locationName: normalizeText(voucher.locationName),
     lat: hasLocation ? lat : null,
@@ -1017,8 +1026,14 @@ export function createAdminClient(http: HttpClient): AdminClient {
         signal,
       });
 
-      const received = (result.transactions ?? []).map((row) => ({
+      const received = (result.transactions ?? []).map(({ displaySymbol, ...row }) => ({
         ...row,
+        voucherSymbol: normalizeVoucherSymbol(
+          displaySymbol,
+          row.voucherSymbol,
+          row.voucherSymbol,
+          row.voucher,
+        ),
         voucherDecimals: normalizeDecimals(row.voucherDecimals),
         to: normalizeText(row.to),
         amount: normalizeRawAmount(row.amount),
@@ -1041,16 +1056,30 @@ export function createAdminClient(http: HttpClient): AdminClient {
         signal,
       });
 
-      const received = (result.transactions ?? []).map((row) => ({
-        ...row,
-        tokenInDecimals: normalizeDecimals(row.tokenInDecimals),
-        tokenOut: normalizeText(row.tokenOut),
-        tokenOutDecimals: normalizeDecimals(row.tokenOutDecimals),
-        amountIn: normalizeRawAmount(row.amountIn),
-        amountOut: normalizeRawAmount(row.amountOut),
-        fee: normalizeRawAmount(row.fee),
-        protocolFee: normalizeRawAmount(row.protocolFee),
-      }));
+      const received = (result.transactions ?? []).map(
+        ({ tokenInDisplaySymbol, tokenOutDisplaySymbol, ...row }) => ({
+          ...row,
+          tokenInSymbol: normalizeVoucherSymbol(
+            tokenInDisplaySymbol,
+            row.tokenInSymbol,
+            row.tokenInSymbol,
+            row.tokenIn,
+          ),
+          tokenOutSymbol: normalizeVoucherSymbol(
+            tokenOutDisplaySymbol,
+            row.tokenOutSymbol,
+            row.tokenOutSymbol,
+            row.tokenOut,
+          ),
+          tokenInDecimals: normalizeDecimals(row.tokenInDecimals),
+          tokenOut: normalizeText(row.tokenOut),
+          tokenOutDecimals: normalizeDecimals(row.tokenOutDecimals),
+          amountIn: normalizeRawAmount(row.amountIn),
+          amountOut: normalizeRawAmount(row.amountOut),
+          fee: normalizeRawAmount(row.fee),
+          protocolFee: normalizeRawAmount(row.protocolFee),
+        }),
+      );
       return {
         transactions: received,
         first: result.first ?? 0,

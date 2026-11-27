@@ -1,9 +1,11 @@
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
+import { isVoucherDisplaySymbolConflict } from "@clc/api/features/symbols/client";
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { markerColorSchema, markerIconSchema } from "@clc/core/features/markers/logic";
 import { voucherProfileTextSchema } from "@clc/core/features/vouchers/logic";
 import { isHttpUrl } from "@clc/core/lib/contact";
 import { useForm } from "@clc/core/lib/forms";
+import { parseVoucherDisplaySymbol } from "@clc/core/lib/symbol";
 import { useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -17,6 +19,7 @@ import { useUpdateVoucherProfile } from "./use-update-voucher-profile";
 type VoucherPlace = Pick<LocationInput, "lat" | "lng" | "locationName">;
 
 const profileFormSchema = voucherProfileTextSchema.extend({
+  displaySymbol: z.string(),
   iconUrl: z.string(),
   location: z
     .object({
@@ -42,6 +45,8 @@ export function useVoucherProfileForm(voucher: MarketVoucherDetail, onClose: () 
   const tagsQuery = useTokenTags();
   const update = useUpdateVoucherProfile(voucher.address);
   const [iconBusy, setIconBusy] = useState(false);
+  const [initialSymbol] = useState(voucher.displaySymbol);
+  const [symbolError, setSymbolError] = useState<string>();
   const storedLocation: VoucherPlace | undefined =
     voucher.locationName !== null && voucher.lat !== null && voucher.lng !== null
       ? { locationName: voucher.locationName, lat: voucher.lat, lng: voucher.lng }
@@ -50,6 +55,7 @@ export function useVoucherProfileForm(voucher: MarketVoucherDetail, onClose: () 
   const form = useForm({
     defaultValues: {
       displayName: voucher.name,
+      displaySymbol: initialSymbol ?? "",
       description: voucher.description ?? "",
       voucherUoa: voucher.voucherUoa ?? "",
       voucherValue: voucher.voucherValue ?? "",
@@ -66,6 +72,13 @@ export function useVoucherProfileForm(voucher: MarketVoucherDetail, onClose: () 
     },
     validators: { onSubmit: profileFormSchema },
     onSubmit: async ({ value }) => {
+      const changesSymbol =
+        initialSymbol !== undefined && value.displaySymbol !== (initialSymbol ?? "");
+      const displaySymbol = changesSymbol ? parseVoucherDisplaySymbol(value.displaySymbol) : null;
+      if (changesSymbol && !displaySymbol) {
+        setSymbolError(t`Use 3–6 letters or digits.`);
+        return;
+      }
       try {
         const clearContactFields = (["email", "website", "phone"] as const).filter(
           (field) => Boolean(voucher[field]?.trim()) && value[field].trim() === "",
@@ -83,6 +96,7 @@ export function useVoucherProfileForm(voucher: MarketVoucherDetail, onClose: () 
                     ? ""
                     : value.displayName,
               }),
+          ...(displaySymbol && displaySymbol !== initialSymbol ? { displaySymbol } : {}),
           description: value.description,
           voucherUoa: value.voucherUoa,
           voucherValue: value.voucherValue === "" ? null : Number(value.voucherValue),
@@ -106,10 +120,23 @@ export function useVoucherProfileForm(voucher: MarketVoucherDetail, onClose: () 
         toast.success(t`Voucher details updated.`);
         onClose();
       } catch (error) {
+        if (isVoucherDisplaySymbolConflict(error)) {
+          setSymbolError(t`That symbol is already in use.`);
+          return;
+        }
         toast.error(error instanceof Error ? error.message : t`Couldn't save the voucher details.`);
       }
     },
   });
 
-  return { form, update, tagsQuery, iconBusy, setIconBusy };
+  return {
+    form,
+    update,
+    tagsQuery,
+    iconBusy,
+    setIconBusy,
+    initialSymbol,
+    symbolError,
+    setSymbolError,
+  };
 }

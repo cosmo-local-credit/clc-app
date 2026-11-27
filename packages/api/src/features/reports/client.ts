@@ -36,6 +36,7 @@ import {
   normalizeNumber,
   normalizeStringArray,
   normalizeText,
+  normalizeVoucherSymbol,
 } from "../../lib/api-normalize";
 
 export type { ReportWrite };
@@ -260,6 +261,7 @@ type BackendFilteredReportPage = BackendReportPage & {
 };
 
 type BackendReportVoucher = Partial<{
+  displaySymbol: string | null;
   id: string | number | null;
   chainId: string | number | null;
   address: string | null;
@@ -268,6 +270,7 @@ type BackendReportVoucher = Partial<{
 }>;
 
 type BackendVoucherFacet = Partial<{
+  displaySymbol: string | null;
   chainId: string | number;
   address: string;
   name: string;
@@ -684,7 +687,7 @@ function normalizeReportVoucherFacet(facet: BackendVoucherFacet): ReportVoucherF
   const chainId = normalizeChainId(facet.chainId);
   const address = normalizeHex(facet.address);
   const name = normalizeText(facet.name);
-  const symbol = normalizeText(facet.symbol);
+  const symbol = normalizeVoucherSymbol(facet.displaySymbol, facet.symbol, null, name ?? address);
   const count = normalizeNumber(facet.count);
   if (chainId === null || !address || !name || !symbol || count === null || count < 0) {
     return null;
@@ -693,7 +696,7 @@ function normalizeReportVoucherFacet(facet: BackendVoucherFacet): ReportVoucherF
 }
 
 function normalizeReportPoolFacet(facet: BackendVoucherFacet): ReportPoolFacet | null {
-  return normalizeReportVoucherFacet(facet);
+  return normalizeReportVoucherFacet({ ...facet, displaySymbol: undefined });
 }
 
 function normalizeReportTagFacet(facet: { tag?: unknown; count?: unknown }): ReportTagFacet | null {
@@ -808,7 +811,12 @@ function normalizeReportVoucher(voucher: BackendReportVoucher): ReportVoucher | 
     chainId,
     address,
     name: normalizeText(voucher.name) ?? "Community Voucher",
-    symbol: normalizeText(voucher.symbol) ?? "VOUCHER",
+    symbol: normalizeVoucherSymbol(
+      voucher.displaySymbol,
+      voucher.symbol,
+      "VOUCHER",
+      voucher.name ?? address,
+    ),
   };
 }
 

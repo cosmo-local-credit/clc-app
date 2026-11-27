@@ -11,6 +11,7 @@ import { z } from "zod";
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { normalizeVoucherSymbol } from "../../lib/api-normalize";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
 import { CREDIT_DISCOVERY_DEPTH, type CreditScope } from "../credit-router/client";
 
@@ -28,16 +29,27 @@ const wantPageSchema = z.object({
 const wantResultSchema = z.object({ want: wantSchema });
 const wantContactResultSchema = z.object({ contact: wantContactSchema.nullish() });
 
-const creatorVoucherSchema = z.object({
-  id: z.union([z.string(), z.number()]).transform(String),
-  chainId: z.coerce.number().int(),
-  address: z.string().regex(/^0x[0-9a-fA-F]{40}$/),
-  name: z.string(),
-  symbol: z.string(),
-  decimals: z.coerce.number().int().nonnegative().nullable(),
-  iconUrl: z.string().url().nullable(),
-  active: z.literal(true),
-});
+const creatorVoucherSchema = z
+  .object({
+    id: z.union([z.string(), z.number()]).transform(String),
+    chainId: z.coerce.number().int(),
+    address: z.string().regex(/^0x[0-9a-fA-F]{40}$/),
+    name: z.string(),
+    symbol: z.string(),
+    displaySymbol: z.string().nullish(),
+    decimals: z.coerce.number().int().nonnegative().nullable(),
+    iconUrl: z.string().url().nullable(),
+    active: z.literal(true),
+  })
+  .transform(({ displaySymbol, ...voucher }) => ({
+    ...voucher,
+    symbol: normalizeVoucherSymbol(
+      displaySymbol,
+      voucher.symbol,
+      "VOUCHER",
+      voucher.name || voucher.address,
+    ),
+  }));
 
 const creatorPoolSchema = z.object({
   id: z.union([z.string(), z.number()]).transform(String),
