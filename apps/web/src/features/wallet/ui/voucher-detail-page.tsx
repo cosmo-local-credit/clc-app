@@ -14,6 +14,7 @@ import {
   useVoucherBalanceSummary,
   VoucherIdentitySummary,
 } from "#/components/vouchers/voucher-summary";
+import { VoucherTitleLabel } from "#/components/vouchers/voucher-title-label";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
@@ -208,7 +209,7 @@ export function VoucherDetailPage({
         catalogAddress={detail?.address}
         title={
           <h1 className="font-heading text-[1.75rem] font-bold leading-tight [overflow-wrap:anywhere]">
-            {token.name}
+            <VoucherTitleLabel name={token.name} displaySymbol={detail?.displaySymbol} />
           </h1>
         }
         headerActions={
