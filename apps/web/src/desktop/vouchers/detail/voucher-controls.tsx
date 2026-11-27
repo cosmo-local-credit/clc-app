@@ -46,6 +46,7 @@ import {
   useVoucherOwnershipTransferForm,
 } from "#/features/vouchers/hooks/use-voucher-controls";
 import { useVoucherProfileForm } from "#/features/vouchers/hooks/use-voucher-profile-form";
+import { VoucherDisplaySymbolField } from "#/components/vouchers/voucher-display-symbol-field";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { retirementClient } from "#/lib/api/retirement";
 import { cn } from "#/lib/utils";
@@ -560,10 +561,16 @@ function OwnershipForm({
 function ProfileForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClose: () => void }) {
   const { t, i18n } = useLingui();
   const termsLabelId = useId();
-  const { form, update, tagsQuery, iconBusy, setIconBusy } = useVoucherProfileForm(
-    voucher,
-    onClose,
-  );
+  const {
+    form,
+    update,
+    tagsQuery,
+    iconBusy,
+    setIconBusy,
+    initialSymbol,
+    symbolError,
+    setSymbolError,
+  } = useVoucherProfileForm(voucher, onClose);
   return (
     <form
       onSubmit={(event) => {
@@ -591,6 +598,23 @@ function ProfileForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
             </Field>
           )}
         </form.Field>
+        {initialSymbol !== undefined ? (
+          <form.Field name="displaySymbol">
+            {(field) => (
+              <VoucherDisplaySymbolField
+                value={field.state.value}
+                initial={initialSymbol}
+                error={symbolError}
+                disabled={update.isPending}
+                onBlur={field.handleBlur}
+                onChange={(value) => {
+                  setSymbolError(undefined);
+                  field.handleChange(value);
+                }}
+              />
+            )}
+          </form.Field>
+        ) : null}
         <form.Field name="description">
           {(field) => (
             <Field

@@ -1,7 +1,9 @@
 import { normalizeSymbolPrefix } from "@clc/core/lib/symbol";
+import { BackendApiError } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
 
 export type SymbolKind = "voucher" | "pool";
+export type SymbolScope = "display";
 
 export type TakenSymbols = {
   kind: SymbolKind;
@@ -10,6 +12,17 @@ export type TakenSymbols = {
 };
 
 export type SymbolsClient = ReturnType<typeof createSymbolsClient>;
+
+export function isVoucherDisplaySymbolConflict(error: unknown): boolean {
+  return (
+    error instanceof BackendApiError &&
+    error.status === 409 &&
+    typeof error.result === "object" &&
+    error.result !== null &&
+    "field" in error.result &&
+    error.result.field === "displaySymbol"
+  );
+}
 
 /**
  * Occupancy reads for the ticker generator. The backend answers which symbols
@@ -21,13 +34,14 @@ export function createSymbolsClient(http: HttpClient) {
     async getTakenSymbols(
       kind: SymbolKind,
       prefix: string,
-      init?: { signal?: AbortSignal },
+      init?: { signal?: AbortSignal; scope?: SymbolScope },
     ): Promise<TakenSymbols> {
       const normalizedPrefix = normalizeSymbolPrefix(prefix);
       if (!normalizedPrefix) {
         throw new Error("Symbol prefix must be 1–6 letters or digits.");
       }
       const search = new URLSearchParams({ kind, prefix: normalizedPrefix });
+      if (init?.scope) search.set("scope", init.scope);
       const result = await http.request<{ taken?: unknown }>(`/api/v2/symbols?${search}`, {
         method: "GET",
         cache: "no-store",

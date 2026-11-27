@@ -1,5 +1,8 @@
 import type { RetirementResourceType } from "@clc/api/features/retirement/client";
+import { isVoucherDisplaySymbolConflict } from "@clc/api/features/symbols/client";
+import { parseVoucherDisplaySymbol } from "@clc/core/lib/symbol";
 import { useState } from "react";
+import { VoucherDisplaySymbolField } from "#/components/admin/voucher-display-symbol-field";
 import { Button } from "#/components/ui/button";
 import { Textarea } from "#/components/ui/textarea";
 import {
@@ -17,12 +20,14 @@ export function RestoreResourceSheet({
   type,
   address,
   name,
+  displaySymbol,
   open,
   onClose,
 }: {
   type: RetirementResourceType;
   address: string;
   name: string;
+  displaySymbol?: string | null;
   open: boolean;
   onClose: () => void;
 }) {
@@ -38,7 +43,14 @@ export function RestoreResourceSheet({
           <SheetTitle>Restore {type}</SheetTitle>
           <SheetDescription>{name}</SheetDescription>
         </SheetHeader>
-        {open ? <RestoreForm type={type} address={address} onClose={onClose} /> : null}
+        {open ? (
+          <RestoreForm
+            type={type}
+            address={address}
+            displaySymbol={displaySymbol}
+            onClose={onClose}
+          />
+        ) : null}
       </SheetContent>
     </Sheet>
   );
@@ -47,21 +59,45 @@ export function RestoreResourceSheet({
 function RestoreForm({
   type,
   address,
+  displaySymbol,
   onClose,
 }: {
   type: RetirementResourceType;
   address: string;
+  displaySymbol?: string | null;
   onClose: () => void;
 }) {
   const [reason, setReason] = useState("");
+  const [symbol, setSymbol] = useState(displaySymbol ?? "");
+  const [symbolError, setSymbolError] = useState<string>();
   const restore = useRestoreResource(type, address);
+  const showSymbol = type === "voucher" && displaySymbol !== undefined;
   return (
     <form
       className="flex min-h-0 flex-1 flex-col"
       onSubmit={(event) => {
         event.preventDefault();
         if (!reason.trim() || restore.isPending) return;
-        restore.mutate(reason.trim(), { onSuccess: onClose });
+        const needsSymbol = showSymbol && (displaySymbol === null || symbol !== displaySymbol);
+        const replacement = needsSymbol ? parseVoucherDisplaySymbol(symbol) : null;
+        if (needsSymbol && !replacement) {
+          setSymbolError("Use 3–6 letters or digits.");
+          return;
+        }
+        restore.mutate(
+          {
+            reason: reason.trim(),
+            ...(replacement && replacement !== displaySymbol ? { displaySymbol: replacement } : {}),
+          },
+          {
+            onSuccess: onClose,
+            onError: (error) => {
+              if (isVoucherDisplaySymbolConflict(error)) {
+                setSymbolError("That symbol is already in use.");
+              }
+            },
+          },
+        );
       }}
     >
       <div className="space-y-4 p-4 text-sm">
@@ -73,6 +109,17 @@ function RestoreForm({
           Resource allowances must permit restoration. If an allowance is full, adjust it before
           trying again.
         </p>
+        {showSymbol ? (
+          <VoucherDisplaySymbolField
+            value={symbol}
+            error={symbolError}
+            disabled={restore.isPending}
+            onChange={(value) => {
+              setSymbol(value);
+              setSymbolError(undefined);
+            }}
+          />
+        ) : null}
         <div className="space-y-2">
           <label htmlFor="restore-reason" className="font-medium">
             Reason for restoration
@@ -86,7 +133,7 @@ function RestoreForm({
             disabled={restore.isPending}
           />
         </div>
-        {restore.isError ? (
+        {restore.isError && !isVoucherDisplaySymbolConflict(restore.error) ? (
           <p role="alert" className="text-destructive">
             {errorMessage(restore.error)}
           </p>

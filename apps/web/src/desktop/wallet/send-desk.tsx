@@ -394,6 +394,7 @@ export function SendDesk({
         amount={payment.submittedVoucherAmount}
         symbol={selectedToken?.symbol ?? ""}
         unitValueLabel={unitValueLabel}
+        voucherAddress={selectedToken?.contractAddress}
         recipient={payment.recipientAddress}
         recipientLabel={payment.recipientLabel}
         error={payment.error}

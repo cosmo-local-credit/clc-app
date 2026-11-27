@@ -34,6 +34,7 @@ import { isStorageConfigured } from "#/lib/api/storage";
 import { translateValidationError } from "#/lib/validation-i18n";
 
 import { useVoucherProfileForm } from "#/features/vouchers/hooks/use-voucher-profile-form";
+import { VoucherDisplaySymbolField } from "#/components/vouchers/voucher-display-symbol-field";
 
 /**
  * The owner's edit surface for their voucher's catalog record: every field the
@@ -82,10 +83,16 @@ function VoucherProfileForm({
   onClose: () => void;
 }) {
   const { t, i18n } = useLingui();
-  const { form, update, tagsQuery, iconBusy, setIconBusy } = useVoucherProfileForm(
-    voucher,
-    onClose,
-  );
+  const {
+    form,
+    update,
+    tagsQuery,
+    iconBusy,
+    setIconBusy,
+    initialSymbol,
+    symbolError,
+    setSymbolError,
+  } = useVoucherProfileForm(voucher, onClose);
 
   return (
     <form
@@ -114,6 +121,24 @@ function VoucherProfileForm({
             </Field>
           )}
         </form.Field>
+
+        {initialSymbol !== undefined ? (
+          <form.Field name="displaySymbol">
+            {(field) => (
+              <VoucherDisplaySymbolField
+                value={field.state.value}
+                initial={initialSymbol}
+                error={symbolError}
+                disabled={update.isPending}
+                onBlur={field.handleBlur}
+                onChange={(value) => {
+                  setSymbolError(undefined);
+                  field.handleChange(value);
+                }}
+              />
+            )}
+          </form.Field>
+        ) : null}
 
         <form.Field name="description">
           {(field) => (

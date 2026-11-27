@@ -508,6 +508,8 @@ describe("SendAmountPage", () => {
     fireEvent.click(send);
     const confirmation = screen.getByRole("dialog");
     expect(confirmation.textContent).toContain("0.0000002 USDC");
+    expect(within(confirmation).getByText("Contract address")).toBeTruthy();
+    expect(within(confirmation).getByText(USDC)).toBeTruthy();
     fireEvent.click(within(confirmation).getByRole("button", { name: /confirm and send/i }));
 
     await waitFor(() =>

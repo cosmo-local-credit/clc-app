@@ -22,7 +22,7 @@ import {
 import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useRouter } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { PublicContactWarning } from "#/components/public-contact-warning";
 import { PublicLocationWarning } from "#/components/public-location-warning";
@@ -73,6 +73,7 @@ export function CreateVoucherFlow({
     profile,
     checkNameAvailable,
     trackSymbol,
+    symbolError,
     suggestSymbolFor,
     fillSuggestedSymbol,
     iconBusy,
@@ -89,6 +90,12 @@ export function CreateVoucherFlow({
       if (advancedRef.current) advancedRef.current.open = true;
     },
   });
+
+  useEffect(() => {
+    if (symbolError && step === "voucher" && advancedRef.current) {
+      advancedRef.current.open = true;
+    }
+  }, [step, symbolError]);
 
   const progressStep = step === "voucher" ? 1 : step === "place" ? 2 : 3;
   const fallbackTo =
@@ -290,20 +297,24 @@ export function CreateVoucherFlow({
                       <Field
                         label={t`Voucher Symbol`}
                         htmlFor="voucher-symbol"
-                        error={getFieldError(field.state.meta.errors)}
+                        error={symbolError ?? getFieldError(field.state.meta.errors)}
                       >
                         <Input
                           id="voucher-symbol"
+                          dir="ltr"
+                          className="font-mono"
                           value={field.state.value}
                           onChange={(event) => {
-                            const symbol = event.target.value.toUpperCase();
+                            const symbol = event.target.value.replace(/[a-z]/g, (char) =>
+                              char.toUpperCase(),
+                            );
                             field.handleChange(symbol);
                             trackSymbol(symbol);
                           }}
                           onBlur={field.handleBlur}
                           placeholder={t`e.g. MARKET`}
                           maxLength={6}
-                          aria-invalid={field.state.meta.errors.length > 0}
+                          aria-invalid={Boolean(symbolError) || field.state.meta.errors.length > 0}
                         />
                       </Field>
                     )}

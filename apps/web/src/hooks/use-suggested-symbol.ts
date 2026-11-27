@@ -1,4 +1,4 @@
-import type { SymbolKind } from "@clc/api/features/symbols/client";
+import type { SymbolKind, SymbolScope } from "@clc/api/features/symbols/client";
 import { takenSymbolsQueryOptions } from "@clc/api/features/symbols/queries";
 import { candidatesFromName, pickAvailableSymbol, symbolStemFromName } from "@clc/core/lib/symbol";
 import { useQueryClient } from "@tanstack/react-query";
@@ -22,9 +22,11 @@ export type SymbolCheck =
 export function useSuggestedSymbol({
   kind,
   initialSymbol,
+  scope,
 }: {
   kind: SymbolKind;
   initialSymbol: string;
+  scope?: SymbolScope;
 }) {
   const queryClient = useQueryClient();
   // A restored draft already carries a symbol the user reviewed; leave it alone.
@@ -35,7 +37,7 @@ export function useSuggestedSymbol({
   async function takenUnder(prefix: string): Promise<ReadonlySet<string>> {
     try {
       const result = await queryClient.fetchQuery(
-        takenSymbolsQueryOptions(symbolsClient, kind, prefix),
+        takenSymbolsQueryOptions(symbolsClient, kind, prefix, scope),
       );
       return new Set(result.taken);
     } catch {

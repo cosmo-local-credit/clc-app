@@ -6,6 +6,7 @@ import {
 import { adminKeys } from "@clc/api/features/admin/queries";
 import { poolKeys } from "@clc/api/features/pools/queries";
 import { voucherKeys } from "@clc/api/features/market/queries";
+import { symbolKeys } from "@clc/api/features/symbols/queries";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { clcApi } from "#/lib/api";
 
@@ -29,13 +30,24 @@ export function useRetirementInvalidation() {
       queryClient.invalidateQueries({ queryKey: adminKeys.all }),
       queryClient.invalidateQueries({ queryKey: poolKeys.all }),
       queryClient.invalidateQueries({ queryKey: voucherKeys.all }),
+      queryClient.invalidateQueries({ queryKey: symbolKeys.all }),
     ]);
 }
 
 export function useRestoreResource(type: RetirementResourceType, address: string) {
   const invalidate = useRetirementInvalidation();
   return useMutation({
-    mutationFn: (reason: string) => clcApi.retirement.restore(type, address, { reason }),
+    mutationFn: async (body: { reason: string; displaySymbol?: string }) => {
+      const resource = await clcApi.retirement.restore(type, address, body);
+      if (
+        type === "voucher" &&
+        body.displaySymbol !== undefined &&
+        (!("displaySymbol" in resource) || resource.displaySymbol !== body.displaySymbol)
+      ) {
+        throw new Error("Couldn't verify the saved symbol.");
+      }
+      return resource;
+    },
     onSuccess: invalidate,
   });
 }

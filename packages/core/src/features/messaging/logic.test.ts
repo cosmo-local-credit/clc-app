@@ -9,6 +9,7 @@ import {
   type Conversation,
   mergeMessages,
   messagePageSchema,
+  messageSchema,
   messagesSectionUnread,
   readMarkerTarget,
   sendMessageInputSchema,
@@ -50,6 +51,19 @@ const conversation = (overrides: Partial<Conversation> = {}): Conversation =>
     updatedAt: "2026-11-09T10:00:00Z",
     ...overrides,
   });
+
+it("uses the display symbol for a proposed voucher without changing the recipient context", () => {
+  const proposedVoucher = { address: PEER.address, name: "Local voucher", symbol: "RAW" };
+  const context = { kind: "pool", resourceId: PEER.address, resourceName: "Pool", proposedVoucher };
+  const read = (value: typeof proposedVoucher & { displaySymbol?: string | null }) =>
+    messageSchema.parse({ ...message(3), context: { ...context, proposedVoucher: value } }).context;
+  expect(read({ ...proposedVoucher, displaySymbol: "NEW" })?.proposedVoucher).toEqual({
+    ...proposedVoucher,
+    symbol: "NEW",
+  });
+  expect(read({ ...proposedVoucher, displaySymbol: null })?.proposedVoucher?.symbol).toBe("");
+  expect(read(proposedVoucher)?.proposedVoucher).toEqual(proposedVoucher);
+});
 
 describe("messaging wire schemas", () => {
   it("parses a conversation page with a helpdesk row that has no peer", () => {

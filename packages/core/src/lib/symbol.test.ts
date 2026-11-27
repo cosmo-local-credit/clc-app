@@ -3,9 +3,24 @@ import { voucherSymbolSchema } from "../features/vouchers/logic";
 import {
   candidatesFromName,
   normalizeSymbolPrefix,
+  parseVoucherDisplaySymbol,
   pickAvailableSymbol,
   symbolStemFromName,
 } from "./symbol";
+
+describe("parseVoucherDisplaySymbol", () => {
+  it.each([
+    [" greo ", "GREO"],
+    ["a1b", "A1B"],
+    ["Voucher", null],
+    ["AB", null],
+    ["AB ß", null],
+    ["Aß", null],
+    ["AB-1", null],
+  ])("canonicalizes %s to %s", (value, expected) => {
+    expect(parseVoucherDisplaySymbol(value)).toBe(expected);
+  });
+});
 
 describe("symbolStemFromName", () => {
   it.each([

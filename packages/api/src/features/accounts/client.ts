@@ -1,12 +1,20 @@
 import type { HttpClient } from "../../client/http-client";
 import { getAddress } from "viem";
+import { normalizeVoucherSymbol } from "../../lib/api-normalize";
 
-export type AccountToken = {
+type TokenLabel = {
+  tokenSymbol: string;
+  /** Undefined means this response has no editable catalog label (including older APIs). */
+  displaySymbol?: string | null;
+  /** Original wire ticker, retained for accounting exports. */
+  contractSymbol?: string;
+};
+
+export type AccountToken = TokenLabel & {
   /** Absent for tokens outside the local catalog; false means retired. */
   catalogActive?: boolean;
   id: number;
   tokenAddress: string;
-  tokenSymbol: string;
   tokenName: string;
   tokenDecimals: number;
   balance: string;
@@ -32,6 +40,7 @@ export type OwnedVoucher = {
   address: string;
   name: string;
   symbol: string;
+  displaySymbol?: string | null;
   ownerAddress: string;
   active: boolean;
 };
@@ -44,7 +53,7 @@ export type OwnedVouchersResult = {
 
 type AccountTransferDirection = "IN" | "OUT";
 
-type AccountTransfer = {
+type AccountTransfer = TokenLabel & {
   id: number;
   txHash: string;
   dateBlock: string;
@@ -53,7 +62,6 @@ type AccountTransfer = {
   senderAddress: string;
   recipientAddress: string;
   tokenAddress: string;
-  tokenSymbol: string;
   tokenName: string;
   tokenDecimals: number;
   amount: string;
@@ -78,10 +86,9 @@ export type ActivityKind =
   | "deposited"
   | "pool_payout";
 
-export type ActivityLeg = {
+export type ActivityLeg = TokenLabel & {
   tokenAddress: string;
   tokenName: string;
-  tokenSymbol: string;
   tokenDecimals: number;
   amount: string;
   /** Immutable informational valuation captured when the transfer was submitted. */
@@ -169,7 +176,7 @@ export function createAccountsClient(http: HttpClient) {
         `/api/v2/accounts/${accountAddress}/tokens/latest`,
         ACCOUNT_READ_REQUEST,
       );
-      return { ...result, tokens: result.tokens ?? [] };
+      return { ...result, tokens: (result.tokens ?? []).map(withVoucherLabel) };
     },
 
     async getAccountTokens(
@@ -181,7 +188,7 @@ export function createAccountsClient(http: HttpClient) {
         `/api/v2/accounts/${accountAddress}/tokens${formatCursorQuery(params)}`,
         { ...ACCOUNT_READ_REQUEST, signal },
       );
-      return { ...result, tokens: result.tokens ?? [] };
+      return { ...result, tokens: (result.tokens ?? []).map(withVoucherLabel) };
     },
 
     /**
@@ -198,7 +205,7 @@ export function createAccountsClient(http: HttpClient) {
         `/api/v2/accounts/${accountAddress}/tokens/issued${formatCursorQuery(params)}`,
         { ...ACCOUNT_READ_REQUEST, signal },
       );
-      return { ...result, tokens: result.tokens ?? [] };
+      return { ...result, tokens: (result.tokens ?? []).map(withVoucherLabel) };
     },
 
     /**
@@ -215,7 +222,18 @@ export function createAccountsClient(http: HttpClient) {
         `/api/v2/users/me/vouchers?${search.toString()}`,
         ACCOUNT_READ_REQUEST,
       );
-      return { ...result, vouchers: result.vouchers ?? [] };
+      return {
+        ...result,
+        vouchers: (result.vouchers ?? []).map((voucher) => ({
+          ...voucher,
+          symbol: normalizeVoucherSymbol(
+            voucher.displaySymbol,
+            voucher.symbol,
+            voucher.address,
+            voucher.name,
+          ),
+        })),
+      };
     },
 
     async getAccountTransfers(
@@ -227,7 +245,7 @@ export function createAccountsClient(http: HttpClient) {
         `/api/v2/accounts/${accountAddress}/transfers${formatCursorQuery(params)}${params.q ? `&q=${encodeURIComponent(params.q)}` : ""}`,
         { ...ACCOUNT_READ_REQUEST, signal },
       );
-      return { ...result, transfers: result.transfers ?? [] };
+      return { ...result, transfers: (result.transfers ?? []).map(withVoucherLabel) };
     },
 
     async getAccountActivity(
@@ -242,7 +260,7 @@ export function createAccountsClient(http: HttpClient) {
         `/api/v2/accounts/${accountAddress}/activity?${search.toString()}`,
         { ...ACCOUNT_READ_REQUEST, signal },
       );
-      return { ...result, activity: result.activity ?? [] };
+      return { ...result, activity: (result.activity ?? []).map(withActivityLabels) };
     },
 
     /**
@@ -260,6 +278,32 @@ export function createAccountsClient(http: HttpClient) {
         },
       );
     },
+  };
+}
+
+function withVoucherLabel<T extends TokenLabel & { tokenAddress: string; tokenName: string }>(
+  token: T,
+): T {
+  if (token.displaySymbol === undefined) return token;
+  return {
+    ...token,
+    contractSymbol: token.tokenSymbol,
+    tokenSymbol: normalizeVoucherSymbol(
+      token.displaySymbol,
+      token.tokenSymbol,
+      token.tokenAddress,
+      token.tokenName,
+    ),
+  };
+}
+
+function withActivityLabels(item: AccountActivityItem): AccountActivityItem {
+  if (item.kind !== "swapped") return { ...item, transfer: withVoucherLabel(item.transfer) };
+  return {
+    ...item,
+    sent: withVoucherLabel(item.sent),
+    received: withVoucherLabel(item.received),
+    ...(item.protocolFee ? { protocolFee: withVoucherLabel(item.protocolFee) } : {}),
   };
 }
 

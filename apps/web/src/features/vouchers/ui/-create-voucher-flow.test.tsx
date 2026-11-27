@@ -461,49 +461,64 @@ describe("CreateVoucherFlow", () => {
     });
   });
 
-  it("sends the issuer back to the name when the backend reports it was taken", async () => {
-    deployMutateAsync.mockRejectedValue(
-      new BackendApiError(409, "a voucher with this name already exists", "E16"),
-    );
-    const view = renderFlow(<CreateVoucherFlow step="voucher" />);
-    fireEvent.click(screen.getByText("Advanced"));
-    fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
-    fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
-    fireEvent.change(screen.getByLabelText("Voucher Description"), {
-      target: { value: "Fresh food." },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    await waitFor(() =>
-      expect(navigateMock).toHaveBeenCalledWith(
-        expect.objectContaining({ params: { step: "place" } }),
-      ),
-    );
-    view.rerender(<CreateVoucherFlow step="place" />);
-    fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    await waitFor(() =>
-      expect(navigateMock).toHaveBeenCalledWith(
-        expect.objectContaining({ params: { step: "review" } }),
-      ),
-    );
-    view.rerender(<CreateVoucherFlow step="review" />);
-    fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
-    fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
+  it.each(["name", "displaySymbol", "availability"] as const)(
+    "returns to the right field when the backend rejects the %s claim",
+    async (field) => {
+      deployMutateAsync.mockRejectedValue(
+        new BackendApiError(409, "field taken", "E16", { result: { field } }),
+      );
+      const view = renderFlow(<CreateVoucherFlow step="voucher" />);
+      fireEvent.click(screen.getByText("Advanced"));
+      fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
+      fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
+      fireEvent.change(screen.getByLabelText("Voucher Description"), {
+        target: { value: "Fresh food." },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+      await waitFor(() =>
+        expect(navigateMock).toHaveBeenCalledWith(
+          expect.objectContaining({ params: { step: "place" } }),
+        ),
+      );
+      view.rerender(<CreateVoucherFlow step="place" />);
+      fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+      await waitFor(() =>
+        expect(navigateMock).toHaveBeenCalledWith(
+          expect.objectContaining({ params: { step: "review" } }),
+        ),
+      );
+      view.rerender(<CreateVoucherFlow step="review" />);
+      if (field === "availability") {
+        getTakenSymbols.mockResolvedValueOnce({ kind: "voucher", prefix: "KHV", taken: ["KHV"] });
+      }
+      fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
+      fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
 
-    await waitFor(() => expect(deployMutateAsync).toHaveBeenCalled());
-    // Back to the field that is wrong, not a raw error code under a review
-    // screen the issuer cannot act on.
-    await waitFor(() =>
-      expect(navigateMock).toHaveBeenCalledWith({
-        to: "/vouchers/create/$step",
-        params: { step: "voucher" },
-      }),
-    );
-    expect(toast.error).toHaveBeenCalledWith(
-      "That voucher name was taken while you were filling this in.",
-    );
-    expect(exitVoucherCreateHistoryMock).not.toHaveBeenCalled();
-  });
+      // Back to the field that is wrong, not a raw error code under a review
+      // screen the issuer cannot act on.
+      await waitFor(() =>
+        expect(navigateMock).toHaveBeenCalledWith({
+          to: "/vouchers/create/$step",
+          params: { step: "voucher" },
+        }),
+      );
+      if (field !== "name") {
+        view.rerender(<CreateVoucherFlow step="voucher" />);
+        expect(await screen.findByText("That symbol is already in use.")).toBeTruthy();
+        const symbol = screen.getByLabelText("Voucher Symbol");
+        expect(symbol.closest("details")?.open).toBe(true);
+        expect((symbol as HTMLInputElement).value).toBe("KHV");
+      } else {
+        expect(toast.error).toHaveBeenCalledWith(
+          "That voucher name was taken while you were filling this in.",
+        );
+      }
+      if (field === "availability") expect(deployMutateAsync).not.toHaveBeenCalled();
+      else expect(deployMutateAsync).toHaveBeenCalledOnce();
+      expect(exitVoucherCreateHistoryMock).not.toHaveBeenCalled();
+    },
+  );
 
   it("does not advance while a voucher image is still uploading", () => {
     renderFlow(<CreateVoucherFlow step="place" />);
@@ -592,6 +607,7 @@ describe("CreateVoucherFlow", () => {
       expect(deployMutateAsync).toHaveBeenCalledWith({
         name: "Kilifi Harvest",
         symbol: "KHV",
+        displaySymbol: "KHV",
         decimals: "6",
         owner: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
         description: "Fresh food from Kilifi producers.",

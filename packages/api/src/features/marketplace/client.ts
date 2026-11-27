@@ -8,12 +8,65 @@ import type { HttpClient } from "../../client/http-client";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import { type VoucherRef, serializeVoucherRef } from "@clc/core/features/catalog/logic";
 import type { PostTiming } from "@clc/core/features/reports/logic";
+import { normalizeVoucherSymbol } from "../../lib/api-normalize";
 import { appendMarketBounds } from "../../lib/catalog-bounds";
 import { CREDIT_DISCOVERY_DEPTH, type CreditScope } from "../credit-router/client";
 
 const tagFacetSchema = z.object({ tag: z.string(), count: z.number().int().nonnegative() });
+const marketplaceWireResultSchema = marketplaceResultSchema
+  .and(
+    z.object({
+      displaySymbol: z.string().nullish(),
+      voucherDisplaySymbol: z.string().nullish(),
+      relatedDisplaySymbol: z.string().nullish(),
+    }),
+  )
+  .transform(({ displaySymbol, voucherDisplaySymbol, relatedDisplaySymbol, ...row }) => {
+    const result =
+      relatedDisplaySymbol !== undefined && row.relatedKind === "voucher"
+        ? {
+            ...row,
+            relatedSymbol: normalizeVoucherSymbol(
+              relatedDisplaySymbol,
+              row.relatedSymbol,
+              null,
+              row.relatedName,
+            ),
+          }
+        : row;
+    switch (result.kind) {
+      case "voucher":
+        return {
+          ...result,
+          symbol: normalizeVoucherSymbol(
+            displaySymbol,
+            result.symbol,
+            null,
+            result.name || result.address,
+          ),
+        };
+      case "offering":
+        return {
+          ...result,
+          symbol: normalizeVoucherSymbol(
+            displaySymbol,
+            result.symbol,
+            null,
+            result.voucherName ?? result.voucherAddress,
+          ),
+          voucherSymbol: normalizeVoucherSymbol(
+            voucherDisplaySymbol,
+            result.voucherSymbol,
+            null,
+            result.voucherName ?? result.voucherAddress,
+          ),
+        };
+      default:
+        return result;
+    }
+  });
 const marketplacePageSchema = z.object({
-  results: z.array(marketplaceResultSchema),
+  results: z.array(marketplaceWireResultSchema),
   nextCursor: z.string().nullable(),
   total: z.number().int().nonnegative().optional(),
   tagFacets: z.array(tagFacetSchema).optional(),

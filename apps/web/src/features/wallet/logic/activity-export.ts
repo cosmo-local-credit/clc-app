@@ -73,11 +73,11 @@ export function activityCsv(rows: readonly AccountActivityItem[]): string {
       row.kind,
       row.success ? "confirmed" : "failed",
       sent ? formatTokenAmount(sent.amount, sent.tokenDecimals, sent.tokenDecimals) : "",
-      sent?.tokenSymbol ?? "",
+      sent?.contractSymbol ?? sent?.tokenSymbol ?? "",
       received
         ? formatTokenAmount(received.amount, received.tokenDecimals, received.tokenDecimals)
         : "",
-      received?.tokenSymbol ?? "",
+      received?.contractSymbol ?? received?.tokenSymbol ?? "",
       counterparty,
       row.txHash,
     ]

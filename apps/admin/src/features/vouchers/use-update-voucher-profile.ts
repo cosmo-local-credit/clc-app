@@ -3,6 +3,7 @@ import { voucherKeys } from "@clc/api/features/market/queries";
 import { adminKeys } from "@clc/api/features/admin/queries";
 import { deploymentKeys } from "@clc/api/features/deployments/queries";
 import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
+import { symbolKeys } from "@clc/api/features/symbols/queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { clcApi } from "#/lib/api";
@@ -19,9 +20,14 @@ export function useUpdateVoucherProfile(address: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (profile: VoucherProfileUpdate) =>
-      clcApi.admin.updateVoucherProfile(address, profile),
-    onSuccess: (voucher: MarketVoucherDetail) => {
+    mutationFn: async (profile: VoucherProfileUpdate) => {
+      const voucher = await clcApi.admin.updateVoucherProfile(address, profile);
+      if (profile.displaySymbol !== undefined && voucher.displaySymbol !== profile.displaySymbol) {
+        throw new Error("Couldn't verify the saved symbol.");
+      }
+      return voucher;
+    },
+    onSuccess: (voucher: MarketVoucherDetail, profile) => {
       queryClient.setQueryData(adminKeys.voucher(address), voucher);
       return Promise.all([
         queryClient.invalidateQueries({
@@ -33,6 +39,9 @@ export function useUpdateVoucherProfile(address: string) {
         }),
         queryClient.invalidateQueries({ queryKey: deploymentKeys.tokenTags() }),
         queryClient.invalidateQueries({ queryKey: vocabularyKeys.all }),
+        ...(profile.displaySymbol === undefined
+          ? []
+          : [queryClient.invalidateQueries({ queryKey: symbolKeys.all })]),
       ]);
     },
   });

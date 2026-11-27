@@ -1,3 +1,4 @@
+import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -15,6 +16,7 @@ const mocks = vi.hoisted(() => ({
   mint: vi.fn(),
   burn: vi.fn(),
   transfer: vi.fn(),
+  updateProfile: vi.fn(),
   report: vi.fn((_error: unknown, _fallback: string) => false),
   balance: "1234" as string | undefined,
   inFlight: { mint: false, burn: false, ownership: false },
@@ -46,6 +48,9 @@ vi.mock("#/features/vouchers/hooks/use-voucher-ownership-transfer", () => ({
     isPending: false,
     inFlight: mocks.inFlight.ownership,
   }),
+}));
+vi.mock("#/features/vouchers/hooks/use-update-voucher-profile", () => ({
+  useUpdateVoucherProfile: () => ({ mutateAsync: mocks.updateProfile, isPending: false }),
 }));
 vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({
   useCaliburDelegation: () => "delegated",
@@ -82,7 +87,11 @@ import { VoucherOwnerControls } from "./voucher-controls";
 
 let client: QueryClient;
 
-function renderControls(wallet = OWNER, owner = OWNER) {
+function renderControls(
+  wallet = OWNER,
+  owner = OWNER,
+  editable: MarketVoucherDetail | null = null,
+) {
   return render(
     <QueryClientProvider client={client}>
       <VoucherOwnerControls
@@ -91,11 +100,52 @@ function renderControls(wallet = OWNER, owner = OWNER) {
         tokenDecimals={2}
         ownerAddress={owner}
         walletAddress={wallet}
-        editable={null}
+        editable={editable}
       />
     </QueryClientProvider>,
   );
 }
+
+it("edits a Voucher's CLC symbol in the desktop details dialog", async () => {
+  renderControls(OWNER, OWNER, {
+    id: "2710",
+    address: TOKEN,
+    chainId: 100,
+    ownerAddress: OWNER,
+    name: "Malii Voucher",
+    symbol: "MALII",
+    displaySymbol: "MALII",
+    decimals: 2,
+    description: "Fresh produce.",
+    voucherUoa: "KES",
+    voucherValue: "10",
+    active: true,
+    kind: "goods",
+    tags: [],
+    email: null,
+    website: null,
+    phone: null,
+    terms: null,
+    locationName: null,
+    lat: null,
+    lng: null,
+    iconUrl: null,
+    bannerUrl: null,
+    markerColor: null,
+    markerIcon: null,
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+  const dialog = screen.getByRole("dialog", { name: "Edit voucher details" });
+  const symbol = within(dialog).getByRole("textbox", { name: "Symbol" }) as HTMLInputElement;
+  expect(symbol.value).toBe("MALII");
+  fireEvent.change(symbol, { target: { value: "new1" } });
+  fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+  await waitFor(() =>
+    expect(mocks.updateProfile).toHaveBeenCalledWith(
+      expect.objectContaining({ displaySymbol: "NEW1" }),
+    ),
+  );
+});
 
 function controlLabels() {
   return within(screen.getByRole("group", { name: "Voucher controls" }))

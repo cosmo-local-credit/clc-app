@@ -87,6 +87,7 @@ export function VoucherDetailPage({
         type="voucher"
         address={address}
         name={voucher.name}
+        displaySymbol={voucher.displaySymbol}
         open={restoring}
         onClose={() => setRestoring(false)}
       />

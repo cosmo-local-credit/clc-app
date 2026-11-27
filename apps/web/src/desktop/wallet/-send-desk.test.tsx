@@ -225,6 +225,8 @@ describe("Send page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Review" }));
     const dialog = await screen.findByRole("dialog");
     expect(dialog.textContent).toContain("0.0000002 RIV");
+    expect(within(dialog).getByText("Contract address")).toBeTruthy();
+    expect(within(dialog).getByText(TOKEN)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole("button", { name: "Confirm and send" }));
 
     await waitFor(() =>
