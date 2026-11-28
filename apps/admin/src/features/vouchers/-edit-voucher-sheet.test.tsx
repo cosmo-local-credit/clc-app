@@ -109,6 +109,33 @@ describe("EditVoucherSheet", () => {
     }
   });
 
+  it("shows a legacy ticker without claiming it when unchanged after canonicalization", async () => {
+    const close = renderSheet({ displaySymbol: null, legacySymbol: "khv", symbol: "khv" });
+    const symbol = screen.getByLabelText<HTMLInputElement>("Symbol");
+    expect(symbol.value).toBe("khv");
+    fireEvent.blur(symbol);
+    fireEvent.change(symbol, { target: { value: " KHV " } });
+    fireEvent.blur(symbol);
+    fireEvent.change(screen.getByLabelText("Description"), {
+      target: { value: "A basket of coconuts." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(close).toHaveBeenCalledOnce());
+    expect(getTakenSymbols).not.toHaveBeenCalled();
+    expect(updateVoucherProfile).toHaveBeenCalledWith(
+      ADDRESS,
+      expect.objectContaining({ description: "A basket of coconuts." }),
+    );
+    expect(updateVoucherProfile.mock.calls[0]?.[1]).not.toHaveProperty("displaySymbol");
+  });
+
+  it("leaves the symbol blank when there is no ticker rather than offering the Voucher name", () => {
+    renderSheet({ displaySymbol: null, symbol: "Harvest Voucher" });
+
+    expect(screen.getByLabelText<HTMLInputElement>("Symbol").value).toBe("");
+  });
+
   it("shows the CLC label and retains the editor until the server confirms a free replacement", async () => {
     updateVoucherProfile
       .mockRejectedValueOnce(
@@ -120,7 +147,7 @@ describe("EditVoucherSheet", () => {
     const symbol = screen.getByLabelText("Symbol") as HTMLInputElement;
     expect(symbol.value).toBe("KHV");
 
-    fireEvent.change(symbol, { target: { value: "x" } });
+    fireEvent.change(symbol, { target: { value: "" } });
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
     await screen.findByRole("alert");
     expect(updateVoucherProfile).not.toHaveBeenCalled();

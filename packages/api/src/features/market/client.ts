@@ -66,6 +66,8 @@ export type MarketVoucherDetail = {
   symbol: string;
   /** Omitted by older servers, null when a CLC symbol has not been assigned. */
   displaySymbol?: string | null;
+  /** Original ticker when no CLC symbol is saved, separate from both the saved symbol and name. */
+  legacySymbol?: string;
   decimals: number | null;
   ownerAddress: HexAddress | null;
   description: string | null;
@@ -506,6 +508,8 @@ export function normalizeMarketVoucherDetail(
   const kind = voucher.kind;
   if (!address || voucher.id === undefined || voucher.id === null) return null;
 
+  const displaySymbol = normalizeText(voucher.displaySymbol);
+  const legacySymbol = displaySymbol === null ? normalizeText(voucher.symbol) : null;
   const lat = normalizeCoordinate(voucher.geoLat, 90);
   const lng = normalizeCoordinate(voucher.geoLng, 180);
   const hasLocation = lat !== null && lng !== null;
@@ -522,9 +526,8 @@ export function normalizeMarketVoucherDetail(
       "VOUCHER",
       voucher.name ?? address,
     ),
-    ...(voucher.displaySymbol === undefined
-      ? {}
-      : { displaySymbol: normalizeText(voucher.displaySymbol) }),
+    ...(voucher.displaySymbol === undefined ? {} : { displaySymbol }),
+    ...(legacySymbol === null ? {} : { legacySymbol }),
     decimals: normalizeNumber(voucher.decimals),
     ownerAddress: normalizeHex(voucher.ownerAddress),
     description: normalizeText(voucher.description),

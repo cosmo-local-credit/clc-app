@@ -7,6 +7,7 @@ const ADDRESS = "0x2222222222222222222222222222222222222222" as const;
 const state = vi.hoisted(() => ({
   hasDetail: true,
   displaySymbol: undefined as string | null | undefined,
+  legacySymbol: undefined as string | undefined,
   wants: [] as {
     id: string;
     name: string;
@@ -38,6 +39,7 @@ vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
           name: "Community voucher",
           symbol: "COM",
           displaySymbol: state.displaySymbol,
+          legacySymbol: state.legacySymbol,
           chainId: 100,
           ownerAddress: "0x1111111111111111111111111111111111111111",
           active: true,
@@ -102,6 +104,7 @@ import { VoucherDesk } from "./voucher-desk";
 beforeEach(() => {
   state.hasDetail = true;
   state.displaySymbol = undefined;
+  state.legacySymbol = undefined;
   state.wants = [
     {
       id: "9",
@@ -126,12 +129,13 @@ describe("Voucher desktop heading", () => {
   });
 
   it.each([null, undefined])(
-    "omits an unset display symbol (%s) from the heading",
+    "shows the original ticker when the saved display symbol is %s",
     async (displaySymbol) => {
       state.displaySymbol = displaySymbol;
+      state.legacySymbol = "COM";
       await renderInShell(<VoucherDesk voucherAddress={ADDRESS} />, `/vouchers/${ADDRESS}`);
 
-      expect(screen.getByRole("heading", { level: 1, name: "Community voucher" })).toBeTruthy();
+      expect(screen.getByRole("heading", { level: 1, name: "Community voucher COM" })).toBeTruthy();
     },
   );
 

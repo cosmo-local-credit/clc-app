@@ -96,7 +96,7 @@ describe("pool voucher navigation", () => {
       expect(history.location.pathname).toBe(`/vouchers/${TOKEN_ADDRESS.toLowerCase()}`);
       expect(history.location.search).toBe(`?poolAddress=${POOL_ADDRESS}`);
     });
-    expect(await screen.findByRole("heading", { level: 1, name: "Trade Token" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { level: 1, name: "Trade Token TTX" })).toBeTruthy();
 
     const poolBackLink = screen.getByText("Pool").closest("a");
     if (!poolBackLink) throw new Error("Pool back action is not a link");
@@ -202,6 +202,7 @@ function mockRequests() {
               address: TOKEN_ADDRESS,
               name: "Trade Token",
               symbol: "TTX",
+              displaySymbol: null,
               decimals: 6,
               iconUrl: "https://pool.example/ttx.png",
             },

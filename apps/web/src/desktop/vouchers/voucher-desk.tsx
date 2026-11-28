@@ -189,7 +189,10 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
                 wrap
                 className="flex-1"
                 title={
-                  <VoucherTitleLabel name={token.name} displaySymbol={detail?.displaySymbol} />
+                  <VoucherTitleLabel
+                    name={token.name}
+                    ticker={detail?.displaySymbol ?? detail?.legacySymbol}
+                  />
                 }
                 meta={
                   <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">

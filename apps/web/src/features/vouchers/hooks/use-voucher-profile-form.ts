@@ -45,7 +45,12 @@ export function useVoucherProfileForm(voucher: MarketVoucherDetail, onClose: () 
   const tagsQuery = useTokenTags();
   const update = useUpdateVoucherProfile(voucher.address);
   const [iconBusy, setIconBusy] = useState(false);
-  const [initialSymbol] = useState(voucher.displaySymbol);
+  // A visible legacy ticker is only a baseline. Saving the form must not
+  // acquire a claim for it, even if it is shared or no longer valid.
+  const [initialSymbol] = useState(() =>
+    voucher.displaySymbol === null ? (voucher.legacySymbol ?? "") : voucher.displaySymbol,
+  );
+  const initialSymbolValue = initialSymbol ?? "";
   const [symbolError, setSymbolError] = useState<string>();
   const storedLocation: VoucherPlace | undefined =
     voucher.locationName !== null && voucher.lat !== null && voucher.lng !== null
@@ -55,7 +60,7 @@ export function useVoucherProfileForm(voucher: MarketVoucherDetail, onClose: () 
   const form = useForm({
     defaultValues: {
       displayName: voucher.name,
-      displaySymbol: initialSymbol ?? "",
+      displaySymbol: initialSymbolValue,
       description: voucher.description ?? "",
       voucherUoa: voucher.voucherUoa ?? "",
       voucherValue: voucher.voucherValue ?? "",
@@ -73,7 +78,7 @@ export function useVoucherProfileForm(voucher: MarketVoucherDetail, onClose: () 
     validators: { onSubmit: profileFormSchema },
     onSubmit: async ({ value }) => {
       const changesSymbol =
-        initialSymbol !== undefined && value.displaySymbol !== (initialSymbol ?? "");
+        initialSymbol !== undefined && value.displaySymbol !== initialSymbolValue;
       const displaySymbol = changesSymbol ? parseVoucherDisplaySymbol(value.displaySymbol) : null;
       if (changesSymbol && !displaySymbol) {
         setSymbolError(t`Use 3–6 letters or digits.`);
@@ -96,7 +101,9 @@ export function useVoucherProfileForm(voucher: MarketVoucherDetail, onClose: () 
                     ? ""
                     : value.displayName,
               }),
-          ...(displaySymbol && displaySymbol !== initialSymbol ? { displaySymbol } : {}),
+          ...(displaySymbol && displaySymbol !== parseVoucherDisplaySymbol(initialSymbolValue)
+            ? { displaySymbol }
+            : {}),
           description: value.description,
           voucherUoa: value.voucherUoa,
           voucherValue: value.voucherValue === "" ? null : Number(value.voucherValue),

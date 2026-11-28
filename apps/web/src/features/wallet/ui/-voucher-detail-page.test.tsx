@@ -652,14 +652,21 @@ describe("VoucherDetailPage", () => {
   });
 
   it.each([null, undefined])(
-    "omits an unset display symbol (%s) from the heading",
+    "shows the original ticker when the saved display symbol is %s",
     (displaySymbol) => {
-      mocks.detailResult.data = detail({ displaySymbol });
+      mocks.detailResult.data = detail({ displaySymbol, legacySymbol: "RAW" });
       render(<VoucherDetailPage voucherAddress={ADDRESS} />);
 
-      expect(screen.getByRole("heading", { level: 1, name: "Priscilah Malii" })).toBeTruthy();
+      expect(screen.getByRole("heading", { level: 1, name: "Priscilah Malii RAW" })).toBeTruthy();
     },
   );
+
+  it("keeps the heading free of a badge when neither ticker exists", () => {
+    mocks.detailResult.data = detail({ displaySymbol: null });
+    render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+
+    expect(screen.getByRole("heading", { level: 1, name: "Priscilah Malii" })).toBeTruthy();
+  });
 
   it("shows the held Voucher name without its raw ticker when detail is absent", () => {
     mocks.detailResult.data = undefined;

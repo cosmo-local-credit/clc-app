@@ -1,21 +1,15 @@
 import { Badge } from "#/components/ui/badge";
 
-/** Heading content that keeps the catalog name and saved ticker separate. */
-export function VoucherTitleLabel({
-  name,
-  displaySymbol,
-}: {
-  name: string;
-  displaySymbol?: string | null;
-}) {
+/** Heading content that keeps the catalog name and current ticker separate. */
+export function VoucherTitleLabel({ name, ticker }: { name: string; ticker?: string | null }) {
   return (
     <>
       <span dir="auto">{name}</span>
-      {displaySymbol ? (
+      {ticker ? (
         <>
           {" "}
           <Badge dir="ltr" size="sm" variant="muted" className="whitespace-nowrap font-mono">
-            {displaySymbol}
+            {ticker}
           </Badge>
         </>
       ) : null}

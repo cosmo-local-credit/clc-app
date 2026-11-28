@@ -61,7 +61,11 @@ it("uses the display symbol for a proposed voucher without changing the recipien
     ...proposedVoucher,
     symbol: "NEW",
   });
-  expect(read({ ...proposedVoucher, displaySymbol: null })?.proposedVoucher?.symbol).toBe("");
+  expect(read({ ...proposedVoucher, displaySymbol: null })?.proposedVoucher?.symbol).toBe("RAW");
+  expect(read({ ...proposedVoucher, symbol: "", displaySymbol: null })?.proposedVoucher).toEqual({
+    ...proposedVoucher,
+    symbol: "",
+  });
   expect(read(proposedVoucher)?.proposedVoucher).toEqual(proposedVoucher);
 });
 

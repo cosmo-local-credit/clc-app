@@ -124,13 +124,18 @@ export function EditVoucherSheet({
 function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClose: () => void }) {
   const tokenTags = useQuery(tokenTagsQueryOptions(clcApi.deployments));
   const update = useUpdateVoucherProfile(voucher.address);
-  const [initialSymbol] = useState(voucher.displaySymbol);
+  // A legacy ticker is shown without turning an ordinary save into a claim.
+  const [initialSymbol] = useState(() =>
+    voucher.displaySymbol === null ? (voucher.legacySymbol ?? "") : voucher.displaySymbol,
+  );
+  const initialSymbolValue = initialSymbol ?? "";
+  const initialClaim = parseVoucherDisplaySymbol(initialSymbolValue);
   const [symbolError, setSymbolError] = useState<string>();
 
   const form = useForm({
     defaultValues: {
       displayName: voucher.name,
-      displaySymbol: initialSymbol ?? "",
+      displaySymbol: initialSymbolValue,
       description: voucher.description ?? "",
       voucherUoa: voucher.voucherUoa ?? "",
       voucherValue: voucher.voucherValue ?? "",
@@ -153,7 +158,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
     validators: { onChange: profileSchema, onSubmit: profileSchema },
     onSubmit: async ({ value }) => {
       const changesSymbol =
-        initialSymbol !== undefined && value.displaySymbol !== (initialSymbol ?? "");
+        initialSymbol !== undefined && value.displaySymbol !== initialSymbolValue;
       const displaySymbol = changesSymbol ? parseVoucherDisplaySymbol(value.displaySymbol) : null;
       if (changesSymbol && !displaySymbol) {
         setSymbolError("Use 3–6 letters or digits.");
@@ -168,7 +173,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
           // Do not turn an ordinary metadata save into a redundant override;
           // only send this compatibility field after the operator changes it.
           ...(value.displayName === voucher.name ? {} : { displayName: value.displayName }),
-          ...(displaySymbol && displaySymbol !== initialSymbol ? { displaySymbol } : {}),
+          ...(displaySymbol && displaySymbol !== initialClaim ? { displaySymbol } : {}),
           description: value.description,
           voucherUoa: value.voucherUoa,
           voucherValue: value.voucherValue === "" ? null : Number(value.voucherValue),
@@ -245,7 +250,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
             {(field) => (
               <VoucherDisplaySymbolField
                 value={field.state.value}
-                initial={initialSymbol}
+                initial={initialClaim}
                 error={symbolError}
                 disabled={update.isPending}
                 onBlur={field.handleBlur}

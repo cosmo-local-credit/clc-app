@@ -17,7 +17,7 @@ export function VoucherDisplaySymbolField({
   onBlur,
 }: {
   value: string;
-  initial: string | null;
+  initial: string;
   error?: string;
   disabled: boolean;
   onChange: (value: string) => void;
@@ -27,15 +27,13 @@ export function VoucherDisplaySymbolField({
   const id = useId();
   const [checked, setChecked] = useState<string | null>(null);
   const candidate = parseVoucherDisplaySymbol(value);
+  const shouldCheck =
+    candidate !== null && candidate === checked && candidate !== parseVoucherDisplaySymbol(initial);
   const query = useQuery({
     ...takenSymbolsQueryOptions(symbolsClient, "voucher", candidate ?? "", "display"),
-    enabled: candidate !== null && candidate !== initial && candidate === checked,
+    enabled: shouldCheck,
   });
-  const taken =
-    candidate !== null &&
-    candidate !== initial &&
-    candidate === checked &&
-    query.data?.taken.includes(candidate);
+  const taken = shouldCheck && query.data?.taken.includes(candidate);
   const fieldError = error ?? (taken ? t`That symbol is already in use.` : undefined);
 
   return (

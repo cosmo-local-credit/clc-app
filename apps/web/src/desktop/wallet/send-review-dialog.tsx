@@ -34,6 +34,7 @@ export function SendReviewDialog({
   amount,
   symbol,
   unitValueLabel,
+  voucherName,
   voucherAddress,
   recipient,
   recipientLabel,
@@ -46,6 +47,7 @@ export function SendReviewDialog({
   amount: string;
   symbol: string;
   unitValueLabel: string | null;
+  voucherName?: string;
   voucherAddress?: string;
   recipient: `0x${string}` | null;
   recipientLabel?: string;
@@ -67,6 +69,16 @@ export function SendReviewDialog({
           <div className="grid min-h-0 flex-1 content-start gap-3 overflow-y-auto p-5">
             <DeskKV
               rows={[
+                ...(voucherName
+                  ? [
+                      [
+                        <Trans key="label">Voucher</Trans>,
+                        <span key="value" className="font-sans [overflow-wrap:anywhere]" dir="auto">
+                          {voucherName}
+                        </span>,
+                      ] as const,
+                    ]
+                  : []),
                 [
                   <Trans key="label">Amount</Trans>,
                   <span key="value" className="grid gap-0.5" dir="ltr">

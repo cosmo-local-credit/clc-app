@@ -209,7 +209,10 @@ export function VoucherDetailPage({
         catalogAddress={detail?.address}
         title={
           <h1 className="font-heading text-[1.75rem] font-bold leading-tight [overflow-wrap:anywhere]">
-            <VoucherTitleLabel name={token.name} displaySymbol={detail?.displaySymbol} />
+            <VoucherTitleLabel
+              name={token.name}
+              ticker={detail?.displaySymbol ?? detail?.legacySymbol}
+            />
           </h1>
         }
         headerActions={

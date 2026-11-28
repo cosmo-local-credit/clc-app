@@ -106,7 +106,7 @@ function renderControls(
   );
 }
 
-it("edits a Voucher's CLC symbol in the desktop details dialog", async () => {
+it("replaces a Voucher's legacy ticker in the desktop details dialog", async () => {
   renderControls(OWNER, OWNER, {
     id: "2710",
     address: TOKEN,
@@ -114,7 +114,8 @@ it("edits a Voucher's CLC symbol in the desktop details dialog", async () => {
     ownerAddress: OWNER,
     name: "Malii Voucher",
     symbol: "MALII",
-    displaySymbol: "MALII",
+    displaySymbol: null,
+    legacySymbol: "MALII",
     decimals: 2,
     description: "Fresh produce.",
     voucherUoa: "KES",
