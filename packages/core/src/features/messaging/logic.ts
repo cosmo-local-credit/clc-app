@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isHttpUrl } from "../../lib/contact";
+import { resolveVoucherTicker } from "../../lib/symbol";
 
 /** Limits clc-core enforces in its schema; a value past them never leaves the device. */
 export const MESSAGE_BODY_MAX = 2000;
@@ -39,7 +40,7 @@ const messageResourceContextSchema = z.object({
     })
     .transform(({ displaySymbol, ...voucher }) => ({
       ...voucher,
-      symbol: displaySymbol === undefined ? voucher.symbol : (displaySymbol ?? ""),
+      symbol: resolveVoucherTicker(displaySymbol, voucher.symbol) ?? "",
     }))
     .optional(),
 });

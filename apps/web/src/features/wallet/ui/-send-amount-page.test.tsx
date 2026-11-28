@@ -66,7 +66,13 @@ function mockTokens({
   usdcBalance = "245000000",
   usdcDecimals = 6,
   retired = false,
-}: { usdcBalance?: string; usdcDecimals?: number; retired?: boolean } = {}) {
+  sharedTicker = false,
+}: {
+  usdcBalance?: string;
+  usdcDecimals?: number;
+  retired?: boolean;
+  sharedTicker?: boolean;
+} = {}) {
   vi.stubGlobal(
     "fetch",
     vi.fn().mockResolvedValue({
@@ -93,7 +99,7 @@ function mockTokens({
                 {
                   id: 2,
                   tokenAddress: BABAS,
-                  tokenSymbol: "BABAS",
+                  tokenSymbol: sharedTicker ? "USDC" : "BABAS",
                   tokenName: "Baba's Vouchers",
                   tokenDecimals: 6,
                   balance: "1850000000",
@@ -140,6 +146,22 @@ afterEach(() => {
 });
 
 describe("SendAmountPage", () => {
+  it("keeps the chosen voucher name visible when two options have the same ticker", async () => {
+    mockTokens({ sharedTicker: true });
+    renderWithQueryClient(<SendAmountPage token={USDC} recipient={RECIPIENT} amount="5" />);
+
+    await screen.findByRole("button", { name: /use max · 245/i });
+    fireEvent.click(getTokenSelector());
+    expect(await screen.findByRole("button", { name: /USDC USD Coin/ })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /USDC Baba's Vouchers/ }));
+
+    expect(within(getTokenSelector()).getByText("Baba's Vouchers")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /^send$/i }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Baba's Vouchers")).toBeTruthy();
+    expect(within(dialog).getByText(BABAS)).toBeTruthy();
+  });
+
   it("hides retired balances and does not substitute a different asset for a retired shortcut", async () => {
     mockTokens({ retired: true });
     renderWithQueryClient(<SendAmountPage token={USDC} recipient={RECIPIENT} amount="5" />);

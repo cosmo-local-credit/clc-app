@@ -140,6 +140,23 @@ beforeEach(() => {
 });
 
 describe("editable Voucher symbol", () => {
+  it("shows a legacy ticker without claiming it when other details change", async () => {
+    open(detail({ displaySymbol: null, legacySymbol: "MALII-OLD", symbol: "MALII-OLD" }));
+    const symbol = screen.getByRole<HTMLInputElement>("textbox", { name: "Symbol" });
+    expect(symbol.value).toBe("MALII-OLD");
+    fireEvent.blur(symbol);
+    fireEvent.change(screen.getByLabelText("Voucher Description"), {
+      target: { value: "New terms of trade." },
+    });
+    await save();
+
+    expect(mocks.getTakenSymbols).not.toHaveBeenCalled();
+    expect(mocks.updateProfile).toHaveBeenCalledWith(
+      expect.objectContaining({ description: "New terms of trade." }),
+    );
+    expect(mocks.updateProfile.mock.calls[0]?.[0]).not.toHaveProperty("displaySymbol");
+  });
+
   it("sends only a changed, valid canonical symbol and preserves edits after a claim race", async () => {
     mocks.updateProfile.mockRejectedValueOnce(
       new BackendApiError(409, "symbol taken", "E16", { result: { field: "displaySymbol" } }),

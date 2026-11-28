@@ -5,6 +5,9 @@ import type * as VoucherSectionBits from "./detail/voucher-section-bits";
 
 const ADDRESS = "0x2222222222222222222222222222222222222222" as const;
 const state = vi.hoisted(() => ({
+  hasDetail: true,
+  displaySymbol: undefined as string | null | undefined,
+  legacySymbol: undefined as string | undefined,
   wants: [] as {
     id: string;
     name: string;
@@ -29,19 +32,23 @@ vi.mock("#/features/pools/hooks/use-pool-vouchers", () => ({
 }));
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
   useMarketVoucherDetail: () => ({
-    data: {
-      id: "8",
-      address: "0x2222222222222222222222222222222222222222",
-      name: "Community voucher",
-      symbol: "COM",
-      chainId: 100,
-      ownerAddress: "0x1111111111111111111111111111111111111111",
-      active: true,
-      tags: [],
-      lat: null,
-      lng: null,
-      decimals: 6,
-    },
+    data: state.hasDetail
+      ? {
+          id: "8",
+          address: "0x2222222222222222222222222222222222222222",
+          name: "Community voucher",
+          symbol: "COM",
+          displaySymbol: state.displaySymbol,
+          legacySymbol: state.legacySymbol,
+          chainId: 100,
+          ownerAddress: "0x1111111111111111111111111111111111111111",
+          active: true,
+          tags: [],
+          lat: null,
+          lng: null,
+          decimals: 6,
+        }
+      : undefined,
     isPending: false,
     isError: false,
   }),
@@ -95,6 +102,9 @@ vi.mock("#/features/wants/hooks/use-voucher-wants", () => ({
 import { VoucherDesk } from "./voucher-desk";
 
 beforeEach(() => {
+  state.hasDetail = true;
+  state.displaySymbol = undefined;
+  state.legacySymbol = undefined;
   state.wants = [
     {
       id: "9",
@@ -107,6 +117,34 @@ beforeEach(() => {
       state: "active",
     },
   ];
+});
+
+describe("Voucher desktop heading", () => {
+  it("shows the saved display symbol beside the Voucher name", async () => {
+    state.displaySymbol = "LOCAL";
+    await renderInShell(<VoucherDesk voucherAddress={ADDRESS} />, `/vouchers/${ADDRESS}`);
+
+    const heading = screen.getByRole("heading", { level: 1, name: "Community voucher LOCAL" });
+    expect(within(heading).getByText("LOCAL").getAttribute("dir")).toBe("ltr");
+  });
+
+  it.each([null, undefined])(
+    "shows the original ticker when the saved display symbol is %s",
+    async (displaySymbol) => {
+      state.displaySymbol = displaySymbol;
+      state.legacySymbol = "COM";
+      await renderInShell(<VoucherDesk voucherAddress={ADDRESS} />, `/vouchers/${ADDRESS}`);
+
+      expect(screen.getByRole("heading", { level: 1, name: "Community voucher COM" })).toBeTruthy();
+    },
+  );
+
+  it("keeps the fallback heading free of a ticker without Voucher detail", async () => {
+    state.hasDetail = false;
+    await renderInShell(<VoucherDesk voucherAddress={ADDRESS} />, `/vouchers/${ADDRESS}`);
+
+    expect(screen.getByRole("heading", { level: 1, name: "Token" })).toBeTruthy();
+  });
 });
 
 describe("Voucher desktop Wants section", () => {

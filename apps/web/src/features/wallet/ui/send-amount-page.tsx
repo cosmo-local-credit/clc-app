@@ -128,7 +128,14 @@ export function SendAmountPage({
           <>
             <TokenLogo token={selectedToken} size={30} />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold">{selectedToken.symbol}</p>
+              <p className="flex items-baseline gap-2">
+                <span className="shrink-0 font-mono text-sm font-semibold" dir="ltr">
+                  {selectedToken.symbol}
+                </span>
+                <span className="truncate text-xs text-muted-foreground" dir="auto">
+                  {selectedToken.name}
+                </span>
+              </p>
               <p className="text-muted-foreground text-xs">
                 <Trans>Balance {payment.maxAmount}</Trans>
               </p>
@@ -267,6 +274,7 @@ export function SendAmountPage({
         amount={payment.submittedVoucherAmount}
         symbol={selectedToken?.symbol ?? ""}
         unitValueLabel={unitValueLabel}
+        voucherName={selectedToken?.name}
         voucherAddress={selectedToken?.contractAddress}
         recipient={recipientAddress}
         recipientLabel={recipientLabel}
@@ -284,6 +292,7 @@ function SendConfirmationSheet({
   amount,
   symbol,
   unitValueLabel,
+  voucherName,
   voucherAddress,
   recipient,
   recipientLabel,
@@ -296,6 +305,7 @@ function SendConfirmationSheet({
   amount: string;
   symbol: string;
   unitValueLabel: string | null;
+  voucherName?: string;
   voucherAddress?: string;
   recipient: `0x${string}` | null;
   recipientLabel?: string;
@@ -316,6 +326,16 @@ function SendConfirmationSheet({
 
           <div className="px-6 pb-2">
             <div className="border border-border bg-card">
+              {voucherName ? (
+                <div className="flex min-h-11 min-w-0 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="shrink-0 text-muted-foreground text-xs">
+                    <Trans>Voucher</Trans>
+                  </span>
+                  <span className="min-w-0 text-end text-xs [overflow-wrap:anywhere]" dir="auto">
+                    {voucherName}
+                  </span>
+                </div>
+              ) : null}
               <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
                 <span className="text-muted-foreground text-xs">
                   <Trans>Amount</Trans>

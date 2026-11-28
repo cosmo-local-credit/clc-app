@@ -5,6 +5,7 @@ import {
   normalizeSymbolPrefix,
   parseVoucherDisplaySymbol,
   pickAvailableSymbol,
+  resolveVoucherTicker,
   symbolStemFromName,
 } from "./symbol";
 
@@ -19,6 +20,19 @@ describe("parseVoucherDisplaySymbol", () => {
     ["AB-1", null],
   ])("canonicalizes %s to %s", (value, expected) => {
     expect(parseVoucherDisplaySymbol(value)).toBe(expected);
+  });
+});
+
+describe("resolveVoucherTicker", () => {
+  it.each([
+    [" NEW ", "OLD", "NEW"],
+    [null, " USD₮ ", "USD₮"],
+    [undefined, "A", "A"],
+    [" ", "LEGACY", "LEGACY"],
+    [null, " ", null],
+    [0, false, null],
+  ])("shows the saved ticker or legacy fallback for %s and %s", (saved, legacy, expected) => {
+    expect(resolveVoucherTicker(saved, legacy)).toBe(expected);
   });
 });
 

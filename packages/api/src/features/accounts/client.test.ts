@@ -84,7 +84,7 @@ describe("account token balances", () => {
       contractSymbol: "USD₮",
       balance: "100000",
     });
-    expect(tokens[1]?.tokenSymbol).toBe("Tether USD");
+    expect(tokens[1]?.tokenSymbol).toBe("USD₮");
   });
 
   it("keeps empty latest and paginated balances usable when the backend sends null", async () => {

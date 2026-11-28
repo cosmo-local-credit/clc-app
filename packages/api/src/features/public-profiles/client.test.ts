@@ -133,7 +133,7 @@ describe("public profile transport and query lifecycle", () => {
     });
     expect((await client.resources(address, "vouchers")).items).toEqual([
       { ...item, id: "1", kind: "voucher", symbol: "CLC1" },
-      { ...item, id: "2", kind: "voucher", symbol: "Harvest" },
+      { ...item, id: "2", kind: "voucher" },
       { ...item, id: "3", kind: "voucher" },
     ]);
 

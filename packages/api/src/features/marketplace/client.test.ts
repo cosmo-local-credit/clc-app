@@ -79,12 +79,27 @@ afterEach(() => vi.unstubAllGlobals());
 describe("marketplace Credit", () => {
   const credit = { wallet: `0x${"a1".repeat(20)}`, digest: "0x01" };
 
-  it("labels vouchers, offers and related Post vouchers without exposing their native ticker", async () => {
+  it("prefers saved labels on vouchers, offers and related Posts and falls back to a legacy ticker", async () => {
     respond({
       results: [
         { ...voucher, displaySymbol: "FIX1" },
         { ...offering, displaySymbol: "FIX1", voucherDisplaySymbol: "FIX1" },
         { ...post, relatedKind: "voucher", relatedSymbol: "BIKE", relatedDisplaySymbol: "FIX1" },
+        {
+          ...post,
+          id: "91",
+          relatedKind: "voucher",
+          relatedSymbol: "LEG",
+          relatedDisplaySymbol: null,
+        },
+        {
+          ...post,
+          id: "92",
+          relatedKind: "voucher",
+          relatedName: null,
+          relatedSymbol: null,
+          relatedDisplaySymbol: null,
+        },
       ],
       nextCursor: null,
     });
@@ -98,6 +113,8 @@ describe("marketplace Credit", () => {
         voucherSymbol: "FIX1",
       },
       { kind: "post", relatedSymbol: "FIX1" },
+      { kind: "post", relatedSymbol: "LEG" },
+      { kind: "post", relatedSymbol: null },
     ]);
   });
 
