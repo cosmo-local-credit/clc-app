@@ -1,3 +1,4 @@
+import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -9,11 +10,16 @@ const ADDRESS = "0xdD97a5282D11e55d7271d466C80963d6793B276f";
 
 const updateVoucherProfile = vi.hoisted(() => vi.fn());
 const getTokenTags = vi.hoisted(() => vi.fn());
+const getTakenSymbols = vi.hoisted(() => vi.fn());
+const toastError = vi.hoisted(() => vi.fn());
+
+vi.mock("sonner", () => ({ toast: { error: toastError, success: vi.fn() } }));
 
 vi.mock("#/lib/api", () => ({
   clcApi: {
     admin: { updateVoucherProfile: (...args: unknown[]) => updateVoucherProfile(...args) },
     deployments: { getTokenTags: (...args: unknown[]) => getTokenTags(...args) },
+    symbols: { getTakenSymbols: (...args: unknown[]) => getTakenSymbols(...args) },
   },
 }));
 
@@ -85,22 +91,118 @@ function renderSheet(overrides: Partial<MarketVoucherDetail> = {}) {
 beforeEach(() => {
   updateVoucherProfile.mockReset();
   getTokenTags.mockReset();
+  getTakenSymbols.mockReset();
+  toastError.mockReset();
   updateVoucherProfile.mockResolvedValue(voucher());
   getTokenTags.mockResolvedValue(["food", "care"]);
 });
 
 describe("EditVoucherSheet", () => {
   it("edits only the catalog's half of the record", async () => {
-    // Name, symbol, decimals and the owner mirror the deployed ERC20. A field for
-    // one of them here would let an operator put the catalog out of step with the
-    // chain, and the endpoint does not accept them either. `active` is absent for
-    // a different reason: retiring a voucher is not a prose correction.
+    // Legacy servers do not advertise editable display symbols. Decimals and
+    // owner remain chain facts and retirement remains a separate action.
     renderSheet();
 
     await waitFor(() => expect(screen.getByLabelText("Description")).toBeTruthy());
     for (const absent of ["Name", "Symbol", "Decimals", "Owner", "Active", "Kind"]) {
       expect(screen.queryByLabelText(absent)).toBeNull();
     }
+  });
+
+  it("shows a legacy ticker without claiming it when unchanged after canonicalization", async () => {
+    const close = renderSheet({ displaySymbol: null, legacySymbol: "khv", symbol: "khv" });
+    const symbol = screen.getByLabelText<HTMLInputElement>("Symbol");
+    expect(symbol.value).toBe("khv");
+    fireEvent.blur(symbol);
+    fireEvent.change(symbol, { target: { value: " KHV " } });
+    fireEvent.blur(symbol);
+    fireEvent.change(screen.getByLabelText("Description"), {
+      target: { value: "A basket of coconuts." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(close).toHaveBeenCalledOnce());
+    expect(getTakenSymbols).not.toHaveBeenCalled();
+    expect(updateVoucherProfile).toHaveBeenCalledWith(
+      ADDRESS,
+      expect.objectContaining({ description: "A basket of coconuts." }),
+    );
+    expect(updateVoucherProfile.mock.calls[0]?.[1]).not.toHaveProperty("displaySymbol");
+  });
+
+  it("leaves the symbol blank when there is no ticker rather than offering the Voucher name", () => {
+    renderSheet({ displaySymbol: null, symbol: "Harvest Voucher" });
+
+    expect(screen.getByLabelText<HTMLInputElement>("Symbol").value).toBe("");
+  });
+
+  it("shows the CLC label and retains the editor until the server confirms a free replacement", async () => {
+    updateVoucherProfile
+      .mockRejectedValueOnce(
+        new BackendApiError(409, "taken", "E16", { result: { field: "displaySymbol" } }),
+      )
+      .mockResolvedValueOnce(voucher({ displaySymbol: "KHV" }))
+      .mockResolvedValueOnce(voucher({ displaySymbol: "NEW2" }));
+    const close = renderSheet({ displaySymbol: "KHV", symbol: "NATIVE" });
+    const symbol = screen.getByLabelText("Symbol") as HTMLInputElement;
+    expect(symbol.value).toBe("KHV");
+
+    fireEvent.change(symbol, { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await screen.findByRole("alert");
+    expect(updateVoucherProfile).not.toHaveBeenCalled();
+
+    fireEvent.change(symbol, { target: { value: "new1" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await screen.findByText("That symbol is already in use.");
+    expect(close).not.toHaveBeenCalled();
+
+    fireEvent.change(symbol, { target: { value: " new2 " } });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() =>
+      expect(toastError).toHaveBeenCalledWith("Couldn't verify the saved symbol."),
+    );
+    expect(close).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(close).toHaveBeenCalledOnce());
+    expect(updateVoucherProfile).toHaveBeenLastCalledWith(
+      ADDRESS,
+      expect.objectContaining({ displaySymbol: "NEW2" }),
+    );
+  });
+
+  it("warns about taken CLC labels on blur and clears the warning for a free replacement", async () => {
+    getTakenSymbols
+      .mockResolvedValueOnce({ taken: ["TAKEN"] })
+      .mockResolvedValueOnce({ taken: [] });
+    renderSheet({ displaySymbol: "KHV" });
+    const symbol = screen.getByLabelText("Symbol");
+
+    fireEvent.blur(symbol);
+    expect(getTakenSymbols).not.toHaveBeenCalled();
+
+    fireEvent.change(symbol, { target: { value: "taken" } });
+    fireEvent.blur(symbol);
+    expect((await screen.findByRole("alert")).textContent).toBe("That symbol is already in use.");
+    expect(symbol.getAttribute("aria-invalid")).toBe("true");
+    expect(getTakenSymbols).toHaveBeenCalledWith(
+      "voucher",
+      "TAKEN",
+      expect.objectContaining({ scope: "display" }),
+    );
+
+    fireEvent.change(symbol, { target: { value: "FREE" } });
+    fireEvent.blur(symbol);
+    await waitFor(() => {
+      expect(getTakenSymbols).toHaveBeenLastCalledWith(
+        "voucher",
+        "FREE",
+        expect.objectContaining({ scope: "display" }),
+      );
+      expect(screen.queryByRole("alert")).toBeNull();
+      expect(symbol.getAttribute("aria-invalid")).toBe("false");
+    });
+    expect(updateVoucherProfile).not.toHaveBeenCalled();
   });
 
   it("shows the unit of account as a searchable named currency", async () => {

@@ -122,6 +122,31 @@ describe("public profile transport and query lifecycle", () => {
     expect(options.getNextPageParam({ items: [] }, [], undefined, [])).toBeUndefined();
     query.clear();
   });
+  it("applies CLC labels only to vouchers and offers while preserving old resource responses", async () => {
+    const item = { id: 1, name: "Harvest", resourceId: address, symbol: "OLD" };
+    respond({
+      items: [
+        { ...item, kind: "voucher", displaySymbol: "CLC1" },
+        { ...item, id: 2, kind: "voucher", displaySymbol: null },
+        { ...item, id: 3, kind: "voucher" },
+      ],
+    });
+    expect((await client.resources(address, "vouchers")).items).toEqual([
+      { ...item, id: "1", kind: "voucher", symbol: "CLC1" },
+      { ...item, id: "2", kind: "voucher" },
+      { ...item, id: "3", kind: "voucher" },
+    ]);
+
+    respond({ items: [{ ...item, kind: "offer", displaySymbol: "CLC1" }] });
+    expect((await client.resources(address, "offers")).items).toEqual([
+      { ...item, id: "1", kind: "offer", symbol: "CLC1" },
+    ]);
+
+    respond({ items: [{ ...item, kind: "pool", displaySymbol: null }] });
+    expect((await client.resources(address, "pools")).items).toEqual([
+      { ...item, id: "1", kind: "pool" },
+    ]);
+  });
   it("keeps viewer identity and resource kind in keys and resolves public signers", async () => {
     const fetch = respond({ profiles: [{ address, username: "alice" }] });
     const query = new QueryClient();

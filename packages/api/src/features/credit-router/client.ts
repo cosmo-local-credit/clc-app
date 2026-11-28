@@ -11,6 +11,7 @@
 import type { CreditQuoteMode, CreditRouteHopRef } from "@clc/core/features/credit-router/logic";
 import { getAddress } from "viem";
 import { z } from "zod";
+import { normalizeVoucherSymbol } from "../../lib/api-normalize";
 
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
@@ -98,11 +99,17 @@ export type CreditRoute = z.infer<typeof routeSchema>;
 
 const routesPageSchema = z.object({
   ...freshnessShape,
-  target: z.object({
-    address: addressSchema,
-    symbol: z.string(),
-    decimals: z.number().int().min(0).max(255),
-  }),
+  target: z
+    .object({
+      address: addressSchema,
+      symbol: z.string(),
+      displaySymbol: z.string().nullish(),
+      decimals: z.number().int().min(0).max(255),
+    })
+    .transform(({ displaySymbol, ...target }) => ({
+      ...target,
+      symbol: normalizeVoucherSymbol(displaySymbol, target.symbol, "VOUCHER", target.address),
+    })),
   complete: z.boolean(),
   inputs: z.array(
     z.object({

@@ -142,6 +142,30 @@ describe("market map points HTTP contract", () => {
 });
 
 describe("market map facets HTTP contract", () => {
+  it("uses the display label only for Voucher facets", async () => {
+    const address = `0x${"aa".repeat(20)}`;
+    const facet = {
+      id: 1,
+      chainId: 100,
+      address,
+      name: "Community voucher",
+      symbol: "RAW",
+      count: 3,
+    };
+    respond({
+      tagFacets: [],
+      postVoucherFacets: [{ ...facet, displaySymbol: "NEW" }],
+      postPoolFacets: [facet],
+    });
+    const result = await client().facets({
+      bounds: [],
+      kinds: ["post"],
+      filter: { term: "", tags: [], tagMatch: "any" },
+    });
+    expect(result.postVoucherFacets).toEqual([{ ...facet, symbol: "NEW" }]);
+    expect(result.postPoolFacets).toEqual([facet]);
+  });
+
   it("sends the exact visible boxes with the filters", async () => {
     const fetcher = respond({
       tagFacets: [{ tag: "Food", count: 7 }],

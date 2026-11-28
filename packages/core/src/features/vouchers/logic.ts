@@ -176,6 +176,8 @@ export type VoucherCreateInput = z.infer<typeof voucherCreateSchema>;
 export type VoucherDeployPayload = {
   name: string;
   symbol: string;
+  /** Opt in to a CLC label independent of the contract symbol. */
+  displaySymbol?: string;
   decimals: string;
   owner: string;
   expiryTimestamp?: string;

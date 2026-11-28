@@ -400,6 +400,22 @@ describe("updateVoucherProfile", () => {
     expect(voucher.contractName).toBe("Priscilah Malii");
   });
 
+  it("transmits a display symbol independently of the contract ticker", async () => {
+    fetchMock.mockResolvedValue(
+      detailResponse({ ...DETAIL_ROW, symbol: "RAW", displaySymbol: "NEW" }),
+    );
+    const voucher = await api.updateVoucherProfile(DETAIL_ROW.address, {
+      ...profile,
+      displaySymbol: "NEW",
+    });
+    expect(JSON.parse(requestedInit().body as string)).toMatchObject({ displaySymbol: "NEW" });
+    expect(voucher).toMatchObject({
+      address: DETAIL_ROW.address,
+      symbol: "NEW",
+      displaySymbol: "NEW",
+    });
+  });
+
   // Omitting these keys is what tells clc-core to keep the stored value; a
   // form that never touched them must not erase them.
   it("sends the display name and images only when the caller supplied them", async () => {
@@ -467,6 +483,41 @@ describe("updateVoucherProfile", () => {
 });
 
 describe("getMarketVoucher", () => {
+  it("shows the original ticker without claiming a missing editable label", async () => {
+    fetchMock.mockResolvedValue(
+      detailResponse({
+        ...DETAIL_ROW,
+        name: "Malii Voucher",
+        symbol: " RAW ",
+        displaySymbol: null,
+      }),
+    );
+    expect(await api.getMarketVoucher(DETAIL_ROW.address)).toMatchObject({
+      address: DETAIL_ROW.address,
+      symbol: "RAW",
+      displaySymbol: null,
+      legacySymbol: "RAW",
+    });
+  });
+
+  it("uses a saved symbol instead of the original ticker when present", async () => {
+    fetchMock.mockResolvedValue(
+      detailResponse({ ...DETAIL_ROW, symbol: "RAW", displaySymbol: "NEW" }),
+    );
+    const voucher = await api.getMarketVoucher(DETAIL_ROW.address);
+    expect(voucher).toMatchObject({ symbol: "NEW", displaySymbol: "NEW" });
+    expect(voucher).not.toHaveProperty("legacySymbol");
+  });
+
+  it("keeps a name fallback separate from the ticker when neither symbol exists", async () => {
+    fetchMock.mockResolvedValue(
+      detailResponse({ ...DETAIL_ROW, name: "Malii Voucher", symbol: " ", displaySymbol: null }),
+    );
+    const voucher = await api.getMarketVoucher(DETAIL_ROW.address);
+    expect(voucher).toMatchObject({ symbol: "Malii Voucher", displaySymbol: null });
+    expect(voucher).not.toHaveProperty("legacySymbol");
+  });
+
   it("keeps the immutable contract name beside the effective label", async () => {
     fetchMock.mockResolvedValue(
       detailResponse({ ...DETAIL_ROW, name: "Malii Fresh", contractName: " Priscilah Malii " }),

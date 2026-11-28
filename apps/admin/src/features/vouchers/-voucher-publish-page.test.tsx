@@ -1,3 +1,4 @@
+import { BackendApiError } from "@clc/api/client/errors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   createMemoryHistory,
@@ -209,6 +210,7 @@ describe("VoucherPublishPage", () => {
     expect(deployVoucher).toHaveBeenCalledWith({
       name: "Kilifi Harvest",
       symbol: "KHV",
+      displaySymbol: "KHV",
       decimals: "6",
       owner: OPERATOR,
       description: "A basket of fresh food",
@@ -223,6 +225,30 @@ describe("VoucherPublishPage", () => {
     await waitFor(() => expect(getDeploymentContract).toHaveBeenCalled());
     await waitFor(() =>
       expect(router.state.location.pathname).toBe(`/vouchers/${VOUCHER_ADDRESS}`),
+    );
+  });
+
+  it("keeps the Admin publish form open when the CLC symbol is claimed first", async () => {
+    deployVoucher.mockRejectedValueOnce(
+      new BackendApiError(409, "taken", "E16", { result: { field: "displaySymbol" } }),
+    );
+    renderPage();
+    await screen.findByRole("heading", { name: "Publish voucher" });
+    await fillRequiredFields();
+    fireEvent.click(screen.getByRole("button", { name: "Publish voucher" }));
+    expect(await screen.findByText("That symbol is already in use.")).toBeTruthy();
+    expect(trackOtx).not.toHaveBeenCalled();
+    expect(fieldValue("Name")).toBe("Kilifi Harvest");
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Symbol" }), {
+      target: { value: "khv2" },
+    });
+    expect(screen.queryByText("That symbol is already in use.")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Publish voucher" }));
+    await waitFor(() =>
+      expect(deployVoucher).toHaveBeenLastCalledWith(
+        expect.objectContaining({ symbol: "KHV2", displaySymbol: "KHV2" }),
+      ),
     );
   });
 

@@ -1,11 +1,14 @@
 import { tokenTagsQueryOptions } from "@clc/api/features/deployments/queries";
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
+import { isVoucherDisplaySymbolConflict } from "@clc/api/features/symbols/client";
 import { markerColorSchema, markerIconSchema } from "@clc/core/features/markers/logic";
 import { voucherProfileTextSchema } from "@clc/core/features/vouchers/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { storedImageUrlSchema } from "@clc/core/lib/image-url";
+import { parseVoucherDisplaySymbol } from "@clc/core/lib/symbol";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -13,6 +16,7 @@ import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { LocationField } from "#/components/admin/location-field";
 import { MarkerStyleField } from "#/components/admin/marker-style-field";
 import { SectionLabel } from "#/components/admin/section-heading";
+import { VoucherDisplaySymbolField } from "#/components/admin/voucher-display-symbol-field";
 import { PublicDisclosureNote } from "#/components/admin/public-disclosure-note";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -40,6 +44,7 @@ import { UnitOfAccountCombobox } from "#/components/admin/unit-of-account-combob
  */
 const profileSchema = voucherProfileTextSchema
   .extend({
+    displaySymbol: z.string(),
     // Uploaded before they reach the form, so the only rule left is the one the
     // catalog column enforces: a URL or nothing.
     iconUrl: storedImageUrlSchema,
@@ -76,9 +81,8 @@ const profileSchema = voucherProfileTextSchema
  * sheet — see `offering-editor-sheet.tsx`. They used to be a second branch here,
  * which is how that half sat unsaveable for as long as it did.
  *
- * The display name is catalog metadata. It changes the public label only; the
- * deployed ERC20 name remains readable on the record card and never reaches this
- * form. Symbol, decimals and owner follow the same chain-derived rule. So does
+ * The display name and symbol are catalog metadata. Editing either changes
+ * the public label only. Decimals and ownership are chain-derived. So is
  * `active` — retiring a voucher is a different operation from correcting its
  * prose, and folding the two together would let a description edit hide a voucher
  * by accident.
@@ -120,10 +124,18 @@ export function EditVoucherSheet({
 function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClose: () => void }) {
   const tokenTags = useQuery(tokenTagsQueryOptions(clcApi.deployments));
   const update = useUpdateVoucherProfile(voucher.address);
+  // A legacy ticker is shown without turning an ordinary save into a claim.
+  const [initialSymbol] = useState(() =>
+    voucher.displaySymbol === null ? (voucher.legacySymbol ?? "") : voucher.displaySymbol,
+  );
+  const initialSymbolValue = initialSymbol ?? "";
+  const initialClaim = parseVoucherDisplaySymbol(initialSymbolValue);
+  const [symbolError, setSymbolError] = useState<string>();
 
   const form = useForm({
     defaultValues: {
       displayName: voucher.name,
+      displaySymbol: initialSymbolValue,
       description: voucher.description ?? "",
       voucherUoa: voucher.voucherUoa ?? "",
       voucherValue: voucher.voucherValue ?? "",
@@ -145,6 +157,13 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
     // Save and watches nothing happen.
     validators: { onChange: profileSchema, onSubmit: profileSchema },
     onSubmit: async ({ value }) => {
+      const changesSymbol =
+        initialSymbol !== undefined && value.displaySymbol !== initialSymbolValue;
+      const displaySymbol = changesSymbol ? parseVoucherDisplaySymbol(value.displaySymbol) : null;
+      if (changesSymbol && !displaySymbol) {
+        setSymbolError("Use 3–6 letters or digits.");
+        return;
+      }
       try {
         const clearContactFields = (["email", "website", "phone"] as const).filter(
           (field) => Boolean(voucher[field]?.trim()) && value[field].trim() === "",
@@ -154,6 +173,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
           // Do not turn an ordinary metadata save into a redundant override;
           // only send this compatibility field after the operator changes it.
           ...(value.displayName === voucher.name ? {} : { displayName: value.displayName }),
+          ...(displaySymbol && displaySymbol !== initialClaim ? { displaySymbol } : {}),
           description: value.description,
           voucherUoa: value.voucherUoa,
           voucherValue: value.voucherValue === "" ? null : Number(value.voucherValue),
@@ -179,6 +199,10 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
         toast.success("Voucher record updated.");
         onClose();
       } catch (error) {
+        if (isVoucherDisplaySymbolConflict(error)) {
+          setSymbolError("That symbol is already in use.");
+          return;
+        }
         toast.error(error instanceof Error ? error.message : "Could not save the changes.");
       }
     },
@@ -220,6 +244,24 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
             </Field>
           )}
         </form.Field>
+
+        {initialSymbol !== undefined ? (
+          <form.Field name="displaySymbol">
+            {(field) => (
+              <VoucherDisplaySymbolField
+                value={field.state.value}
+                initial={initialClaim}
+                error={symbolError}
+                disabled={update.isPending}
+                onBlur={field.handleBlur}
+                onChange={(value) => {
+                  setSymbolError(undefined);
+                  field.handleChange(value);
+                }}
+              />
+            )}
+          </form.Field>
+        ) : null}
 
         <form.Field name="description">
           {(field) => (

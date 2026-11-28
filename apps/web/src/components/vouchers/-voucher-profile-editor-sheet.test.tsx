@@ -1,4 +1,6 @@
+import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { $getRoot, $selectAll, type LexicalEditor } from "lexical";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -7,11 +9,14 @@ const mocks = vi.hoisted(() => ({
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
   updateProfile: vi.fn(),
+  getTakenSymbols: vi.fn(),
 }));
 
 vi.mock("sonner", () => ({
   toast: { error: mocks.toastError, success: mocks.toastSuccess },
 }));
+
+vi.mock("#/lib/api/symbols", () => ({ symbolsClient: { getTakenSymbols: mocks.getTakenSymbols } }));
 
 vi.mock("#/features/vouchers/hooks/use-update-voucher-profile", () => ({
   useUpdateVoucherProfile: () => ({ mutateAsync: mocks.updateProfile, isPending: false }),
@@ -88,7 +93,12 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
 }
 
 function open(voucher: MarketVoucherDetail = detail()) {
-  return render(<VoucherProfileEditorSheet open voucher={voucher} onClose={vi.fn()} />);
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={client}>
+      <VoucherProfileEditorSheet open voucher={voucher} onClose={vi.fn()} />
+    </QueryClientProvider>,
+  );
 }
 
 function termsEditor(): HTMLElement {
@@ -126,6 +136,98 @@ beforeEach(() => {
   mocks.updateProfile.mockReset().mockResolvedValue(detail());
   mocks.toastSuccess.mockReset();
   mocks.toastError.mockReset();
+  mocks.getTakenSymbols.mockReset().mockResolvedValue({ taken: [] });
+});
+
+describe("editable Voucher symbol", () => {
+  it("shows a legacy ticker without claiming it when other details change", async () => {
+    open(detail({ displaySymbol: null, legacySymbol: "MALII-OLD", symbol: "MALII-OLD" }));
+    const symbol = screen.getByRole<HTMLInputElement>("textbox", { name: "Symbol" });
+    expect(symbol.value).toBe("MALII-OLD");
+    fireEvent.blur(symbol);
+    fireEvent.change(screen.getByLabelText("Voucher Description"), {
+      target: { value: "New terms of trade." },
+    });
+    await save();
+
+    expect(mocks.getTakenSymbols).not.toHaveBeenCalled();
+    expect(mocks.updateProfile).toHaveBeenCalledWith(
+      expect.objectContaining({ description: "New terms of trade." }),
+    );
+    expect(mocks.updateProfile.mock.calls[0]?.[0]).not.toHaveProperty("displaySymbol");
+  });
+
+  it("sends only a changed, valid canonical symbol and preserves edits after a claim race", async () => {
+    mocks.updateProfile.mockRejectedValueOnce(
+      new BackendApiError(409, "symbol taken", "E16", { result: { field: "displaySymbol" } }),
+    );
+    open(detail({ symbol: "MALII", displaySymbol: "MALII" }));
+    const symbol = screen.getByRole("textbox", { name: "Symbol" }) as HTMLInputElement;
+    expect(symbol.value).toBe("MALII");
+    fireEvent.change(screen.getByLabelText("Voucher Description"), {
+      target: { value: "New terms of trade." },
+    });
+
+    fireEvent.change(symbol, { target: { value: "Aß" } });
+    await save();
+    expect(screen.getByRole("alert").textContent).toBe("Use 3–6 letters or digits.");
+    expect(mocks.updateProfile).not.toHaveBeenCalled();
+
+    fireEvent.change(symbol, { target: { value: " new1 " } });
+    fireEvent.blur(symbol);
+    await waitFor(() =>
+      expect(mocks.getTakenSymbols).toHaveBeenCalledWith(
+        "voucher",
+        "NEW1",
+        expect.objectContaining({ scope: "display" }),
+      ),
+    );
+    await save();
+    expect(await screen.findByText("That symbol is already in use.")).toBeTruthy();
+    expect(mocks.updateProfile).toHaveBeenCalledWith(
+      expect.objectContaining({ displaySymbol: "NEW1" }),
+    );
+    expect(mocks.toastSuccess).not.toHaveBeenCalled();
+
+    fireEvent.change(symbol, { target: { value: "new2" } });
+    await save();
+    expect(mocks.updateProfile).toHaveBeenLastCalledWith(
+      expect.objectContaining({ description: "New terms of trade.", displaySymbol: "NEW2" }),
+    );
+    expect(mocks.toastSuccess).toHaveBeenCalled();
+  });
+
+  it("distinguishes advisory availability from an unrelated save failure", async () => {
+    mocks.getTakenSymbols
+      .mockResolvedValueOnce({ taken: ["TAKEN"] })
+      .mockResolvedValueOnce({ taken: [] });
+    mocks.updateProfile.mockRejectedValueOnce(new BackendApiError(503, "Service unavailable"));
+    open(detail({ displaySymbol: null }));
+    const symbol = screen.getByRole("textbox", { name: "Symbol" });
+
+    fireEvent.change(symbol, { target: { value: "taken" } });
+    fireEvent.blur(symbol);
+    expect(await screen.findByText("That symbol is already in use.")).toBeTruthy();
+    expect(mocks.updateProfile).not.toHaveBeenCalled();
+
+    fireEvent.change(symbol, { target: { value: "free" } });
+    fireEvent.blur(symbol);
+    await waitFor(() => expect(screen.queryByText("That symbol is already in use.")).toBeNull());
+    await save();
+    expect(mocks.toastError).toHaveBeenCalledWith("Service unavailable");
+    expect(screen.queryByText("That symbol is already in use.")).toBeNull();
+    expect(screen.getByDisplayValue("free")).toBeTruthy();
+  });
+
+  it("omits the field when the label is unchanged after canonicalization or the server lacks it", async () => {
+    const view = open(detail({ displaySymbol: "MALII" }));
+    fireEvent.change(screen.getByLabelText("Symbol"), { target: { value: " malii " } });
+    await save();
+    expect(mocks.updateProfile.mock.calls[0]?.[0]).not.toHaveProperty("displaySymbol");
+    view.unmount();
+    open();
+    expect(screen.queryByLabelText("Symbol")).toBeNull();
+  });
 });
 
 describe("terms as a link", () => {

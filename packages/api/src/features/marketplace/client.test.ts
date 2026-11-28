@@ -33,6 +33,18 @@ const offering = {
   createdAt: "2026-10-12T10:00:00Z",
   updatedAt: "2026-10-12T10:00:00Z",
 };
+const voucher = {
+  ...offering,
+  kind: "voucher",
+  name: "Bike Repair",
+  voucherKind: "services",
+  voucherAddress: null,
+  voucherName: null,
+  voucherSymbol: null,
+  voucherUoa: null,
+  priceInUnitOfAccount: null,
+  unit: null,
+};
 const post = {
   ...offering,
   kind: "post",
@@ -66,6 +78,45 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe("marketplace Credit", () => {
   const credit = { wallet: `0x${"a1".repeat(20)}`, digest: "0x01" };
+
+  it("prefers saved labels on vouchers, offers and related Posts and falls back to a legacy ticker", async () => {
+    respond({
+      results: [
+        { ...voucher, displaySymbol: "FIX1" },
+        { ...offering, displaySymbol: "FIX1", voucherDisplaySymbol: "FIX1" },
+        { ...post, relatedKind: "voucher", relatedSymbol: "BIKE", relatedDisplaySymbol: "FIX1" },
+        {
+          ...post,
+          id: "91",
+          relatedKind: "voucher",
+          relatedSymbol: "LEG",
+          relatedDisplaySymbol: null,
+        },
+        {
+          ...post,
+          id: "92",
+          relatedKind: "voucher",
+          relatedName: null,
+          relatedSymbol: null,
+          relatedDisplaySymbol: null,
+        },
+      ],
+      nextCursor: null,
+    });
+
+    expect((await api.list({})).results).toMatchObject([
+      { kind: "voucher", address: voucher.address, symbol: "FIX1" },
+      {
+        kind: "offering",
+        voucherAddress: offering.voucherAddress,
+        symbol: "FIX1",
+        voucherSymbol: "FIX1",
+      },
+      { kind: "post", relatedSymbol: "FIX1" },
+      { kind: "post", relatedSymbol: "LEG" },
+      { kind: "post", relatedSymbol: null },
+    ]);
+  });
 
   it("sends creditDepth=max with the session cookie and no pool list", async () => {
     const fetcher = respond({ results: [], nextCursor: null });

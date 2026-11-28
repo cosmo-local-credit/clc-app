@@ -643,6 +643,38 @@ afterEach(() => {
 });
 
 describe("VoucherDetailPage", () => {
+  it("shows the saved display symbol beside the Voucher name", () => {
+    mocks.detailResult.data = detail({ displaySymbol: "FRESH" });
+    render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+
+    const heading = screen.getByRole("heading", { level: 1, name: "Priscilah Malii FRESH" });
+    expect(within(heading).getByText("FRESH").getAttribute("dir")).toBe("ltr");
+  });
+
+  it.each([null, undefined])(
+    "shows the original ticker when the saved display symbol is %s",
+    (displaySymbol) => {
+      mocks.detailResult.data = detail({ displaySymbol, legacySymbol: "RAW" });
+      render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+
+      expect(screen.getByRole("heading", { level: 1, name: "Priscilah Malii RAW" })).toBeTruthy();
+    },
+  );
+
+  it("keeps the heading free of a badge when neither ticker exists", () => {
+    mocks.detailResult.data = detail({ displaySymbol: null });
+    render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+
+    expect(screen.getByRole("heading", { level: 1, name: "Priscilah Malii" })).toBeTruthy();
+  });
+
+  it("shows the held Voucher name without its raw ticker when detail is absent", () => {
+    mocks.detailResult.data = undefined;
+    render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+
+    expect(screen.getByRole("heading", { level: 1, name: "Priscilah Malii" })).toBeTruthy();
+  });
+
   it("returns a related voucher to its source Post", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} origin="posts" reportId="3182" />);
 

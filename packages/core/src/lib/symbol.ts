@@ -37,6 +37,22 @@ export function normalizeSymbolPrefix(value: string): string | null {
   return SYMBOL_PREFIX_PATTERN.test(normalized) ? normalized : null;
 }
 
+/** Parse the editable CLC symbol without accepting non-ASCII case folds. */
+export function parseVoucherDisplaySymbol(value: string): string | null {
+  const trimmed = value.trim();
+  return /^[A-Za-z0-9]{3,6}$/.test(trimmed) ? trimmed.toUpperCase() : null;
+}
+
+/** A legacy ticker is a display fallback, not a saved CLC symbol or a new claim. */
+export function resolveVoucherTicker(
+  displaySymbol: unknown,
+  contractSymbol: unknown,
+): string | null {
+  const saved = typeof displaySymbol === "string" ? displaySymbol.trim() : "";
+  const legacy = typeof contractSymbol === "string" ? contractSymbol.trim() : "";
+  return saved || legacy || null;
+}
+
 function tokenize(name: string): string[] {
   const tokens = name
     .trim()

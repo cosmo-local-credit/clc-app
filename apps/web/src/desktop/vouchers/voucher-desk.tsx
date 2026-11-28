@@ -11,6 +11,7 @@ import { SectionHeading } from "#/components/ui/section-heading";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
 import { useVoucherBalanceSummary } from "#/components/vouchers/voucher-summary";
+import { VoucherTitleLabel } from "#/components/vouchers/voucher-title-label";
 import { VoucherAvatar, WALLET_TOKEN_BY_ID, type WalletToken } from "#/components/wallet";
 import { useDeskTrailLabel } from "#/desktop/trail";
 import { DeskCanvas, DeskDetail, DeskTitleRow } from "#/desktop/ui/page";
@@ -47,7 +48,7 @@ import {
 /**
  * `.page.detail`: the summary, the action strip and Offerings, Reviews, Posts
  * and Activity in the main column; Info in the sticky 360px column beside it.
- * The one page heading is the voucher's name; each section brings its own
+ * The one page heading identifies the voucher; each section brings its own
  * `SectionHeading`, and a sticky row of links jumps between them.
  */
 export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` }) {
@@ -187,7 +188,12 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
               <DeskTitleRow
                 wrap
                 className="flex-1"
-                title={token.name}
+                title={
+                  <VoucherTitleLabel
+                    name={token.name}
+                    ticker={detail?.displaySymbol ?? detail?.legacySymbol}
+                  />
+                }
                 meta={
                   <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
                     {balance.status === "hidden" ? null : (

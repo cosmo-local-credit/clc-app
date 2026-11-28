@@ -3,9 +3,38 @@ import { voucherSymbolSchema } from "../features/vouchers/logic";
 import {
   candidatesFromName,
   normalizeSymbolPrefix,
+  parseVoucherDisplaySymbol,
   pickAvailableSymbol,
+  resolveVoucherTicker,
   symbolStemFromName,
 } from "./symbol";
+
+describe("parseVoucherDisplaySymbol", () => {
+  it.each([
+    [" greo ", "GREO"],
+    ["a1b", "A1B"],
+    ["Voucher", null],
+    ["AB", null],
+    ["AB ß", null],
+    ["Aß", null],
+    ["AB-1", null],
+  ])("canonicalizes %s to %s", (value, expected) => {
+    expect(parseVoucherDisplaySymbol(value)).toBe(expected);
+  });
+});
+
+describe("resolveVoucherTicker", () => {
+  it.each([
+    [" NEW ", "OLD", "NEW"],
+    [null, " USD₮ ", "USD₮"],
+    [undefined, "A", "A"],
+    [" ", "LEGACY", "LEGACY"],
+    [null, " ", null],
+    [0, false, null],
+  ])("shows the saved ticker or legacy fallback for %s and %s", (saved, legacy, expected) => {
+    expect(resolveVoucherTicker(saved, legacy)).toBe(expected);
+  });
+});
 
 describe("symbolStemFromName", () => {
   it.each([

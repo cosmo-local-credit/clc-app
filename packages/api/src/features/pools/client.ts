@@ -24,6 +24,7 @@ import {
   normalizeStringArray,
   normalizeManagerClosure,
   normalizeText,
+  normalizeVoucherSymbol,
 } from "../../lib/api-normalize";
 
 export type { CursorParams };
@@ -276,6 +277,7 @@ type BackendPool = Partial<{
 }>;
 
 type BackendPoolVoucher = Partial<{
+  displaySymbol: string | null;
   managerClosure: unknown;
   id: string | number;
   chainId: string | number;
@@ -312,6 +314,7 @@ type BackendFilteredPoolPage = BackendPoolPage & {
 };
 
 type BackendVoucherFacet = Partial<{
+  displaySymbol: string | null;
   chainId: string | number;
   address: string;
   name: string;
@@ -522,7 +525,7 @@ function normalizePoolVoucherFacet(facet: BackendVoucherFacet): PoolVoucherFacet
   const chainId = normalizeChainId(facet.chainId);
   const address = normalizeHex(facet.address);
   const name = normalizeText(facet.name);
-  const symbol = normalizeText(facet.symbol);
+  const symbol = normalizeVoucherSymbol(facet.displaySymbol, facet.symbol, null, name ?? address);
   const count = normalizeNumber(facet.count);
   if (chainId === null || !address || !name || !symbol || count === null || count < 0) {
     return null;
@@ -590,7 +593,12 @@ function normalizePoolVoucher(voucher: BackendPoolVoucher): PoolVoucher | null {
   const tokenAddress = normalizeHex(voucher.address);
   if (!tokenAddress) return null;
   const name = normalizeText(voucher.name) ?? "Community Voucher";
-  const symbol = normalizeText(voucher.symbol) ?? "VOUCHER";
+  const symbol = normalizeVoucherSymbol(
+    voucher.displaySymbol,
+    voucher.symbol,
+    "VOUCHER",
+    voucher.name ?? tokenAddress,
+  );
   const oracleAddress = normalizeHex(voucher.oracleAddress);
   return {
     id: String(voucher.id ?? tokenAddress),

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isHttpUrl } from "../../lib/contact";
+import { resolveVoucherTicker } from "../../lib/symbol";
 
 /** Limits clc-core enforces in its schema; a value past them never leaves the device. */
 export const MESSAGE_BODY_MAX = 2000;
@@ -31,7 +32,16 @@ const messageResourceContextSchema = z.object({
   resourceId: z.string().min(1),
   resourceName: z.string().min(1),
   proposedVoucher: z
-    .object({ address: addressSchema, name: z.string().min(1), symbol: z.string() })
+    .object({
+      address: addressSchema,
+      name: z.string().min(1),
+      symbol: z.string(),
+      displaySymbol: z.string().nullish(),
+    })
+    .transform(({ displaySymbol, ...voucher }) => ({
+      ...voucher,
+      symbol: resolveVoucherTicker(displaySymbol, voucher.symbol) ?? "",
+    }))
     .optional(),
 });
 export type MessageResourceContext = z.infer<typeof messageResourceContextSchema>;

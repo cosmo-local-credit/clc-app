@@ -4,6 +4,7 @@ import {
   normalizeNumber,
   normalizeStringArray,
   normalizeText,
+  normalizeVoucherSymbol,
 } from "../../lib/api-normalize";
 import type { HttpClient } from "../../client/http-client";
 
@@ -20,6 +21,7 @@ export type DeploymentContract = {
 };
 
 type BackendDeploymentContract = Partial<{
+  displaySymbol: string | null;
   address: string | null;
   admin: string;
   name: string;
@@ -69,7 +71,7 @@ export function createDeploymentsClient(http: HttpClient) {
 
       const contract = result.contract;
       const name = normalizeText(contract?.name);
-      const symbol = normalizeText(contract?.symbol);
+      const symbol = normalizeVoucherSymbol(contract?.displaySymbol, contract?.symbol, null, name);
       const status = normalizeText(contract?.status);
       if (!contract || !name || !symbol || !status) {
         throw new Error(`${label.sentenceNoun} deployment response was incomplete.`);

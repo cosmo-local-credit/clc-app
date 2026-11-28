@@ -16,7 +16,8 @@ import {
   type MarketMapKind,
   type MarketMapPointsResponse,
 } from "@clc/core/features/market-map/logic";
-import type { z } from "zod";
+import { z } from "zod";
+import { normalizeVoucherSymbol } from "../../lib/api-normalize";
 
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import { CREDIT_DISCOVERY_DEPTH, type CreditScope } from "../credit-router/client";
@@ -44,6 +45,24 @@ export type MarketMapParams = {
 export type MarketMapFacetsParams = MarketMapParams & { bounds: readonly MarketBoundingBox[] };
 
 export type MarketMapClient = ReturnType<typeof createMarketMapClient>;
+
+const marketMapWireFacetsSchema = marketMapFacetsResponseSchema.extend({
+  postVoucherFacets: z.array(
+    marketMapFacetsResponseSchema.shape.postVoucherFacets.element
+      .extend({
+        displaySymbol: z.string().nullish(),
+      })
+      .transform(({ displaySymbol, ...facet }) => ({
+        ...facet,
+        symbol: normalizeVoucherSymbol(
+          displaySymbol,
+          facet.symbol,
+          "VOUCHER",
+          facet.name || facet.address,
+        ),
+      })),
+  ),
+});
 
 export function createMarketMapClient(http: HttpClient) {
   async function read<T extends z.ZodType>(
@@ -78,7 +97,7 @@ export function createMarketMapClient(http: HttpClient) {
     ): Promise<MarketMapFacetsResponse> {
       const query = filterQuery(params);
       appendMarketBounds(query, params.bounds);
-      return read("facets", query, marketMapFacetsResponseSchema, signal);
+      return read("facets", query, marketMapWireFacetsSchema, signal);
     },
   };
 }

@@ -192,7 +192,7 @@ export function DetailsStep({
               <Field
                 label={t`Symbol`}
                 htmlFor="voucher-symbol"
-                error={getFieldError(field.state.meta.errors)}
+                error={wizard.symbolError ?? getFieldError(field.state.meta.errors)}
               >
                 <Input
                   id="voucher-symbol"
@@ -200,14 +200,16 @@ export function DetailsStep({
                   className="font-mono"
                   value={field.state.value}
                   onChange={(event) => {
-                    const symbol = event.target.value.toUpperCase();
+                    const symbol = event.target.value.replace(/[a-z]/g, (char) =>
+                      char.toUpperCase(),
+                    );
                     field.handleChange(symbol);
                     wizard.trackSymbol(symbol);
                   }}
                   onBlur={field.handleBlur}
                   placeholder={t`e.g. MARKET`}
                   maxLength={6}
-                  aria-invalid={field.state.meta.errors.length > 0}
+                  aria-invalid={Boolean(wizard.symbolError) || field.state.meta.errors.length > 0}
                 />
               </Field>
             )}

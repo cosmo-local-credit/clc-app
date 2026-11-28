@@ -394,6 +394,8 @@ export function SendDesk({
         amount={payment.submittedVoucherAmount}
         symbol={selectedToken?.symbol ?? ""}
         unitValueLabel={unitValueLabel}
+        voucherName={selectedToken?.name}
+        voucherAddress={selectedToken?.contractAddress}
         recipient={payment.recipientAddress}
         recipientLabel={payment.recipientLabel}
         error={payment.error}
@@ -441,15 +443,20 @@ function TokenPicker({
           <span className="text-muted-foreground">—</span>
         )}
       </SelectTrigger>
-      <SelectContent className="max-h-80">
+      <SelectContent className="max-h-80 min-w-64">
         {tokens.map((token) => (
           <SelectItem key={token.id} value={token.id}>
             <span className="flex min-w-0 items-center gap-2">
               <TokenLogo token={token} size={20} />
-              <span className="min-w-0 truncate font-semibold" dir="ltr">
-                {token.symbol}
+              <span className="grid min-w-0 flex-1 gap-0.5">
+                <span className="truncate font-mono font-semibold" dir="ltr">
+                  {token.symbol}
+                </span>
+                <span className="text-xs text-muted-foreground [overflow-wrap:anywhere]" dir="auto">
+                  {token.name}
+                </span>
               </span>
-              <span className="ps-3 font-heading font-semibold tracking-tight" dir="ltr">
+              <span className="shrink-0 ps-3 font-heading font-semibold tracking-tight" dir="ltr">
                 {token.amount}
               </span>
             </span>

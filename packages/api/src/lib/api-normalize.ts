@@ -12,6 +12,7 @@ import {
   managerClosureSchema,
 } from "@clc/core/features/account-retirement/logic";
 import type { HexAddress } from "@clc/core/features/catalog/logic";
+import { resolveVoucherTicker } from "@clc/core/lib/symbol";
 
 export type { HexAddress };
 
@@ -40,6 +41,19 @@ export function normalizeManagerClosure(value: unknown): ManagerClosure {
 
 export function normalizeText(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+/** Use the contract ticker for legacy vouchers without a saved CLC label. */
+export function normalizeVoucherSymbol<T extends string | null>(
+  displaySymbol: unknown,
+  contractSymbol: unknown,
+  fallback: T,
+  nameOrAddress?: unknown,
+): string | T {
+  return (
+    resolveVoucherTicker(displaySymbol, contractSymbol) ??
+    (displaySymbol === undefined ? fallback : (normalizeText(nameOrAddress) ?? fallback))
+  );
 }
 
 export function normalizeNumericText(value: unknown): string | null {

@@ -1,3 +1,4 @@
+import { BackendApiError } from "@clc/api/client/errors";
 import type { RetirementPreview, RetirementRequest } from "@clc/api/features/retirement/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -320,6 +321,54 @@ describe("retirement decisions", () => {
 });
 
 describe("restoration", () => {
+  it("keeps a Voucher restore request open for a replacement if another Voucher reclaimed its symbol", async () => {
+    mocks.restore
+      .mockRejectedValueOnce(
+        new BackendApiError(409, "taken", "E16", { result: { field: "displaySymbol" } }),
+      )
+      .mockResolvedValueOnce({ address: ADDRESS, active: true, displaySymbol: "CARE" })
+      .mockResolvedValueOnce({ address: ADDRESS, active: true, displaySymbol: "CARE2" });
+    const close = vi.fn();
+    const client = new QueryClient();
+    render(
+      <QueryClientProvider client={client}>
+        <RestoreResourceSheet
+          type="voucher"
+          address={ADDRESS}
+          name="Care"
+          displaySymbol="CARE"
+          open
+          onClose={close}
+        />
+      </QueryClientProvider>,
+    );
+    const symbol = screen.getByLabelText("Symbol") as HTMLInputElement;
+    expect(symbol.value).toBe("CARE");
+    fireEvent.change(screen.getByLabelText("Reason for restoration"), {
+      target: { value: "Reopened" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Restore voucher" }));
+    await screen.findByText("That symbol is already in use.");
+    expect(mocks.restore).toHaveBeenNthCalledWith(1, "voucher", ADDRESS, { reason: "Reopened" });
+    expect(close).not.toHaveBeenCalled();
+
+    fireEvent.change(symbol, { target: { value: "c" } });
+    fireEvent.click(screen.getByRole("button", { name: "Restore voucher" }));
+    expect(screen.getByRole("alert").textContent).toBe("Use 3–6 letters or digits.");
+    expect(mocks.restore).toHaveBeenCalledTimes(1);
+
+    fireEvent.change(symbol, { target: { value: " care2 " } });
+    fireEvent.click(screen.getByRole("button", { name: "Restore voucher" }));
+    expect(await screen.findByText("Couldn't verify the saved symbol.")).toBeTruthy();
+    expect(close).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Restore voucher" }));
+    await waitFor(() => expect(close).toHaveBeenCalledOnce());
+    expect(mocks.restore).toHaveBeenNthCalledWith(3, "voucher", ADDRESS, {
+      reason: "Reopened",
+      displaySymbol: "CARE2",
+    });
+  });
+
   it.each(["voucher", "pool"] as const)(
     "requires a reason and retains quota errors for a %s",
     async (type) => {

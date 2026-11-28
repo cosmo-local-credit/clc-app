@@ -126,6 +126,10 @@ describe("CreateVoucherDesk Advanced", () => {
     expect(advanced.contains(screen.getByLabelText("Symbol"))).toBe(true);
     expect(advanced.contains(screen.getByLabelText("Price"))).toBe(true);
     expect(advanced.contains(screen.getByLabelText("Priced in"))).toBe(true);
+    fireEvent.click(screen.getByText("Advanced"));
+    const symbol = screen.getByLabelText("Symbol") as HTMLInputElement;
+    fireEvent.change(symbol, { target: { value: "greo2" } });
+    expect(symbol.value).toBe("GREO2");
   });
 
   it("opens for a restored draft", () => {

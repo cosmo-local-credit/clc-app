@@ -5,13 +5,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 const SENDER = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
 const RECIPIENT = "0x2b4F29a8438cc9c644F6Cf1E9C287fF2fe84674e";
 const TOKEN = "0x1111111111111111111111111111111111111111";
+const SECOND_TOKEN = "0x2222222222222222222222222222222222222222";
 const LONG_NAME = "Maria Fernanda de los Angeles Rodriguez-Hernandez Cooperativa Agricola del Sur";
 
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   send: { mutateAsync: vi.fn(), isPending: false, error: null as Error | null },
   upsert: { mutateAsync: vi.fn(), isPending: false },
-  token: { balance: "1000", decimals: 2 },
+  token: { balance: "1000", decimals: 2, sharedTicker: false },
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -36,6 +37,20 @@ vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
         iconUrl: null,
         lastDateBlock: "2026-10-01T00:00:00Z",
       },
+      ...(mocks.token.sharedTicker
+        ? [
+            {
+              id: 2,
+              tokenAddress: SECOND_TOKEN,
+              tokenSymbol: "RIV",
+              tokenName: "Riverbend Voucher",
+              tokenDecimals: 2,
+              balance: "1000",
+              iconUrl: null,
+              lastDateBlock: "2026-10-01T00:00:00Z",
+            },
+          ]
+        : []),
     ],
     isPending: false,
     isError: false,
@@ -123,6 +138,7 @@ beforeEach(() => {
   mocks.send.isPending = false;
   mocks.token.balance = "1000";
   mocks.token.decimals = 2;
+  mocks.token.sharedTicker = false;
   mocks.send.mutateAsync.mockResolvedValue({ trackingId: "track-1", valuationSnapshots: [] });
   mocks.upsert.mutateAsync.mockResolvedValue(undefined);
   Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
@@ -134,6 +150,23 @@ afterEach(() => {
 });
 
 describe("Send page", () => {
+  it("distinguishes vouchers with the same ticker by name through selection and review", async () => {
+    mocks.token.sharedTicker = true;
+    mount();
+
+    fireEvent.keyDown(screen.getByRole("combobox", { name: "Voucher" }), { key: "ArrowDown" });
+    expect(await screen.findByRole("option", { name: /Riverside Voucher/ })).toBeTruthy();
+    const riverbend = screen.getByRole("option", { name: /Riverbend Voucher/ });
+    fireEvent.pointerDown(riverbend, { pointerType: "touch" });
+    fireEvent.click(riverbend);
+
+    fill();
+    fireEvent.click(screen.getByRole("button", { name: "Review" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Riverbend Voucher")).toBeTruthy();
+    expect(within(dialog).getByText(SECOND_TOKEN)).toBeTruthy();
+  });
+
   it("is one focused page: a heading, the form and a summary, with nothing dimmed or inert", () => {
     const { container } = mount();
 
@@ -225,6 +258,8 @@ describe("Send page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Review" }));
     const dialog = await screen.findByRole("dialog");
     expect(dialog.textContent).toContain("0.0000002 RIV");
+    expect(within(dialog).getByText("Contract address")).toBeTruthy();
+    expect(within(dialog).getByText(TOKEN)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole("button", { name: "Confirm and send" }));
 
     await waitFor(() =>

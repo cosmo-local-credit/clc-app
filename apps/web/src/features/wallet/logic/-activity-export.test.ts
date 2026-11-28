@@ -62,4 +62,19 @@ describe("activity export", () => {
       '2026-08-01T00:00:00Z,swapped,failed,20,"US,DC",0.000001,KFP,0x05,0xbb',
     ]);
   });
+
+  it("uses CLC labels for the voucher filter while preserving contract tickers in the CSV", () => {
+    const renamed: AccountActivityItem = {
+      ...swap,
+      sent: { ...swap.sent, tokenSymbol: "CLC1", contractSymbol: "OLD1" },
+      received: { ...swap.received, tokenSymbol: "CLC2", contractSymbol: "OLD2" },
+    };
+    expect(activityVouchers([renamed])).toEqual([
+      { address: USDC, symbol: "CLC1" },
+      { address: KFP, symbol: "CLC2" },
+    ]);
+    expect(activityCsv([renamed]).split("\r\n")[1]).toBe(
+      "2026-08-01T00:00:00Z,swapped,failed,20,OLD1,0.000001,OLD2,0x05,0xbb",
+    );
+  });
 });

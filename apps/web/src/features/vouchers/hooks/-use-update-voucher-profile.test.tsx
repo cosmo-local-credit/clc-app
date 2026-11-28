@@ -1,5 +1,7 @@
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { voucherKeys } from "@clc/api/features/market/queries";
+import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
+import { symbolKeys } from "@clc/api/features/symbols/queries";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -72,6 +74,47 @@ beforeEach(() => {
 });
 
 describe("useUpdateVoucherProfile", () => {
+  it("verifies the new label before invalidating discovery and symbol availability", async () => {
+    const client = new QueryClient();
+    const availability = symbolKeys.taken("voucher", "NEW", "display");
+    const discovery = [...marketplaceKeys.all, "sample"];
+    const info = voucherKeys.info(ADDRESS, VIEWER);
+    client.setQueryData(availability, { taken: [] });
+    client.setQueryData(discovery, { results: [] });
+    const { result } = renderHook(() => useUpdateVoucherProfile(ADDRESS), {
+      wrapper: wrapper(client),
+    });
+    const profile = {
+      description: "Updated",
+      displaySymbol: "NEW",
+      voucherUoa: "KES",
+      voucherValue: 10,
+      email: "",
+      website: "",
+      phone: "",
+      terms: "",
+      locationName: "",
+      geoLat: null,
+      geoLng: null,
+      tags: [],
+    };
+    await expect(result.current.mutateAsync(profile)).rejects.toThrow(
+      "Couldn't verify the saved symbol.",
+    );
+    expect(client.getQueryData(info)).toBeUndefined();
+    expect(client.getQueryState(availability)?.isInvalidated).toBe(false);
+
+    api.getVoucherInfo.mockResolvedValueOnce({
+      ...detail("Renamed"),
+      displaySymbol: "NEW",
+      symbol: "NEW",
+    });
+    await result.current.mutateAsync(profile);
+    expect(client.getQueryData(info)).toMatchObject({ displaySymbol: "NEW" });
+    expect(client.getQueryState(availability)?.isInvalidated).toBe(true);
+    expect(client.getQueryState(discovery)?.isInvalidated).toBe(true);
+  });
+
   it("keeps protected mutation data in the wallet-scoped private cache", async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const detailKey = voucherKeys.detail(ADDRESS);

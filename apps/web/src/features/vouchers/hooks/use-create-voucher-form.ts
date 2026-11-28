@@ -4,6 +4,7 @@ import type { MarkerColor, MarkerIcon } from "@clc/core/features/markers/logic";
 import { profilePrefill } from "@clc/core/features/signup/prefill";
 import type { VoucherPrefill } from "@clc/core/features/vouchers/prefill";
 import { imageImportUploadId } from "@clc/api/features/images/client";
+import { isVoucherDisplaySymbolConflict } from "@clc/api/features/symbols/client";
 import {
   toVoucherDeployPayload,
   type VoucherUnit,
@@ -174,10 +175,18 @@ export function useCreateVoucherForm({
   // A link opened on purpose replaces whatever a failed publish left behind.
   const draft = linked ? null : storedDraft;
   const hasPrefilledProfile = useRef(false);
+  const [symbolError, setSymbolError] = useState<string>();
   const suggestedSymbol = useSuggestedSymbol({
     kind: "voucher",
     initialSymbol: restored?.symbol ?? linked?.symbol ?? draft?.symbol ?? "",
+    scope: "display",
   });
+
+  function reportSymbolConflict() {
+    setSymbolError(t`That symbol is already in use.`);
+    revealAdvanced?.();
+    void navigate({ to: "/vouchers/create/$step", params: { step: "voucher" } });
+  }
   const checkNameAvailable = useNameAvailabilityValidator("voucher");
   const [iconBusy, setIconBusy] = useState(false);
   const [advancing, setAdvancing] = useState(false);
@@ -227,9 +236,9 @@ export function useCreateVoucherForm({
         toast.error(t`Connect your wallet before publishing.`);
         return;
       }
-      const check = await suggestedSymbol.confirm(value.name, value.symbol);
+      const check = await suggestedSymbol.confirm(value.name, value.symbol.trim());
       if (!check.ok) {
-        toast.error(t`That symbol is already in use.`);
+        reportSymbolConflict();
         return;
       }
       if (check.symbol !== value.symbol) {
@@ -245,9 +254,10 @@ export function useCreateVoucherForm({
       });
       setDraft(parsed);
       try {
-        const result = await deployVoucher.mutateAsync(
-          toVoucherDeployPayload(parsed, getAddress(address)),
-        );
+        const result = await deployVoucher.mutateAsync({
+          ...toVoucherDeployPayload(parsed, getAddress(address)),
+          displaySymbol: parsed.symbol,
+        });
         viewDraft.clear();
         // The opening supply rides along in the URL so the receipt can mint it
         // as soon as the contract confirms, even after a reload loses the draft.
@@ -262,6 +272,10 @@ export function useCreateVoucherForm({
         // error code under a review screen they cannot act on.
         if (error instanceof BackendApiError && error.code === "E11") {
           toast.error(t`Limit reached. Ask an administrator to increase your allowance.`);
+          return;
+        }
+        if (isVoucherDisplaySymbolConflict(error)) {
+          reportSymbolConflict();
           return;
         }
         if (error instanceof BackendApiError && error.kind === "conflict") {
@@ -481,7 +495,11 @@ export function useCreateVoucherForm({
     tagsQuery,
     profile: profileQuery.data,
     checkNameAvailable,
-    trackSymbol: (symbol: string) => suggestedSymbol.track(symbol),
+    symbolError,
+    trackSymbol: (symbol: string) => {
+      setSymbolError(undefined);
+      suggestedSymbol.track(symbol);
+    },
     suggestSymbolFor,
     fillSuggestedSymbol,
     /** An icon upload or import is in flight. */
